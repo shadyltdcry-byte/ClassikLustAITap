@@ -15,7 +15,7 @@ export default function Admin() {
         </Link>
       </header>
 
-      <AdminPanelFull isOpen={true} onClose={() => {}} />
+      <AdminPanelFull />
     </div>
   );
 }
