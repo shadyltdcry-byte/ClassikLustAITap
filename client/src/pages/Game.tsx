@@ -9,7 +9,6 @@
 import React, { useState } from 'react';
 import CharacterCreation from '../components/CharacterCreation';
 import CharacterEditor from '../components/CharacterEditor';
-import CharacterDisplay from '../components/CharacterDisplay';
 import AIChat from '../plugins/aicore/AIChat';
 import MistralDebugger from '../plugins/aicore/MistralDebugger';
 import FileManagerCore from '../plugins/manager/FileManagerCore';
@@ -43,7 +42,16 @@ export default function Game() {
       case 'gameManager': return <GameManagerCore />;
       case 'game': 
       default: 
-        return <CharacterDisplay />;
+        return (
+          <div className="text-center">
+            <div className="w-48 h-48 bg-card rounded-lg flex items-center justify-center mb-4 mx-auto">
+              <span className="text-6xl">👤</span>
+            </div>
+            <h3 className="text-lg font-bold text-white">Seraphina</h3>
+            <p className="text-sm text-gray-400">Playful & Flirty</p>
+            <Button className="mt-4" size="lg">TAP</Button>
+          </div>
+        );
     }
   };
 
