@@ -23,12 +23,11 @@ export async function setupViteDevServer(app: Express) {
   const vite = await createViteServer({
     server: {
       middlewareMode: true,
-      hmr: {
-        port: 24678
-      }
+      hmr: false
     },
     appType: 'custom',
-    root: path.resolve(process.cwd(), 'client')
+    root: path.resolve(process.cwd(), 'client'),
+    configFile: path.resolve(process.cwd(), 'vite.config.ts')
   });
 
   app.use(vite.middlewares);
@@ -37,6 +36,11 @@ export async function setupViteDevServer(app: Express) {
     const url = req.originalUrl;
 
     try {
+      // Skip API routes
+      if (url.startsWith('/api')) {
+        return next();
+      }
+
       const clientTemplate = path.resolve(
         process.cwd(),
         "client",
@@ -44,10 +48,6 @@ export async function setupViteDevServer(app: Express) {
       );
 
       let template = await fs.promises.readFile(clientTemplate, "utf-8");
-      template = template.replace(
-        `src="/src/main.tsx"`,
-        `src="/src/main.tsx?v=${nanoid()}"`,
-      );
       const page = await vite.transformIndexHtml(url, template);
       res.status(200).set({ "Content-Type": "text/html" }).end(page);
     } catch (e) {
