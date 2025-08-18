@@ -101,8 +101,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   } else {
     // Development: integrate with Vite
-    const { createViteServer } = await import("../server/vite.js");
-    const vite = await createViteServer(app);
+    const { createServer: createViteServer } = await import("vite");
+    const vite = await createViteServer({
+      server: { middlewareMode: true },
+      appType: 'custom'
+    });
     app.use(vite.middlewares);
   }
 
