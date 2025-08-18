@@ -118,51 +118,6 @@
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
-
-    /* ClassikLust Game Theme */
-    --game-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --game-card: rgba(255, 255, 255, 0.1);
-    --game-accent: #ff6b9d;
-    --game-secondary: #4facfe;
-    --anime-pink: #ff69b4;
-    --anime-purple: #9370db;
-    --anime-blue: #00bfff;
-
-    /* Root variables */
-    --primary: #1e1b4b;
-    --primary-900: #312e81;
-    --dark-900: #111827;
-    --anime-pink: #ff6b9d;
-    --anime-purple: #c44569;
-    --anime-blue: #4ecdc4;
-    --anime-yellow: #ffe66d;
-
-    /* Dynamic theme variables */
-    --primary-color: #ff6b9d;
-    --secondary-color: #c44569;
-    --background-color: #1a1a2e;
-    --text-color: #ffffff;
-    --accent-color: #4ecdc4;
-    --font-family: "Inter";
-    --header-font-size: 24px;
-    --body-font-size: 16px;
-    --font-weight: normal;
-    --border-radius: 12px;
-    --card-padding: 20px;
-    --button-padding: 12px 24px;
-    --spacing: 16px;
-    --character-image-size: 300px;
-    --character-border-radius: 15px;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
   }
 
   .dark {
@@ -222,48 +177,13 @@
 }
 
 .character-card {
-  background: linear-gradient(135deg, var(--anime-pink), var(--anime-purple));
-  border-radius: var(--character-border-radius);
-  padding: var(--card-padding);
-}
-
-/* Your custom game CSS grid layout */
-.game-gui-container {
-  display: grid;
-  grid-template-areas:
-    "top-left top-middle top-right"
-    "under-top under-top under-top"  
-    "middle middle right"
-    "bottom bottom bottom";
-  grid-template-rows: auto auto 1fr auto;
-  grid-template-columns: 250px 1fr 250px;
-  height: 100vh;
-  width: 100vw;
-  gap: 10px;
-  padding: 10px;
-}
-
-.top-left { grid-area: top-left; }
-.top-middle { grid-area: top-middle; }
-.top-right { grid-area: top-right; }
-.under-top { grid-area: under-top; }
-.middle { grid-area: middle; }
-.right { grid-area: right; }
-.bottom { grid-area: bottom; }
-
-.bottom-tabs {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 10px;
-}
-
-.bottom-tabs button.active-tab {
-  font-weight: bold;
-  border-bottom: 2px solid #fff;
-}
-
-.bottom-content {
-  margin-top: 5px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 107, 157, 0.1) 0%,
+    rgba(147, 112, 219, 0.1) 100%
+  );
+  border: 1px solid rgba(255, 107, 157, 0.3);
+  transition: all 0.3s ease;
 }
 
 .character-card:hover {

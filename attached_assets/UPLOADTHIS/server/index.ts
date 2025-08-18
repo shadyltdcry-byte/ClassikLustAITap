@@ -13,8 +13,8 @@ import { registerRoutes } from "./routes";
 
 
 function main() {
-  // Database and energy system removed as per user request
-  console.log("Starting custom plugin-based game server...");
+  initDB(); // instant connection
+  startEnergyRegen();
 }
 
 main();
@@ -46,7 +46,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      console.log(logLine);
+      log(logLine);
     }
   });
 
@@ -78,7 +78,7 @@ app.use((req, res, next) => {
       reusePort: true,
     },
     () => {
-      console.log(`serving on port ${port}`);
+      log(`serving on port ${port}`);
     },
   );
 })();
