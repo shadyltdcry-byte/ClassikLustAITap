@@ -101,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   } else {
     // Development: integrate with Vite
-    const { setupViteDevServer } = await import("./vite.js");
+    const { setupViteDevServer } = await import("./vite");
     await setupViteDevServer(app);
   }
 
