@@ -68,7 +68,7 @@ export const upgrades = pgTable("upgrades", {
   baseEffect: real("base_effect").notNull(),
   costMultiplier: real("cost_multiplier").notNull().default(1.3),
   effectMultiplier: real("effect_multiplier").notNull().default(1.15),
-  maxLevel: integer("max_level").default(null),
+  maxLevel: integer("max_level"),
   levelRequirement: integer("level_requirement").notNull().default(1),
 });
 

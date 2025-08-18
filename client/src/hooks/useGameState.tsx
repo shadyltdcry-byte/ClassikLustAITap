@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { User, Character, UserCharacter, Upgrade, UserUpgrade } from "@shared/schema";
 
-const MOCK_USER_ID = "demo-user-id"; // In a real app, this would come from authentication
+const MOCK_USER_ID = "0faa0388-11ed-40b2-a32e-367db6d52e62"; // Demo user created in database
 
 export function useGameState() {
   const queryClient = useQueryClient();

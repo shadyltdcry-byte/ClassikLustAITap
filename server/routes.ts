@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { insertUserSchema, insertCharacterSchema, insertChatMessageSchema } from "@shared/schema";
 import { z } from "zod";
-import { openaiService } from "./services/openai";
+
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
@@ -100,7 +100,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userUpgrade = await storage.purchaseUpgrade(upgradeData);
       res.status(201).json(userUpgrade);
     } catch (error) {
-      res.status(400).json({ message: "Failed to purchase upgrade", error: error.message });
+      res.status(400).json({ message: "Failed to purchase upgrade", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
@@ -145,7 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ user: updatedUser, lpGain });
     } catch (error) {
-      res.status(500).json({ message: "Failed to process tap", error: error.message });
+      res.status(500).json({ message: "Failed to process tap", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
@@ -183,17 +183,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json({ user: updatedUser, lpGained, energyRestored });
     } catch (error) {
-      res.status(500).json({ message: "Failed to process tick", error: error.message });
+      res.status(500).json({ message: "Failed to process tick", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
-  // Chat routes
+  // Chat routes (simplified without OpenAI)
   app.get("/api/user/:userId/character/:characterId/chat", async (req, res) => {
     try {
       const chatHistory = await storage.getChatHistory(req.params.userId, req.params.characterId);
       res.json(chatHistory);
     } catch (error) {
-      res.status(500).json({ message: "Failed to fetch chat history", error: error.message });
+      res.status(500).json({ message: "Failed to fetch chat history", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
@@ -201,21 +201,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { message } = req.body;
       
-      // Get character info for AI context
+      // Get character info
       const character = await storage.getCharacter(req.params.characterId);
       if (!character) {
         return res.status(404).json({ message: "Character not found" });
       }
 
-      // Get user character relationship
-      const userCharacter = await storage.getUserCharacter(req.params.userId, req.params.characterId);
-      
-      // Generate AI response
-      const response = await openaiService.generateCharacterResponse(
-        message,
-        character,
-        userCharacter
-      );
+      // Simple response for now (your custom AI can be plugged in here)
+      const response = `*${character.name} smiles and responds thoughtfully*`;
 
       // Calculate charisma gain
       const charismaGained = Math.floor(Math.random() * 10) + 1;
@@ -239,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(chatMessage);
     } catch (error) {
-      res.status(500).json({ message: "Failed to send message", error: error.message });
+      res.status(500).json({ message: "Failed to send message", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
@@ -256,7 +249,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reward = await storage.spinWheel(req.params.userId, cost);
       res.json(reward);
     } catch (error) {
-      res.status(500).json({ message: "Failed to spin wheel", error: error.message });
+      res.status(500).json({ message: "Failed to spin wheel", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
@@ -275,7 +268,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updatedUser);
     } catch (error) {
-      res.status(500).json({ message: "Failed to add LP", error: error.message });
+      res.status(500).json({ message: "Failed to add LP", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 
@@ -292,7 +285,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(updatedUser);
     } catch (error) {
-      res.status(500).json({ message: "Failed to restore energy", error: error.message });
+      res.status(500).json({ message: "Failed to restore energy", error: error instanceof Error ? error.message : "Unknown error" });
     }
   });
 

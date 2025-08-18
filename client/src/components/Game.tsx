@@ -48,10 +48,9 @@ export function Game() {
     }
 
     try {
-      const result = await handleTap();
-      if (result && typeof result === 'object' && 'lpGain' in result) {
-        setLastTapGain(result.lpGain as number);
-      }
+      handleTap();
+      // Set a default tap gain for visual feedback
+      setLastTapGain(Math.floor(user.lpPerTap));
     } catch (error) {
       toast({
         title: "Tap failed",
