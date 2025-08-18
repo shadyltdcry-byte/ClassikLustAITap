@@ -49,7 +49,7 @@ import { apiRequest } from "@/lib/queryClient";
 //import AchievementsModal from "@/components/AchievementsModal";
 //import BoostersModal from "@/components/BoostersModal";
 //import UpgradeModal from "@/components/UpgradeModal";
-//import CharacterDisplay from "@/components/CharacterDisplay";
+import CharacterDisplay from "@/components/CharacterDisplay";
 //import EnhancedChatModal from "@/components/EnhancedChatModal";
 import LoadingScreen from "@/components/LoadingScreen";
 //import TelegramAuth from "@/components/TelegramAuth";
