@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serve static files in production
   if (process.env.NODE_ENV === "production") {
-    const distPath = join(__dirname, "../client/dist");
+    const distPath = join(__dirname, "../dist/public");
     app.use(express.static(distPath));
     
     // Handle client-side routing
@@ -101,12 +101,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   } else {
     // Development: integrate with Vite
-    const { createServer: createViteServer } = await import("vite");
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'custom'
-    });
-    app.use(vite.middlewares);
+    const { setupViteDevServer } = await import("./vite.js");
+    await setupViteDevServer(app);
   }
 
   const server = createServer(app);

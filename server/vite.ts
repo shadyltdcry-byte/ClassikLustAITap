@@ -83,3 +83,16 @@ export function serveStatic(app: Express) {
     res.sendFile(path.resolve(distPath, "index.html"));
   });
 }
+import { createServer as createViteServer } from "vite";
+import type { Express } from "express";
+
+export async function setupViteDevServer(app: Express) {
+  const vite = await createViteServer({
+    server: { middlewareMode: true },
+    appType: 'custom',
+    root: process.cwd() + '/client'
+  });
+  
+  app.use(vite.middlewares);
+  return vite;
+}
