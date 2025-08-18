@@ -1,3 +1,4 @@
+
 /**
  * GameManagerCore.tsx
  *
@@ -5,8 +6,7 @@
  * Last Edited: 2025-08-18 by Assistant
  */
 
-// Removed database imports as per user request
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -15,16 +15,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 // --------------------
 export const TAP_VALUE = 1; // base LP per tap
 export const ENERGY_COST = 1; // energy cost per tap
-export const MAX_ENERGY = 100;
-export const ENERGY_RECOVERY_RATE = 1; // per interval
+export const MAX_ENERGY = 1000;
+export const ENERGY_RECOVERY_RATE = 5; // per interval
 export const ENERGY_RECOVERY_INTERVAL = 5000; // ms
-export const PASSIVE_LP_RATE = 10; // LP per hour
+export const PASSIVE_LP_RATE = 125; // LP per hour
 export const PASSIVE_CAP_HOURS = 8; // max hours before login reset
-
-// Server removed as per user request - now using plugin-based approach
+export const PLAYER_DATA_DIR = './data/players';
 
 interface GameState {
   player: {
+    id: string;
     level: number;
     lp: number;
     energy: number;
@@ -37,6 +37,7 @@ interface GameState {
 export default function GameManagerCore() {
   const [gameState, setGameState] = useState<GameState>({
     player: {
+      id: "player1",
       level: 1,
       lp: 5000,
       energy: 800,
@@ -46,15 +47,72 @@ export default function GameManagerCore() {
     }
   });
 
-  const handleTap = () => {
-    setGameState(prev => ({
-      ...prev,
-      player: {
-        ...prev.player,
-        lp: prev.player.lp + prev.player.lpPerTap,
-        energy: Math.max(0, prev.player.energy - 1)
+  const [isLoading, setIsLoading] = useState(false);
+
+  // Energy regeneration effect
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          energy: Math.min(prev.player.maxEnergy, prev.player.energy + ENERGY_RECOVERY_RATE)
+        }
+      }));
+    }, ENERGY_RECOVERY_INTERVAL);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleTap = async () => {
+    if (gameState.player.energy <= 0) return;
+    
+    setIsLoading(true);
+    try {
+      // Make API call to server
+      const response = await fetch('/api/game/tap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ playerId: gameState.player.id }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        setGameState(prev => ({
+          ...prev,
+          player: {
+            ...prev.player,
+            lp: result.newTotal || prev.player.lp + prev.player.lpPerTap,
+            energy: Math.max(0, prev.player.energy - ENERGY_COST)
+          }
+        }));
+      } else {
+        // Fallback to local update if server fails
+        setGameState(prev => ({
+          ...prev,
+          player: {
+            ...prev.player,
+            lp: prev.player.lp + prev.player.lpPerTap,
+            energy: Math.max(0, prev.player.energy - ENERGY_COST)
+          }
+        }));
       }
-    }));
+    } catch (error) {
+      console.error('Tap failed:', error);
+      // Fallback to local update
+      setGameState(prev => ({
+        ...prev,
+        player: {
+          ...prev.player,
+          lp: prev.player.lp + prev.player.lpPerTap,
+          energy: Math.max(0, prev.player.energy - ENERGY_COST)
+        }
+      }));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -65,130 +123,47 @@ export default function GameManagerCore() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div>
-              <p>Player Level: {gameState.player.level}</p>
-              <p>LP: {gameState.player.lp}</p>
-              <p>Energy: {gameState.player.energy}/{gameState.player.maxEnergy}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Player Level</p>
+                <p className="text-xl font-bold">{gameState.player.level}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">LP (Love Points)</p>
+                <p className="text-xl font-bold">{gameState.player.lp.toLocaleString()}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Energy</p>
+                <p className="text-xl font-bold">
+                  {gameState.player.energy}/{gameState.player.maxEnergy}
+                </p>
+                <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                  <div 
+                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300" 
+                    style={{ width: `${(gameState.player.energy / gameState.player.maxEnergy) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">LP per Tap</p>
+                <p className="text-xl font-bold">{gameState.player.lpPerTap}</p>
+              </div>
             </div>
-            <Button onClick={handleTap} disabled={gameState.player.energy <= 0}>
-              Tap for LP
+            <Button 
+              onClick={handleTap} 
+              disabled={gameState.player.energy <= 0 || isLoading}
+              className="w-full"
+            >
+              {isLoading ? 'Tapping...' : `Tap for ${gameState.player.lpPerTap} LP`}
             </Button>
+            {gameState.player.energy <= 0 && (
+              <p className="text-red-500 text-sm text-center">
+                No energy! Wait for regeneration.
+              </p>
+            )}
           </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-      res.status(500).json([]);
-    }
-  });
-
-  app.listen(port, () => {
-    console.log(`Server running at ${SERVER_BASE_URL}`);
-  });
-};
-
-// --------------------
-// Tap function
-// --------------------
-export async function handleTap(playerId: string): Promise<Player> {
-  const player = await getPlayer(playerId);
-  if (player.energy <= 0) {
-    throw new Error("Not enough energy!");
-  }
-  // Base tap LP
-  let tapLP = TAP_VALUE;
-  // Apply upgrades that increase tap
-  player.upgrades?.forEach((upg: Upgrade) => {
-    if (upg.type === "tap") tapLP += upg.bonus * (upg.currentLevel || 1);
-  });
-  // Apply active tap boosters
-  const tapBooster = player.activeBoosters?.tap;
-  if (tapBooster && tapBooster.expires > Date.now()) {
-    tapLP *= tapBooster.multiplier;
-  }
-  // Update player
-  player.lp += tapLP;
-  player.energy -= ENERGY_COST;
-  await updatePlayer(playerId, player);
-  return player;
-}
-
-// --------------------
-// Passive LP calculation
-// --------------------
-export async function calculatePassiveIncome(playerId: string): Promise<Player> {
-  const player = await getPlayer(playerId);
-  const now = Date.now();
-  const lastLogin = player.lastLogin || now;
-  const elapsedHours = Math.floor((now - lastLogin) / (1000 * 60 * 60));
-  // Base passive LP
-  let passiveRate = PASSIVE_LP_RATE;
-  // Upgrades that affect passive LP
-  player.upgrades?.forEach((upg: Upgrade) => {
-    if (upg.type === "passiveLP") passiveRate += upg.bonus * (upg.currentLevel || 1);
-  });
-  // VIP multiplier
-  if (player.isVIP) passiveRate *= 1.5;
-  // Active passive booster
-  const passiveBooster = player.activeBoosters?.passive;
-  if (passiveBooster && passiveBooster.expires > now) {
-    passiveRate *= passiveBooster.multiplier;
-  }
-  // Cap hours
-  const cappedHours = Math.min(elapsedHours, PASSIVE_CAP_HOURS);
-  player.lp += cappedHours * passiveRate;
-  player.lastLogin = now;
-  await updatePlayer(playerId, player);
-  return player;
-}
-
-// --------------------
-// Energy regen loop
-// --------------------
-export async function recoverEnergy(playerId: string): Promise<Player> {
-  const player = await getPlayer(playerId);
-  if (player.energy < MAX_ENERGY) {
-    let regenRate = ENERGY_RECOVERY_RATE;
-    // Energy booster
-    const energyBooster = player.activeBoosters?.energy;
-    if (energyBooster && energyBooster.expires > Date.now()) {
-      regenRate *= energyBooster.multiplier;
-    }
-    player.energy = Math.min(player.energy + regenRate, MAX_ENERGY);
-    await updatePlayer(playerId, player);
-  }
-  return player;
-}
-
-// --------------------
-// On login refresh
-// --------------------
-export async function onPlayerLogin(playerId: string): Promise<Player> {
-  let player = await calculatePassiveIncome(playerId);
-  await recoverEnergy(playerId);
-  player.lastLogin = Date.now();
-  await updatePlayer(playerId, player);
-  return player;
-}
-
-// --------------------
-// Optional: reset boosters after expiration
-// --------------------
-export async function cleanupExpiredBoosters(playerId: string): Promise<Player> {
-  const player = await getPlayer(playerId);
-  const now = Date.now();
-  if (player.activeBoosters) {
-    for (const key of Object.keys(player.activeBoosters)) {
-      const booster = player.activeBoosters[key as keyof typeof player.activeBoosters];
-      if (booster && booster.expires <= now) {
-        delete player.activeBoosters[key as keyof typeof player.activeBoosters];
-      }
-    }
-  }
-  await updatePlayer(playerId, player);
-  return player;
-}
-
-// Start the server
-startServer();

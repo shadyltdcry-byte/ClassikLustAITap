@@ -1,3 +1,4 @@
+
 /**
  * GameManagerDB.tsx  
  *
@@ -9,7 +10,29 @@
 
 import fs from 'fs';
 import path from 'path';
-import { PLAYER_DATA_DIR } from './GameManagerCore';
+
+// Constants
+export const TAP_VALUE = 1;
+export const ENERGY_COST = 1;
+export const MAX_ENERGY = 1000;
+export const ENERGY_RECOVERY_RATE = 5;
+export const PASSIVE_LP_RATE = 125;
+export const PASSIVE_CAP_HOURS = 8;
+export const PLAYER_DATA_DIR = './data/players';
+
+// Types
+interface Player {
+  id: string;
+  name: string;
+  level: number;
+  lp: number;
+  energy: number;
+  maxEnergy: number;
+  lastLogin: number;
+  upgrades?: any[];
+  activeBoosters?: any;
+  isVIP?: boolean;
+}
 
 // Ensure the player directory exists
 export const createPlayerFolder = (playerId: string): void => {
@@ -17,6 +40,34 @@ export const createPlayerFolder = (playerId: string): void => {
   if (!fs.existsSync(playerDirPath)) {
     fs.mkdirSync(playerDirPath, { recursive: true });
   }
+};
+
+// Mock player functions for now
+export const getPlayer = async (playerId: string): Promise<Player> => {
+  createPlayerFolder(playerId);
+  const playerPath = path.join(PLAYER_DATA_DIR, playerId, 'player.json');
+  
+  if (fs.existsSync(playerPath)) {
+    const fileContent = fs.readFileSync(playerPath, 'utf8');
+    return JSON.parse(fileContent);
+  }
+  
+  // Return default player
+  return {
+    id: playerId,
+    name: `Player ${playerId}`,
+    level: 1,
+    lp: 5000,
+    energy: 800,
+    maxEnergy: 1000,
+    lastLogin: Date.now()
+  };
+};
+
+export const updatePlayer = async (playerId: string, player: Player): Promise<void> => {
+  createPlayerFolder(playerId);
+  const playerPath = path.join(PLAYER_DATA_DIR, playerId, 'player.json');
+  fs.writeFileSync(playerPath, JSON.stringify(player, null, 2));
 };
 
 // Save conversation to a JSON file
@@ -45,7 +96,6 @@ export const fetchConversations = async (playerId: string): Promise<any[]> => {
   return [];
 };
 
-// Existing functions remain unchanged
 export const handleTap = async (playerId: string): Promise<Player> => {
   const player = await getPlayer(playerId);
   if (player.energy <= 0) {

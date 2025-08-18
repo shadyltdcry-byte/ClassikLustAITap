@@ -49,12 +49,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Character tap endpoint
   app.post("/api/game/tap", (req, res) => {
-    res.json({
-      success: true,
-      lpGain: Math.floor(1.5), // Base LP per tap
-      newTotal: 5000 + Math.floor(1.5),
-      energyUsed: 1
-    });
+    try {
+      const { playerId } = req.body;
+      const lpGain = Math.floor(1.5); // Base LP per tap
+      const newTotal = 5000 + lpGain; // This would normally come from database
+      
+      res.json({
+        success: true,
+        lpGain,
+        newTotal,
+        energyUsed: 1,
+        playerId
+      });
+    } catch (error) {
+      console.error('Tap endpoint error:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error'
+      });
+    }
   });
 
   // Plugin endpoints for your custom plugins
