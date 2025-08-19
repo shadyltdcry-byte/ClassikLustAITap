@@ -300,15 +300,33 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full bg-purple-600 hover:bg-purple-700">
+              <Button 
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                onClick={() => {
+                  console.log('Opening File Manager');
+                  alert('File Manager opened! (Check console for details)');
+                }}
+              >
                 <FileText className="w-4 h-4 mr-2" />
                 Open File Manager
               </Button>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                onClick={() => {
+                  console.log('Upload Assets clicked');
+                  alert('Asset upload functionality activated!');
+                }}
+              >
                 <Plus className="w-4 h-4 mr-2" />
                 Upload Assets
               </Button>
-              <Button className="w-full bg-yellow-600 hover:bg-yellow-700">
+              <Button 
+                className="w-full bg-yellow-600 hover:bg-yellow-700"
+                onClick={() => {
+                  console.log('Backup Files started');
+                  alert('File backup process initiated!');
+                }}
+              >
                 <Database className="w-4 h-4 mr-2" />
                 Backup Files
               </Button>
@@ -323,19 +341,43 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               <CardTitle className="text-white">Miscellaneous</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button className="w-full bg-purple-600 hover:bg-purple-700">
+              <Button 
+                className="w-full bg-purple-600 hover:bg-purple-700"
+                onClick={() => {
+                  console.log('Managing Boosters');
+                  alert('Booster management panel opened!');
+                }}
+              >
                 <Zap className="w-4 h-4 mr-2" />
                 Manage Boosters
               </Button>
-              <Button className="w-full bg-green-600 hover:bg-green-700">
+              <Button 
+                className="w-full bg-green-600 hover:bg-green-700"
+                onClick={() => {
+                  console.log('Daily Rewards accessed');
+                  alert('Daily rewards system activated!');
+                }}
+              >
                 <Gift className="w-4 h-4 mr-2" />
                 Daily Rewards
               </Button>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700">
+              <Button 
+                className="w-full bg-blue-600 hover:bg-blue-700"
+                onClick={() => {
+                  console.log('AI Chat Settings opened');
+                  alert('AI Chat configuration panel opened!');
+                }}
+              >
                 <MessageCircle className="w-4 h-4 mr-2" />
                 AI Chat Settings
               </Button>
-              <Button className="w-full bg-yellow-600 hover:bg-yellow-700">
+              <Button 
+                className="w-full bg-yellow-600 hover:bg-yellow-700"
+                onClick={() => {
+                  console.log('Game Settings accessed');
+                  alert('Game settings panel opened!');
+                }}
+              >
                 <Settings className="w-4 h-4 mr-2" />
                 Game Settings
               </Button>

@@ -175,7 +175,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   } : null;
 
   return (
-    <div className="w-full h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 text-white overflow-hidden flex flex-col">
+    <div className="w-full h-screen bg-gradient-to-br from-purple-900 via-pink-900 to-indigo-900 text-white flex flex-col relative">
       {/* Top Status Bar */}
       <div className="flex items-center justify-between p-4 bg-black/30 backdrop-blur-sm border-b border-purple-500/30">
         {/* Player Info */}
@@ -238,7 +238,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       </div>
 
       {/* Main Content Area - Character Display Front and Center */}
-      <div className="flex-1 flex items-center justify-center p-6">
+      <div className="flex-1 flex items-center justify-center p-6 pb-24">
         <div className="bg-black/20 rounded-3xl p-6 border border-purple-500/30 max-w-lg w-full text-center">
           <div className="mb-6">
             <h2 className="text-3xl font-bold text-purple-300 mb-2">Seraphina</h2>
@@ -253,19 +253,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             className="relative cursor-pointer group mx-auto"
             onClick={handleTap}
           >
-            {userForDisplay && (
-              <CharacterDisplay 
-                user={userForDisplay} 
-                character={guiState.selectedCharacter}
-                onTap={handleTap} 
-                isTapping={isTapping}
-              />
-            )}
-            {!userForDisplay && (
-              <div className="w-80 aspect-[3/4] bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center text-6xl font-bold hover:scale-105 transition-transform">
-                {playerData?.name?.[0] || "S"}
-              </div>
-            )}
+            <div className="w-80 aspect-[3/4] bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center text-6xl font-bold hover:scale-105 transition-transform">
+              {playerData?.name?.[0] || "S"}
+            </div>
             {isTapping && (
               <div className="absolute inset-0 bg-pink-500/20 rounded-2xl animate-pulse pointer-events-none"></div>
             )}
@@ -278,8 +268,8 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       </div>
 
 
-      {/* Bottom Navigation */}
-      <div className="flex bg-black/50 border-t border-purple-500/30">
+      {/* Bottom Navigation - Fixed Position */}
+      <div className="fixed bottom-0 left-0 right-0 flex bg-black/80 backdrop-blur-sm border-t border-purple-500/30 z-40">
         <Button 
           variant="ghost" 
           className={`flex-1 py-4 text-purple-300 hover:bg-purple-600/20 flex flex-col items-center gap-1 ${guiState.activePlugin === "upgrades" ? "bg-purple-600/30" : ""}`}
@@ -316,7 +306,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
 
       {/* Modal Overlays for Bottom Navigation */}
       {guiState.activePlugin === "upgrades" && (
-        <div className="absolute bottom-20 left-0 right-0 h-80 bg-black/90 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto">
+        <div className="fixed bottom-16 left-0 right-0 h-80 bg-black/95 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto z-30">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold text-white">Upgrades</h3>
             <Button 
@@ -328,12 +318,14 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               ✕
             </Button>
           </div>
-          <Upgrades />
+          <div className="text-white">
+            <Upgrades />
+          </div>
         </div>
       )}
 
       {guiState.activePlugin === "tasks" && (
-        <div className="absolute bottom-20 left-0 right-0 h-80 bg-black/90 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto">
+        <div className="fixed bottom-16 left-0 right-0 h-80 bg-black/95 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto z-30">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold text-white">Tasks</h3>
             <Button 
@@ -345,12 +337,14 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               ✕
             </Button>
           </div>
-          <Tasks />
+          <div className="text-white">
+            <Tasks />
+          </div>
         </div>
       )}
 
       {guiState.activePlugin === "wheel" && (
-        <div className="absolute bottom-20 left-0 right-0 h-80 bg-black/90 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto">
+        <div className="fixed bottom-16 left-0 right-0 h-80 bg-black/95 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto z-30">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold text-white">Spin the Wheel</h3>
             <Button 
@@ -362,17 +356,19 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               ✕
             </Button>
           </div>
-          <Wheel 
-            playerId={playerData?.id || "player1"} 
-            isVIP={!!playerData?.isVip} 
-            isEventActive={true}
-            onPrizeAwarded={(prize) => console.log(`Won: ${prize.name}`)}
-          />
+          <div className="text-white">
+            <Wheel 
+              playerId={playerData?.id || "player1"} 
+              isVIP={!!playerData?.isVip} 
+              isEventActive={true}
+              onPrizeAwarded={(prize) => console.log(`Won: ${prize.name}`)}
+            />
+          </div>
         </div>
       )}
 
       {guiState.activePlugin === "chat" && (
-        <div className="absolute bottom-20 left-0 right-0 h-80 bg-black/90 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto">
+        <div className="fixed bottom-16 left-0 right-0 h-80 bg-black/95 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto z-30">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl font-bold text-white">AI Chat</h3>
             <Button 
@@ -384,25 +380,64 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               ✕
             </Button>
           </div>
-          <AIChat userId={playerData?.id || "player1"} />
+          <div className="text-white">
+            <AIChat userId={playerData?.id || "player1"} />
+          </div>
         </div>
       )}
 
       {/* Floating Overlays */}
       {guiState.showAdminMenu && (
-        <AdminMenu />
+        <AdminMenu onClose={() => updateGUIState({ showAdminMenu: false })} />
       )}
       {guiState.showCharacterCreation && (
-        <CharacterCreation />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-xl max-w-md w-full mx-4">
+            <CharacterCreation />
+            <Button 
+              onClick={() => updateGUIState({ showCharacterCreation: false })}
+              className="mt-4 w-full"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
       )}
       {guiState.showCharacterEditor && guiState.selectedCharacter && (
-        <CharacterEditor character={guiState.selectedCharacter} />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-xl max-w-md w-full mx-4">
+            <CharacterEditor character={guiState.selectedCharacter} />
+            <Button 
+              onClick={() => updateGUIState({ showCharacterEditor: false })}
+              className="mt-4 w-full"
+            >
+              Close
+            </Button>
+          </div>
+        </div>
       )}
       {guiState.showImageManager && (
-        <ImageManager onClose={() => updateGUIState({ showImageManager: false })} />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-xl max-w-2xl w-full mx-4 h-3/4 overflow-auto">
+            <ImageManager onClose={() => updateGUIState({ showImageManager: false })} />
+          </div>
+        </div>
       )}
       {guiState.showFileManager && (
-        <FileManagerCore />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-gray-900 p-6 rounded-xl max-w-4xl w-full mx-4 h-3/4 overflow-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-white text-xl font-bold">File Manager</h2>
+              <Button 
+                onClick={() => updateGUIState({ showFileManager: false })}
+                variant="outline"
+              >
+                Close
+              </Button>
+            </div>
+            <FileManagerCore />
+          </div>
+        </div>
       )}
       {guiState.showDebugger && (
         <MistralDebugger 
