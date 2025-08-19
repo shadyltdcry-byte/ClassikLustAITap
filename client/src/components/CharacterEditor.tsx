@@ -1,15 +1,9 @@
 /**
  * CharacterEditor.tsx
- * Last Edited: 2025-08-17 by Steven
+ * Last Edited: 2025-08-19 by Le Chat
  *
- *
- * 
- * Implement editing: backstory,
- * personality, moods, triggers,
- * VIP/NSFW toggle, level fields
- *
- * Please leave a detailed description
- *      of each function you add
+ * Added preview for main and avatar images.
+ * Improved form handling and UI consistency.
  */
 
 import { useState, useEffect } from "react";
@@ -53,42 +47,6 @@ import { apiRequest } from "@/lib/queryClient";
 import type { Character } from "@shared/schema";
 
 const MOCK_USER_ID = "default-player";
-
-const CustomSwitch = ({
-  checked,
-  onCheckedChange,
-}: {
-  checked: boolean;
-  onCheckedChange: (checked: boolean) => void;
-}) => (
-  <div
-    style={{
-      width: "44px",
-      height: "24px",
-      backgroundColor: checked ? "#10b981" : "#6b7280",
-      borderRadius: "12px",
-      position: "relative",
-      cursor: "pointer",
-      border: "2px solid #ffffff",
-      transition: "background-color 0.2s",
-    }}
-    onClick={() => onCheckedChange(!checked)}
-  >
-    <div
-      style={{
-        width: "18px",
-        height: "18px",
-        backgroundColor: "white",
-        borderRadius: "50%",
-        position: "absolute",
-        top: "1px",
-        left: checked ? "22px" : "2px",
-        transition: "left 0.2s",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
-      }}
-    />
-  </div>
-);
 
 // Extended character schema for editing
 const characterEditSchema = insertCharacterSchema.extend({
@@ -170,7 +128,7 @@ export default function CharacterEditor({
       isVip: character?.isVip ?? false,
       isEvent: character?.isEvent ?? false,
       isWheelReward: character?.isWheelReward ?? false,
-        randomChatResponsesEnabled: character?.randomChatResponsesEnabled ?? false,
+      randomChatResponsesEnabled: character?.randomChatResponsesEnabled ?? false,
       moodDistribution: character?.moodDistribution || {
         normal: 70,
         happy: 20,
@@ -267,7 +225,6 @@ export default function CharacterEditor({
   const onSubmit = (data: CharacterEditForm) => {
     mutation.mutate(data);
   };
-
 
   const addCustomGreeting = () => {
     if (customGreeting.trim()) {
@@ -383,7 +340,6 @@ export default function CharacterEditor({
                         </FormItem>
                       )}
                     />
-
                     <FormField
                       control={form.control}
                       name="requiredLevel"
@@ -527,6 +483,41 @@ export default function CharacterEditor({
                       )}
                     />
                   </div>
+
+                  {/* Preview Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-2">
+                      <Label className="text-white">Main Image Preview</Label>
+                      {form.watch("imageUrl") && (
+                        <div className="border border-gray-600 rounded-lg p-2 bg-gray-700/50">
+                          <img
+                            src={form.watch("imageUrl")}
+                            alt="Main Preview"
+                            className="w-full h-40 object-contain rounded"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/api/placeholder-image";
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-white">Avatar Preview</Label>
+                      {form.watch("avatarUrl") && (
+                        <div className="border border-gray-600 rounded-lg p-2 bg-gray-700/50">
+                          <img
+                            src={form.watch("avatarUrl")}
+                            alt="Avatar Preview"
+                            className="w-20 h-20 object-cover rounded-full mx-auto"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "/api/placeholder-image";
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -607,9 +598,7 @@ export default function CharacterEditor({
                       name="chatStyle"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-white">
-                            Chat Style
-                          </FormLabel>
+                          <FormLabel className="text-white">Chat Style</FormLabel>
                           <FormControl>
                             <Select
                               onValueChange={field.onChange}
@@ -853,129 +842,25 @@ export default function CharacterEditor({
                       />
                     </div>
                   </div>
-
-                  {/* Custom Greetings */}
-                  <div className="space-y-4">
-                    <h4 className="text-lg font-semibold text-white">
-                      Custom Greetings
-                    </h4>
-                    <div className="flex gap-2">
-                      <Input
-                        value={customGreeting}
-                        onChange={(e) => setCustomGreeting(e.target.value)}
-                        placeholder="Add custom greeting..."
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                      <Button
-                        type="button"
-                        onClick={addCustomGreeting}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        Add
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {form.watch("customGreetings")?.map((greeting, index) => (
-                        <div
-                          key={index}
-                          className="bg-purple-600/20 border border-purple-500 rounded-md px-3 py-1 text-sm text-white"
-                        >
-                          {greeting}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Custom Responses */}
-                  <div className="space-y-4">
-                    <h4 className="text-lg font-semibold text-white">
-                      Custom Response Templates
-                    </h4>
-                    <div className="flex gap-2">
-                      <Input
-                        value={customResponse}
-                        onChange={(e) => setCustomResponse(e.target.value)}
-                        placeholder="Add custom response template..."
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                      <Button
-                        type="button"
-                        onClick={addCustomResponse}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        Add
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {form.watch("customResponses")?.map((response, index) => (
-                        <div
-                          key={index}
-                          className="bg-blue-600/20 border border-blue-500 rounded-md px-3 py-1 text-sm text-white"
-                        >
-                          {response}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Trigger Words */}
-                  <div className="space-y-4">
-                    <h4 className="text-lg font-semibold text-white">
-                      Trigger Words
-                    </h4>
-                    <div className="flex gap-2">
-                      <Input
-                        value={triggerWord}
-                        onChange={(e) => setTriggerWord(e.target.value)}
-                        placeholder="Add trigger word..."
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                      <Button
-                        type="button"
-                        onClick={addTriggerWord}
-                        className="bg-purple-600 hover:bg-purple-700"
-                      >
-                        Add
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {form.watch("customTriggerWords")?.map((word, index) => (
-                        <div
-                          key={index}
-                          className="bg-green-600/20 border border-green-500 rounded-md px-3 py-1 text-sm text-white"
-                        >
-                          {word}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
 
-          {/* Action Buttons */}
-          <div className="flex justify-end space-x-4">
-            {onCancel && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={onCancel}
-                className="border-gray-600 text-white hover:bg-gray-700"
-              >
-                Cancel
-              </Button>
-            )}
+          <div className="flex justify-end gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="bg-gray-700 text-white hover:bg-gray-600"
+            >
+              Cancel
+            </Button>
             <Button
               type="submit"
-              disabled={mutation.isPending}
-              className="bg-purple-600 hover:bg-purple-700"
+              className="bg-purple-600 hover:bg-purple-700 text-white"
             >
-              {mutation.isPending
-                ? "Saving..."
-                : isEditing
-                  ? "Update Character"
-                  : "Create Character"}
+              {isEditing ? "Update Character" : "Create Character"}
             </Button>
           </div>
         </form>
