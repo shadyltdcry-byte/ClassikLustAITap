@@ -327,7 +327,7 @@ export default function CharacterCreation() {
           Design your perfect AI companion with detailed personality traits
         </p>
       </div>
-  
+
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -613,7 +613,7 @@ export default function CharacterCreation() {
                           </Select>
                           <FormMessage />
                         </FormItem>
-                  
+
                       )}
                     />
                   </div>
@@ -846,6 +846,9 @@ export default function CharacterCreation() {
               )}
             />
           </div>
+        </CardContent>
+      </Card>
+    </TabsContent>
 
             {/* Advanced Tab */}
             <TabsContent value="advanced" className="space-y-4">
@@ -952,7 +955,7 @@ export default function CharacterCreation() {
                         onChange={(e) => setCustomGreeting(e.target.value)}
                         placeholder="Add a custom greeting"
                         className="bg-gray-700 border-gray-600 text-white"
-                      >
+                      />
                       <Button
                         type="button"
                         onClick={addCustomGreeting}
