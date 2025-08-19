@@ -35,7 +35,7 @@ export default defineConfig({
       deny: ["**/.*"],
     },
     allowedHosts: [
-      '3476f152-ea4a-4969-8a8d-84eac0ecd8e1-00-2kqsr5kdtdq2h.kirk.replit.dev'
+      '77c3d814-32e1-4bc4-bcee-44632686cc20-00-3y0tgfzcxppo.worf.replit.dev'
     ]
   }
 });
