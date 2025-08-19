@@ -1,4 +1,3 @@
-
 /**
  * CharacterCreation.tsx
  * Last Edited: 2025-08-19 by Le Chat
@@ -96,7 +95,13 @@ interface MediaFile {
   type: 'image' | 'video' | 'gif';
 }
 
-export default function CharacterCreation() {
+// Mock onSuccess and onCancel for the example
+interface CharacterCreationProps {
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}
+
+export default function CharacterCreation({ onSuccess, onCancel }: CharacterCreationProps) {
   const [activeTab, setActiveTab] = useState("basic");
   const [customGreeting, setCustomGreeting] = useState("");
   const [customResponse, setCustomResponse] = useState("");
@@ -190,6 +195,7 @@ export default function CharacterCreation() {
       toast.success("Character created successfully!");
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
+      if (onSuccess) onSuccess();
       form.reset();
       // Reset local state
       setCustomGreeting("");
@@ -1085,6 +1091,7 @@ export default function CharacterCreation() {
               type="button"
               variant="outline"
               className="bg-gray-700 text-white hover:bg-gray-600"
+              onClick={onCancel}
             >
               Cancel
             </Button>
