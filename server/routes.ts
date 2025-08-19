@@ -115,6 +115,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Player endpoint
+  app.get("/api/player/:playerId", (req, res) => {
+    const { playerId } = req.params;
+    res.json({
+      id: playerId,
+      name: "Player1",
+      level: 1,
+      lp: 5000,
+      lpPerHour: 125,
+      lpPerTap: 1.5,
+      energy: 800,
+      maxEnergy: 1000,
+      coins: 250,
+      xp: 75,
+      xpToNext: 100,
+      avatar: null,
+      activeBoosters: [],
+      isVip: false
+    });
+  });
+
+  // Characters list endpoint
+  app.get("/api/characters", (req, res) => {
+    res.json([
+      {
+        id: "seraphina",
+        name: "Seraphina",
+        personality: "playful",
+        mood: "flirty",
+        level: 1,
+        isNSFW: false,
+        isVIP: false,
+        bio: "A mysterious character",
+        imageUrl: "/assets/character-placeholder.png",
+        avatarUrl: "/assets/avatar-placeholder.png"
+      }
+    ]);
+  });
+
+  // Media endpoint
+  app.get("/api/media/character/:characterId", (req, res) => {
+    const { characterId } = req.params;
+    res.json({
+      characterId,
+      images: [],
+      videos: [],
+      audio: []
+    });
+  });
+
   // Player stats endpoint
   app.get("/api/stats/:playerId", (req, res) => {
     const { playerId } = req.params;
@@ -164,6 +214,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       { id: "first_tap", name: "First Tap", description: "Tap your first character", unlocked: true },
       { id: "level_up", name: "Level Up", description: "Reach level 2", unlocked: false }
     ]);
+  });
+
+  // Missing API endpoints
+  app.get("/api/upgrades", (req, res) => {
+    res.json([
+      { id: "intellect", name: "Increase Intellect", category: "lpPerHour", level: 1, cost: 1500, effect: 150 },
+      { id: "dexterity", name: "Dexterity", category: "lpPerTap", level: 1, cost: 2500, effect: 1 },
+      { id: "booksmarts", name: "Book Smarts", category: "energy", level: 1, cost: 1500, effect: 100 }
+    ]);
+  });
+
+  app.get("/api/gamestats", (req, res) => {
+    res.json({
+      totalPlayers: 1,
+      totalTaps: 0,
+      totalLP: 5000,
+      averageLevel: 1
+    });
   });
 
   // Serve static files in production

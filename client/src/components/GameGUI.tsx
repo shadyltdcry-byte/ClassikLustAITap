@@ -1,6 +1,8 @@
 /**
- * GameGUI.tsx - Game Presentation Layer
+ * GameGUI.tsx - Complete Game Presentation Layer
  * Last Edited: 2025-08-19 by Assistant
+ * 
+ * This handles ALL GUI rendering and layout for the game
  */
 
 import React, { useState } from "react";
@@ -8,66 +10,85 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Zap, Star, Settings } from "lucide-react";
 
 import CharacterDisplay from "@/components/CharacterDisplay";
 import NewsTicker from "@/components/NewsTicker";
+import CharacterCreation from "@/components/CharacterCreation";
+import CharacterEditor from "@/components/CharacterEditor";
+import CharacterGallery from "@/components/CharacterGallery";
 
-import Upgrades from "@/plugins/gameplay/Upgrades";
-import Tasks from "@/plugins/gameplay/Task";
-import Achievements from "@/plugins/gameplay/Achievements";
-import LevelUp from "@/plugins/gameplay/LevelUp";
+// Admin Plugins
+import AdminMenu from "@/plugins/admin/AdminMenu";
+
+// AI Core Plugins
 import AIChat from "@/plugins/aicore/AIChat";
-import Wheel from "@/plugins/gameplay/Wheel";
-import Boosters from "@/plugins/gameplay/Boosters";
+import MistralDebugger from "@/plugins/aicore/MistralDebugger";
 
-interface GameGUIProps {
-  gameState: {
-    activePlugin: string;
-    showAdminMenu: boolean;
-    [key: string]: any;
-  };
-  onStateChange: (updates: any) => void;
-  playerData?: {
-    id: string;
-    name: string;
-    level: number;
-    lp: number;
-    lpPerHour: number;
-    energy: number;
-    maxEnergy: number;
-    coins: number;
-    xp: number;
-    xpToNext: number;
-    avatar?: string;
-    activeBoosters?: { name: string }[];
-    isVIP?: boolean;
-    [key: string]: any;
-  };
-  onPlayerAction?: (action: string, data?: any) => void;
-  onTap?: () => void;
-  onAdminToggle?: () => void;
+// Gameplay Plugins
+import Achievements from "@/plugins/gameplay/Achievements";
+import Boosters from "@/plugins/gameplay/Boosters";
+import LevelUp from "@/plugins/gameplay/LevelUp";
+import Tasks from "@/plugins/gameplay/Task";
+import Upgrades from "@/plugins/gameplay/Upgrades";
+import Wheel from "@/plugins/gameplay/Wheel";
+
+// Manager Plugins
+import FileManagerCore from "@/plugins/manager/FileManagerCore";
+import ImageManager from "@/plugins/manager/ImageManager";
+
+interface PlayerData {
+  id: string;
+  name: string;
+  level: number;
+  lp: number;
+  lpPerHour: number;
+  lpPerTap: number;
+  energy: number;
+  maxEnergy: number;
+  coins: number;
+  xp: number;
+  xpToNext: number;
+  avatar?: string;
+  activeBoosters?: Array<{ name: string }>;
+  isVip?: boolean;
+  [key: string]: any;
 }
 
-export default function GameGUI({
-  gameState,
-  onStateChange,
-  playerData,
-  onPlayerAction,
-  onTap,
-  onAdminToggle,
-}: GameGUIProps) {
+interface GameGUIProps {
+  playerData?: PlayerData;
+  onPluginAction: (action: string, data?: any) => void;
+}
+
+interface GUIState {
+  activePlugin: string;
+  showAdminMenu: boolean;
+  showDebugger: boolean;
+  showImageManager: boolean;
+  showFileManager: boolean;
+  showCharacterCreation: boolean;
+  showCharacterEditor: boolean;
+  selectedCharacter: any | null;
+}
+
+export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
+  const [guiState, setGUIState] = useState<GUIState>({
+    activePlugin: "upgrades",
+    showAdminMenu: false,
+    showDebugger: false,
+    showImageManager: false,
+    showFileManager: false,
+    showCharacterCreation: false,
+    showCharacterEditor: false,
+    selectedCharacter: null,
+  });
+
   const [notifications, setNotifications] = useState<string[]>([]);
-  const [activeBottomTab, setActiveBottomTab] = useState(gameState.activePlugin || "upgrades");
+  const [isTapping, setIsTapping] = useState(false);
 
-  const handleTabChange = (tabId: string) => {
-    setActiveBottomTab(tabId);
-    onStateChange?.({ activePlugin: tabId });
-  };
-
-  const handlePlayerAction = (action: string, data?: any) => {
-    onPlayerAction?.(action, data);
+  const updateGUIState = (updates: Partial<GUIState>) => {
+    setGUIState(prev => ({ ...prev, ...updates }));
   };
 
   const addNotification = (message: string) => {
@@ -77,8 +98,44 @@ export default function GameGUI({
     }, 3000);
   };
 
+  const handleTap = async () => {
+    if (!playerData || playerData.energy <= 0 || isTapping) return;
+    
+    setIsTapping(true);
+    onPluginAction('tap');
+    addNotification(`+${playerData.lpPerTap} LP`);
+    
+    setTimeout(() => setIsTapping(false), 200);
+  };
+
+  const handlePlayerAction = (action: string, data?: any) => {
+    onPluginAction(action, data);
+  };
+
+  const handleTabChange = (tabId: string) => {
+    updateGUIState({ activePlugin: tabId });
+  };
+
   const energyPercentage = playerData ? (playerData.energy / playerData.maxEnergy) * 100 : 0;
   const xpPercentage = playerData ? (playerData.xp / playerData.xpToNext) * 100 : 0;
+
+  // Convert PlayerData to User format for CharacterDisplay
+  const userForDisplay = playerData ? {
+    id: playerData.id,
+    username: playerData.name,
+    password: "", // Not used in display
+    level: playerData.level,
+    lp: playerData.lp,
+    energy: playerData.energy,
+    maxEnergy: playerData.maxEnergy,
+    charisma: 0, // Default for display
+    lpPerHour: playerData.lpPerHour,
+    lpPerTap: playerData.lpPerTap,
+    vipStatus: playerData.isVip || false,
+    nsfwConsent: false, // Default for display
+    lastTick: new Date(),
+    createdAt: new Date(),
+  } : null;
 
   return (
     <div className="game-gui-container">
@@ -152,7 +209,12 @@ export default function GameGUI({
               <div className="text-xs opacity-75">Level {playerData?.level || 1}</div>
               <Progress value={xpPercentage} className="h-1 mt-1 bg-gray-700" />
             </div>
-            <Button variant="ghost" size="sm" onClick={onAdminToggle} className="p-2 text-purple-300 hover:text-white hover:bg-purple-600/20">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => updateGUIState({ showAdminMenu: !guiState.showAdminMenu })} 
+              className="p-2 text-purple-300 hover:text-white hover:bg-purple-600/20"
+            >
               <Settings className="w-4 h-4" />
             </Button>
           </CardContent>
@@ -160,7 +222,7 @@ export default function GameGUI({
       </div>
 
       {/* TOP MIDDLE */}
-      <div className="top-middle gui-zone tap-area" onClick={onTap}>
+      <div className="top-middle gui-zone tap-area" onClick={handleTap}>
         <Card className="h-full bg-transparent border-0">
           <CardContent className="p-3 h-full flex flex-col justify-center items-center text-center text-white">
             <div className="text-3xl font-bold text-purple-300">{(playerData?.lp || 0).toLocaleString()}</div>
@@ -204,32 +266,69 @@ export default function GameGUI({
       </div>
 
       {/* MIDDLE */}
-      <div className="middle gui-zone tap-area" onClick={onTap}>
+      <div className="middle gui-zone tap-area" onClick={handleTap}>
         <div className="h-full relative">
-          <CharacterDisplay user={playerData} onTap={onTap} />
-          {notifications.map((msg, idx) => <div key={idx} className="notification-popup">{msg}</div>)}
+          {userForDisplay && (
+            <CharacterDisplay 
+              user={userForDisplay} 
+              character={guiState.selectedCharacter}
+              onTap={handleTap} 
+              isTapping={isTapping}
+            />
+          )}
+          {notifications.map((msg, idx) => 
+            <div key={idx} className="notification-popup">{msg}</div>
+          )}
         </div>
       </div>
 
       {/* RIGHT */}
       <div className="right gui-zone h-full p-3 space-y-3 overflow-y-auto">
-        <Wheel playerId={playerData?.id || "player1"} isVIP={!!playerData?.isVIP} isEventActive={true} />
+        <Wheel 
+          playerId={playerData?.id || "player1"} 
+          isVIP={!!playerData?.isVip} 
+          isEventActive={true}
+          onPrizeAwarded={(prize) => addNotification(`Won: ${prize.name}`)}
+        />
         <Card className="bg-blue-900/30 border-blue-500/30">
-          <CardHeader className="p-2"><CardTitle className="text-sm text-white">Active Boosters</CardTitle></CardHeader>
-          <CardContent className="p-2"><Boosters onBoosterActivate={b => addNotification(`${b} activated!`)} /></CardContent>
-        </Card>
-        <Card className="bg-green-900/30 border-green-500/30">
-          <CardHeader className="p-2"><CardTitle className="text-sm text-white">Quick Actions</CardTitle></CardHeader>
-          <CardContent className="p-2 space-y-2">
-            <Button size="sm" className="w-full bg-purple-600 hover:bg-purple-700" onClick={() => handlePlayerAction('collectOffline')}>Collect Offline LP</Button>
-            <Button size="sm" className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => handlePlayerAction('openCharacterCreation')}>Create Character</Button>
+          <CardHeader className="p-2">
+            <CardTitle className="text-sm text-white">Active Boosters</CardTitle>
+          </CardHeader>
+          <CardContent className="p-2">
+            <Boosters 
+              isOpen={true}
+              onClose={() => {}}
+              user={userForDisplay!}
+            />
           </CardContent>
         </Card>
+        <Card className="bg-green-900/30 border-green-500/30">
+          <CardHeader className="p-2">
+            <CardTitle className="text-sm text-white">Quick Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="p-2 space-y-2">
+            <Button 
+              size="sm" 
+              className="w-full bg-purple-600 hover:bg-purple-700" 
+              onClick={() => handlePlayerAction('collectOffline')}
+            >
+              Collect Offline LP
+            </Button>
+            <Button 
+              size="sm" 
+              className="w-full bg-blue-600 hover:bg-blue-700" 
+              onClick={() => updateGUIState({ showCharacterCreation: true })}
+            >
+              Create Character
+            </Button>
+          </CardContent>
+        </Card>
+        <CharacterGallery />
       </div>
 
       {/* BOTTOM */}
       <div className="bottom gui-zone">
-        <Tabs value={activeBottomTab} onValueChange={handleTabChange} className="h-full">
+        <Tabs value={guiState.activePlugin} onValueChange={handleTabChange} className="h-full">
           <TabsList className="w-full bg-black/50 rounded-t-lg border-b border-purple-500/30">
             <TabsTrigger value="upgrades" className="text-white data-[state=active]:bg-purple-600">Upgrades</TabsTrigger>
             <TabsTrigger value="levelup" className="text-white data-[state=active]:bg-purple-600">Level Up</TabsTrigger>
@@ -239,22 +338,45 @@ export default function GameGUI({
           </TabsList>
 
           <TabsContent value="upgrades" className="h-full p-4 overflow-y-auto">
-            <Upgrades onUpgrade={(u,c) => { handlePlayerAction('purchaseUpgrade',{upgrade:u,cost:c}); addNotification(`Upgraded ${u}!`); }} />
+            <Upgrades />
           </TabsContent>
           <TabsContent value="levelup" className="h-full p-4 overflow-y-auto">
-            <LevelUp onLevelUp={() => { handlePlayerAction('levelUp'); addNotification('Level Up!'); }} />
+            <LevelUp />
           </TabsContent>
           <TabsContent value="tasks" className="h-full p-4 overflow-y-auto">
-            <Tasks onTaskComplete={t => { handlePlayerAction('completeTask', t); addNotification(`Task completed: ${t.name}`); }} />
+            <Tasks />
           </TabsContent>
           <TabsContent value="achievements" className="h-full p-4 overflow-y-auto">
-            <Achievements onAchievementUnlock={a => addNotification(`Achievement unlocked: ${a.name}!`)} />
+            <Achievements />
           </TabsContent>
           <TabsContent value="chat" className="h-full p-4 overflow-y-auto">
-            <AIChat onMessage={m => handlePlayerAction('sendChatMessage', m)} />
+            <AIChat userId={playerData?.id || "player1"} />
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Floating Overlays */}
+      {guiState.showAdminMenu && (
+        <AdminMenu />
+      )}
+      {guiState.showCharacterCreation && (
+        <CharacterCreation />
+      )}
+      {guiState.showCharacterEditor && guiState.selectedCharacter && (
+        <CharacterEditor character={guiState.selectedCharacter} />
+      )}
+      {guiState.showImageManager && (
+        <ImageManager onClose={() => updateGUIState({ showImageManager: false })} />
+      )}
+      {guiState.showFileManager && (
+        <FileManagerCore />
+      )}
+      {guiState.showDebugger && (
+        <MistralDebugger 
+          isOpen={true}
+          onClose={() => updateGUIState({ showDebugger: false })} 
+        />
+      )}
     </div>
   );
 }

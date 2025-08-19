@@ -206,8 +206,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const newUpgrades = {
         ...state.playerData.upgrades,
         [upgradeType]: {
-          ...state.playerData.upgrades[upgradeType],
-          [upgradeName]: (state.playerData.upgrades[upgradeType][upgradeName] || 0) + 1,
+          ...state.playerData.upgrades[upgradeType as keyof typeof state.playerData.upgrades],
+          [upgradeName]: ((state.playerData.upgrades[upgradeType as keyof typeof state.playerData.upgrades] as Record<string, number>)[upgradeName] || 0) + 1,
         },
       };
 

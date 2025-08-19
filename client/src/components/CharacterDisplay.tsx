@@ -17,9 +17,15 @@ interface CharacterDisplayProps {
 const defaultCharacter: Character = {
   id: "default",
   name: "Player",
-  bio: "No character selected",
-  imageUrl: "",
-  avatarUrl: "",
+  personality: "neutral",
+  backstory: "No character selected",
+  mood: "neutral",
+  level: 1,
+  isNsfw: false,
+  isVip: false,
+  levelRequirement: 1,
+  customTriggers: [],
+  createdAt: new Date(),
 };
 
 export default function CharacterDisplay({
@@ -47,23 +53,19 @@ export default function CharacterDisplay({
         {/* Character Info */}
         <div className="text-center mb-4">
           <h2 className="text-2xl font-bold gradient-text">{character?.name || "Unnamed"}</h2>
-          <p className="text-gray-400 text-sm">{character?.bio || "Tap to interact!"}</p>
+          <p className="text-gray-400 text-sm">{character?.backstory || "Tap to interact!"}</p>
         </div>
 
         {/* Character Image Container */}
         <div className="relative mx-auto max-w-xs mb-6">
           <div className="relative">
             <img
-              src={character?.imageUrl || character?.avatarUrl || '/uploads/placeholder.jpg'}
+              src={'/uploads/placeholder.jpg'}
               alt={character?.name || "Player"}
               onClick={handleTap}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                if (target.src.includes('/uploads/')) {
-                  target.src = character?.avatarUrl || 'https://placehold.co/256x320/666666/FFFFFF?text=' + encodeURIComponent(character?.name || "Player");
-                } else if (!target.src.includes('placehold.co')) {
-                  target.src = 'https://placehold.co/256x320/666666/FFFFFF?text=' + encodeURIComponent(character?.name || "Player");
-                }
+                target.src = 'https://placehold.co/256x320/666666/FFFFFF?text=' + encodeURIComponent(character?.name || "Player");
               }}
               className={`w-full h-auto aspect-[3/4] object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-transform duration-200 ${
                 tapEffect ? 'tap-effect' : ''
