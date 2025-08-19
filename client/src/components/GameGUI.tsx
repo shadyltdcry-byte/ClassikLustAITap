@@ -22,8 +22,7 @@ import CharacterCreation from "@/components/CharacterCreation";
 import CharacterEditor from "@/components/CharacterEditor";
 import CharacterGallery from "@/components/CharacterGallery";
 
-// Admin Plugins
-import AdminMenu from "@/plugins/admin/AdminMenu";
+// Admin Plugins are handled separately in the game router
 
 // AI Core Plugins
 import AIChat from "@/plugins/aicore/AIChat";
@@ -68,7 +67,6 @@ interface GameGUIProps {
 
 interface GUIState {
   activePlugin: string;
-  showAdminMenu: boolean;
   showDebugger: boolean;
   showImageManager: boolean;
   showFileManager: boolean;
@@ -83,7 +81,6 @@ interface GUIState {
 export default function GameGUI({ playerData, onPluginAction, onPluginChange }: GameGUIProps) {
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
-    showAdminMenu: false,
     showDebugger: false,
     showImageManager: false,
     showFileManager: false,
@@ -255,7 +252,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => updateGUIState({ showAdminMenu: true })}
+              onClick={() => onPluginChange?.('adminMenu')}
               className="text-gray-400 hover:text-white"
             >
               <Settings className="w-6 h-6" />
@@ -264,9 +261,6 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
         </div>
 
         {/* Floating Overlays */}
-        {guiState.showAdminMenu && (
-          <AdminMenu onClose={() => updateGUIState({ showAdminMenu: false })} />
-        )}
         {guiState.showCharacterCreation && (
           <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
             <div className="bg-gray-900 p-6 rounded-xl w-full max-w-3xl max-h-[90vh] overflow-auto">
