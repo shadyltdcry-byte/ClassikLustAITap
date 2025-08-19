@@ -846,9 +846,9 @@ export default function CharacterCreation() {
               )}
             />
           </div>
-        </CardContent>
-      </Card>
-    </TabsContent>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             {/* Advanced Tab */}
             <TabsContent value="advanced" className="space-y-4">
