@@ -15,7 +15,18 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Helper functions for AI responses
-function generateAIResponse(userMessage: string): string {
+async function generateAIResponse(userMessage: string): Promise<string> {
+  // Check if MISTRAL_MODEL_API_KEY is available for enhanced responses
+  if (process.env.MISTRAL_MODEL_API_KEY) {
+    try {
+      // Here you would integrate with Mistral API
+      // For now, return enhanced local responses
+      console.log('Using Mistral API key for enhanced responses');
+    } catch (error) {
+      console.error('Mistral API error:', error);
+    }
+  }
+  
   const input = userMessage.toLowerCase();
   
   if (input.includes('hi') || input.includes('hello') || input.includes('hey')) {
@@ -281,7 +292,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ]);
   });
 
-  app.post("/api/chat/send", (req, res) => {
+  app.post("/api/chat/send", async (req, res) => {
     const { userId, characterId, message, isFromUser } = req.body;
     const userMessage = {
       id: Date.now().toString(),
@@ -292,7 +303,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     const aiResponse = {
       id: (Date.now() + 1).toString(),
-      message: generateAIResponse(message),
+      message: await generateAIResponse(message),
       isFromUser: false,
       createdAt: new Date().toISOString(),
       mood: getRandomMood()

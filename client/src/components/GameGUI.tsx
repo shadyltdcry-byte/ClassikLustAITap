@@ -79,7 +79,7 @@ interface GUIState {
 
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   const [guiState, setGUIState] = useState<GUIState>({
-    activePlugin: "chat",
+    activePlugin: "main",
     showAdminMenu: false,
     showDebugger: false,
     showImageManager: false,
@@ -237,192 +237,156 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         EVENT NEWS
       </div>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex">
-        {/* Left Side - Character Display */}
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
-          <div className="bg-black/20 rounded-3xl p-6 border border-purple-500/30 max-w-md w-full">
-            <div className="text-center mb-4">
-              <h2 className="text-2xl font-bold text-purple-300">Seraphina</h2>
-              <p className="text-gray-400 text-sm">A mysterious and charming companion</p>
-              <div className="flex justify-center gap-2 mt-2">
-                <Badge className="bg-purple-600">playful</Badge>
-                <Badge className="bg-blue-600">Level 1</Badge>
-              </div>
+      {/* Main Content Area - Character Display Front and Center */}
+      <div className="flex-1 flex items-center justify-center p-6">
+        <div className="bg-black/20 rounded-3xl p-6 border border-purple-500/30 max-w-lg w-full text-center">
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-purple-300 mb-2">Seraphina</h2>
+            <p className="text-gray-400">A mysterious and charming companion</p>
+            <div className="flex justify-center gap-2 mt-3">
+              <Badge className="bg-purple-600">playful</Badge>
+              <Badge className="bg-blue-600">Level 1</Badge>
             </div>
-            
-            <div 
-              className="relative cursor-pointer group"
-              onClick={handleTap}
-            >
-              <div className="w-full aspect-[3/4] bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center text-6xl font-bold hover:scale-105 transition-transform">
+          </div>
+          
+          <div 
+            className="relative cursor-pointer group mx-auto"
+            onClick={handleTap}
+          >
+            {userForDisplay && (
+              <CharacterDisplay 
+                user={userForDisplay} 
+                character={guiState.selectedCharacter}
+                onTap={handleTap} 
+                isTapping={isTapping}
+              />
+            )}
+            {!userForDisplay && (
+              <div className="w-80 aspect-[3/4] bg-gradient-to-br from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center text-6xl font-bold hover:scale-105 transition-transform">
                 {playerData?.name?.[0] || "S"}
               </div>
-              {isTapping && (
-                <div className="absolute inset-0 bg-pink-500/20 rounded-2xl animate-pulse"></div>
-              )}
-            </div>
+            )}
+            {isTapping && (
+              <div className="absolute inset-0 bg-pink-500/20 rounded-2xl animate-pulse pointer-events-none"></div>
+            )}
           </div>
-        </div>
-
-        {/* Right Side - Controls */}
-        <div className="w-80 p-4 space-y-4">
-          {/* Wheel */}
-          <Card className="bg-black/20 border-purple-500/30">
-            <CardContent className="p-4">
-              <h3 className="text-lg font-bold text-center text-purple-300 mb-3">Spin the Wheel</h3>
-              <p className="text-sm text-gray-400 text-center mb-3">VIP/Event only! Spin for rewards!</p>
-              <Button className="w-full bg-blue-600 hover:bg-blue-700 mb-3">
-                Spin
-              </Button>
-              <div className="text-xs text-gray-400">
-                <div>Prizes:</div>
-                <div>100 LP x100 (Common)</div>
-                <div>Booster x1 (Rare)</div>
-                <div>500 LP x500 (Uncommon)</div>
-                <div>1000 LP x1000 (Epic)</div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Action Buttons */}
-          <div className="space-y-2">
-            <Button 
-              className="w-full bg-yellow-600 hover:bg-yellow-700 rounded-full"
-              onClick={() => updateGUIState({ showBoosterMenu: true })}
-            >
-              <Zap className="w-4 h-4 mr-2" />
-              Booster
-            </Button>
-            <Button 
-              className="w-full bg-purple-600 hover:bg-purple-700 rounded-full"
-              onClick={() => updateGUIState({ showEnhancedChat: true })}
-            >
-              <Heart className="w-4 h-4 mr-2" />
-              AI
-            </Button>
-          </div>
-
-          {/* Active Boosters */}
-          <Card className="bg-black/20 border-purple-500/30">
-            <CardContent className="p-3">
-              <h4 className="text-sm font-bold text-white mb-2">Active Boosters</h4>
-              <div className="text-xs text-gray-400">No active boosters</div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-
-      {/* Bottom - Enhanced Chat */}
-      <div className="h-80 bg-black/30 backdrop-blur-sm border-t border-purple-500/30">
-        <div className="p-4 h-full flex flex-col">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback className="bg-purple-600 text-white">S</AvatarFallback>
-            </Avatar>
-            <div>
-              <h3 className="font-bold">Chat with Seraphina</h3>
-              <p className="text-xs text-gray-400">Have conversations with your favorite character.</p>
-            </div>
-          </div>
-
-          {/* Chat Messages */}
-          <ScrollArea className="flex-1 mb-3">
-            <div className="space-y-3">
-              {chatMessages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-2 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                      message.sender === 'user'
-                        ? 'bg-purple-600 text-white'
-                        : 'bg-gray-700 text-white'
-                    }`}
-                  >
-                    <p>{message.content}</p>
-                    <div className="text-xs opacity-75 mt-1">
-                      {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} 
-                      {message.sender === 'character' && message.mood && (
-                        <span className="ml-2">😊</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </ScrollArea>
-
-          {/* Quick Responses */}
-          <div className="mb-3">
-            <p className="text-xs text-gray-400 mb-2">Quick responses:</p>
-            <div className="flex flex-wrap gap-2">
-              {["Hi there! 🧡", "How are you feeling today?", "Tell me about yourself", "You look amazing! ✨", "Want to play a game?", "What do you like to do?"].map((response, i) => (
-                <Button
-                  key={i}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setNewMessage(response)}
-                  className="text-xs border-purple-500 text-purple-300 hover:bg-purple-600/20"
-                >
-                  {response}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          {/* Message Input */}
-          <div className="flex gap-2">
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder="Message Seraphina..."
-              className="bg-black/30 border-purple-500/30 text-white rounded-full"
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim()}
-              className="bg-purple-600 hover:bg-purple-700 rounded-full px-6"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
+          
+          <div className="mt-4 text-gray-400">
+            Tap to interact!
           </div>
         </div>
       </div>
+
 
       {/* Bottom Navigation */}
       <div className="flex bg-black/50 border-t border-purple-500/30">
         <Button 
           variant="ghost" 
-          className="flex-1 py-3 text-purple-300 hover:bg-purple-600/20"
-          onClick={() => setGUIState(prev => ({ ...prev, activePlugin: "upgrades" }))}
+          className={`flex-1 py-4 text-purple-300 hover:bg-purple-600/20 flex flex-col items-center gap-1 ${guiState.activePlugin === "upgrades" ? "bg-purple-600/30" : ""}`}
+          onClick={() => updateGUIState({ activePlugin: guiState.activePlugin === "upgrades" ? "main" : "upgrades" })}
         >
-          Upgrade
+          <Star className="w-5 h-5" />
+          <span className="text-xs">Upgrade</span>
         </Button>
         <Button 
           variant="ghost" 
-          className="flex-1 py-3 text-purple-300 hover:bg-purple-600/20"
-          onClick={() => setGUIState(prev => ({ ...prev, activePlugin: "tasks" }))}
+          className={`flex-1 py-4 text-purple-300 hover:bg-purple-600/20 flex flex-col items-center gap-1 ${guiState.activePlugin === "tasks" ? "bg-purple-600/30" : ""}`}
+          onClick={() => updateGUIState({ activePlugin: guiState.activePlugin === "tasks" ? "main" : "tasks" })}
         >
-          Task
+          <Zap className="w-5 h-5" />
+          <span className="text-xs">Task</span>
         </Button>
         <Button 
           variant="ghost" 
-          className="flex-1 py-3 text-purple-300 hover:bg-purple-600/20"
-          onClick={() => setGUIState(prev => ({ ...prev, activePlugin: "shop" }))}
+          className={`flex-1 py-4 text-purple-300 hover:bg-purple-600/20 flex flex-col items-center gap-1 ${guiState.activePlugin === "wheel" ? "bg-purple-600/30" : ""}`}
+          onClick={() => updateGUIState({ activePlugin: guiState.activePlugin === "wheel" ? "main" : "wheel" })}
         >
-          Shop
+          <Heart className="w-5 h-5" />
+          <span className="text-xs">Wheel</span>
         </Button>
         <Button 
           variant="ghost" 
-          className="flex-1 py-3 text-purple-300 hover:bg-purple-600/20 bg-purple-600/30"
-          onClick={() => setGUIState(prev => ({ ...prev, activePlugin: "chat" }))}
+          className={`flex-1 py-4 text-purple-300 hover:bg-purple-600/20 flex flex-col items-center gap-1 ${guiState.activePlugin === "chat" ? "bg-purple-600/30" : ""}`}
+          onClick={() => updateGUIState({ activePlugin: guiState.activePlugin === "chat" ? "main" : "chat" })}
         >
-          Chat
+          <Send className="w-5 h-5" />
+          <span className="text-xs">Chat</span>
         </Button>
       </div>
+
+      {/* Modal Overlays for Bottom Navigation */}
+      {guiState.activePlugin === "upgrades" && (
+        <div className="absolute bottom-20 left-0 right-0 h-80 bg-black/90 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-white">Upgrades</h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => updateGUIState({ activePlugin: "main" })}
+              className="text-gray-400 hover:text-white"
+            >
+              ✕
+            </Button>
+          </div>
+          <Upgrades />
+        </div>
+      )}
+
+      {guiState.activePlugin === "tasks" && (
+        <div className="absolute bottom-20 left-0 right-0 h-80 bg-black/90 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-white">Tasks</h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => updateGUIState({ activePlugin: "main" })}
+              className="text-gray-400 hover:text-white"
+            >
+              ✕
+            </Button>
+          </div>
+          <Tasks />
+        </div>
+      )}
+
+      {guiState.activePlugin === "wheel" && (
+        <div className="absolute bottom-20 left-0 right-0 h-80 bg-black/90 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-white">Spin the Wheel</h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => updateGUIState({ activePlugin: "main" })}
+              className="text-gray-400 hover:text-white"
+            >
+              ✕
+            </Button>
+          </div>
+          <Wheel 
+            playerId={playerData?.id || "player1"} 
+            isVIP={!!playerData?.isVip} 
+            isEventActive={true}
+            onPrizeAwarded={(prize) => console.log(`Won: ${prize.name}`)}
+          />
+        </div>
+      )}
+
+      {guiState.activePlugin === "chat" && (
+        <div className="absolute bottom-20 left-0 right-0 h-80 bg-black/90 backdrop-blur-sm border-t border-purple-500/30 p-4 overflow-y-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-bold text-white">AI Chat</h3>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => updateGUIState({ activePlugin: "main" })}
+              className="text-gray-400 hover:text-white"
+            >
+              ✕
+            </Button>
+          </div>
+          <AIChat userId={playerData?.id || "player1"} />
+        </div>
+      )}
 
       {/* Floating Overlays */}
       {guiState.showAdminMenu && (
