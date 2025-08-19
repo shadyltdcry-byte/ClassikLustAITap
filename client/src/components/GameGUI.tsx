@@ -63,6 +63,7 @@ interface PlayerData {
 interface GameGUIProps {
   playerData?: PlayerData;
   onPluginAction: (action: string, data?: any) => void;
+  onPluginChange?: (plugin: string) => void;
 }
 
 interface GUIState {
@@ -79,7 +80,7 @@ interface GUIState {
   selectedCharacter: any | null;
 }
 
-export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
+export default function GameGUI({ playerData, onPluginAction, onPluginChange }: GameGUIProps) {
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
     showAdminMenu: false,
@@ -121,6 +122,61 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
 
   return (
     <div className="flex flex-col h-screen bg-gray-950 text-white">
+      {/* Top Navigation */}
+      <div className="flex items-center justify-between p-4 bg-black/30 border-b border-gray-800">
+        <h1 className="text-white text-2xl font-bold">ClassikLust</h1>
+        <div className="flex gap-2">
+          <Button 
+            size="sm" 
+            onClick={() => onPluginChange?.('upgrades')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Upgrades
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => onPluginChange?.('fileManager')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Media
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => onPluginChange?.('aiChat')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Chat
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => onPluginChange?.('gameManager')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Manager
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => onPluginChange?.('adminMenu')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Admin
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => updateGUIState({ showCharacterCreation: true })} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Create Character
+          </Button>
+        </div>
+      </div>
+
       {/* Status Bar */}
       <div className="flex justify-between items-center p-4 bg-black/30 border-b border-gray-800">
         <div className="flex items-center gap-4">
@@ -175,7 +231,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => updateGUIState({ activePlugin: "main", showCharacterCreation: true })}
+              onClick={() => onPluginChange?.('upgrades')}
               className="text-gray-400 hover:text-white"
             >
               <Star className="w-6 h-6" />
@@ -183,7 +239,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => updateGUIState({ activePlugin: "tasks" })}
+              onClick={() => onPluginChange?.('task')}
               className="text-gray-400 hover:text-white"
             >
               <Zap className="w-6 h-6" />
@@ -191,7 +247,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => updateGUIState({ activePlugin: "chat" })}
+              onClick={() => onPluginChange?.('aiChat')}
               className="text-gray-400 hover:text-white"
             >
               <Send className="w-6 h-6" />

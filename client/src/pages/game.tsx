@@ -167,66 +167,12 @@ export default function Game() {
     );
   }
 
-  // Main game view with navigation buttons
+  // Main game view - just pass everything to GameGUI
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-pink-900">
-      <div className="flex items-center justify-between p-4">
-        <h1 className="text-white text-2xl font-bold">ClassikLust</h1>
-        <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            onClick={() => setActivePlugin('upgrades')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Upgrades
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => setActivePlugin('fileManager')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Media
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => setActivePlugin('aiChat')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Chat
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => setActivePlugin('gameManager')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Manager
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => setActivePlugin('adminMenu')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Admin
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => setActivePlugin('characterCreation')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Create Character
-          </Button>
-        </div>
-      </div>
-      
-      <div className="p-4">
-        {renderPlugin()}
-      </div>
-    </div>
+    <GameGUI 
+      playerData={playerData} 
+      onPluginAction={handlePluginAction}
+      onPluginChange={setActivePlugin}
+    />
   );
 }
