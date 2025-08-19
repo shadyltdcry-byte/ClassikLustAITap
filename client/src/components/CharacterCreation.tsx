@@ -1,3 +1,4 @@
+
 /**
  * CharacterCreation.tsx
  * Last Edited: 2025-08-19 by Le Chat
@@ -328,7 +329,6 @@ export default function CharacterCreation() {
         </p>
       </div>
 
-
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Tabs
@@ -366,7 +366,6 @@ export default function CharacterCreation() {
                 Custom AI
               </TabsTrigger>
             </TabsList>
-          </Tabs>
 
             {/* Basic Information Tab */}
             <TabsContent value="basic" className="space-y-4">
@@ -613,7 +612,6 @@ export default function CharacterCreation() {
                           </Select>
                           <FormMessage />
                         </FormItem>
-
                       )}
                     />
                   </div>
@@ -769,83 +767,84 @@ export default function CharacterCreation() {
                       Configure how often the character displays different moods (total should not exceed 100%)
                     </p>
 
-          {Object.entries(form.watch("moodDistribution") || {}).map(
-            ([mood, value]) => (
-              <FormField
-                key={mood}
-                control={form.control}
-                name={`moodDistribution.${mood}` as any}
-                render={({ field }) => (
-                  <FormItem>
-                    <div className="flex items-center justify-between mb-2">
-                      <FormLabel className="capitalize text-white">{mood}</FormLabel>
-                      <span className="text-sm text-gray-400">{value}%</span>
-                    </div>
-                    <FormControl>
-                      <Slider
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={[field.value]}
-                        onValueChange={(values) => {
-                          const newValue = values[0];
-                          field.onChange(newValue);
-                          handleMoodChange(mood, newValue);
-                        }}
-                        className="w-full"
-                        data-testid={`slider-mood-${mood}`}
+                    {Object.entries(form.watch("moodDistribution") || {}).map(
+                      ([mood, value]) => (
+                        <FormField
+                          key={mood}
+                          control={form.control}
+                          name={`moodDistribution.${mood}` as any}
+                          render={({ field }) => (
+                            <FormItem>
+                              <div className="flex items-center justify-between mb-2">
+                                <FormLabel className="capitalize text-white">{mood}</FormLabel>
+                                <span className="text-sm text-gray-400">{value}%</span>
+                              </div>
+                              <FormControl>
+                                <Slider
+                                  min={0}
+                                  max={100}
+                                  step={1}
+                                  value={[field.value]}
+                                  onValueChange={(values) => {
+                                    const newValue = values[0];
+                                    field.onChange(newValue);
+                                    handleMoodChange(mood, newValue);
+                                  }}
+                                  className="w-full"
+                                  data-testid={`slider-mood-${mood}`}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      )
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="likes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-white">Likes</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                value={field.value || ""}
+                                placeholder="Things the character likes"
+                                className="bg-gray-700 border-gray-600 text-white"
+                                rows={3}
+                                data-testid="textarea-likes"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )
-          )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="likes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Likes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      value={field.value || ""}
-                      placeholder="Things the character likes"
-                      className="bg-gray-700 border-gray-600 text-white"
-                      rows={3}
-                      data-testid="textarea-likes"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="dislikes"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-white">Dislikes</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      {...field}
-                      value={field.value || ""}
-                      placeholder="Things the character dislikes"
-                      className="bg-gray-700 border-gray-600 text-white"
-                      rows={3}
-                      data-testid="textarea-dislikes"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+                      <FormField
+                        control={form.control}
+                        name="dislikes"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-white">Dislikes</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...field}
+                                value={field.value || ""}
+                                placeholder="Things the character dislikes"
+                                className="bg-gray-700 border-gray-600 text-white"
+                                rows={3}
+                                data-testid="textarea-dislikes"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
