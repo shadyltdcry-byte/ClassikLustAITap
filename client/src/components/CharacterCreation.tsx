@@ -542,6 +542,33 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
                     />
                   </div>
 
+                  <FormField
+                    control={form.control}
+                    name="pictureSendChance"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Picture Send Chance (%)</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            min="0"
+                            max="100"
+                            onChange={(e) =>
+                              field.onChange(parseInt(e.target.value) || 5)
+                            }
+                            className="bg-gray-700 border-gray-600 text-white"
+                            data-testid="input-picture-send-chance"
+                          />
+                        </FormControl>
+                        <FormDescription className="text-gray-400">
+                          Chance (0-100%) that character will randomly send pictures during chat
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}

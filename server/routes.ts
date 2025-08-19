@@ -336,21 +336,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // In-memory character storage (replace with database in production)
+  let characters: any[] = [];
+
   // Character management endpoints
   app.get('/api/characters', (req: Request, res: Response) => {
-    // Mock characters for now - replace with actual database logic
-    res.json([]);
+    res.json(characters);
   });
 
   app.post('/api/characters', (req: Request, res: Response) => {
-    // Mock character creation - replace with actual database logic
     console.log('Creating character:', req.body);
-    res.json({ success: true, id: Date.now().toString(), ...req.body });
+    const newCharacter = { 
+      id: Date.now().toString(), 
+      createdAt: new Date().toISOString(),
+      ...req.body 
+    };
+    characters.push(newCharacter);
+    res.json({ success: true, ...newCharacter });
   });
 
   app.get('/api/admin/characters', (req: Request, res: Response) => {
-    // Mock admin characters endpoint - replace with actual database logic
-    res.json([]);
+    res.json(characters);
   });
 
   app.put('/api/admin/characters/:id', (req: Request, res: Response) => {
@@ -365,26 +371,79 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
 
+  // In-memory media storage (replace with database in production)
+  let mediaFiles: any[] = [
+    {
+      id: '1',
+      filename: 'sample1.png',
+      originalName: 'Sample Image 1',
+      url: '/api/placeholder-image',
+      type: 'image',
+      characterId: null,
+      mood: null,
+      level: null,
+      isVIP: false,
+      isNSFW: false
+    },
+    {
+      id: '2', 
+      filename: 'sample2.png',
+      originalName: 'Sample Image 2',
+      url: '/api/placeholder-image',
+      type: 'image',
+      characterId: null,
+      mood: null,
+      level: null,
+      isVIP: false,
+      isNSFW: false
+    }
+  ];
+
   // Media management endpoints
   app.get('/api/media', (req: Request, res: Response) => {
-    // Mock media files - replace with actual file system or database logic
-    const mockMediaFiles = [
-      {
-        id: '1',
-        filename: 'sample1.png',
-        originalName: 'Sample Image 1',
-        url: '/api/placeholder-image',
-        type: 'image'
-      },
-      {
-        id: '2', 
-        filename: 'sample2.png',
-        originalName: 'Sample Image 2',
-        url: '/api/placeholder-image',
-        type: 'image'
-      }
-    ];
-    res.json(mockMediaFiles);
+    res.json(mediaFiles);
+  });
+
+  app.post('/api/media/upload', (req: Request, res: Response) => {
+    // Mock upload - in production, handle actual file upload
+    console.log('Mock file upload:', req.body);
+    const newFile = {
+      id: Date.now().toString(),
+      filename: `mock-file-${Date.now()}.jpg`,
+      originalName: 'Mock Uploaded File',
+      url: '/api/placeholder-image',
+      type: 'image',
+      characterId: req.body.characterId || null,
+      mood: req.body.mood || null,
+      level: req.body.level ? parseInt(req.body.level) : null,
+      isVIP: req.body.isVIP === 'true',
+      isNSFW: req.body.isNSFW === 'true',
+      createdAt: new Date().toISOString()
+    };
+    mediaFiles.push(newFile);
+    res.json([newFile]);
+  });
+
+  app.put('/api/media/:id', (req: Request, res: Response) => {
+    const fileId = req.params.id;
+    const fileIndex = mediaFiles.findIndex(f => f.id === fileId);
+    if (fileIndex !== -1) {
+      mediaFiles[fileIndex] = { ...mediaFiles[fileIndex], ...req.body };
+      res.json(mediaFiles[fileIndex]);
+    } else {
+      res.status(404).json({ error: 'File not found' });
+    }
+  });
+
+  app.delete('/api/media/:id', (req: Request, res: Response) => {
+    const fileId = req.params.id;
+    const fileIndex = mediaFiles.findIndex(f => f.id === fileId);
+    if (fileIndex !== -1) {
+      const deletedFile = mediaFiles.splice(fileIndex, 1)[0];
+      res.json({ success: true, deletedFile });
+    } else {
+      res.status(404).json({ error: 'File not found' });
+    }
   });
 
   // Placeholder image endpoint

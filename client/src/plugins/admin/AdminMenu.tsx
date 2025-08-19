@@ -35,6 +35,7 @@ import { toast } from "react-hot-toast";
 import { apiRequest } from "@/lib/queryClient";
 import CharacterCreation from "@/components/CharacterCreation";
 import CharacterEditor from "@/components/CharacterEditor";
+import FileManagerCore from "@/plugins/manager/FileManagerCore";
 import type { Character } from "@shared/schema";
 
 interface AdminMenuProps {
@@ -140,10 +141,14 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
           {/* Main Content */}
           <div className="flex-1 overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <TabsList className="grid grid-cols-4 mx-6 mt-4 bg-black/30">
+              <TabsList className="grid grid-cols-5 mx-6 mt-4 bg-black/30">
                 <TabsTrigger value="characters" className="text-white data-[state=active]:bg-purple-600">
                   <Users className="w-4 h-4 mr-2" />
                   Characters
+                </TabsTrigger>
+                <TabsTrigger value="media" className="text-white data-[state=active]:bg-purple-600">
+                  <Heart className="w-4 h-4 mr-2" />
+                  Media
                 </TabsTrigger>
                 <TabsTrigger value="game" className="text-white data-[state=active]:bg-purple-600">
                   <Activity className="w-4 h-4 mr-2" />
@@ -295,6 +300,21 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     </CardContent>
                   </Card>
                 </div>
+              </TabsContent>
+
+              {/* Media Management Tab */}
+              <TabsContent value="media" className="flex-1 overflow-hidden mx-6">
+                <Card className="bg-black/20 border-purple-500/30 h-full">
+                  <CardHeader>
+                    <CardTitle className="text-white">Media Management</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Upload, organize, and manage character images and videos.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="h-full overflow-auto">
+                    <FileManagerCore />
+                  </CardContent>
+                </Card>
               </TabsContent>
 
               {/* Game Management Tab */}
