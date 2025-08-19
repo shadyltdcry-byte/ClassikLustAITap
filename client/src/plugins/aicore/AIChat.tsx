@@ -56,7 +56,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { saveConversation as saveToDB, fetchConversations as fetchFromDB } from './GameManagerDB';
+import { saveConversation as saveToDB, fetchConversations as fetchFromDB } from '@/plugins/manager/GameManagerDB.tsx';
 
 interface ChatMessage {
   id: string;

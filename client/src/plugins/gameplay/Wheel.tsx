@@ -7,31 +7,23 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { GameManagerCore } from "@/game/GameManagerCore";
-
-interface WheelPrize {
-  id: number;
-  name: string;
-  type: string; // e.g., "LP", "Booster", "Item"
-  amount: number;
-  rarity: string;
-}
+import GameManagerCore, { WheelPrize } from "@/plugins/manager/GameManagerCore";
 
 interface WheelProps {
   playerId: string;
   isVIP: boolean;
   isEventActive: boolean;
+  onPrizeAwarded?: (prize: WheelPrize) => void;
 }
 
-export default function Wheel({ playerId, isVIP, isEventActive }: WheelProps) {
+export default function Wheel({ playerId, isVIP, isEventActive, onPrizeAwarded }: WheelProps) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [prizes, setPrizes] = useState<WheelPrize[]>([]);
   const [lastPrize, setLastPrize] = useState<WheelPrize | null>(null);
 
-  // Pull prizes from GameManagerCore or DB
   useEffect(() => {
-    const wheelPrizes = GameManagerCore.getWheelPrizes();
-    setPrizes(wheelPrizes);
+    const wheelPrizes = GameManagerCore.getWheelPrizes(); // Now a static method
+    setPrizes(wheelPrizes || []);
   }, []);
 
   const spinWheel = () => {
@@ -41,9 +33,12 @@ export default function Wheel({ playerId, isVIP, isEventActive }: WheelProps) {
     setIsSpinning(true);
 
     setTimeout(() => {
+      if (prizes.length === 0) return setIsSpinning(false);
+
       const prize = prizes[Math.floor(Math.random() * prizes.length)];
-      GameManagerCore.awardWheelPrize(playerId, prize);
+      GameManagerCore.awardWheelPrize(playerId, prize); // Static call
       setLastPrize(prize);
+      onPrizeAwarded?.(prize);
       setIsSpinning(false);
     }, 2000); // simulate spinning animation
   };

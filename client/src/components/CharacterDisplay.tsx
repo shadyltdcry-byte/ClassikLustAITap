@@ -1,16 +1,33 @@
+
+
+
 import { useState } from "react";
 //import { Button } from "@/components/ui/button";
 import type { Character, User, GameStats } from "@shared/schema";
 
 interface CharacterDisplayProps {
-  character: Character;
+  character?: Character; // made optional
   user: User;
   stats?: GameStats;
   onTap: (event: React.MouseEvent) => void;
   isTapping: boolean;
 }
 
-export default function CharacterDisplay({ character, user, onTap, isTapping }: CharacterDisplayProps) {
+// Fallback default character
+const defaultCharacter: Character = {
+  id: "default",
+  name: "Player",
+  bio: "No character selected",
+  imageUrl: "",
+  avatarUrl: "",
+};
+
+export default function CharacterDisplay({
+  character = defaultCharacter,
+  user,
+  onTap,
+  isTapping,
+}: CharacterDisplayProps) {
   const [tapEffect, setTapEffect] = useState(false);
 
   const handleTap = (event: React.MouseEvent) => {
@@ -19,7 +36,6 @@ export default function CharacterDisplay({ character, user, onTap, isTapping }: 
     setTapEffect(true);
     onTap(event);
 
-    // Remove tap effect after animation
     setTimeout(() => {
       setTapEffect(false);
     }, 200);
@@ -30,24 +46,23 @@ export default function CharacterDisplay({ character, user, onTap, isTapping }: 
       <div className="relative bg-black/20 backdrop-blur-sm rounded-3xl p-6 border border-purple-500/30">
         {/* Character Info */}
         <div className="text-center mb-4">
-          <h2 className="text-2xl font-bold gradient-text">{character.name}</h2>
-          <p className="text-gray-400 text-sm">{character.bio || "Tap to interact!"}</p>
+          <h2 className="text-2xl font-bold gradient-text">{character?.name || "Unnamed"}</h2>
+          <p className="text-gray-400 text-sm">{character?.bio || "Tap to interact!"}</p>
         </div>
 
         {/* Character Image Container */}
         <div className="relative mx-auto max-w-xs mb-6">
           <div className="relative">
             <img
-              src={character.imageUrl || character.avatarUrl || '/uploads/placeholder.jpg'}
-              alt={character.name}
+              src={character?.imageUrl || character?.avatarUrl || '/uploads/placeholder.jpg'}
+              alt={character?.name || "Player"}
               onClick={handleTap}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                // Try different fallback sources
                 if (target.src.includes('/uploads/')) {
-                  target.src = character.avatarUrl || 'https://placehold.co/256x320/666666/FFFFFF?text=' + encodeURIComponent(character.name);
+                  target.src = character?.avatarUrl || 'https://placehold.co/256x320/666666/FFFFFF?text=' + encodeURIComponent(character?.name || "Player");
                 } else if (!target.src.includes('placehold.co')) {
-                  target.src = 'https://placehold.co/256x320/666666/FFFFFF?text=' + encodeURIComponent(character.name);
+                  target.src = 'https://placehold.co/256x320/666666/FFFFFF?text=' + encodeURIComponent(character?.name || "Player");
                 }
               }}
               className={`w-full h-auto aspect-[3/4] object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-transform duration-200 ${
@@ -74,7 +89,6 @@ export default function CharacterDisplay({ character, user, onTap, isTapping }: 
               <div className="text-red-400 text-2xl">❤️</div>
             </div>
 
-            {/* Additional floating hearts animation */}
             {tapEffect && (
               <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 animate-float-up">
@@ -89,7 +103,6 @@ export default function CharacterDisplay({ character, user, onTap, isTapping }: 
               </div>
             )}
 
-            {/* No Energy Overlay */}
             {user.energy <= 0 && (
               <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-2xl">
                 <div className="text-center text-white">

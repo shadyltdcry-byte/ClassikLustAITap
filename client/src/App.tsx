@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Game from "@/pages/game";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
+import { GameProvider } from "@/context/GameProvider";
 
 function Router() {
   return (
@@ -17,11 +18,14 @@ function Router() {
   );
 }
 
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Router />
+        <GameProvider>
+          <Router />
+        </GameProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
