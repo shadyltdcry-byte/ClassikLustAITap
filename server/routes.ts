@@ -10,6 +10,8 @@ import express from "express";
 import { createServer, type Server } from "http";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import path from 'path';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -26,28 +28,28 @@ async function generateAIResponse(userMessage: string): Promise<string> {
       console.error('Mistral API error:', error);
     }
   }
-  
+
   const input = userMessage.toLowerCase();
-  
+
   if (input.includes('hi') || input.includes('hello') || input.includes('hey')) {
     return "Hey! *smiles warmly* I'm so happy to see you! How's your day going? ✨";
   }
-  
+
   if (input.includes('how are you')) {
     return "I'm doing amazing now that I'm talking to you! *giggles* You always know how to brighten my mood! 😄";
   }
-  
+
   if (input.includes('beautiful') || input.includes('pretty') || input.includes('cute')) {
     return "*blushes* Aww, thank you so much! You're so sweet! That really made my day! 😊💕";
   }
-  
+
   const responses = [
     "That's really interesting! Tell me more about that! 😊",
     "I love hearing your thoughts! You always have such unique perspectives! ✨",
     "Hmm, that's fascinating! I never thought about it that way before! 🤔",
     "You're so thoughtful! I really enjoy our conversations! 💕"
   ];
-  
+
   return responses[Math.floor(Math.random() * responses.length)];
 }
 
@@ -57,7 +59,7 @@ function getRandomMood(): string {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  
+
   // Simple health check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -95,7 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { playerId } = req.body;
       const lpGain = Math.floor(1.5); // Base LP per tap
       const newTotal = 5000 + lpGain; // This would normally come from database
-      
+
       res.json({
         success: true,
         lpGain,
@@ -300,7 +302,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       isFromUser: true,
       createdAt: new Date().toISOString()
     };
-    
+
     const aiResponse = {
       id: (Date.now() + 1).toString(),
       message: await generateAIResponse(message),
@@ -308,7 +310,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       createdAt: new Date().toISOString(),
       mood: getRandomMood()
     };
-    
+
     res.json({ userMessage, aiResponse });
   });
 
@@ -334,11 +336,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Character management endpoints
+  app.get('/api/characters', (req: Request, res: Response) => {
+    // Mock characters for now - replace with actual database logic
+    res.json([]);
+  });
+
+  app.post('/api/characters', (req: Request, res: Response) => {
+    // Mock character creation - replace with actual database logic
+    console.log('Creating character:', req.body);
+    res.json({ success: true, id: Date.now().toString(), ...req.body });
+  });
+
+  app.get('/api/admin/characters', (req: Request, res: Response) => {
+    // Mock admin characters endpoint - replace with actual database logic
+    res.json([]);
+  });
+
+  app.put('/api/admin/characters/:id', (req: Request, res: Response) => {
+    // Mock character update - replace with actual database logic
+    console.log('Updating character:', req.params.id, req.body);
+    res.json({ success: true });
+  });
+
+  app.delete('/api/admin/characters/:id', (req: Request, res: Response) => {
+    // Mock character deletion - replace with actual database logic
+    console.log('Deleting character:', req.params.id);
+    res.json({ success: true });
+  });
+
+  // Media management endpoints
+  app.get('/api/media', (req: Request, res: Response) => {
+    // Mock media files - replace with actual file system or database logic
+    const mockMediaFiles = [
+      {
+        id: '1',
+        filename: 'sample1.png',
+        originalName: 'Sample Image 1',
+        url: '/api/placeholder-image',
+        type: 'image'
+      },
+      {
+        id: '2', 
+        filename: 'sample2.png',
+        originalName: 'Sample Image 2',
+        url: '/api/placeholder-image',
+        type: 'image'
+      }
+    ];
+    res.json(mockMediaFiles);
+  });
+
+  // Placeholder image endpoint
+  app.get('/api/placeholder-image', (req: Request, res: Response) => {
+    // Return a simple placeholder response
+    res.status(404).json({ error: 'Image not found' });
+  });
+
+
   // Serve static files in production
   if (process.env.NODE_ENV === "production") {
     const distPath = join(__dirname, "../dist/public");
     app.use(express.static(distPath));
-    
+
     // Handle client-side routing
     app.get("*", (req, res) => {
       res.sendFile(join(distPath, "index.html"));

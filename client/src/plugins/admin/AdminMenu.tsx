@@ -119,8 +119,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-        <div className="bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-red-900/95 w-full max-w-6xl h-[90vh] rounded-xl border border-purple-500/50 flex flex-col">
+      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <div className="bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-red-900/95 w-full max-w-6xl max-h-[90vh] rounded-xl border border-purple-500/50 flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between p-6 border-b border-purple-500/30">
             <div className="flex items-center gap-3">
@@ -174,14 +174,14 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   </div>
 
                   {/* Character List */}
-                  <Card className="flex-1 bg-black/20 border-purple-500/30">
-                    <CardHeader>
+                  <Card className="flex-1 bg-black/20 border-purple-500/30 min-h-0">
+                    <CardHeader className="flex-shrink-0">
                       <CardTitle className="text-white">Character Management</CardTitle>
                       <CardDescription className="text-gray-400">
                         Manage all characters in the game. Edit properties, toggle status, or delete characters.
                       </CardDescription>
                     </CardHeader>
-                    <CardContent className="h-full overflow-hidden">
+                    <CardContent className="flex-1 overflow-hidden p-4">
                       {charactersLoading ? (
                         <div className="flex items-center justify-center h-32">
                           <div className="animate-spin w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full"></div>
@@ -193,8 +193,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           <p className="text-sm">Create your first character to get started</p>
                         </div>
                       ) : (
-                        <ScrollArea className="h-full">
-                          <div className="space-y-2">
+                        <ScrollArea className="h-[400px]">
+                          <div className="space-y-2 pr-4">
                             {characters.map((character: Character) => (
                               <div
                                 key={character.id}
@@ -432,11 +432,11 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
       {/* Character Creation Modal */}
       {showCreateCharacter && (
         <Dialog open={showCreateCharacter} onOpenChange={setShowCreateCharacter}>
-          <DialogContent className="max-w-4xl max-h-[90vh] bg-gray-900 text-white border-purple-500/50 overflow-hidden">
-            <DialogHeader>
+          <DialogContent className="max-w-5xl max-h-[95vh] bg-gray-900 text-white border-purple-500/50 overflow-hidden p-0">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle>Create New Character</DialogTitle>
             </DialogHeader>
-            <div className="overflow-auto">
+            <div className="overflow-auto flex-1 px-6 pb-6">
               <CharacterCreation
                 onSuccess={() => {
                   setShowCreateCharacter(false);
@@ -452,11 +452,11 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
       {/* Character Edit Modal */}
       {showEditCharacter && selectedCharacter && (
         <Dialog open={showEditCharacter} onOpenChange={setShowEditCharacter}>
-          <DialogContent className="max-w-4xl max-h-[90vh] bg-gray-900 text-white border-purple-500/50 overflow-hidden">
-            <DialogHeader>
+          <DialogContent className="max-w-5xl max-h-[95vh] bg-gray-900 text-white border-purple-500/50 overflow-hidden p-0">
+            <DialogHeader className="p-6 pb-2">
               <DialogTitle>Edit Character: {selectedCharacter.name}</DialogTitle>
             </DialogHeader>
-            <div className="overflow-auto">
+            <div className="overflow-auto flex-1 px-6 pb-6">
               <CharacterEditor
                 character={selectedCharacter}
                 isEditing={true}

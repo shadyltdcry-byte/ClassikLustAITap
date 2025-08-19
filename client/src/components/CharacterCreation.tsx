@@ -325,9 +325,9 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-6">
+    <div className="w-full space-y-6">
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-white mb-2">
+        <h1 className="text-2xl font-bold text-white mb-2">
           Create New Character
         </h1>
         <p className="text-gray-400">
@@ -374,7 +374,7 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
             </TabsList>
 
             {/* Basic Information Tab */}
-            <TabsContent value="basic" className="space-y-4">
+            <TabsContent value="basic" className="space-y-4 max-h-[60vh] overflow-y-auto">
               <Card className="bg-gray-800/50 border-gray-600">
                 <CardHeader>
                   <CardTitle className="text-white">
@@ -661,7 +661,7 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
             </TabsContent>
 
             {/* Personality Tab */}
-            <TabsContent value="personality" className="space-y-4">
+            <TabsContent value="personality" className="space-y-4 max-h-[60vh] overflow-y-auto">
               <Card className="bg-gray-800/50 border-gray-600">
                 <CardHeader>
                   <CardTitle className="text-white">
@@ -856,7 +856,7 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
             </TabsContent>
 
             {/* Advanced Tab */}
-            <TabsContent value="advanced" className="space-y-4">
+            <TabsContent value="advanced" className="space-y-4 max-h-[60vh] overflow-y-auto">
               <Card className="bg-gray-800/50 border-gray-600">
                 <CardHeader>
                   <CardTitle className="text-white">
@@ -942,7 +942,7 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
             </TabsContent>
 
             {/* Custom AI Tab */}
-            <TabsContent value="custom" className="space-y-4">
+            <TabsContent value="custom" className="space-y-4 max-h-[60vh] overflow-y-auto">
               <Card className="bg-gray-800/50 border-gray-600">
                 <CardHeader>
                   <CardTitle className="text-white">
