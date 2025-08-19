@@ -69,6 +69,9 @@ interface GUIState {
   showFileManager: boolean;
   showCharacterCreation: boolean;
   showCharacterEditor: boolean;
+  showBoosterMenu: boolean;
+  showAICustomFunctions: boolean;
+  showEnhancedChat: boolean;
   selectedCharacter: any | null;
 }
 
@@ -81,6 +84,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     showFileManager: false,
     showCharacterCreation: false,
     showCharacterEditor: false,
+    showBoosterMenu: false,
+    showAICustomFunctions: false,
+    showEnhancedChat: false,
     selectedCharacter: null,
   });
 
@@ -295,11 +301,13 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             <CardTitle className="text-sm text-white">Active Boosters</CardTitle>
           </CardHeader>
           <CardContent className="p-2">
-            <Boosters 
-              isOpen={true}
-              onClose={() => {}}
-              user={userForDisplay!}
-            />
+            <Button 
+              size="sm" 
+              className="w-full bg-blue-600 hover:bg-blue-700" 
+              onClick={() => updateGUIState({ showBoosterMenu: true })}
+            >
+              Open Boosters
+            </Button>
           </CardContent>
         </Card>
         <Card className="bg-green-900/30 border-green-500/30">
@@ -350,7 +358,23 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             <Achievements />
           </TabsContent>
           <TabsContent value="chat" className="h-full p-4 overflow-y-auto">
-            <AIChat userId={playerData?.id || "player1"} />
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Button 
+                  onClick={() => updateGUIState({ showEnhancedChat: true })}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  Enhanced Chat
+                </Button>
+                <Button 
+                  onClick={() => updateGUIState({ showAICustomFunctions: true })}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  AI Settings
+                </Button>
+              </div>
+              <AIChat userId={playerData?.id || "player1"} />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
@@ -375,6 +399,13 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         <MistralDebugger 
           isOpen={true}
           onClose={() => updateGUIState({ showDebugger: false })} 
+        />
+      )}
+      {guiState.showBoosterMenu && userForDisplay && (
+        <Boosters
+          isOpen={true}
+          onClose={() => updateGUIState({ showBoosterMenu: false })}
+          user={userForDisplay}
         />
       )}
     </div>

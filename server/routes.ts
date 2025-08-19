@@ -14,6 +14,37 @@ import { dirname, join } from 'path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Helper functions for AI responses
+function generateAIResponse(userMessage: string): string {
+  const input = userMessage.toLowerCase();
+  
+  if (input.includes('hi') || input.includes('hello') || input.includes('hey')) {
+    return "Hey! *smiles warmly* I'm so happy to see you! How's your day going? ✨";
+  }
+  
+  if (input.includes('how are you')) {
+    return "I'm doing amazing now that I'm talking to you! *giggles* You always know how to brighten my mood! 😄";
+  }
+  
+  if (input.includes('beautiful') || input.includes('pretty') || input.includes('cute')) {
+    return "*blushes* Aww, thank you so much! You're so sweet! That really made my day! 😊💕";
+  }
+  
+  const responses = [
+    "That's really interesting! Tell me more about that! 😊",
+    "I love hearing your thoughts! You always have such unique perspectives! ✨",
+    "Hmm, that's fascinating! I never thought about it that way before! 🤔",
+    "You're so thoughtful! I really enjoy our conversations! 💕"
+  ];
+  
+  return responses[Math.floor(Math.random() * responses.length)];
+}
+
+function getRandomMood(): string {
+  const moods = ['normal', 'happy', 'flirty', 'playful', 'mysterious', 'shy'];
+  return moods[Math.floor(Math.random() * moods.length)];
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   
   // Simple health check
@@ -231,6 +262,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       totalTaps: 0,
       totalLP: 5000,
       averageLevel: 1
+    });
+  });
+
+  // Chat endpoints
+  app.get("/api/chat/:userId/:characterId", (req, res) => {
+    const { userId, characterId } = req.params;
+    // Mock chat history
+    res.json([
+      {
+        id: "1",
+        message: "Hello! I'm happy to chat with you!",
+        isFromUser: false,
+        createdAt: new Date().toISOString(),
+        mood: "happy"
+      }
+    ]);
+  });
+
+  app.post("/api/chat/send", (req, res) => {
+    const { userId, characterId, message, isFromUser } = req.body;
+    const userMessage = {
+      id: Date.now().toString(),
+      message,
+      isFromUser: true,
+      createdAt: new Date().toISOString()
+    };
+    
+    const aiResponse = {
+      id: (Date.now() + 1).toString(),
+      message: generateAIResponse(message),
+      isFromUser: false,
+      createdAt: new Date().toISOString(),
+      mood: getRandomMood()
+    };
+    
+    res.json({ userMessage, aiResponse });
+  });
+
+  // Level requirements endpoint
+  app.get("/api/level-requirements", (req, res) => {
+    res.json([
+      { level: 1, lpRequired: 0 },
+      { level: 2, lpRequired: 1000 },
+      { level: 3, lpRequired: 2500 },
+      { level: 4, lpRequired: 5000 },
+      { level: 5, lpRequired: 10000 }
+    ]);
+  });
+
+  // Tasks endpoints
+  app.post("/api/tasks/claim/:taskId", (req, res) => {
+    const { taskId } = req.params;
+    res.json({
+      success: true,
+      taskId,
+      reward: { lp: 100, xp: 50 },
+      message: "Task completed successfully!"
     });
   });
 
