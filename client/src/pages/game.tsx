@@ -1,3 +1,4 @@
+
 /**
  * Game.tsx - Core Game Coordinator (NO GUI - ROUTING ONLY)
  * Last Edited: 2025-08-19 by Assistant
@@ -8,13 +9,28 @@
  * - Passes everything to GameGUI for rendering
  */
 
-import React from "react";
+import React, { useState } from "react";
 import { useGame } from "@/context/GameProvider";
 import LoadingScreen from "@/components/LoadingScreen";
 import GameGUI from "@/components/GameGUI";
+import CharacterCreation from "@/components/CharacterCreation";
+import CharacterEditor from "@/components/CharacterEditor";
+import AIChat from "@/plugins/aicore/AIChat";
+import MistralDebugger from "@/plugins/aicore/MistralDebugger";
+import FileManagerCore from "@/plugins/manager/FileManagerCore";
+import Wheel from "@/plugins/gameplay/Wheel";
+import Upgrades from "@/plugins/gameplay/Upgrades";
+import Boosters from "@/plugins/gameplay/Boosters";
+import LevelUp from "@/plugins/gameplay/LevelUp";
+import Task from "@/plugins/gameplay/Task";
+import Achievements from "@/plugins/gameplay/Achievements";
+import AdminMenu from "@/plugins/admin/AdminMenu";
+import GameManagerCore from "@/plugins/manager/GameManagerCore";
+import { Button } from "@/components/ui/button";
 
 export default function Game() {
   const { playerData, setPlayerData, isLoading } = useGame();
+  const [activePlugin, setActivePlugin] = useState<string>('game');
 
   // Handle plugin routing - this is where plugins get called from GameGUI
   const handlePluginAction = async (action: string, data?: any) => {
@@ -92,15 +108,125 @@ export default function Game() {
     }
   };
 
+  // Render the appropriate plugin based on activePlugin state
+  const renderPlugin = () => {
+    switch (activePlugin) {
+      case 'characterCreation':
+        return <CharacterCreation />;
+      case 'characterEditor':
+        return <CharacterEditor />;
+      case 'aiChat':
+        return <AIChat />;
+      case 'mistralDebugger':
+        return <MistralDebugger />;
+      case 'fileManager':
+        return <FileManagerCore />;
+      case 'wheel':
+        return <Wheel />;
+      case 'upgrades':
+        return <Upgrades />;
+      case 'boosters':
+        return <Boosters />;
+      case 'levelUp':
+        return <LevelUp />;
+      case 'task':
+        return <Task />;
+      case 'achievements':
+        return <Achievements />;
+      case 'adminMenu':
+        return <AdminMenu />;
+      case 'gameManager':
+        return <GameManagerCore />;
+      case 'game':
+      default:
+        return (
+          <GameGUI 
+            playerData={playerData} 
+            onPluginAction={handlePluginAction}
+          />
+        );
+    }
+  };
+
   if (isLoading) {
     return <LoadingScreen progress={75} />;
   }
 
-  // Pass everything to GameGUI for rendering
+  // For non-game plugins, show full screen with back button
+  if (activePlugin !== 'game') {
+    return (
+      <div className="min-h-screen p-4 bg-gray-900">
+        <div className="mb-4">
+          <Button onClick={() => setActivePlugin('game')} variant="outline" className="mb-2">
+            ← Back to Game
+          </Button>
+          <h1 className="text-2xl font-bold text-white capitalize">{activePlugin.replace(/([A-Z])/g, ' $1')}</h1>
+        </div>
+        {renderPlugin()}
+      </div>
+    );
+  }
+
+  // Main game view with navigation buttons
   return (
-    <GameGUI 
-      playerData={playerData} 
-      onPluginAction={handlePluginAction}
-    />
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-pink-900">
+      <div className="flex items-center justify-between p-4">
+        <h1 className="text-white text-2xl font-bold">ClassikLust</h1>
+        <div className="flex gap-2">
+          <Button 
+            size="sm" 
+            onClick={() => setActivePlugin('upgrades')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Upgrades
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => setActivePlugin('fileManager')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Media
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => setActivePlugin('aiChat')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Chat
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => setActivePlugin('gameManager')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Manager
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => setActivePlugin('adminMenu')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Admin
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={() => setActivePlugin('characterCreation')} 
+            variant="outline"
+            className="text-white border-white hover:bg-white hover:text-black"
+          >
+            Create Character
+          </Button>
+        </div>
+      </div>
+      
+      <div className="p-4">
+        {renderPlugin()}
+      </div>
+    </div>
   );
 }
