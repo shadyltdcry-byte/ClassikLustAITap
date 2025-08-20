@@ -541,7 +541,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   </div>
 
                   {/* Character List */}
-                  <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden">
+                  <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden min-h-[400px]">
                     {charactersError ? (
                       <ErrorDisplay 
                         error={charactersError as Error} 
@@ -567,17 +567,18 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       />
                     ) : (
                       <ScrollArea className="h-full">
-                        <div className="space-y-3 p-4">
+                        <div className="space-y-4 p-6">
                           {filteredCharacters.map((char) => (
-                            <CharacterCard
-                              key={char.id}
-                              character={char}
-                              onEdit={handleEdit}
-                              onDelete={handleDelete}
-                              onToggleVip={handleToggleVip}
-                              onToggleNsfw={handleToggleNsfw}
-                              isUpdating={toggleCharacterMutation.isPending}
-                            />
+                            <div key={char.id} className="mb-4">
+                              <CharacterCard
+                                character={char}
+                                onEdit={handleEdit}
+                                onDelete={handleDelete}
+                                onToggleVip={handleToggleVip}
+                                onToggleNsfw={handleToggleNsfw}
+                                isUpdating={toggleCharacterMutation.isPending}
+                              />
+                            </div>
                           ))}
                         </div>
                       </ScrollArea>
@@ -615,8 +616,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* MEDIA TAB */}
-            <TabsContent value="media" className="flex-1 flex flex-col min-h-0 p-0 m-0">
-              <div className="flex-1 min-h-0 h-full w-full bg-gray-900/50">
+            <TabsContent value="media" className="flex-1 min-h-0">
+              <div className="h-full w-full">
                 <FileManagerCore />
               </div>
             </TabsContent>

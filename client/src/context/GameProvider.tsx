@@ -414,16 +414,34 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
       if (savedData) {
         try {
           const parsed = JSON.parse(savedData);
-          // Only use saved data if it has valid values, otherwise clear it
-          if (parsed.lp > 0 || parsed.energy > 0 || parsed.lpPerHour > 0) {
-            dispatch({ type: 'SET_PLAYER_DATA', payload: parsed });
+          // Clear localStorage and force default stats if data is invalid
+          if (!parsed || parsed.lp <= 0 && parsed.energy <= 0 && parsed.lpPerHour <= 0) {
+            console.warn('Found invalid saved data with zero values, clearing localStorage and using defaults');
+            localStorage.clear();
+            // Force default values
+            dispatch({ type: 'SET_PLAYER_DATA', payload: {
+              lp: 5000,
+              energy: 1000,
+              maxEnergy: 1000,
+              lpPerHour: 250,
+              lpPerTap: 1.5,
+              level: 1
+            }});
           } else {
-            console.warn('Found invalid saved data with zero values, clearing localStorage');
-            localStorage.removeItem('characterTapGame_playerData');
+            dispatch({ type: 'SET_PLAYER_DATA', payload: parsed });
           }
         } catch (error) {
-          console.warn('Invalid saved data, clearing localStorage:', error);
-          localStorage.removeItem('characterTapGame_playerData');
+          console.warn('Invalid saved data, clearing localStorage and using defaults:', error);
+          localStorage.clear();
+          // Force default values
+          dispatch({ type: 'SET_PLAYER_DATA', payload: {
+            lp: 5000,
+            energy: 1000,
+            maxEnergy: 1000,
+            lpPerHour: 250,
+            lpPerTap: 1.5,
+            level: 1
+          }});
         }
       }
 
