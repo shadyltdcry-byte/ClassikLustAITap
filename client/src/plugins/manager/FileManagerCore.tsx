@@ -42,6 +42,17 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  
+  // Upload configuration state
+  const [uploadConfig, setUploadConfig] = useState({
+    characterId: '',
+    mood: '',
+    requiredLevel: 1,
+    isVip: false,
+    isNsfw: false,
+    isEvent: false,
+    randomSendChance: 5
+  });
 
   const queryClient = useQueryClient();
 
@@ -71,8 +82,9 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     },
     onSuccess: (uploadedFiles) => {
       queryClient.invalidateQueries({ queryKey: ['/api/media'] });
-      toast.success(`Successfully uploaded ${uploadedFiles.length} file(s)`);
+      toast.success(`Successfully uploaded ${Array.isArray(uploadedFiles) ? uploadedFiles.length : 1} file(s)`);
       setUploadProgress(0);
+      setSelectedFiles([]);
     },
     onError: (error) => {
       console.error('Upload failed:', error);
@@ -186,8 +198,11 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
     const formData = new FormData();
     validFiles.forEach((file) => {
-      formData.append('mediaFiles', file);
+      formData.append('files', file);
     });
+
+    // Add upload configuration
+    formData.append('config', JSON.stringify(uploadConfig));
 
     setUploadProgress(10);
     uploadMutation.mutate(formData);
@@ -208,28 +223,31 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       borderRadius: '8px',
     };
 
-    if (file.fileType === 'image' || file.fileType === 'gif') {
+    // Get the correct file URL
+    const fileUrl = file.url || file.filePath || file.path || `/uploads/${file.fileName || file.filename}`;
+
+    if (file.fileType === 'image' || file.type === 'image' || file.fileType === 'gif') {
       return (
         <img 
-          src={file.filePath} 
+          src={fileUrl}
           alt="Media preview" 
           style={commonStyles}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/placeholder-image.jpg';
+            (e.target as HTMLImageElement).src = '/api/placeholder-image';
           }}
         />
       );
-    } else if (file.fileType === 'video') {
+    } else if (file.fileType === 'video' || file.type === 'video') {
       return (
         <video controls style={commonStyles}>
-          <source src={file.filePath} type="video/mp4" />
+          <source src={fileUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       );
     }
     return (
-      <div style={{ ...commonStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f0f0f0' }}>
-        <span>Unsupported type</span>
+      <div style={{ ...commonStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#374151' }}>
+        <span className="text-white text-xs">Unsupported type</span>
       </div>
     );
   };
@@ -274,19 +292,129 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <Input
-              type="file"
-              multiple
-              onChange={handleFileUpload}
-              accept="image/*,video/*,image/gif"
-              className="bg-gray-700 border-gray-600 text-white file:bg-purple-600 file:text-white file:border-none file:rounded"
-              disabled={uploadMutation.isPending}
-            />
+          <div className="space-y-6">
+            {/* File Selection */}
+            <div>
+              <Label className="text-white mb-2 block">Select Files</Label>
+              <Input
+                type="file"
+                multiple
+                onChange={handleFileUpload}
+                accept="image/*,video/*,image/gif"
+                className="bg-gray-700 border-gray-600 text-white file:bg-purple-600 file:text-white file:border-none file:rounded"
+                disabled={uploadMutation.isPending}
+              />
+            </div>
+
+            {/* Upload Configuration */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-white">Assign to Character</Label>
+                <Select
+                  value={uploadConfig.characterId}
+                  onValueChange={(value) => setUploadConfig(prev => ({ ...prev, characterId: value }))}
+                >
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectValue placeholder="Select character (optional)" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-700 border-gray-600">
+                    <SelectItem value="">Unassigned</SelectItem>
+                    {characters.map((character: Character) => (
+                      <SelectItem key={character.id} value={character.id} className="text-white">
+                        {character.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-white">Mood</Label>
+                <Select
+                  value={uploadConfig.mood}
+                  onValueChange={(value) => setUploadConfig(prev => ({ ...prev, mood: value }))}
+                >
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectValue placeholder="Select mood (optional)" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-700 border-gray-600">
+                    <SelectItem value="">No mood</SelectItem>
+                    <SelectItem value="normal" className="text-white">Normal</SelectItem>
+                    <SelectItem value="happy" className="text-white">Happy</SelectItem>
+                    <SelectItem value="flirty" className="text-white">Flirty</SelectItem>
+                    <SelectItem value="playful" className="text-white">Playful</SelectItem>
+                    <SelectItem value="mysterious" className="text-white">Mysterious</SelectItem>
+                    <SelectItem value="shy" className="text-white">Shy</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label className="text-white">Required Level</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={uploadConfig.requiredLevel}
+                  onChange={(e) => setUploadConfig(prev => ({ ...prev, requiredLevel: parseInt(e.target.value) || 1 }))}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              </div>
+
+              <div>
+                <Label className="text-white">Random Send Chance (%)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={uploadConfig.randomSendChance}
+                  onChange={(e) => setUploadConfig(prev => ({ ...prev, randomSendChance: parseInt(e.target.value) || 0 }))}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              </div>
+            </div>
+
+            {/* Toggle Options */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                <div>
+                  <Label className="text-white">VIP Content</Label>
+                  <p className="text-xs text-gray-400">Requires premium access</p>
+                </div>
+                <Switch
+                  checked={uploadConfig.isVip}
+                  onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, isVip: checked }))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                <div>
+                  <Label className="text-white">NSFW Content</Label>
+                  <p className="text-xs text-gray-400">18+ content</p>
+                </div>
+                <Switch
+                  checked={uploadConfig.isNsfw}
+                  onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, isNsfw: checked }))}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                <div>
+                  <Label className="text-white">Event Content</Label>
+                  <p className="text-xs text-gray-400">Special event media</p>
+                </div>
+                <Switch
+                  checked={uploadConfig.isEvent}
+                  onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, isEvent: checked }))}
+                />
+              </div>
+            </div>
+
+            {/* Selected Files Preview */}
             {selectedFiles.length > 0 && (
-              <div className="text-sm text-gray-300 mt-2 p-2 bg-gray-700/50 rounded">
-                <p className="font-medium">Selected Files:</p>
-                <div className="space-y-1">
+              <div className="text-sm text-gray-300 p-3 bg-gray-700/50 rounded-lg">
+                <p className="font-medium mb-2">Selected Files ({selectedFiles.length}):</p>
+                <div className="space-y-1 max-h-32 overflow-y-auto">
                   {selectedFiles.map((file, index) => (
                     <div key={index} className="flex justify-between items-center">
                       <span className="truncate">{file.name}</span>
@@ -296,13 +424,17 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 </div>
               </div>
             )}
+
+            {/* Upload Button */}
             <Button
               onClick={handleSubmitUpload}
-              className="bg-purple-600 hover:bg-purple-700 text-white w-full mt-3"
+              className="bg-purple-600 hover:bg-purple-700 text-white w-full"
               disabled={uploadMutation.isPending || selectedFiles.length === 0}
             >
               {uploadMutation.isPending ? 'Uploading...' : selectedFiles.length > 0 ? `Upload ${selectedFiles.length} File${selectedFiles.length !== 1 ? 's' : ''}` : 'Choose Files First'}
             </Button>
+
+            {/* Upload Progress */}
             {uploadProgress > 0 && (
               <div className="w-full bg-gray-600 rounded-full h-2">
                 <div
@@ -324,33 +456,42 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
         <TabsContent value="grid" className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {mediaFiles.map((file: MediaFile) => (
-              <Card
-                key={file.id}
-                className="bg-gray-800/50 border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
-                onClick={() => setSelectedFile(file)}
-              >
-                <CardContent className="p-2">
-                  {renderMediaPreview(file)}
-                  <div className="mt-2 space-y-1">
-                    <p className="text-xs text-white truncate">
-                      {file.fileName || `File ${file.id.slice(0, 8)}`}
-                    </p>
-                    <div className="flex flex-wrap gap-1">
-                      {file.isVip && (
-                        <span className="text-xs bg-yellow-600 text-white px-1 rounded">VIP</span>
-                      )}
-                      {file.isNsfw && (
-                        <span className="text-xs bg-red-600 text-white px-1 rounded">NSFW</span>
-                      )}
-                      {file.mood && (
-                        <span className="text-xs bg-blue-600 text-white px-1 rounded">{file.mood}</span>
-                      )}
+            {Array.isArray(mediaFiles) && mediaFiles.length > 0 ? (
+              mediaFiles.map((file: MediaFile) => (
+                <Card
+                  key={file.id}
+                  className="bg-gray-800/50 border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
+                  onClick={() => setSelectedFile(file)}
+                >
+                  <CardContent className="p-2">
+                    {renderMediaPreview(file)}
+                    <div className="mt-2 space-y-1">
+                      <p className="text-xs text-white truncate">
+                        {file.fileName || file.filename || file.originalName || `File ${file.id.slice(0, 8)}`}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {file.isVip && (
+                          <span className="text-xs bg-yellow-600 text-white px-1 rounded">VIP</span>
+                        )}
+                        {file.isNsfw && (
+                          <span className="text-xs bg-red-600 text-white px-1 rounded">NSFW</span>
+                        )}
+                        {file.mood && (
+                          <span className="text-xs bg-blue-600 text-white px-1 rounded">{file.mood}</span>
+                        )}
+                        {file.isEvent && (
+                          <span className="text-xs bg-purple-600 text-white px-1 rounded">Event</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-gray-400">No media files found. Upload some files to get started.</p>
+              </div>
+            )}
           </div>
         </TabsContent>
 

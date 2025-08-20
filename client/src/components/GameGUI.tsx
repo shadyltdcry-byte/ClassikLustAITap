@@ -124,6 +124,9 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
     onPluginAction('claimPrize', { type });
   };
 
+  // This state is for the bottom navigation buttons
+  const [activeMenu, setActiveMenu] = useState<string | null>("main");
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white">
       {/* Top Navigation */}
