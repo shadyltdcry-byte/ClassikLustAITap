@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Zap, Star, Settings, Send, Heart, Coins, Gem } from "lucide-react";
+import { Zap, Star, Settings, Send, Heart, Coins, Gem, TrendingUp } from "lucide-react";
 import { MessageCircle } from "lucide-react";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import NewsTicker from "@/components/NewsTicker";
@@ -21,8 +21,6 @@ import AIChat from "@/plugins/aicore/AIChat";
 import MistralDebugger from "@/plugins/aicore/MistralDebugger";
 // Gameplay Plugins
 import Upgrades from "@/plugins/gameplay/Upgrades";
-import Task from "@/plugins/gameplay/Task";
-import Achievements from "@/plugins/gameplay/Achievements";
 import Boosters from "@/plugins/gameplay/Boosters";
 import LevelUp from "@/plugins/gameplay/LevelUp";
 import Wheel from "@/plugins/gameplay/Wheel";
@@ -493,6 +491,16 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
             <Button
               variant="ghost"
               className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${
+                guiState.activePlugin === "main" ? "bg-pink-600/30" : ""
+              }`}
+              onClick={() => updateGUIState({ activePlugin: "main" })}
+            >
+              <Heart className="w-4 h-4" />
+              <span className="text-xs">Main</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${
                 guiState.activePlugin === "levelup" ? "bg-pink-600/30" : ""
               }`}
               onClick={() => updateGUIState({ activePlugin: "levelup" })}
@@ -507,7 +515,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               }`}
               onClick={() => updateGUIState({ activePlugin: "upgrades" })}
             >
-              <Star className="w-4 h-4" />
+              <TrendingUp className="w-4 h-4" />
               <span className="text-xs">Upgrades</span>
             </Button>
             <Button
@@ -518,7 +526,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               onClick={() => updateGUIState({ activePlugin: "task" })}
             >
               <Zap className="w-4 h-4" />
-              <span className="text-xs">Task</span>
+              <span className="text-xs">Tasks</span>
             </Button>
             <Button
               variant="ghost"
@@ -530,16 +538,16 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               <MessageCircle className="w-4 h-4" />
               <span className="text-xs">AI Chat</span>
             </Button>
-            <Button
-              variant="ghost"
-              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2"
-              onClick={() => updateGUIState({ showAdminMenu: true })}
-            >
-              <Settings className="w-4 h-4" />
-              <span className="text-xs">Admin</span>
-            </Button>
           </div>
         </div>
+        {/* Floating Admin Button */}
+        <Button
+          className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-gray-800/80 hover:bg-gray-700/80 backdrop-blur-sm border border-gray-600/50"
+          onClick={() => updateGUIState({ showAdminMenu: true })}
+        >
+          <Settings className="w-4 h-4" />
+        </Button>
+
         {/* Admin Menu */}
         {guiState.showAdminMenu && (
           <AdminMenu onClose={() => updateGUIState({ showAdminMenu: false })} />
