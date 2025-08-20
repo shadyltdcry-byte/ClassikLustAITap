@@ -120,28 +120,35 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       return;
     }
 
-    if (chatHistory && chatHistory.length > 0) {
-      const formattedMessages = chatHistory.map((msg: any) => ({
-        id: msg.id,
-        content: msg.message || msg.content,
-        sender: msg.isFromUser ? 'user' : 'character',
-        timestamp: new Date(msg.createdAt),
-        type: msg.type || 'text',
-        mood: msg.mood,
-        reactionScore: msg.reactionScore,
-      }));
-      setMessages(formattedMessages);
-    } else if (chatHistory !== undefined && chatHistory.length === 0) {
-      // Send initial greeting only when we have confirmed empty chat history
-      const greeting = getCharacterGreeting();
-      setMessages([{
-        id: 'initial-greeting',
-        content: greeting,
-        sender: 'character',
-        timestamp: new Date(),
-        type: 'text',
-        mood: 'happy',
-      }]);
+    // Only update messages if we don't already have messages or character changed
+    if (messages.length === 0 || (chatHistory && chatHistory.length > 0)) {
+      if (chatHistory && chatHistory.length > 0) {
+        const formattedMessages = chatHistory.map((msg: any) => ({
+          id: msg.id,
+          content: msg.message || msg.content,
+          sender: msg.isFromUser ? 'user' : 'character',
+          timestamp: new Date(msg.createdAt),
+          type: msg.type || 'text',
+          mood: msg.mood,
+          reactionScore: msg.reactionScore,
+        }));
+        
+        // Only set messages if they're different from current state
+        if (JSON.stringify(formattedMessages) !== JSON.stringify(messages)) {
+          setMessages(formattedMessages);
+        }
+      } else if (chatHistory !== undefined && chatHistory.length === 0 && messages.length === 0) {
+        // Send initial greeting only when we have confirmed empty chat history and no current messages
+        const greeting = getCharacterGreeting();
+        setMessages([{
+          id: 'initial-greeting',
+          content: greeting,
+          sender: 'character',
+          timestamp: new Date(),
+          type: 'text',
+          mood: 'happy',
+        }]);
+      }
     }
   }, [chatHistory, character?.id])
 
@@ -284,10 +291,8 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         description: `${character?.name} responded!`,
       });
 
-      // Delay the query invalidation to prevent immediate overwrite
-      setTimeout(() => {
-        queryClient.invalidateQueries({ queryKey: ["/api/chat", userId, character?.id] });
-      }, 1000);
+      // Don't invalidate queries immediately to prevent message overlay
+      // The messages are already updated in state
     },
     onError: (error: any) => {
       console.error("AI Chat error:", error);
