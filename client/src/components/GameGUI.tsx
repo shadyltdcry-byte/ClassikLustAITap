@@ -30,11 +30,11 @@ import AIChat from "@/plugins/aicore/AIChat";
 import MistralDebugger from "@/plugins/aicore/MistralDebugger";
 
 // Gameplay Plugins
+import Upgrades from "@/plugins/gameplay/Upgrades";
+import Task from "@/plugins/gameplay/Task";
 import Achievements from "@/plugins/gameplay/Achievements";
 import Boosters from "@/plugins/gameplay/Boosters";
 import LevelUp from "@/plugins/gameplay/LevelUp";
-import Tasks from "@/plugins/gameplay/Task";
-import Upgrades from "@/plugins/gameplay/Upgrades";
 import Wheel from "@/plugins/gameplay/Wheel";
 
 // Manager Plugins
@@ -120,6 +120,10 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
     setTimeout(() => setIsTapping(false), 200);
   };
 
+  const handleClaimPrize = (type: 'task' | 'achievement') => {
+    onPluginAction('claimPrize', { type });
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white">
       {/* Top Navigation */}
@@ -171,7 +175,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
         {/* News ticker removed temporarily to fix layout */}
 
         {/* Main Content Area - Plugin or Character Display */}
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center p-4">
           {guiState.activePlugin === "main" ? (
             <div className="max-w-md w-full">
               <CharacterDisplay
@@ -210,23 +214,25 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               />
             </div>
           ) : (
-            <div className="w-full h-full max-w-4xl mx-auto bg-black/20 rounded-xl border border-purple-500/30 overflow-hidden">
-              {guiState.activePlugin === "upgrades" && (
-                <Upgrades 
-                  playerData={playerData} 
-                  onUpgradeAction={onPluginAction}
-                />
-              )}
-              {guiState.activePlugin === "tasks" && (
-                <Tasks />
-              )}
-              {guiState.activePlugin === "achievements" && (
-                <Achievements />
-              )}
-              {guiState.activePlugin === "aiChat" && (
-                <AIChat />
-              )}
-            </div>
+            <ScrollArea className="w-full h-[calc(100vh-180px)] max-w-4xl mx-auto">
+              <div className="p-4 bg-black/20 rounded-xl border border-purple-500/30">
+                {guiState.activePlugin === "upgrades" && (
+                  <Upgrades
+                    playerData={playerData}
+                    onUpgradeAction={onPluginAction}
+                  />
+                )}
+                {guiState.activePlugin === "tasks" && (
+                  <Task onClaimPrize={() => handleClaimPrize('task')} />
+                )}
+                {guiState.activePlugin === "achievements" && (
+                  <Achievements onClaimPrize={() => handleClaimPrize('achievement')} />
+                )}
+                {guiState.activePlugin === "aiChat" && (
+                  <AIChat />
+                )}
+              </div>
+            </ScrollArea>
           )}
         </div>
 

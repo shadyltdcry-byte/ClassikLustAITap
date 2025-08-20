@@ -335,47 +335,46 @@ export default function AIChat({ userId, selectedCharacterId }: AIChatProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {/* Character Header */}
-      <Card className="bg-black/20 border-purple-500/30">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16">
-              <AvatarFallback className="bg-purple-600 text-white">
-                {character.name[0]}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h3 className="text-xl font-semibold text-white">{character.name}</h3>
-                <Badge variant="secondary" className={`capitalize ${getMoodInfo(characterMood).color} text-white`}>
-                  {getMoodInfo(characterMood).emoji} {characterMood}
-                </Badge>
-                {character.isNsfw && <Badge variant="destructive">NSFW</Badge>}
-              </div>
-              <p className="text-sm text-gray-400">{character.backstory || "A mysterious character"}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <Badge variant="outline" className="text-purple-300 border-purple-500">
-                  {character.personality}
-                </Badge>
-                <Badge variant="outline" className="text-purple-300 border-purple-500">
-                  Level {character.level}
-                </Badge>
-              </div>
+    <div className="h-full flex flex-col">
+      {/* Chat Header */}
+      <div className="p-4 bg-black/30 border-b border-purple-500/30">
+        <div className="flex items-center gap-3">
+          <Avatar className="h-12 w-12">
+            <AvatarFallback className="bg-purple-600 text-white">
+              {character.name[0]}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-white">{character.name}</h3>
+              <Badge variant="secondary" className={`capitalize ${getMoodInfo(characterMood).color} text-white`}>
+                {getMoodInfo(characterMood).emoji}
+              </Badge>
             </div>
+            <p className="text-sm text-gray-400">Online • Loves to chat</p>
+            <p className="text-xs text-purple-300">Have conversations with your favorite character.</p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Chat Interface */}
-      <Card className="bg-black/20 border-purple-500/30">
-        <CardHeader>
-          <CardTitle className="text-white">Chat with {character.name}</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      {/* Chat Tabs */}
+      <div className="flex gap-2 p-4 bg-black/20">
+        <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full">
+          💬 Chat
+        </Button>
+        <Button variant="outline" className="border-yellow-500 text-yellow-400 px-6 py-2 rounded-full">
+          😊 Moods
+        </Button>
+        <Button variant="outline" className="border-red-500 text-red-400 px-6 py-2 rounded-full">
+          🎁 Gifts
+        </Button>
+      </div>
+
+      {/* Chat Messages */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full flex flex-col">
           {/* Messages */}
-          <ScrollArea className="h-64 w-full rounded border border-purple-500/30 bg-black/10 p-4">
-            <div className="space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messages.map((message) => (
                 <div
                   key={message.id}
@@ -424,59 +423,45 @@ export default function AIChat({ userId, selectedCharacterId }: AIChatProps) {
                 </div>
               )}
               <div ref={messagesEndRef} />
-            </div>
-          </ScrollArea>
+          </div>
 
           {/* Quick Responses */}
-          <div className="flex flex-wrap gap-2">
-            {QUICK_RESPONSES.map((response, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                onClick={() => handleQuickResponse(response)}
-                className="text-xs border-purple-500 text-purple-300 hover:bg-purple-600/20"
-              >
-                {response}
-              </Button>
-            ))}
-          </div>
+          <div className="p-4 bg-black/20 border-t border-purple-500/30">
+            <p className="text-sm text-gray-400 mb-2">Quick responses:</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              {QUICK_RESPONSES.map((response, index) => (
+                <Button
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleQuickResponse(response)}
+                  className="text-xs border-gray-600 text-gray-300 hover:bg-purple-600/20 rounded-full"
+                >
+                  {response}
+                </Button>
+              ))}
+            </div>
 
-          {/* Message Input */}
-          <div className="flex gap-2">
-            <Input
-              value={newMessage}
-              onChange={(e) => setNewMessage(e.target.value)}
-              placeholder={`Message ${character.name}...`}
-              className="bg-black/30 border-purple-500/30 text-white"
-              onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-            />
-            <Button
-              onClick={handleSendMessage}
-              disabled={!newMessage.trim() || sendMessageMutation.isPending}
-              className="bg-purple-600 hover:bg-purple-700"
-            >
-              <Send className="w-4 h-4" />
-            </Button>
-          </div>
-
-          {/* Mood Selection */}
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-400">Your mood:</span>
-            {MOODS.map((mood) => (
+            {/* Message Input */}
+            <div className="flex gap-2">
+              <Input
+                value={newMessage}
+                onChange={(e) => setNewMessage(e.target.value)}
+                placeholder={`Message ${character.name}...`}
+                className="bg-black/50 border-gray-600 text-white rounded-full"
+                onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+              />
               <Button
-                key={mood.name}
-                variant={currentMood === mood.name ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentMood(mood.name)}
-                className={`text-xs ${mood.color} text-white border-purple-500`}
+                onClick={handleSendMessage}
+                disabled={!newMessage.trim() || sendMessageMutation.isPending}
+                className="bg-purple-600 hover:bg-purple-700 rounded-full"
               >
-                {mood.emoji}
+                <Send className="w-4 h-4" />
               </Button>
-            ))}
+            </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
