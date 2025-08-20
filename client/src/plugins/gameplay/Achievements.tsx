@@ -6,7 +6,7 @@
  * Pure data logic for achievements - NO GUI components
  */
 
-export interface Achievement {
+export interface Achievements {
   id: string;
   title: string;
   description: string;
@@ -18,7 +18,7 @@ export interface Achievement {
   icon: string;
 }
 
-export const mockAchievements: Achievement[] = [
+export const mockAchievements: Achievements[] = [
   {
     id: "1",
     title: "First Steps",
@@ -78,10 +78,10 @@ export const mockAchievements: Achievement[] = [
 
 export const getAchievementsByCategory = (category?: string) => {
   if (!category || category === "all") return mockAchievements;
-  return mockAchievements.filter(achievement => achievement.category === category);
+  return mockAchievements.filter(achievements => achievements.category === category);
 };
 
-export const claimAchievementReward = (achievementId: string) => {
+export const claimAchievementsReward = (achievementsId: string) => {
   console.log("Failed to claim achievement");
   return { success: false, error: "Achievement not ready to claim" };
 };

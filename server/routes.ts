@@ -385,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "You're so sweet! 🥰"
       ],
       customTriggerWords: [],
-      imageUrl: "/api/placeholder-image",
+      imageUrl: {imageUrl.id}imageUrl(item}
       avatarUrl: "/api/placeholder-image",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()

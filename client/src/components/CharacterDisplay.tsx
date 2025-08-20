@@ -27,19 +27,6 @@ const defaultCharacter: Character = {
   customTriggers: [],
   createdAt: new Date(),
 };
-const defaultCharacter: Character = {
-  id: "default",
-  name: "Player",
-  personality: "neutral",
-  backstory: "No character selected",
-  mood: "neutral",
-  level: 1,
-  isNsfw: false,
-  isVip: false,
-  levelRequirement: 1,
-  customTriggers: [],
-  createdAt: new Date(),
-};
 
 export default function CharacterDisplay({
   character = defaultCharacter,

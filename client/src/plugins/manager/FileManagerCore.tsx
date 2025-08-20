@@ -274,7 +274,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
+    <div className="max-w-7xl mx-auto p-4 space-y-4">
       {onClose && (
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-3xl font-bold text-white">Media Manager</h1>
@@ -297,7 +297,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* File Selection */}
             <div>
               <Label className="text-white mb-2 block">Select Files</Label>
