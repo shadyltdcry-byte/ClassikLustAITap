@@ -53,14 +53,15 @@ export default function Game() {
               newXPToNext = Math.floor(playerData.xpToNext * 1.5);
             }
             
-            setPlayerData({ 
+            const updatedData = { 
               ...playerData, 
               lp: newLP, 
               energy: newEnergy,
               xp: leveledUp ? newXP - playerData.xpToNext : newXP,
               level: newLevel,
               xpToNext: newXPToNext
-            });
+            };
+            setPlayerData(updatedData);
             
             // Force a re-render by updating the API
             try {

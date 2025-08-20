@@ -121,32 +121,29 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-950 text-white">
+    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white">
       {/* Top Navigation */}
-      <div className="flex items-center justify-between p-4 bg-black/30 border-b border-gray-800">
-        <h1 className="text-white text-2xl font-bold">ClassikLust</h1>
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-900/50 to-red-900/50 border-b border-pink-500/30">
+        <h1 className="text-white text-2xl font-bold bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">ClassikLust</h1>
         <div className="flex gap-2">
           <Button 
             size="sm" 
             onClick={() => onPluginChange?.('upgrades')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
+            className="bg-pink-600 hover:bg-pink-700 text-white border-none"
           >
             Upgrades
           </Button>
           <Button 
             size="sm" 
             onClick={() => onPluginChange?.('aiChat')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
+            className="bg-purple-600 hover:bg-purple-700 text-white border-none"
           >
             Chat
           </Button>
           <Button 
             size="sm" 
             onClick={() => updateGUIState({ showAdminMenu: true })} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
+            className="bg-red-600 hover:bg-red-700 text-white border-none"
           >
             Settings
           </Button>
@@ -154,7 +151,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
       </div>
 
       {/* Status Bar */}
-      <div className="flex justify-between items-center p-4 bg-black/30 border-b border-gray-800">
+      <div className="flex justify-between items-center p-4 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Avatar className="w-8 h-8">
@@ -172,7 +169,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <Coins className="w-4 h-4 text-yellow-400" />
-              <span>{playerData?.coins || 0}</span>
+              <span className="text-yellow-400 font-bold">{playerData?.lp || 0}</span>
             </div>
             <div className="flex items-center gap-1">
               <Gem className="w-4 h-4 text-purple-400" />
@@ -189,32 +186,47 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden relative">
-        <NewsTicker />
+      <div className="flex-1 overflow-hidden relative bg-gradient-to-br from-pink-900/10 via-purple-900/10 to-red-900/10">
+        {/* News ticker removed temporarily to fix layout */}
 
         {/* Character Display */}
-        <div className="p-4 max-w-md mx-auto">
-          <CharacterDisplay
-            user={{
-              ...playerData,
-              id: playerData?.id || 'default-player',
-              username: playerData?.name || 'Player',
-              password: '',
-              level: playerData?.level || 1,
-              lp: playerData?.lp || 0,
-              lpPerHour: playerData?.lpPerHour || 0,
-              lpPerTap: playerData?.lpPerTap || 1,
-              energy: playerData?.energy || 100,
-              maxEnergy: playerData?.maxEnergy || 100,
-              charisma: playerData?.charismaPoints || 0,
-              vipStatus: playerData?.isVip || false,
-              nsfwConsent: playerData?.nsfwEnabled || false,
-              lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
-              createdAt: new Date()
-            } as any}
-            onTap={handleTap}
-            isTapping={isTapping}
-          />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="max-w-md w-full">
+            <CharacterDisplay
+              character={{
+                id: "seraphina",
+                name: "Seraphina",
+                personality: "playful",
+                backstory: "Tap to interact with Seraphina!",
+                mood: "flirty",
+                level: 1,
+                isNsfw: false,
+                isVip: false,
+                levelRequirement: 1,
+                customTriggers: [],
+                createdAt: new Date(),
+              }}
+              user={{
+                ...playerData,
+                id: playerData?.id || 'default-player',
+                username: playerData?.name || 'Player',
+                password: '',
+                level: playerData?.level || 1,
+                lp: playerData?.lp || 0,
+                lpPerHour: playerData?.lpPerHour || 0,
+                lpPerTap: playerData?.lpPerTap || 1,
+                energy: playerData?.energy || 100,
+                maxEnergy: playerData?.maxEnergy || 100,
+                charisma: playerData?.charismaPoints || 0,
+                vipStatus: playerData?.isVip || false,
+                nsfwConsent: playerData?.nsfwEnabled || false,
+                lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
+                createdAt: new Date()
+              } as any}
+              onTap={handleTap}
+              isTapping={isTapping}
+            />
+          </div>
         </div>
 
         {/* Bottom Navigation */}

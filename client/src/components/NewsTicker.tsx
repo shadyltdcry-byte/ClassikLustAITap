@@ -57,25 +57,15 @@ const NewsTicker: React.FC<{ newsItems: NewsItem[] }> = ({ newsItems }) => {
   );
 };
 
-const App: React.FC = () => {
-  const newsItems = [
-    { id: 1, text: 'Breaking News: React 18 Released!' },
-    { id: 2, text: 'New Study Shows Benefits of Regular Exercise' },
-    { id: 3, text: 'Tech Conference 2023 Announces Keynote Speakers' },
+// Default NewsTicker with game-relevant news
+const DefaultNewsTicker: React.FC = () => {
+  const gameNewsItems = [
+    { id: 1, text: '🔥 New characters available! Check out the latest additions!' },
+    { id: 2, text: '💎 Daily rewards reset at midnight - claim yours now!' },
+    { id: 3, text: '⚡ Energy regenerates every 30 seconds - keep tapping!' },
   ];
 
-  return (
-    <div>
-      <header style={{ textAlign: 'center', backgroundColor: '#333', color: '#fff', padding: '20px' }}>
-        <h1>Welcome to Our Website</h1>
-      </header>
-      <NewsTicker newsItems={newsItems} />
-      <div style={{ padding: '20px' }}>
-        <h2>Main Content</h2>
-        <p>This is where the main content of the page goes...</p>
-      </div>
-    </div>
-  );
+  return <NewsTicker newsItems={gameNewsItems} />;
 };
 
-export default App;
+export default DefaultNewsTicker;
