@@ -294,7 +294,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               </TabsContent>
 
               {/* Media Management Tab */}
-              <TabsContent value="media" className="flex-1 flex flex-col overflow-hidden mx-4">
+              <TabsContent value="media" className="flex-1 flex flex-col overflow-hidden mx-4 mt-4">
                 <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
                   <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
                     <h3 className="text-white font-semibold">Media Management</h3>
@@ -307,7 +307,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               </TabsContent>
 
               {/* Upgrades Management Tab */}
-              <TabsContent value="upgrades" className="flex-1 flex flex-col overflow-hidden mx-4">
+              <TabsContent value="upgrades" className="flex-1 flex flex-col overflow-hidden mx-4 mt-4">
                 <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
                   <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
                     <h3 className="text-white font-semibold">Upgrade Management</h3>
@@ -321,7 +321,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </Button>
                     </div>
 
-                    <ScrollArea className="h-full">
+                    <div className="flex-1 overflow-auto">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                           <div>
@@ -353,13 +353,13 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           </div>
                         </div>
                       </div>
-                    </ScrollArea>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
 
               {/* Tasks Management Tab */}
-              <TabsContent value="tasks" className="flex-1 flex flex-col overflow-hidden mx-4">
+              <TabsContent value="tasks" className="flex-1 flex flex-col overflow-hidden mx-4 mt-4">
                 <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
                   <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
                     <h3 className="text-white font-semibold">Task Management</h3>
@@ -373,7 +373,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </Button>
                     </div>
 
-                    <ScrollArea className="h-full">
+                    <div className="flex-1 overflow-auto">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                           <div>
@@ -405,13 +405,13 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           </div>
                         </div>
                       </div>
-                    </ScrollArea>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
 
               {/* Achievements Management Tab */}
-              <TabsContent value="achievements" className="flex-1 flex flex-col overflow-hidden mx-4">
+              <TabsContent value="achievements" className="flex-1 flex flex-col overflow-hidden mx-4 mt-4">
                 <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
                   <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
                     <h3 className="text-white font-semibold">Achievement Management</h3>
@@ -425,7 +425,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </Button>
                     </div>
 
-                    <ScrollArea className="h-full">
+                    <div className="flex-1 overflow-auto">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                           <div>
@@ -457,13 +457,13 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           </div>
                         </div>
                       </div>
-                    </ScrollArea>
+                    </div>
                   </div>
                 </div>
               </TabsContent>
 
               {/* Game Management Tab */}
-              <TabsContent value="game" className="flex-1 flex flex-col overflow-hidden mx-4">
+              <TabsContent value="game" className="flex-1 flex flex-col overflow-hidden mx-4 mt-4">
                 <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
                   <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
                     <h3 className="text-white font-semibold">Game Management</h3>
@@ -524,7 +524,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               </TabsContent>
 
               {/* Database Tab */}
-              <TabsContent value="database" className="flex-1 flex flex-col overflow-hidden mx-4">
+              <TabsContent value="database" className="flex-1 flex flex-col overflow-hidden mx-4 mt-4">
                 <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
                   <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
                     <h3 className="text-white font-semibold">Database Management</h3>
@@ -550,7 +550,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               </TabsContent>
 
               {/* System Tab */}
-              <TabsContent value="system" className="flex-1 flex flex-col overflow-hidden mx-4">
+              <TabsContent value="system" className="flex-1 flex flex-col overflow-hidden mx-4 mt-4">
                 <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
                   <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
                     <h3 className="text-white font-semibold">System Settings</h3>

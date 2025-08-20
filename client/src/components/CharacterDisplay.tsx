@@ -15,6 +15,19 @@ interface CharacterDisplayProps {
 
 // Fallback default character
 const defaultCharacter: Character = {
+  id: "seraphina",
+  name: "Seraphina",
+  personality: "playful",
+  backstory: "A mysterious and playful character who loves to chat and have fun!",
+  mood: "flirty",
+  level: 1,
+  isNsfw: false,
+  isVip: false,
+  levelRequirement: 1,
+  customTriggers: [],
+  createdAt: new Date(),
+};
+const defaultCharacter: Character = {
   id: "default",
   name: "Player",
   personality: "neutral",

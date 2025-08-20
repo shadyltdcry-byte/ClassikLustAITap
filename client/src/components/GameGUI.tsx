@@ -14,7 +14,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Zap, Star, Settings, Send, Heart, Coins, Gem, MessageCircle } from "lucide-react";
+import { Zap, Star, Settings, Send, Heart, Coins, Gem } from "lucide-react";
+import { MessageCircle } from "lucide-react";
 
 import CharacterDisplay from "@/components/CharacterDisplay";
 import NewsTicker from "@/components/NewsTicker";
