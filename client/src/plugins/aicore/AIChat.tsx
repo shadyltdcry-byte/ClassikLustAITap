@@ -243,6 +243,25 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
   // Send message with Mistral AI
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
+      // Add user message immediately
+      const userMessage: ChatMessage = {
+        id: `user-${Date.now()}`,
+        content: message,
+        sender: 'user',
+        timestamp: new Date(),
+        type: 'text',
+        mood: currentMood,
+      };
+      setMessages(prev => [...prev, userMessage]);
+      setNewMessage("");
+
+      // Show typing indicator
+      setTypingIndicator(true);
+      
+      // Add 3-5 second delay before sending request
+      const delay = Math.random() * 2000 + 3000; // 3-5 seconds
+      await new Promise(resolve => setTimeout(resolve, delay));
+
       // Generate AI response using Mistral
       const response = await apiRequest("POST", "/api/mistral/chat", {
         message,
@@ -259,18 +278,11 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       return { result, originalMessage: message };
     },
     onSuccess: (data) => {
-      const { result, originalMessage } = data;
+      const { result } = data;
       
-      // Add user message
-      const userMessage: ChatMessage = {
-        id: `user-${Date.now()}`,
-        content: originalMessage,
-        sender: 'user',
-        timestamp: new Date(),
-        type: 'text',
-        mood: currentMood,
-      };
-
+      // Hide typing indicator
+      setTypingIndicator(false);
+      
       // Add AI response
       const aiMessage: ChatMessage = {
         id: `ai-${Date.now()}`,
@@ -282,20 +294,12 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         reactionScore: Math.floor(Math.random() * 10) + 1,
       };
 
-      setMessages(prev => [...prev, userMessage, aiMessage]);
+      setMessages(prev => [...prev, aiMessage]);
       setCharacterMood(aiMessage.mood || 'normal');
-      setNewMessage("");
-      
-      toast({
-        title: "Message sent!",
-        description: `${character?.name} responded!`,
-      });
-
-      // Don't invalidate queries immediately to prevent message overlay
-      // The messages are already updated in state
     },
     onError: (error: any) => {
       console.error("AI Chat error:", error);
+      setTypingIndicator(false);
       // Fallback to local response generation
       handleLocalMessage();
     },
@@ -316,6 +320,8 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
     setMessages(prev => [...prev, userMessage]);
     setNewMessage("");
 
+    // Add 3-5 second delay for typing
+    const delay = Math.random() * 2000 + 3000; // 3-5 seconds
     setTimeout(() => {
       const response = generateSmartResponse(originalMessage);
       const characterMessage: ChatMessage = {
@@ -331,7 +337,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       setMessages(prev => [...prev, characterMessage]);
       setCharacterMood(characterMessage.mood || 'normal');
       setTypingIndicator(false);
-    }, Math.random() * 2000 + 1000);
+    }, delay);
   };
 
   const handleSendMessage = () => {
@@ -455,11 +461,17 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-gray-600">{character.name[0]}</AvatarFallback>
                   </Avatar>
-                  <div className="bg-gray-700 text-white rounded-lg p-3">
-                    <div className="flex space-x-1">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="bg-gray-700 text-white rounded-lg p-3 max-w-[80%]">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-xs text-gray-400">{character.name}</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <div className="flex space-x-1">
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                        <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      </div>
+                      <span className="text-xs text-gray-400 ml-2">{character.name} is typing...</span>
                     </div>
                   </div>
                 </div>
