@@ -115,6 +115,11 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
 
   // Load chat history on character change - prevent infinite loops
   useEffect(() => {
+    if (!character?.id) {
+      setMessages([]);
+      return;
+    }
+
     if (chatHistory && chatHistory.length > 0) {
       const formattedMessages = chatHistory.map((msg: any) => ({
         id: msg.id,
@@ -125,17 +130,12 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         mood: msg.mood,
         reactionScore: msg.reactionScore,
       }));
-      // Only update if messages have actually changed
-      const messagesChanged = JSON.stringify(messages.map(m => ({ id: m.id, content: m.content, sender: m.sender }))) !== 
-                             JSON.stringify(formattedMessages.map((m: any) => ({ id: m.id, content: m.content, sender: m.sender })));
-      if (messagesChanged) {
-        setMessages(formattedMessages);
-      }
-    } else if (character && chatHistory !== undefined && chatHistory.length === 0 && messages.length > 0) {
-      // Send initial greeting only when we have a character and confirmed empty chat history
+      setMessages(formattedMessages);
+    } else if (chatHistory !== undefined && chatHistory.length === 0) {
+      // Send initial greeting only when we have confirmed empty chat history
       const greeting = getCharacterGreeting();
       setMessages([{
-        id: 'initial',
+        id: 'initial-greeting',
         content: greeting,
         sender: 'character',
         timestamp: new Date(),
@@ -143,7 +143,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         mood: 'happy',
       }]);
     }
-  }, [chatHistory]); // Removed character?.id to prevent infinite loops
+  }, [chatHistory, character?.id])
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -249,13 +249,15 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       });
       
       const result = await response.json();
-      return result;
+      return { result, originalMessage: message };
     },
     onSuccess: (data) => {
+      const { result, originalMessage } = data;
+      
       // Add user message
       const userMessage: ChatMessage = {
-        id: Date.now().toString(),
-        content: newMessage,
+        id: `user-${Date.now()}`,
+        content: originalMessage,
         sender: 'user',
         timestamp: new Date(),
         type: 'text',
@@ -264,12 +266,12 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
 
       // Add AI response
       const aiMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        content: data.response || "I'm sorry, I didn't understand that.",
+        id: `ai-${Date.now()}`,
+        content: result.response || "I'm sorry, I didn't understand that.",
         sender: 'character',
         timestamp: new Date(),
         type: 'text',
-        mood: data.mood || getRandomMood(),
+        mood: result.mood || getRandomMood(),
         reactionScore: Math.floor(Math.random() * 10) + 1,
       };
 
@@ -277,13 +279,15 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       setCharacterMood(aiMessage.mood || 'normal');
       setNewMessage("");
       
-      // Invalidate chat query to refetch and sync with server
-      queryClient.invalidateQueries({ queryKey: ["/api/chat", userId, character?.id] });
-      
       toast({
         title: "Message sent!",
         description: `${character?.name} responded!`,
       });
+
+      // Delay the query invalidation to prevent immediate overwrite
+      setTimeout(() => {
+        queryClient.invalidateQueries({ queryKey: ["/api/chat", userId, character?.id] });
+      }, 1000);
     },
     onError: (error: any) => {
       console.error("AI Chat error:", error);
@@ -293,9 +297,10 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
   });
 
   const handleLocalMessage = () => {
+    const originalMessage = newMessage;
     const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      content: newMessage,
+      id: `local-user-${Date.now()}`,
+      content: originalMessage,
       sender: 'user',
       timestamp: new Date(),
       type: 'text',
@@ -304,11 +309,12 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
 
     setTypingIndicator(true);
     setMessages(prev => [...prev, userMessage]);
+    setNewMessage("");
 
     setTimeout(() => {
-      const response = generateSmartResponse(newMessage);
+      const response = generateSmartResponse(originalMessage);
       const characterMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: `local-ai-${Date.now()}`,
         content: response,
         sender: 'character',
         timestamp: new Date(),
@@ -321,8 +327,6 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       setCharacterMood(characterMessage.mood || 'normal');
       setTypingIndicator(false);
     }, Math.random() * 2000 + 1000);
-
-    setNewMessage("");
   };
 
   const handleSendMessage = () => {
