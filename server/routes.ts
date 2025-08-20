@@ -284,8 +284,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chat endpoints
   app.get("/api/chat/:userId/:characterId", (req, res) => {
     const { userId, characterId } = req.params;
-    const fs = require('fs');
-    const path = require('path');
     
     try {
       const chatStoragePath = path.join(__dirname, 'chat-storage.json');
@@ -324,8 +322,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/chat/send", async (req, res) => {
     const { userId, characterId, message, isFromUser } = req.body;
-    const fs = require('fs');
-    const path = require('path');
     
     const userMessage = {
       id: Date.now().toString(),
