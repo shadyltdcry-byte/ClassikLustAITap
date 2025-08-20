@@ -21,7 +21,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { MediaFile, Character } from '../utils/schema';
+import { MediaFile, Character } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,7 +32,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'react-hot-toast';
 
-const FileManagerCore: React.FC = () => {
+interface FileManagerCoreProps {
+  onClose?: () => void;
+}
+
+const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   const [selectedFile, setSelectedFile] = useState<MediaFile | null>(null);
   const [folderStructure, setFolderStructure] = useState<Record<string, MediaFile[]>>({});
   const [uploadProgress, setUploadProgress] = useState<number>(0);
@@ -61,9 +65,7 @@ const FileManagerCore: React.FC = () => {
   // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const response = await apiRequest('POST', '/api/media/upload', formData, {
-        'Content-Type': 'multipart/form-data',
-      });
+      const response = await apiRequest('POST', '/api/media/upload', formData);
       return await response.json();
     },
     onSuccess: (uploadedFiles) => {
@@ -144,9 +146,8 @@ const FileManagerCore: React.FC = () => {
       parts.push(`Character_${character?.name || file.characterId}`);
     }
     if (file.mood) parts.push(`Mood_${file.mood}`);
-    if (file.level) parts.push(`Level_${file.level}`);
-    if (file.isVIP) parts.push('VIP');
-    if (file.isNSFW) parts.push('NSFW');
+    if (file.isVip) parts.push('VIP');
+    if (file.isNsfw) parts.push('NSFW');
     return parts.join('/') || 'Uncategorized';
   };
 
@@ -198,10 +199,10 @@ const FileManagerCore: React.FC = () => {
       borderRadius: '8px',
     };
 
-    if (file.type === 'image' || file.type === 'gif') {
+    if (file.fileType === 'image' || file.fileType === 'gif') {
       return (
         <img 
-          src={file.url || file.path} 
+          src={file.filePath} 
           alt="Media preview" 
           style={commonStyles}
           onError={(e) => {
@@ -209,10 +210,10 @@ const FileManagerCore: React.FC = () => {
           }}
         />
       );
-    } else if (file.type === 'video') {
+    } else if (file.fileType === 'video') {
       return (
         <video controls style={commonStyles}>
-          <source src={file.url || file.path} type="video/mp4" />
+          <source src={file.filePath} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       );
@@ -242,6 +243,14 @@ const FileManagerCore: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
+      {onClose && (
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-3xl font-bold text-white">Media Manager</h1>
+          <Button onClick={onClose} variant="outline" className="text-white border-white">
+            Close
+          </Button>
+        </div>
+      )}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-white mb-2">Media Manager</h1>
         <p className="text-gray-400">Upload, organize, and manage your character media files</p>
@@ -286,7 +295,7 @@ const FileManagerCore: React.FC = () => {
 
         <TabsContent value="grid" className="space-y-4">
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {mediaFiles.map((file) => (
+            {mediaFiles.map((file: MediaFile) => (
               <Card
                 key={file.id}
                 className="bg-gray-800/50 border-gray-600 cursor-pointer hover:bg-gray-700/50 transition-colors"
@@ -296,13 +305,13 @@ const FileManagerCore: React.FC = () => {
                   {renderMediaPreview(file)}
                   <div className="mt-2 space-y-1">
                     <p className="text-xs text-white truncate">
-                      {file.originalName || file.filename || `File ${file.id.slice(0, 8)}`}
+                      {file.fileName || `File ${file.id.slice(0, 8)}`}
                     </p>
                     <div className="flex flex-wrap gap-1">
-                      {file.isVIP && (
+                      {file.isVip && (
                         <span className="text-xs bg-yellow-600 text-white px-1 rounded">VIP</span>
                       )}
-                      {file.isNSFW && (
+                      {file.isNsfw && (
                         <span className="text-xs bg-red-600 text-white px-1 rounded">NSFW</span>
                       )}
                       {file.mood && (
@@ -335,7 +344,7 @@ const FileManagerCore: React.FC = () => {
                     >
                       {renderMediaPreview(file)}
                       <p className="text-xs text-white mt-1 truncate">
-                        {file.originalName || file.filename || `File ${file.id.slice(0, 8)}`}
+                        {file.fileName || `File ${file.id.slice(0, 8)}`}
                       </p>
                     </div>
                   ))}
@@ -353,7 +362,7 @@ const FileManagerCore: React.FC = () => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-white">
-                  {selectedFile.originalName || selectedFile.filename || 'Media File'}
+                  {selectedFile.fileName || 'Media File'}
                 </CardTitle>
                 <div className="flex gap-2">
                   <Button
@@ -384,16 +393,15 @@ const FileManagerCore: React.FC = () => {
                 {renderMediaPreview(selectedFile, 'full')}
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
-                <div>Type: {selectedFile.type}</div>
+                <div>Type: {selectedFile.fileType}</div>
                 <div>Character: {
                   selectedFile.characterId 
                     ? characters.find((c: Character) => c.id === selectedFile.characterId)?.name || 'Unknown'
                     : 'Unassigned'
                 }</div>
                 <div>Mood: {selectedFile.mood || 'None'}</div>
-                <div>Level: {selectedFile.level || 'None'}</div>
-                <div>VIP: {selectedFile.isVIP ? 'Yes' : 'No'}</div>
-                <div>NSFW: {selectedFile.isNSFW ? 'Yes' : 'No'}</div>
+                <div>VIP: {selectedFile.isVip ? 'Yes' : 'No'}</div>
+                <div>NSFW: {selectedFile.isNsfw ? 'Yes' : 'No'}</div>
               </div>
             </CardContent>
           </Card>
@@ -412,7 +420,7 @@ const FileManagerCore: React.FC = () => {
                 <Label className="text-white">Assign to Character</Label>
                 <Select
                   value={editingFile.characterId || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, characterId: value || undefined})}
+                  onValueChange={(value) => setEditingFile({...editingFile, characterId: value || ''})}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character" />
@@ -432,7 +440,7 @@ const FileManagerCore: React.FC = () => {
                 <Label className="text-white">Mood</Label>
                 <Select
                   value={editingFile.mood || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, mood: value || undefined})}
+                  onValueChange={(value) => setEditingFile({...editingFile, mood: value || null})}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select mood" />
@@ -449,30 +457,19 @@ const FileManagerCore: React.FC = () => {
                 </Select>
               </div>
 
-              <div>
-                <Label className="text-white">Level</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  value={editingFile.level || ''}
-                  onChange={(e) => setEditingFile({...editingFile, level: e.target.value ? parseInt(e.target.value) : undefined})}
-                  className="bg-gray-700 border-gray-600 text-white"
-                  placeholder="Level requirement"
-                />
-              </div>
 
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">
                   <Switch
-                    checked={editingFile.isVIP || false}
-                    onCheckedChange={(checked) => setEditingFile({...editingFile, isVIP: checked})}
+                    checked={editingFile.isVip || false}
+                    onCheckedChange={(checked) => setEditingFile({...editingFile, isVip: checked})}
                   />
                   <Label className="text-white">VIP Content</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
-                    checked={editingFile.isNSFW || false}
-                    onCheckedChange={(checked) => setEditingFile({...editingFile, isNSFW: checked})}
+                    checked={editingFile.isNsfw || false}
+                    onCheckedChange={(checked) => setEditingFile({...editingFile, isNsfw: checked})}
                   />
                   <Label className="text-white">NSFW Content</Label>
                 </div>

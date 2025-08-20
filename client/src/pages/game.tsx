@@ -116,17 +116,17 @@ export default function Game() {
       case 'characterEditor':
         return <CharacterEditor />;
       case 'aiChat':
-        return <AIChat />;
+        return <AIChat userId={playerData?.id || 'default-player'} />;
       case 'mistralDebugger':
-        return <MistralDebugger />;
+        return <MistralDebugger isOpen={true} onClose={() => setActivePlugin('game')} />;
       case 'fileManager':
         return <FileManagerCore />;
       case 'wheel':
-        return <Wheel />;
+        return <Wheel playerId={playerData?.id || 'default-player'} isVIP={playerData?.isVip || false} isEventActive={false} />;
       case 'upgrades':
         return <Upgrades />;
       case 'boosters':
-        return <Boosters />;
+        return <Boosters isOpen={true} onClose={() => setActivePlugin('game')} user={playerData || { id: 'default-player', name: 'Player', level: 1 }} />;
       case 'levelUp':
         return <LevelUp />;
       case 'task':
@@ -136,7 +136,7 @@ export default function Game() {
       case 'adminMenu':
         return <AdminMenu />;
       case 'gameManager':
-        return <GameManagerCore />;
+        return <div className="text-white">Game Manager - Under Development</div>;
       case 'game':
       default:
         return (

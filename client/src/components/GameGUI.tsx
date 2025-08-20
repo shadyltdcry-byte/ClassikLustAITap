@@ -133,7 +133,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
           </Button>
           <Button 
             size="sm" 
-            onClick={() => onPluginChange?.('fileManager')} 
+            onClick={() => updateGUIState({ showFileManager: true })} 
             variant="outline"
             className="text-white border-white hover:bg-white hover:text-black"
           >
@@ -216,7 +216,22 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
         {/* Character Display */}
         <div className="p-4 max-w-md mx-auto">
           <CharacterDisplay
-            user={playerData}
+            user={playerData || {
+              id: 'default-player',
+              username: 'Player',
+              password: '',
+              level: 1,
+              lp: 0,
+              lpPerHour: 0,
+              lpPerTap: 1,
+              energy: 100,
+              maxEnergy: 100,
+              charisma: 0,
+              vipStatus: false,
+              nsfwConsent: false,
+              lastTick: new Date(),
+              createdAt: new Date()
+            }}
             onTap={handleTap}
             isTapping={isTapping}
           />
