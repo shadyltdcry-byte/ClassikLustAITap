@@ -128,7 +128,7 @@ const CharacterCard = ({
       <div className="relative flex-shrink-0">
         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-600/50 group-hover:border-blue-500/50 transition-colors">
           <img 
-            src={character.avatarUrl || character.imageUrl || '/api/placeholder/64/64'} 
+            src={character.imageUrl || '/api/placeholder/64/64'} 
             alt={character.name} 
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -167,7 +167,7 @@ const CharacterCard = ({
         </p>
 
         <div className="flex items-center gap-4 text-xs text-gray-500">
-          <span>Level {character.requiredLevel}+</span>
+          <span>Level {character.levelRequirement}+</span>
           <span>ID: {character.id.slice(0, 8)}...</span>
         </div>
       </div>
@@ -372,7 +372,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-2">
-      <div className="bg-gradient-to-br from-gray-950 via-blue-950/50 to-black w-full max-w-7xl h-[95vh] rounded-2xl border border-blue-500/20 flex flex-col overflow-hidden shadow-2xl shadow-blue-500/10">
+      <div className="bg-gradient-to-br from-gray-950 via-blue-950/50 to-black w-full max-w-7xl h-[95vh] rounded-2xl border border-blue-500/20 flex flex-col shadow-2xl shadow-blue-500/10">
 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-blue-500/20 bg-black/20">
@@ -396,7 +396,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden">
+        <div className="flex-1 flex flex-col min-h-0">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
 
             {/* Tab Navigation */}
@@ -438,7 +438,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </div>
 
             {/* CHARACTERS TAB */}
-            <TabsContent value="characters" className="flex-1 flex flex-col overflow-hidden px-6 py-4">
+            <TabsContent value="characters" className="flex-1 flex flex-col min-h-0 px-6 py-4">
               {/* Character Submenu */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex bg-black/40 p-1 rounded-lg">
@@ -615,8 +615,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* MEDIA TAB */}
-            <TabsContent value="media" className="flex-1 overflow-hidden px-6 py-4">
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden">
+            <TabsContent value="media" className="flex-1 flex flex-col min-h-0 px-6 py-4">
+              <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden">
                 <FileManagerCore />
               </div>
             </TabsContent>

@@ -49,8 +49,8 @@ const claimTaskReward = (taskId: string) => {
   // In a real app, you would update the backend and refetch data
 };
 // Function to simulate claiming an achievement reward
-const claimAchievementsReward = (achievementsId: string) => {
-  console.log(`Claiming reward for achievements: ${achievementsId}`);
+const claimAchievementReward = (achievementId: string) => {
+  console.log(`Claiming reward for achievement: ${achievementId}`);
   // In a real app, you would update the backend and refetch data
 };
 interface PlayerData {
@@ -282,8 +282,8 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               lp: playerData?.lp || 0,
               lpPerHour: playerData?.lpPerHour || 0,
               lpPerTap: playerData?.lpPerTap || 1,
-              energy: playerData?.energy || 100,
-              maxEnergy: playerData?.maxEnergy || 100,
+              energy: playerData?.energy || 1000,
+              maxEnergy: playerData?.maxEnergy || 1000,
               charisma: playerData?.charismaPoints || 0,
               vipStatus: playerData?.isVip || false,
               nsfwConsent: playerData?.nsfwEnabled || false,
@@ -295,17 +295,57 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
           />
         </div>
       );
+    } else if (guiState.activePlugin === "levelup") {
+      return (
+        <LevelUp />
+      );
     } else if (guiState.activePlugin === "upgrades") {
       return (
-        <Upgrades
-          playerData={playerData}
-          onUpgradeAction={onPluginAction}
-        />
+        <div className="w-full max-w-2xl">
+          <Tabs defaultValue="lpPerHour" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 bg-black/20">
+              <TabsTrigger value="lpPerHour">LP per Hour</TabsTrigger>
+              <TabsTrigger value="energy">Energy Gain</TabsTrigger>
+              <TabsTrigger value="lpPerTap">LP per Tap</TabsTrigger>
+            </TabsList>
+            <TabsContent value="lpPerHour">
+              <Upgrades
+                playerData={playerData}
+                onUpgradeAction={onPluginAction}
+              />
+            </TabsContent>
+            <TabsContent value="energy">
+              <Upgrades
+                playerData={playerData}
+                onUpgradeAction={onPluginAction}
+              />
+            </TabsContent>
+            <TabsContent value="lpPerTap">
+              <Upgrades
+                playerData={playerData}
+                onUpgradeAction={onPluginAction}
+              />
+            </TabsContent>
+          </Tabs>
+        </div>
       );
     } else if (guiState.activePlugin === "task") {
-      return <Task onClaimPrize={() => handleClaimPrize('task')} />;
-    } else if (guiState.activePlugin === "achievements") {
-      return <Achievements onClaimPrize={() => handleClaimPrize('achievements')} />;
+      return (
+        <div className="w-full max-w-2xl">
+          <Tabs defaultValue="tasks" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 bg-black/20">
+              <TabsTrigger value="tasks">Tasks</TabsTrigger>
+              <TabsTrigger value="achievements">Achievements</TabsTrigger>
+            </TabsList>
+            <TabsContent value="tasks">
+              <Task onClaimPrize={() => handleClaimPrize('task')} />
+            </TabsContent>
+            <TabsContent value="achievements">
+              <Achievements onClaimPrize={() => handleClaimPrize('achievements')} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      );
     } else if (guiState.activePlugin === "aiChat") {
       return <AIChat userId={playerData?.id || 'default-player'} />;
     }
@@ -348,7 +388,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
             <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full">
               <Heart className="w-3 h-3 text-red-400" />
               <span className="text-red-400 font-bold text-xs">
-                {playerData?.energy || 0}/{playerData?.maxEnergy || 100}
+                {playerData?.energy || 0}/{playerData?.maxEnergy || 1000}
               </span>
             </div>
           </div>
@@ -362,6 +402,16 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
         {/* Bottom Navigation */}
         <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-900/90 to-red-900/90 border-t border-pink-500/30 p-1 backdrop-blur-sm">
           <div className="flex justify-around items-center">
+            <Button
+              variant="ghost"
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${
+                guiState.activePlugin === "levelup" ? "bg-pink-600/30" : ""
+              }`}
+              onClick={() => updateGUIState({ activePlugin: "levelup" })}
+            >
+              <Star className="w-4 h-4" />
+              <span className="text-xs">LevelUp</span>
+            </Button>
             <Button
               variant="ghost"
               className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${
@@ -379,18 +429,8 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               }`}
               onClick={() => updateGUIState({ activePlugin: "task" })}
             >
-              <Star className="w-4 h-4" />
-              <span className="text-xs">Tasks</span>
-            </Button>
-            <Button
-              variant="ghost"
-              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${
-                guiState.activePlugin === "achievements" ? "bg-pink-600/30" : ""
-              }`}
-              onClick={() => updateGUIState({ activePlugin: "achievements" })}
-            >
-              <Star className="w-4 h-4" />
-              <span className="text-xs">Achievements</span>
+              <Zap className="w-4 h-4" />
+              <span className="text-xs">Task</span>
             </Button>
             <Button
               variant="ghost"
@@ -408,7 +448,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               onClick={() => updateGUIState({ showAdminMenu: true })}
             >
               <Settings className="w-4 h-4" />
-              <span className="text-xs">Settings</span>
+              <span className="text-xs">Admin</span>
             </Button>
           </div>
         </div>
