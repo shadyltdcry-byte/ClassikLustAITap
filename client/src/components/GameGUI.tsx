@@ -22,7 +22,8 @@ import CharacterCreation from "@/components/CharacterCreation";
 import CharacterEditor from "@/components/CharacterEditor";
 import CharacterGallery from "@/components/CharacterGallery";
 
-// Admin Plugins are handled separately in the game router
+// Admin Plugins
+import AdminMenu from "@/plugins/admin/AdminMenu";
 
 // AI Core Plugins
 import AIChat from "@/plugins/aicore/AIChat";
@@ -75,6 +76,7 @@ interface GUIState {
   showBoosterMenu: boolean;
   showAICustomFunctions: boolean;
   showEnhancedChat: boolean;
+  showAdminMenu: boolean;
   selectedCharacter: any | null;
 }
 
@@ -89,6 +91,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
     showBoosterMenu: false,
     showAICustomFunctions: false,
     showEnhancedChat: false,
+    showAdminMenu: false,
     selectedCharacter: null,
   });
 
@@ -133,14 +136,6 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
           </Button>
           <Button 
             size="sm" 
-            onClick={() => updateGUIState({ showFileManager: true })} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Media
-          </Button>
-          <Button 
-            size="sm" 
             onClick={() => onPluginChange?.('aiChat')} 
             variant="outline"
             className="text-white border-white hover:bg-white hover:text-black"
@@ -149,27 +144,11 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
           </Button>
           <Button 
             size="sm" 
-            onClick={() => onPluginChange?.('gameManager')} 
+            onClick={() => updateGUIState({ showAdminMenu: true })} 
             variant="outline"
             className="text-white border-white hover:bg-white hover:text-black"
           >
-            Manager
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => onPluginChange?.('adminMenu')} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Admin
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => updateGUIState({ showCharacterCreation: true })} 
-            variant="outline"
-            className="text-white border-white hover:bg-white hover:text-black"
-          >
-            Create Character
+            Settings
           </Button>
         </div>
       </div>
@@ -268,7 +247,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => onPluginChange?.('adminMenu')}
+              onClick={() => updateGUIState({ showAdminMenu: true })}
               className="text-gray-400 hover:text-white"
             >
               <Settings className="w-6 h-6" />
@@ -311,6 +290,9 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               <FileManagerCore onClose={() => updateGUIState({ showFileManager: false })} />
             </div>
           </div>
+        )}
+        {guiState.showAdminMenu && (
+          <AdminMenu onClose={() => updateGUIState({ showAdminMenu: false })} />
         )}
       </div>
     </div>

@@ -41,6 +41,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   const [folderStructure, setFolderStructure] = useState<Record<string, MediaFile[]>>({});
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const queryClient = useQueryClient();
 
@@ -155,33 +156,41 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
    * Handles file upload with progress tracking
    * Supports multiple file selection and validation
    */
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const files = Array.from(event.target.files);
-
-      // Validate file types
-      const validFiles = files.filter(file => {
-        const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm'];
-        return validTypes.includes(file.type);
-      });
-
-      if (validFiles.length !== files.length) {
-        toast.error('Some files were skipped due to invalid format');
-      }
-
-      if (validFiles.length === 0) {
-        toast.error('No valid files selected');
-        return;
-      }
-
-      const formData = new FormData();
-      validFiles.forEach((file) => {
-        formData.append('mediaFiles', file);
-      });
-
-      setUploadProgress(10);
-      uploadMutation.mutate(formData);
+      setSelectedFiles(files);
     }
+  };
+
+  const handleSubmitUpload = async () => {
+    if (selectedFiles.length === 0) {
+      toast.error('No files selected');
+      return;
+    }
+
+    // Validate file types
+    const validFiles = selectedFiles.filter(file => {
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm'];
+      return validTypes.includes(file.type);
+    });
+
+    if (validFiles.length !== selectedFiles.length) {
+      toast.error('Some files were skipped due to invalid format');
+    }
+
+    if (validFiles.length === 0) {
+      toast.error('No valid files selected');
+      return;
+    }
+
+    const formData = new FormData();
+    validFiles.forEach((file) => {
+      formData.append('mediaFiles', file);
+    });
+
+    setUploadProgress(10);
+    uploadMutation.mutate(formData);
   };
 
   /**
@@ -266,23 +275,34 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="flex flex-col space-y-3">
-              <Input
-                type="file"
-                multiple
-                onChange={handleFileUpload}
-                accept="image/*,video/*,image/gif"
-                className="bg-gray-700 border-gray-600 text-white file:bg-purple-600 file:text-white file:border-none file:rounded"
-                disabled={uploadMutation.isPending}
-              />
-              <Button
-                onClick={() => document.querySelector('input[type="file"]')?.click()}
-                className="bg-purple-600 hover:bg-purple-700 text-white w-full"
-                disabled={uploadMutation.isPending}
-              >
-                {uploadMutation.isPending ? 'Uploading...' : 'Choose Files to Upload'}
-              </Button>
-            </div>
+            <Input
+              type="file"
+              multiple
+              onChange={handleFileUpload}
+              accept="image/*,video/*,image/gif"
+              className="bg-gray-700 border-gray-600 text-white file:bg-purple-600 file:text-white file:border-none file:rounded"
+              disabled={uploadMutation.isPending}
+            />
+            {selectedFiles.length > 0 && (
+              <div className="text-sm text-gray-300 mt-2 p-2 bg-gray-700/50 rounded">
+                <p className="font-medium">Selected Files:</p>
+                <div className="space-y-1">
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex justify-between items-center">
+                      <span className="truncate">{file.name}</span>
+                      <span className="text-xs text-gray-400">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            <Button
+              onClick={handleSubmitUpload}
+              className="bg-purple-600 hover:bg-purple-700 text-white w-full mt-3"
+              disabled={uploadMutation.isPending || selectedFiles.length === 0}
+            >
+              {uploadMutation.isPending ? 'Uploading...' : selectedFiles.length > 0 ? `Upload ${selectedFiles.length} File${selectedFiles.length !== 1 ? 's' : ''}` : 'Choose Files First'}
+            </Button>
             {uploadProgress > 0 && (
               <div className="w-full bg-gray-600 rounded-full h-2">
                 <div

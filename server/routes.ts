@@ -181,6 +181,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Player update endpoint
+  app.put("/api/player/:playerId", (req, res) => {
+    const { playerId } = req.params;
+    const updates = req.body;
+    
+    // In a real app, you'd update the database here
+    // For now, just return success with the updated data
+    res.json({
+      success: true,
+      playerId,
+      message: "Player updated successfully",
+      updates
+    });
+  });
+
   // Characters list endpoint
   app.get("/api/characters", (req, res) => {
     res.json([

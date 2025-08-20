@@ -195,7 +195,14 @@ export default function Game() {
       case 'achievements':
         return <Achievements />;
       case 'adminMenu':
-        return <AdminMenu />;
+        // Admin menu should only be accessible through GameGUI modals
+        return (
+          <GameGUI 
+            playerData={playerData} 
+            onPluginAction={handlePluginAction}
+            onPluginChange={setActivePlugin}
+          />
+        );
       case 'gameManager':
         return <div className="text-white">Game Manager - Under Development</div>;
       case 'game':
@@ -213,8 +220,8 @@ export default function Game() {
     return <LoadingScreen progress={75} />;
   }
 
-  // For non-game plugins, show full screen with back button
-  if (activePlugin !== 'game') {
+  // For non-game plugins, show full screen with back button (excluding admin functions)
+  if (activePlugin !== 'game' && activePlugin !== 'adminMenu') {
     return (
       <div className="min-h-screen p-4 bg-gray-900">
         <div className="mb-4">
