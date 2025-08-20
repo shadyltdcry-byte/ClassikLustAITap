@@ -400,7 +400,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
 
             {/* Tab Navigation */}
-            <div className="px-6 py-3 border-b border-gray-800/50">
+            <div className="px-6 py-3 border-b border-gray-800/50 flex-shrink-0">
               <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-black/40 p-1 rounded-lg">
                 <TabsTrigger value="characters" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Users className="w-3 h-3 mr-1" />
@@ -438,7 +438,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </div>
 
             {/* CHARACTERS TAB */}
-            <TabsContent value="characters" className="flex-1 flex flex-col min-h-0 px-6 py-4">
+            <TabsContent value="characters" className="flex-1 flex flex-col min-h-0 px-6 py-4 h-full overflow-hidden">
               {/* Character Submenu */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex bg-black/40 p-1 rounded-lg">
@@ -616,16 +616,16 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* MEDIA TAB */}
-            <TabsContent value="media" className="flex-1 min-h-0">
-              <div className="h-full w-full">
+            <TabsContent value="media" className="flex-1 flex flex-col min-h-0 p-0 m-0 h-full overflow-hidden">
+              <div className="flex-1 h-full w-full">
                 <FileManagerCore />
               </div>
             </TabsContent>
 
             {/* OTHER TABS */}
             {["upgrades", "tasks", "achievements", "game", "database", "system"].map((tabName) => (
-              <TabsContent key={tabName} value={tabName} className="flex-1 overflow-hidden px-6 py-4">
-                <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+              <TabsContent key={tabName} value={tabName} className="flex-1 flex flex-col min-h-0 h-full overflow-hidden px-6 py-4">
+                <div className="flex-1 h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
                   <EmptyState
                     title={`${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Management`}
                     description={`Configure and manage ${tabName} settings, rules, and data`}
