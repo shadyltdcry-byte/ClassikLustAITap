@@ -131,22 +131,56 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
   const Task = ({ onClaimPrize }: { onClaimPrize: () => void }) => {
     const [activeTab, setActiveTab] = useState("all");
     const filteredTask = activeTab === "all" ? mockTask : mockTask.filter(task => task.category === activeTab);
+
     return (
-      <div className="p-6 text-white">
-        <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-          Daily Tasks
-        </h2>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-black/20">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="basic">Basic</TabsTrigger>
-            <TabsTrigger value="energy">Energy</TabsTrigger>
-            <TabsTrigger value="progression">Progress</TabsTrigger>
-          </TabsList>
-          <TabsContent value={activeTab} className="space-y-4 mt-6">
-            <ScrollArea className="h-96">
+      <div className="h-full flex flex-col">
+        {/* Header */}
+        <div className="p-4 bg-black/30 border-b border-purple-500/30">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+              <Zap className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-white">Daily Tasks</h3>
+              <p className="text-sm text-gray-400">Complete tasks to earn rewards</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Task Tabs */}
+        <div className="flex gap-2 p-4 bg-black/20">
+          <Button 
+            onClick={() => setActiveTab("all")}
+            className={`px-6 py-2 rounded-full ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            All
+          </Button>
+          <Button 
+            onClick={() => setActiveTab("basic")}
+            className={`px-6 py-2 rounded-full ${activeTab === "basic" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            Basic
+          </Button>
+          <Button 
+            onClick={() => setActiveTab("energy")}
+            className={`px-6 py-2 rounded-full ${activeTab === "energy" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            Energy
+          </Button>
+          <Button 
+            onClick={() => setActiveTab("progression")}
+            className={`px-6 py-2 rounded-full ${activeTab === "progression" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            Progress
+          </Button>
+        </div>
+
+        {/* Task List */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="space-y-4 p-4">
               {filteredTask.map((task) => (
-                <Card key={task.id} className="mb-4 bg-black/30 border-purple-500/30">
+                <Card key={task.id} className="bg-gray-700/50 border-gray-600/50 hover:border-purple-500/50 transition-colors">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -184,9 +218,16 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
                   </CardContent>
                 </Card>
               ))}
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+
+              {filteredTask.length === 0 && (
+                <div className="text-center text-gray-400 py-8">
+                  <Zap className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No tasks available in this category</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
     );
   };
@@ -194,23 +235,62 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
   const Achievements = ({ onClaimPrize }: { onClaimPrize: () => void }) => {
     const [activeTab, setActiveTab] = useState("all");
     const filteredAchievements = activeTab === "all" ? mockAchievements : mockAchievements.filter(achievements => achievements.category === activeTab);
+
     return (
-      <div className="p-6 text-white">
-        <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
-          Achievements
-        </h2>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-black/20">
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="beginner">Beginner</TabsTrigger>
-            <TabsTrigger value="interaction">Interaction</TabsTrigger>
-            <TabsTrigger value="progression">Progress</TabsTrigger>
-            <TabsTrigger value="collection">Collection</TabsTrigger>
-          </TabsList>
-          <TabsContent value={activeTab} className="space-y-4 mt-6">
-            <ScrollArea className="h-96">
+      <div className="h-full flex flex-col">
+        {/* Header */}
+        <div className="p-4 bg-black/30 border-b border-purple-500/30">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-yellow-600 rounded-full flex items-center justify-center">
+              <Star className="w-6 h-6 text-white" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold text-white">Achievements</h3>
+              <p className="text-sm text-gray-400">Unlock achievements to earn rewards</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Achievement Tabs */}
+        <div className="flex gap-2 p-4 bg-black/20 overflow-x-auto">
+          <Button 
+            onClick={() => setActiveTab("all")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            All
+          </Button>
+          <Button 
+            onClick={() => setActiveTab("beginner")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${activeTab === "beginner" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            Beginner
+          </Button>
+          <Button 
+            onClick={() => setActiveTab("interaction")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${activeTab === "interaction" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            Interaction
+          </Button>
+          <Button 
+            onClick={() => setActiveTab("progression")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${activeTab === "progression" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            Progress
+          </Button>
+          <Button 
+            onClick={() => setActiveTab("collection")}
+            className={`px-4 py-2 rounded-full whitespace-nowrap ${activeTab === "collection" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          >
+            Collection
+          </Button>
+        </div>
+
+        {/* Achievement List */}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full">
+            <div className="space-y-4 p-4">
               {filteredAchievements.map((achievements) => (
-                <Card key={achievements.id} className="mb-4 bg-black/30 border-purple-500/30">
+                <Card key={achievements.id} className="bg-gray-700/50 border-gray-600/50 hover:border-purple-500/50 transition-colors">
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -248,9 +328,16 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
                   </CardContent>
                 </Card>
               ))}
-            </ScrollArea>
-          </TabsContent>
-        </Tabs>
+
+              {filteredAchievements.length === 0 && (
+                <div className="text-center text-gray-400 py-8">
+                  <Star className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No achievements available in this category</p>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
     );
   };
