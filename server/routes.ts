@@ -5,7 +5,7 @@
  * Your custom plugin routes without database dependency
  */
 
-import type { Express } from "express";
+import type { Express, Request, Response } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { fileURLToPath } from 'url';
@@ -385,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "You're so sweet! 🥰"
       ],
       customTriggerWords: [],
-      imageUrl: {imageUrl.id}imageUrl(item}
+      imageUrl: "/api/placeholder-image",
       avatarUrl: "/api/placeholder-image",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
