@@ -113,7 +113,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
     refetchInterval: 5000,
   });
 
-  // Load chat history on character change
+  // Load chat history on character change - prevent infinite loops
   useEffect(() => {
     if (chatHistory && chatHistory.length > 0) {
       const formattedMessages = chatHistory.map((msg: any) => ({
@@ -125,8 +125,11 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         mood: msg.mood,
         reactionScore: msg.reactionScore,
       }));
-      setMessages(formattedMessages);
-    } else if (character && chatHistory !== undefined && chatHistory.length === 0) {
+      // Only update if messages have actually changed
+      if (JSON.stringify(messages) !== JSON.stringify(formattedMessages)) {
+        setMessages(formattedMessages);
+      }
+    } else if (character && chatHistory !== undefined && chatHistory.length === 0 && messages.length > 0) {
       // Send initial greeting only when we have a character and confirmed empty chat history
       const greeting = getCharacterGreeting();
       setMessages([{
@@ -138,7 +141,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         mood: 'happy',
       }]);
     }
-  }, [chatHistory, character?.id]);
+  }, [chatHistory]); // Removed character?.id to prevent infinite loops
 
   // Auto-scroll to bottom
   useEffect(() => {

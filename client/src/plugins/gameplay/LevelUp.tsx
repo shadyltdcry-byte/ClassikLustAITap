@@ -448,7 +448,7 @@ export default function LevelUp() {
               <CardContent className="space-y-4">
                 {/* Requirements List */}
                 <div className="space-y-2">
-                  {currentLevelReq.requirements.map((req, index) => {
+                  {(currentLevelReq?.requirements || []).map((req, index) => {
                     const isMet = isRequirementMet(req);
                     return (
                       <div
