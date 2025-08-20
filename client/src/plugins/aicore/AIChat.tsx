@@ -113,41 +113,44 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
     refetchOnWindowFocus: false,
   });
 
-  // Load chat history on character change - prevent infinite loops
+  // Load chat history on character change
   useEffect(() => {
     if (!character?.id) {
       setMessages([]);
       return;
     }
 
-    // Only update messages if we don't already have messages or character changed
-    if (messages.length === 0 || (chatHistory && chatHistory.length > 0)) {
-      if (chatHistory && chatHistory.length > 0) {
+    if (chatHistory !== undefined) {
+      if (chatHistory.length > 0) {
         const formattedMessages = chatHistory.map((msg: any) => ({
-          id: msg.id,
-          content: msg.message || msg.content,
+          id: msg.id || `msg-${Date.now()}-${Math.random()}`,
+          content: msg.message || msg.content || '',
           sender: msg.isFromUser ? 'user' : 'character',
-          timestamp: new Date(msg.createdAt),
+          timestamp: new Date(msg.createdAt || Date.now()),
           type: msg.type || 'text',
-          mood: msg.mood,
+          mood: msg.mood || 'normal',
           reactionScore: msg.reactionScore,
         }));
-        
-        // Only set messages if they're different from current state
-        if (JSON.stringify(formattedMessages) !== JSON.stringify(messages)) {
-          setMessages(formattedMessages);
-        }
-      } else if (chatHistory !== undefined && chatHistory.length === 0 && messages.length === 0) {
-        // Send initial greeting only when we have confirmed empty chat history and no current messages
+        setMessages(formattedMessages);
+      } else {
+        // Send initial greeting for new conversations
         const greeting = getCharacterGreeting();
-        setMessages([{
+        const greetingMessage = {
           id: 'initial-greeting',
           content: greeting,
-          sender: 'character',
+          sender: 'character' as const,
           timestamp: new Date(),
-          type: 'text',
+          type: 'text' as const,
           mood: 'happy',
-        }]);
+        };
+        setMessages([greetingMessage]);
+        
+        // Save greeting to database
+        saveMessageMutation.mutate({
+          content: greeting,
+          isFromUser: false,
+          mood: 'happy'
+        });
       }
     }
   }, [chatHistory, character?.id])
@@ -240,10 +243,33 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
     return moods[Math.floor(Math.random() * moods.length)];
   };
 
+  // Save message to database
+  const saveMessageMutation = useMutation({
+    mutationFn: async (messageData: { content: string; isFromUser: boolean; mood?: string }) => {
+      const response = await apiRequest("POST", `/api/chat/${userId}/${character?.id}`, {
+        message: messageData.content,
+        isFromUser: messageData.isFromUser,
+        mood: messageData.mood,
+        type: 'text'
+      });
+      return response.json();
+    },
+    onError: (error) => {
+      console.error("Failed to save message:", error);
+    }
+  });
+
   // Send message with Mistral AI
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
-      // Add user message immediately
+      // Save user message to database first
+      await saveMessageMutation.mutateAsync({
+        content: message,
+        isFromUser: true,
+        mood: currentMood
+      });
+
+      // Add user message immediately to UI
       const userMessage: ChatMessage = {
         id: `user-${Date.now()}`,
         content: message,
@@ -277,20 +303,30 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       const result = await response.json();
       return { result, originalMessage: message };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
       const { result } = data;
       
       // Hide typing indicator
       setTypingIndicator(false);
       
-      // Add AI response
+      const aiResponse = result.response || "I'm sorry, I didn't understand that.";
+      const aiMood = result.mood || getRandomMood();
+      
+      // Save AI response to database
+      await saveMessageMutation.mutateAsync({
+        content: aiResponse,
+        isFromUser: false,
+        mood: aiMood
+      });
+      
+      // Add AI response to UI
       const aiMessage: ChatMessage = {
         id: `ai-${Date.now()}`,
-        content: result.response || "I'm sorry, I didn't understand that.",
+        content: aiResponse,
         sender: 'character',
         timestamp: new Date(),
         type: 'text',
-        mood: result.mood || getRandomMood(),
+        mood: aiMood,
         reactionScore: Math.floor(Math.random() * 10) + 1,
       };
 
@@ -305,8 +341,20 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
     },
   });
 
-  const handleLocalMessage = () => {
+  const handleLocalMessage = async () => {
     const originalMessage = newMessage;
+    
+    // Save user message to database
+    try {
+      await saveMessageMutation.mutateAsync({
+        content: originalMessage,
+        isFromUser: true,
+        mood: currentMood
+      });
+    } catch (error) {
+      console.error("Failed to save user message:", error);
+    }
+    
     const userMessage: ChatMessage = {
       id: `local-user-${Date.now()}`,
       content: originalMessage,
@@ -322,15 +370,28 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
 
     // Add 3-5 second delay for typing
     const delay = Math.random() * 2000 + 3000; // 3-5 seconds
-    setTimeout(() => {
+    setTimeout(async () => {
       const response = generateSmartResponse(originalMessage);
+      const aiMood = getRandomMood();
+      
+      // Save local response to database
+      try {
+        await saveMessageMutation.mutateAsync({
+          content: response,
+          isFromUser: false,
+          mood: aiMood
+        });
+      } catch (error) {
+        console.error("Failed to save local response:", error);
+      }
+      
       const characterMessage: ChatMessage = {
         id: `local-ai-${Date.now()}`,
         content: response,
         sender: 'character',
         timestamp: new Date(),
         type: 'text',
-        mood: getRandomMood(),
+        mood: aiMood,
         reactionScore: Math.floor(Math.random() * 10) + 1,
       };
 
