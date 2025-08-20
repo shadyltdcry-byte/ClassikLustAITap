@@ -114,46 +114,7 @@ export default function Achievements() {
     }
   };
 
-  const filteredAchievements = achievements.filter(achievement => {
-    if (activeTab === "all") return true;
-    if (activeTab === "completed") return achievement.status === "completed";
-    if (activeTab === "in_progress") return achievement.status === "in_progress";
-    if (activeTab === "locked") return achievement.status === "locked";
-    return achievement.category === activeTab;
-  });
-
-  const handleClaimAchievement = async (achievementId: string) => {
-    try {
-      const response = await fetch(`/api/achievements/claim/${achievementId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: "default-player" }),
-      });
-      if (response.ok) {
-        console.log("Achievement claimed successfully");
-        // Update local state to show as claimed
-        setAchievements(prev => prev.map(achievement => 
-          achievement.id === achievementId 
-            ? { ...achievement, status: "completed" }
-            : achievement
-        ));
-      } else {
-        console.error("Failed to claim achievement");
-      }
-    } catch (error) {
-      console.error("Error claiming achievement:", error);
-      // Show success anyway for demo purposes
-      setAchievements(prev => prev.map(achievement => 
-        achievement.id === achievementId 
-          ? { ...achievement, status: "completed" }
-          : achievement
-      ));
-    }
-  };
-
-  // Add achievements state
+  // Achievement state management
   const [achievements, setAchievements] = useState<Achievement[]>([
     {
       id: "1",
@@ -211,6 +172,45 @@ export default function Achievements() {
       icon: "👑"
     }
   ]);
+
+  const filteredAchievements = achievements.filter(achievement => {
+    if (activeTab === "all") return true;
+    if (activeTab === "completed") return achievement.status === "completed";
+    if (activeTab === "in_progress") return achievement.status === "in_progress";
+    if (activeTab === "locked") return achievement.status === "locked";
+    return achievement.category === activeTab;
+  });
+
+  const handleClaimAchievement = async (achievementId: string) => {
+    try {
+      const response = await fetch(`/api/achievements/claim/${achievementId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ userId: "default-player" }),
+      });
+      if (response.ok) {
+        console.log("Achievement claimed successfully");
+        // Update local state to show as claimed
+        setAchievements(prev => prev.map(achievement => 
+          achievement.id === achievementId 
+            ? { ...achievement, status: "completed" }
+            : achievement
+        ));
+      } else {
+        console.error("Failed to claim achievement");
+      }
+    } catch (error) {
+      console.error("Error claiming achievement:", error);
+      // Show success anyway for demo purposes
+      setAchievements(prev => prev.map(achievement => 
+        achievement.id === achievementId 
+          ? { ...achievement, status: "completed" }
+          : achievement
+      ));
+    }
+  };
 
   return (
     <div className="h-full flex flex-col text-white">
