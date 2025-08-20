@@ -41,6 +41,35 @@ import Wheel from "@/plugins/gameplay/Wheel";
 import FileManagerCore from "@/plugins/manager/FileManagerCore";
 import ImageManager from "@/plugins/manager/ImageManager";
 
+// Mock Data (replace with actual data fetching)
+const mockTasks = [
+  { id: "t1", icon: "⭐", title: "Login Daily", description: "Log in to the game every day.", status: "completed", progress: 1, maxProgress: 1, reward: "10 Coins", category: "basic" },
+  { id: "t2", icon: "⚡", title: "Gain 100 Energy", description: "Reach 100 energy points.", status: "active", progress: 75, maxProgress: 100, reward: "5 Gems", category: "energy" },
+  { id: "t3", icon: "⬆️", title: "Level Up", description: "Reach level 5.", status: "in_progress", progress: 3, maxProgress: 5, reward: "20 Coins", category: "progression" },
+  { id: "t4", icon: "💬", title: "Send a Message", description: "Send a message in the chat.", status: "completed", progress: 1, maxProgress: 1, reward: "5 Coins", category: "basic" },
+];
+
+const mockAchievements = [
+  { id: "a1", icon: "🏆", title: "First Steps", description: "Complete your first task.", status: "completed", progress: 1, maxProgress: 1, reward: "5 Coins", category: "beginner" },
+  { id: "a2", icon: "💖", title: "Chat Enthusiast", description: "Send 10 messages.", status: "in_progress", progress: 7, maxProgress: 10, reward: "10 Coins", category: "interaction" },
+  { id: "a3", icon: "🚀", title: "Rising Star", description: "Reach level 10.", status: "locked", progress: 5, maxProgress: 10, reward: "50 Coins", category: "progression" },
+  { id: "a4", icon: "💎", title: "Gem Hoarder", description: "Collect 100 Gems.", status: "locked", progress: 40, maxProgress: 100, reward: "1 Gem Package", category: "collection" },
+  { id: "a5", icon: "🤝", title: "Social Butterfly", description: "Interact with 5 different characters.", status: "in_progress", progress: 3, maxProgress: 5, reward: "15 Coins", category: "interaction" },
+];
+
+// Function to simulate claiming a task reward
+const claimTaskReward = (taskId: string) => {
+  console.log(`Claiming reward for task: ${taskId}`);
+  // In a real app, you would update the backend and refetch data
+};
+
+// Function to simulate claiming an achievement reward
+const claimAchievementReward = (achievementId: string) => {
+  console.log(`Claiming reward for achievement: ${achievementId}`);
+  // In a real app, you would update the backend and refetch data
+};
+
+
 interface PlayerData {
   id: string;
   name: string;
@@ -121,11 +150,206 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
   };
 
   const handleClaimPrize = (type: 'task' | 'achievement') => {
-    onPluginAction('claimPrize', { type });
+    // Handle prize claiming logic here
+    console.log(`Claiming ${type} prize`);
   };
 
-  // This state is for the bottom navigation buttons
-  const [activeMenu, setActiveMenu] = useState<string | null>("main");
+  // Tasks GUI Component
+  const TasksGUI = ({ onClaimPrize }: { onClaimPrize: () => void }) => {
+    const [activeTab, setActiveTab] = useState("all");
+
+    const filteredTasks = activeTab === "all" ? mockTasks : mockTasks.filter(task => task.category === activeTab);
+
+    return (
+      <div className="p-6 text-white">
+        <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          Daily Tasks
+        </h2>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-4 bg-black/20">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="basic">Basic</TabsTrigger>
+            <TabsTrigger value="energy">Energy</TabsTrigger>
+            <TabsTrigger value="progression">Progress</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={activeTab} className="space-y-4 mt-6">
+            <ScrollArea className="h-96">
+              {filteredTasks.map((task) => (
+                <Card key={task.id} className="mb-4 bg-black/30 border-purple-500/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{task.icon}</span>
+                        <div>
+                          <h3 className="font-semibold text-white">{task.title}</h3>
+                          <p className="text-sm text-gray-300">{task.description}</p>
+                        </div>
+                      </div>
+                      <Badge variant={task.status === 'completed' ? 'default' : task.status === 'active' ? 'secondary' : 'outline'}>
+                        {task.status}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Progress</span>
+                        <span>{task.progress}/{task.maxProgress}</span>
+                      </div>
+                      <Progress value={(task.progress / task.maxProgress) * 100} className="h-2" />
+                    </div>
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-sm text-green-400">Reward: {task.reward}</span>
+                      <Button
+                        size="sm"
+                        disabled={task.status !== 'completed'}
+                        onClick={() => {
+                          claimTaskReward(task.id);
+                          onClaimPrize();
+                        }}
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        {task.status === 'completed' ? 'Claim' : 'In Progress'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  };
+
+  // Achievements GUI Component
+  const AchievementsGUI = ({ onClaimPrize }: { onClaimPrize: () => void }) => {
+    const [activeTab, setActiveTab] = useState("all");
+
+    const filteredAchievements = activeTab === "all" ? mockAchievements : mockAchievements.filter(achievement => achievement.category === activeTab);
+
+    return (
+      <div className="p-6 text-white">
+        <h2 className="text-2xl font-bold mb-6 text-center bg-gradient-to-r from-pink-400 to-purple-400 bg-clip-text text-transparent">
+          Achievements
+        </h2>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 bg-black/20">
+            <TabsTrigger value="all">All</TabsTrigger>
+            <TabsTrigger value="beginner">Beginner</TabsTrigger>
+            <TabsTrigger value="interaction">Interaction</TabsTrigger>
+            <TabsTrigger value="progression">Progress</TabsTrigger>
+            <TabsTrigger value="collection">Collection</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value={activeTab} className="space-y-4 mt-6">
+            <ScrollArea className="h-96">
+              {filteredAchievements.map((achievement) => (
+                <Card key={achievement.id} className="mb-4 bg-black/30 border-purple-500/30">
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{achievement.icon}</span>
+                        <div>
+                          <h3 className="font-semibold text-white">{achievement.title}</h3>
+                          <p className="text-sm text-gray-300">{achievement.description}</p>
+                        </div>
+                      </div>
+                      <Badge variant={achievement.status === 'completed' ? 'default' : achievement.status === 'in_progress' ? 'secondary' : 'outline'}>
+                        {achievement.status.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span>Progress</span>
+                        <span>{achievement.progress}/{achievement.maxProgress}</span>
+                      </div>
+                      <Progress value={(achievement.progress / achievement.maxProgress) * 100} className="h-2" />
+                    </div>
+                    <div className="flex items-center justify-between mt-3">
+                      <span className="text-sm text-green-400">Reward: {achievement.reward}</span>
+                      <Button
+                        size="sm"
+                        disabled={achievement.status !== 'completed'}
+                        onClick={() => {
+                          claimAchievementReward(achievement.id);
+                          onClaimPrize();
+                        }}
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        {achievement.status === 'completed' ? 'Claim' : achievement.status === 'in_progress' ? 'In Progress' : 'Locked'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </ScrollArea>
+          </TabsContent>
+        </Tabs>
+      </div>
+    );
+  };
+
+
+  // Main Content Area - Plugin or Character Display
+  const renderActivePlugin = () => {
+    if (guiState.activePlugin === "main") {
+      return (
+        <div className="max-w-sm w-full">
+          <CharacterDisplay
+            character={{
+              id: "seraphina",
+              name: "Seraphina",
+              personality: "playful",
+              backstory: "Tap to interact with Seraphina!",
+              mood: "flirty",
+              level: 1,
+              isNsfw: false,
+              isVip: false,
+              levelRequirement: 1,
+              customTriggers: [],
+              createdAt: new Date(),
+            }}
+            user={{
+              ...playerData,
+              id: playerData?.id || 'default-player',
+              username: playerData?.name || 'Player',
+              password: '',
+              level: playerData?.level || 1,
+              lp: playerData?.lp || 0,
+              lpPerHour: playerData?.lpPerHour || 0,
+              lpPerTap: playerData?.lpPerTap || 1,
+              energy: playerData?.energy || 100,
+              maxEnergy: playerData?.maxEnergy || 100,
+              charisma: playerData?.charismaPoints || 0,
+              vipStatus: playerData?.isVip || false,
+              nsfwConsent: playerData?.nsfwEnabled || false,
+              lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
+              createdAt: new Date()
+            } as any}
+            onTap={handleTap}
+            isTapping={isTapping}
+          />
+        </div>
+      );
+    } else if (guiState.activePlugin === "upgrades") {
+      return (
+        <Upgrades
+          playerData={playerData}
+          onUpgradeAction={onPluginAction}
+        />
+      );
+    } else if (guiState.activePlugin === "tasks") {
+      return <TasksGUI onClaimPrize={() => handleClaimPrize('task')} />;
+    } else if (guiState.activePlugin === "achievements") {
+      return <AchievementsGUI onClaimPrize={() => handleClaimPrize('achievement')} />;
+    } else if (guiState.activePlugin === "aiChat") {
+      return <AIChat userId={playerData?.id || 'default-player'} />;
+    }
+    return null; // Should not happen with current navigation
+  };
+
 
   return (
     <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white overflow-hidden">
@@ -177,64 +401,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
       <div className="flex-1 overflow-hidden relative bg-gradient-to-br from-pink-900/10 via-purple-900/10 to-red-900/10 pb-16">
         {/* Main Content Area - Plugin or Character Display */}
         <div className="h-full flex items-center justify-center p-3">
-          {guiState.activePlugin === "main" ? (
-            <div className="max-w-sm w-full">
-              <CharacterDisplay
-                character={{
-                  id: "seraphina",
-                  name: "Seraphina",
-                  personality: "playful",
-                  backstory: "Tap to interact with Seraphina!",
-                  mood: "flirty",
-                  level: 1,
-                  isNsfw: false,
-                  isVip: false,
-                  levelRequirement: 1,
-                  customTriggers: [],
-                  createdAt: new Date(),
-                }}
-                user={{
-                  ...playerData,
-                  id: playerData?.id || 'default-player',
-                  username: playerData?.name || 'Player',
-                  password: '',
-                  level: playerData?.level || 1,
-                  lp: playerData?.lp || 0,
-                  lpPerHour: playerData?.lpPerHour || 0,
-                  lpPerTap: playerData?.lpPerTap || 1,
-                  energy: playerData?.energy || 100,
-                  maxEnergy: playerData?.maxEnergy || 100,
-                  charisma: playerData?.charismaPoints || 0,
-                  vipStatus: playerData?.isVip || false,
-                  nsfwConsent: playerData?.nsfwEnabled || false,
-                  lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
-                  createdAt: new Date()
-                } as any}
-                onTap={handleTap}
-                isTapping={isTapping}
-              />
-            </div>
-          ) : (
-            <div className="w-full h-full max-w-4xl mx-auto overflow-hidden">
-              <div className="h-full bg-black/20 rounded-xl border border-purple-500/30 overflow-hidden">
-                {guiState.activePlugin === "upgrades" && (
-                  <Upgrades
-                    playerData={playerData}
-                    onUpgradeAction={onPluginAction}
-                  />
-                )}
-                {guiState.activePlugin === "tasks" && (
-                  <Task onClaimPrize={() => handleClaimPrize('task')} />
-                )}
-                {guiState.activePlugin === "achievements" && (
-                  <Achievements onClaimPrize={() => handleClaimPrize('achievement')} />
-                )}
-                {guiState.activePlugin === "aiChat" && (
-                  <AIChat userId={playerData?.id || 'default-player'} />
-                )}
-              </div>
-            </div>
-          )}
+          {renderActivePlugin()}
         </div>
 
         {/* Bottom Navigation */}
