@@ -327,6 +327,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     ]);
   });
 
+  // Player level-up endpoint
+  app.post("/api/player/:playerId/level-up", (req, res) => {
+    const { playerId } = req.params;
+    const { targetLevel } = req.body;
+
+    // In a real app, you'd validate requirements and update database here
+    // For now, just return success
+    res.json({
+      success: true,
+      playerId,
+      newLevel: targetLevel || 2,
+      rewards: {
+        lp: 500,
+        maxEnergy: 100
+      },
+      message: "Level up successful!",
+      timestamp: new Date().toISOString()
+    });
+  });
+
   // Tasks endpoints
   app.post("/api/tasks/claim/:taskId", (req, res) => {
     const { taskId } = req.params;
