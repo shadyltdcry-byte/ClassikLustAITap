@@ -123,31 +123,8 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
   return (
     <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white">
       {/* Top Navigation */}
-      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-pink-900/50 to-red-900/50 border-b border-pink-500/30">
+      <div className="flex items-center justify-center p-4 bg-gradient-to-r from-pink-900/50 to-red-900/50 border-b border-pink-500/30">
         <h1 className="text-white text-2xl font-bold bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">ClassikLust</h1>
-        <div className="flex gap-2">
-          <Button 
-            size="sm" 
-            onClick={() => onPluginChange?.('upgrades')} 
-            className="bg-pink-600 hover:bg-pink-700 text-white border-none"
-          >
-            Upgrades
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => onPluginChange?.('aiChat')} 
-            className="bg-purple-600 hover:bg-purple-700 text-white border-none"
-          >
-            Chat
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={() => updateGUIState({ showAdminMenu: true })} 
-            className="bg-red-600 hover:bg-red-700 text-white border-none"
-          >
-            Settings
-          </Button>
-        </div>
       </div>
 
       {/* Status Bar */}
@@ -230,39 +207,39 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-black/50 border-t border-gray-800 p-2">
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-900/50 to-red-900/50 border-t border-pink-500/30 p-2">
           <div className="flex justify-around">
             <Button
               variant="ghost"
-              size="icon"
+              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20"
               onClick={() => onPluginChange?.('upgrades')}
-              className="text-gray-400 hover:text-white"
             >
-              <Star className="w-6 h-6" />
+              <Star className="w-5 h-5" />
+              <span className="text-xs">Upgrades</span>
             </Button>
             <Button
               variant="ghost"
-              size="icon"
-              onClick={() => onPluginChange?.('task')}
-              className="text-gray-400 hover:text-white"
+              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20"
+              onClick={() => onPluginChange?.('tasks')}
             >
-              <Zap className="w-6 h-6" />
+              <Zap className="w-5 h-5" />
+              <span className="text-xs">Task</span>
             </Button>
             <Button
               variant="ghost"
-              size="icon"
+              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20"
               onClick={() => onPluginChange?.('aiChat')}
-              className="text-gray-400 hover:text-white"
             >
-              <Send className="w-6 h-6" />
+              <MessageCircle className="w-5 h-5" />
+              <span className="text-xs">AI Chat</span>
             </Button>
             <Button
               variant="ghost"
-              size="icon"
+              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20"
               onClick={() => updateGUIState({ showAdminMenu: true })}
-              className="text-gray-400 hover:text-white"
             >
-              <Settings className="w-6 h-6" />
+              <Settings className="w-5 h-5" />
+              <span className="text-xs">Settings</span>
             </Button>
           </div>
         </div>
