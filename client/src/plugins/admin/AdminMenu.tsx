@@ -438,7 +438,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </div>
 
             {/* CHARACTERS TAB */}
-            <TabsContent value="characters" className="flex-1 flex flex-col min-h-0 px-6 py-4 h-full overflow-hidden">
+            <TabsContent value="characters" className="flex-1 flex flex-col px-6 py-4">
               {/* Character Submenu */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex bg-black/40 p-1 rounded-lg">
@@ -616,16 +616,14 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* MEDIA TAB */}
-            <TabsContent value="media" className="flex-1 flex flex-col min-h-0 p-0 m-0 h-full overflow-hidden">
-              <div className="flex-1 h-full w-full">
-                <FileManagerCore />
-              </div>
+            <TabsContent value="media" className="flex-1 p-6">
+              <FileManagerCore />
             </TabsContent>
 
             {/* OTHER TABS */}
             {["upgrades", "tasks", "achievements", "game", "database", "system"].map((tabName) => (
-              <TabsContent key={tabName} value={tabName} className="flex-1 flex flex-col min-h-0 h-full overflow-hidden px-6 py-4">
-                <div className="flex-1 h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+              <TabsContent key={tabName} value={tabName} className="flex-1 px-6 py-4">
+                <div className="h-96 bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
                   <EmptyState
                     title={`${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Management`}
                     description={`Configure and manage ${tabName} settings, rules, and data`}
