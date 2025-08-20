@@ -185,7 +185,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put("/api/player/:playerId", (req, res) => {
     const { playerId } = req.params;
     const updates = req.body;
-    
+
     // In a real app, you'd update the database here
     // For now, just return success with the updated data
     res.json({
@@ -467,6 +467,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.status(404).json({ error: 'Image not found' });
   });
 
+  // Mistral AI Chat endpoint
+  app.post("/api/mistral/chat", async (req, res) => {
+    try {
+      const { message, characterName, characterPersonality, currentMood, conversationHistory } = req.body;
+
+      const mistralApiKey = process.env.MISTRAL_API_KEY;
+      if (!mistralApiKey) {
+        return res.status(500).json({ error: "Mistral API key not configured" });
+      }
+
+      // Create character-specific system prompt
+      const systemPrompt = `You are ${characterName}, a ${characterPersonality} character in an interactive game. 
+Your current mood is ${currentMood}. You should respond in character, being ${characterPersonality} and ${currentMood}.
+Keep responses conversational, engaging, and appropriate for the character. Use emojis and expressive language.
+Respond as if you're having a real conversation with someone you care about.`;
+
+      // Prepare conversation for Mistral
+      const messages = [
+        { role: "system", content: systemPrompt },
+        ...conversationHistory,
+        { role: "user", content: message }
+      ];
+
+      const mistralResponse = await fetch("https://api.mistral.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${mistralApiKey}`
+        },
+        body: JSON.stringify({
+          model: "mistral-small-latest",
+          messages: messages,
+          temperature: 0.8,
+          max_tokens: 150
+        })
+      });
+
+      if (!mistralResponse.ok) {
+        throw new Error(`Mistral API error: ${mistralResponse.statusText}`);
+      }
+
+      const mistralData = await mistralResponse.json();
+      const response = mistralData.choices?.[0]?.message?.content || "I'm not sure how to respond to that.";
+
+      // Determine mood based on response content
+      const moodKeywords = {
+        happy: ['excited', 'great', 'awesome', 'wonderful', 'amazing', '😄', '😊', '✨'],
+        flirty: ['cute', 'handsome', 'sweet', 'love', 'adorable', '😘', '💕', '😏'],
+        playful: ['fun', 'game', 'play', 'silly', 'hehe', '😜', '🎮', '😆'],
+        shy: ['blush', 'nervous', 'um', 'maybe', 'sorry', '😳', '🥺', '👉👈'],
+        mysterious: ['secret', 'maybe', 'perhaps', 'interesting', '😏', '🔮', '✨']
+      };
+
+      let detectedMood = currentMood;
+      for (const [mood, keywords] of Object.entries(moodKeywords)) {
+        if (keywords.some(keyword => response.toLowerCase().includes(keyword))) {
+          detectedMood = mood;
+          break;
+        }
+      }
+
+      res.json({
+        response,
+        mood: detectedMood,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error("Mistral chat error:", error);
+      res.status(500).json({ 
+        error: "Failed to generate response",
+        response: "I'm having trouble thinking right now... maybe try again? 😅"
+      });
+    }
+  });
+
+  // Mistral Debug endpoint for MistralDebugger
+  app.post("/api/mistral/debug", async (req, res) => {
+    try {
+      const { prompt, temperature = 0.3, maxTokens = 1000, systemPrompt } = req.body;
+
+      const mistralDebugApiKey = process.env.MISTRAL_DEBUG_API_KEY || process.env.MISTRAL_API_KEY;
+      if (!mistralDebugApiKey) {
+        return res.status(500).json({ error: "Mistral Debug API key not configured" });
+      }
+
+      const messages = [
+        { role: "system", content: systemPrompt || "You are a helpful debugging assistant." },
+        { role: "user", content: prompt }
+      ];
+
+      const mistralResponse = await fetch("https://api.mistral.ai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${mistralDebugApiKey}`
+        },
+        body: JSON.stringify({
+          model: "mistral-medium-latest",
+          messages: messages,
+          temperature: temperature,
+          max_tokens: maxTokens
+        })
+      });
+
+      if (!mistralResponse.ok) {
+        throw new Error(`Mistral API error: ${mistralResponse.statusText}`);
+      }
+
+      const mistralData = await mistralResponse.json();
+      const response = mistralData.choices?.[0]?.message?.content || "I couldn't analyze that code.";
+
+      res.json({
+        response,
+        usage: mistralData.usage,
+        timestamp: new Date().toISOString()
+      });
+
+    } catch (error) {
+      console.error("Mistral debug error:", error);
+      res.status(500).json({ 
+        error: "Failed to analyze code",
+        response: "I'm having trouble analyzing your code right now. Please try again."
+      });
+    }
+  });
 
   // Serve static files in production
   if (process.env.NODE_ENV === "production") {

@@ -44,7 +44,7 @@ interface Character {
 }
 
 interface AIChatProps {
-  userId: string;
+  userId?: string;
   selectedCharacterId?: string;
 }
 
@@ -66,7 +66,7 @@ const QUICK_RESPONSES = [
   "Want to play a game?",
 ];
 
-export default function AIChat({ userId, selectedCharacterId }: AIChatProps) {
+export default function AIChat({ userId = 'default-player', selectedCharacterId }: AIChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [currentMood, setCurrentMood] = useState("normal");
@@ -228,32 +228,57 @@ export default function AIChat({ userId, selectedCharacterId }: AIChatProps) {
     return moods[Math.floor(Math.random() * moods.length)];
   };
 
-  // Send message mutation
+  // Send message with Mistral AI
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
-      if (!character?.id) throw new Error("No character selected");
-      const response = await apiRequest("POST", "/api/chat/send", {
-        userId,
-        characterId: character.id,
+      // Generate AI response using Mistral
+      const response = await apiRequest("POST", "/api/mistral/chat", {
         message,
-        isFromUser: true,
+        characterName: character?.name || "Seraphina",
+        characterPersonality: character?.personality || "playful",
+        currentMood: characterMood,
+        conversationHistory: messages.slice(-5).map(m => ({
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: m.content
+        }))
       });
-      return response.json();
+      
+      const result = await response.json();
+      return result;
     },
     onSuccess: (data) => {
+      // Add user message
+      const userMessage: ChatMessage = {
+        id: Date.now().toString(),
+        content: newMessage,
+        sender: 'user',
+        timestamp: new Date(),
+        type: 'text',
+        mood: currentMood,
+      };
+
+      // Add AI response
+      const aiMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        content: data.response || "I'm sorry, I didn't understand that.",
+        sender: 'character',
+        timestamp: new Date(),
+        type: 'text',
+        mood: data.mood || getRandomMood(),
+        reactionScore: Math.floor(Math.random() * 10) + 1,
+      };
+
+      setMessages(prev => [...prev, userMessage, aiMessage]);
+      setCharacterMood(aiMessage.mood || 'normal');
       setNewMessage("");
-      queryClient.invalidateQueries({
-        queryKey: ["/api/chat", userId, character?.id],
-      });
       
       toast({
         title: "Message sent!",
-        description: data.aiResponse?.message
-          ? `${character?.name} responded!`
-          : "Message delivered",
+        description: `${character?.name} responded!`,
       });
     },
     onError: (error: any) => {
+      console.error("AI Chat error:", error);
       // Fallback to local response generation
       handleLocalMessage();
     },

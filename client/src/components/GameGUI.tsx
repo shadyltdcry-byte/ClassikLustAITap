@@ -128,44 +128,44 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
   const [activeMenu, setActiveMenu] = useState<string | null>("main");
 
   return (
-    <div className="flex flex-col h-screen bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white">
+    <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white overflow-hidden">
       {/* Top Navigation */}
-      <div className="flex items-center justify-center p-4 bg-gradient-to-r from-pink-900/50 to-red-900/50 border-b border-pink-500/30">
-        <h1 className="text-white text-2xl font-bold bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">ClassikLust</h1>
+      <div className="flex items-center justify-center p-3 bg-gradient-to-r from-pink-900/50 to-red-900/50 border-b border-pink-500/30 flex-shrink-0">
+        <h1 className="text-white text-xl font-bold bg-gradient-to-r from-pink-400 to-red-400 bg-clip-text text-transparent">ClassikLust</h1>
       </div>
 
       {/* Status Bar */}
-      <div className="flex justify-between items-center p-4 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30">
-        <div className="flex items-center gap-4">
+      <div className="flex justify-between items-center p-3 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30 flex-shrink-0">
+        <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Avatar className="w-8 h-8">
-              <AvatarFallback>{playerData?.name?.charAt(0) || "P"}</AvatarFallback>
+            <Avatar className="w-7 h-7">
+              <AvatarFallback className="text-xs">{playerData?.name?.charAt(0) || "P"}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="font-medium">{playerData?.name || "Player"}</p>
-              <div className="flex items-center gap-2 text-sm text-gray-400">
+              <p className="font-medium text-sm">{playerData?.name || "Player"}</p>
+              <div className="flex items-center gap-2 text-xs text-gray-400">
                 <span>Lv. {playerData?.level || 1}</span>
-                <Progress value={(playerData?.xp || 0) / (playerData?.xpToNext || 100) * 100} className="h-2 w-24" />
+                <Progress value={(playerData?.xp || 0) / (playerData?.xpToNext || 100) * 100} className="h-1 w-20" />
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
-              <Coins className="w-4 h-4 text-yellow-400" />
-              <span className="text-yellow-400 font-bold">{playerData?.lp || 0}</span>
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full">
+              <Coins className="w-3 h-3 text-yellow-400" />
+              <span className="text-yellow-400 font-bold text-xs">{playerData?.lp || 0}</span>
             </div>
-            <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
-              <Zap className="w-4 h-4 text-blue-400" />
-              <span className="text-blue-400 font-bold">{playerData?.lpPerHour || 0}/h</span>
+            <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full">
+              <Zap className="w-3 h-3 text-blue-400" />
+              <span className="text-blue-400 font-bold text-xs">{playerData?.lpPerHour || 0}/h</span>
             </div>
-            <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
-              <Gem className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-400 font-bold">{playerData?.lustGems || 0}</span>
+            <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full">
+              <Gem className="w-3 h-3 text-purple-400" />
+              <span className="text-purple-400 font-bold text-xs">{playerData?.lustGems || 0}</span>
             </div>
-            <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
-              <Heart className="w-4 h-4 text-red-400" />
-              <span className="text-red-400 font-bold">
+            <div className="flex items-center gap-1 bg-black/20 px-2 py-1 rounded-full">
+              <Heart className="w-3 h-3 text-red-400" />
+              <span className="text-red-400 font-bold text-xs">
                 {playerData?.energy || 0}/{playerData?.maxEnergy || 100}
               </span>
             </div>
@@ -174,13 +174,11 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-hidden relative bg-gradient-to-br from-pink-900/10 via-purple-900/10 to-red-900/10">
-        {/* News ticker removed temporarily to fix layout */}
-
+      <div className="flex-1 overflow-hidden relative bg-gradient-to-br from-pink-900/10 via-purple-900/10 to-red-900/10 pb-16">
         {/* Main Content Area - Plugin or Character Display */}
-        <div className="flex-1 flex items-center justify-center p-4">
+        <div className="h-full flex items-center justify-center p-3">
           {guiState.activePlugin === "main" ? (
-            <div className="max-w-md w-full">
+            <div className="max-w-sm w-full">
               <CharacterDisplay
                 character={{
                   id: "seraphina",
@@ -217,8 +215,8 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               />
             </div>
           ) : (
-            <ScrollArea className="w-full h-[calc(100vh-180px)] max-w-4xl mx-auto">
-              <div className="p-4 bg-black/20 rounded-xl border border-purple-500/30">
+            <div className="w-full h-full max-w-4xl mx-auto overflow-hidden">
+              <div className="h-full bg-black/20 rounded-xl border border-purple-500/30 overflow-hidden">
                 {guiState.activePlugin === "upgrades" && (
                   <Upgrades
                     playerData={playerData}
@@ -232,62 +230,62 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
                   <Achievements onClaimPrize={() => handleClaimPrize('achievement')} />
                 )}
                 {guiState.activePlugin === "aiChat" && (
-                  <AIChat />
+                  <AIChat userId={playerData?.id || 'default-player'} />
                 )}
               </div>
-            </ScrollArea>
+            </div>
           )}
         </div>
 
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-900/50 to-red-900/50 border-t border-pink-500/30 p-2">
-          <div className="flex justify-around">
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-900/90 to-red-900/90 border-t border-pink-500/30 p-1 backdrop-blur-sm">
+          <div className="flex justify-around items-center">
             <Button
               variant="ghost"
-              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "main" ? "bg-pink-600/30" : ""}`}
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${guiState.activePlugin === "main" ? "bg-pink-600/30" : ""}`}
               onClick={() => updateGUIState({ activePlugin: "main" })}
             >
-              <Heart className="w-5 h-5" />
+              <Heart className="w-4 h-4" />
               <span className="text-xs">Character</span>
             </Button>
             <Button
               variant="ghost"
-              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "upgrades" ? "bg-pink-600/30" : ""}`}
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${guiState.activePlugin === "upgrades" ? "bg-pink-600/30" : ""}`}
               onClick={() => updateGUIState({ activePlugin: "upgrades" })}
             >
-              <Star className="w-5 h-5" />
+              <Star className="w-4 h-4" />
               <span className="text-xs">Upgrades</span>
             </Button>
             <Button
               variant="ghost"
-              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "tasks" ? "bg-pink-600/30" : ""}`}
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${guiState.activePlugin === "tasks" ? "bg-pink-600/30" : ""}`}
               onClick={() => updateGUIState({ activePlugin: "tasks" })}
             >
-              <Zap className="w-5 h-5" />
+              <Zap className="w-4 h-4" />
               <span className="text-xs">Tasks</span>
             </Button>
             <Button
               variant="ghost"
-              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "achievements" ? "bg-pink-600/30" : ""}`}
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${guiState.activePlugin === "achievements" ? "bg-pink-600/30" : ""}`}
               onClick={() => updateGUIState({ activePlugin: "achievements" })}
             >
-              <Star className="w-5 h-5" />
+              <Star className="w-4 h-4" />
               <span className="text-xs">Achievements</span>
             </Button>
             <Button
               variant="ghost"
-              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "aiChat" ? "bg-pink-600/30" : ""}`}
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${guiState.activePlugin === "aiChat" ? "bg-pink-600/30" : ""}`}
               onClick={() => updateGUIState({ activePlugin: "aiChat" })}
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="w-4 h-4" />
               <span className="text-xs">AI Chat</span>
             </Button>
             <Button
               variant="ghost"
-              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20"
+              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2"
               onClick={() => updateGUIState({ showAdminMenu: true })}
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-4 h-4" />
               <span className="text-xs">Settings</span>
             </Button>
           </div>

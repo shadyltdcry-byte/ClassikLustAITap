@@ -123,13 +123,13 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-        <div className="bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-red-900/95 w-full max-w-6xl max-h-[90vh] rounded-xl border border-purple-500/50 flex flex-col overflow-hidden">
+      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-2">
+        <div className="bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-red-900/95 w-full max-w-7xl h-[95vh] rounded-xl border border-purple-500/50 flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between p-6 border-b border-purple-500/30">
+          <div className="flex items-center justify-between p-4 border-b border-purple-500/30 flex-shrink-0">
             <div className="flex items-center gap-3">
-              <Settings className="w-6 h-6 text-purple-400" />
-              <h2 className="text-2xl font-bold text-white">Admin Menu</h2>
+              <Settings className="w-5 h-5 text-purple-400" />
+              <h2 className="text-xl font-bold text-white">Admin Menu</h2>
             </div>
             <Button
               variant="ghost"
@@ -137,174 +137,151 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               onClick={onClose}
               className="text-gray-400 hover:text-white"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5" />
             </Button>
           </div>
 
           {/* Main Content */}
-          <div className="flex-1 overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <TabsList className="grid grid-cols-8 mx-6 mt-4 bg-black/30">
-                <TabsTrigger value="characters" className="text-white data-[state=active]:bg-purple-600">
-                  <Users className="w-4 h-4 mr-2" />
+              <TabsList className="grid grid-cols-4 lg:grid-cols-8 mx-4 mt-3 bg-black/30 flex-shrink-0">
+                <TabsTrigger value="characters" className="text-white data-[state=active]:bg-purple-600 text-xs p-2">
+                  <Users className="w-3 h-3 mr-1" />
                   Characters
                 </TabsTrigger>
-                <TabsTrigger value="media" className="text-white data-[state=active]:bg-purple-600">
-                  <Heart className="w-4 h-4 mr-2" />
+                <TabsTrigger value="media" className="text-white data-[state=active]:bg-purple-600 text-xs p-2">
+                  <Heart className="w-3 h-3 mr-1" />
                   Media
                 </TabsTrigger>
-                <TabsTrigger value="upgrades" className="text-white data-[state=active]:bg-purple-600">
-                  <Star className="w-4 h-4 mr-2" />
+                <TabsTrigger value="upgrades" className="text-white data-[state=active]:bg-purple-600 text-xs p-2">
+                  <Star className="w-3 h-3 mr-1" />
                   Upgrades
                 </TabsTrigger>
-                <TabsTrigger value="tasks" className="text-white data-[state=active]:bg-purple-600">
-                  <Zap className="w-4 h-4 mr-2" />
+                <TabsTrigger value="tasks" className="text-white data-[state=active]:bg-purple-600 text-xs p-2">
+                  <Zap className="w-3 h-3 mr-1" />
                   Tasks
                 </TabsTrigger>
-                <TabsTrigger value="achievements" className="text-white data-[state=active]:bg-purple-600">
-                  <Trophy className="w-4 h-4 mr-2" />
+                <TabsTrigger value="achievements" className="text-white data-[state=active]:bg-purple-600 text-xs p-2">
+                  <Trophy className="w-3 h-3 mr-1" />
                   Achievements
                 </TabsTrigger>
-                <TabsTrigger value="game" className="text-white data-[state=active]:bg-purple-600">
-                  <Activity className="w-4 h-4 mr-2" />
+                <TabsTrigger value="game" className="text-white data-[state=active]:bg-purple-600 text-xs p-2">
+                  <Activity className="w-3 h-3 mr-1" />
                   Game
                 </TabsTrigger>
-                <TabsTrigger value="database" className="text-white data-[state=active]:bg-purple-600">
-                  <Database className="w-4 h-4 mr-2" />
+                <TabsTrigger value="database" className="text-white data-[state=active]:bg-purple-600 text-xs p-2">
+                  <Database className="w-3 h-3 mr-1" />
                   Database
                 </TabsTrigger>
-                <TabsTrigger value="system" className="text-white data-[state=active]:bg-purple-600">
-                  <Settings className="w-4 h-4 mr-2" />
+                <TabsTrigger value="system" className="text-white data-[state=active]:bg-purple-600 text-xs p-2">
+                  <Settings className="w-3 h-3 mr-1" />
                   System
                 </TabsTrigger>
               </TabsList>
 
               {/* Character Management Tab */}
-              <TabsContent value="characters" className="flex-1 overflow-hidden mx-6">
-                <div className="h-full flex flex-col space-y-4">
+              <TabsContent value="characters" className="flex-1 flex flex-col overflow-hidden mx-4">
+                <div className="h-full flex flex-col space-y-3">
                   {/* Action Buttons */}
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 flex-shrink-0">
                     <Button
                       onClick={() => setShowCreateCharacter(true)}
-                      className="bg-purple-600 hover:bg-purple-700"
+                      className="bg-purple-600 hover:bg-purple-700 text-sm"
+                      size="sm"
                     >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Create New Character
+                      <Plus className="w-3 h-3 mr-1" />
+                      Create Character
                     </Button>
                   </div>
 
                   {/* Character List */}
-                  <Card className="flex-1 bg-black/20 border-purple-500/30 min-h-0">
-                    <CardHeader className="flex-shrink-0">
-                      <CardTitle className="text-white">Character Management</CardTitle>
-                      <CardDescription className="text-gray-400">
-                        Manage all characters in the game. Edit properties, toggle status, or delete characters.
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex-1 overflow-hidden p-4">
+                  <div className="flex-1 bg-black/20 border border-purple-500/30 rounded-lg overflow-hidden">
+                    <div className="p-3 border-b border-purple-500/30 flex-shrink-0">
+                      <h3 className="text-white font-semibold text-sm">Character Management</h3>
+                      <p className="text-gray-400 text-xs">Manage all characters in the game</p>
+                    </div>
+                    <div className="flex-1 overflow-hidden">
                       {charactersLoading ? (
                         <div className="flex items-center justify-center h-32">
-                          <div className="animate-spin w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full"></div>
+                          <div className="animate-spin w-6 h-6 border-2 border-purple-400 border-t-transparent rounded-full"></div>
                         </div>
                       ) : characters.length === 0 ? (
                         <div className="text-center text-gray-400 py-8">
-                          <Users className="w-12 h-12 mx-auto mb-4 opacity-50" />
-                          <p>No characters found</p>
-                          <p className="text-sm">Create your first character to get started</p>
+                          <Users className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No characters found</p>
+                          <p className="text-xs">Create your first character to get started</p>
                         </div>
                       ) : (
-                        <ScrollArea className="h-[400px]">
-                          <div className="space-y-2 pr-4">
+                        <ScrollArea className="h-full">
+                          <div className="space-y-2 p-3">
                             {characters.map((character: Character) => (
                               <div
                                 key={character.id}
-                                className="flex items-center gap-4 p-4 bg-black/30 rounded-lg border border-gray-700 hover:border-purple-500/50 transition-colors"
+                                className="flex items-center gap-3 p-3 bg-black/30 rounded-lg border border-gray-700 hover:border-purple-500/50 transition-colors"
                               >
                                 {/* Character Avatar */}
-                                <div className="relative">
+                                <div className="relative flex-shrink-0">
                                   <img
                                     src={character.avatarUrl || character.imageUrl || '/api/placeholder-image'}
                                     alt={character.name}
-                                    className="w-16 h-16 rounded-full object-cover"
+                                    className="w-12 h-12 rounded-full object-cover"
                                     onError={(e) => {
                                       (e.target as HTMLImageElement).src = '/api/placeholder-image';
                                     }}
                                   />
                                   {character.isVip && (
-                                    <Crown className="absolute -top-1 -right-1 w-4 h-4 text-yellow-400" />
+                                    <Crown className="absolute -top-1 -right-1 w-3 h-3 text-yellow-400" />
                                   )}
                                 </div>
 
                                 {/* Character Info */}
-                                <div className="flex-1">
+                                <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <h3 className="text-white font-semibold">{character.name}</h3>
-                                    <div className="flex gap-1">
+                                    <h4 className="text-white font-medium text-sm truncate">{character.name}</h4>
+                                    <div className="flex gap-1 flex-shrink-0">
                                       {character.isVip && (
-                                        <Badge variant="secondary" className="bg-yellow-600/20 text-yellow-400">
+                                        <Badge variant="secondary" className="bg-yellow-600/20 text-yellow-400 text-xs px-1 py-0">
                                           VIP
                                         </Badge>
                                       )}
                                       {character.isNsfw && (
-                                        <Badge variant="secondary" className="bg-red-600/20 text-red-400">
+                                        <Badge variant="secondary" className="bg-red-600/20 text-red-400 text-xs px-1 py-0">
                                           NSFW
-                                        </Badge>
-                                      )}
-                                      {character.isEvent && (
-                                        <Badge variant="secondary" className="bg-purple-600/20 text-purple-400">
-                                          Event
                                         </Badge>
                                       )}
                                     </div>
                                   </div>
-                                  <p className="text-gray-400 text-sm">
-                                    {character.personality} • Level {character.requiredLevel}+ required
-                                  </p>
-                                  <p className="text-gray-500 text-xs line-clamp-1">
-                                    {character.bio || character.description || "No description"}
+                                  <p className="text-gray-400 text-xs">
+                                    {character.personality} • Lv.{character.requiredLevel}+
                                   </p>
                                 </div>
 
-                                {/* Quick Toggle Controls */}
-                                <div className="flex items-center gap-2">
+                                {/* Action Buttons */}
+                                <div className="flex gap-1 flex-shrink-0">
                                   <Button
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => handleToggleCharacterStatus(character.id, 'isVip', character.isVip)}
-                                    className={`p-2 ${character.isVip ? 'text-yellow-400 hover:bg-yellow-400/20' : 'text-gray-400 hover:text-yellow-400'}`}
-                                    title="Toggle VIP Status"
+                                    className={`p-1 h-6 w-6 ${character.isVip ? 'text-yellow-400' : 'text-gray-400'}`}
+                                    title="Toggle VIP"
                                   >
-                                    <Crown className="w-4 h-4" />
+                                    <Crown className="w-3 h-3" />
                                   </Button>
-
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={() => handleToggleCharacterStatus(character.id, 'isNsfw', character.isNsfw)}
-                                    className={`p-2 ${character.isNsfw ? 'text-red-400 hover:bg-red-400/20' : 'text-gray-400 hover:text-red-400'}`}
-                                    title="Toggle NSFW Status"
-                                  >
-                                    <Heart className="w-4 h-4" />
-                                  </Button>
-                                </div>
-
-                                {/* Action Buttons */}
-                                <div className="flex gap-2">
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleEditCharacter(character)}
-                                    className="text-blue-400 border-blue-400 hover:bg-blue-400/20"
+                                    className="text-blue-400 border-blue-400 hover:bg-blue-400/20 p-1 h-6 w-6"
                                   >
-                                    <Edit3 className="w-4 h-4" />
+                                    <Edit3 className="w-3 h-3" />
                                   </Button>
                                   <Button
                                     size="sm"
                                     variant="outline"
                                     onClick={() => handleDeleteCharacter(character.id, character.name)}
-                                    className="text-red-400 border-red-400 hover:bg-red-400/20"
+                                    className="text-red-400 border-red-400 hover:bg-red-400/20 p-1 h-6 w-6"
                                   >
-                                    <Trash2 className="w-4 h-4" />
+                                    <Trash2 className="w-3 h-3" />
                                   </Button>
                                 </div>
                               </div>
@@ -312,8 +289,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           </div>
                         </ScrollArea>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 </div>
               </TabsContent>
 
