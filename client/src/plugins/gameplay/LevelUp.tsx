@@ -143,7 +143,7 @@ const DEFAULT_LEVEL_REQUIREMENTS: LevelRequirement[] = [
   }
 ];
 
-export default function LevelUp({ onLevelUp }: LevelUpProps) {
+export default function LevelUp() {
   const { playerData, levelUp: gameLevelUp, setPlayerData } = useGame();
   const [selectedLevel, setSelectedLevel] = useState<number | null>(null);
   const [levelRequirements, setLevelRequirements] = useState<LevelRequirement[]>(DEFAULT_LEVEL_REQUIREMENTS);

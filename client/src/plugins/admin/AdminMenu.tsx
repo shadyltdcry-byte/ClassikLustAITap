@@ -372,7 +372,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-2">
-      <div className="bg-gradient-to-br from-gray-950 via-blue-950/50 to-black w-full max-w-7xl h-[95vh] rounded-2xl border border-blue-500/20 flex flex-col shadow-2xl shadow-blue-500/10">
+      <div className="bg-gradient-to-br from-gray-950 via-blue-950/50 to-black w-full max-w-7xl h-[95vh] rounded-2xl border border-blue-500/20 flex flex-col overflow-hidden shadow-2xl shadow-blue-500/10">
 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-blue-500/20 bg-black/20">
@@ -541,7 +541,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   </div>
 
                   {/* Character List */}
-                  <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden">
+                  <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden">
                     {charactersError ? (
                       <ErrorDisplay 
                         error={charactersError as Error} 

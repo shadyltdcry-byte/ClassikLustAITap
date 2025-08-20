@@ -501,8 +501,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Placeholder image endpoint
   app.get('/api/placeholder-image', (req: Request, res: Response) => {
-    // Return a simple placeholder response
-    res.status(404).json({ error: 'Image not found' });
+    // Return a simple 1x1 pixel transparent PNG
+    const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    res.set({
+      'Content-Type': 'image/png',
+      'Content-Length': transparentPixel.length,
+      'Cache-Control': 'public, max-age=86400'
+    });
+    res.end(transparentPixel);
+  });
+
+  // Dynamic placeholder image endpoint
+  app.get('/api/placeholder/:width/:height', (req: Request, res: Response) => {
+    // Return the same transparent pixel for any size request
+    const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    res.set({
+      'Content-Type': 'image/png',
+      'Content-Length': transparentPixel.length,
+      'Cache-Control': 'public, max-age=86400'
+    });
+    res.end(transparentPixel);
   });
 
   // Mistral AI Chat endpoint
