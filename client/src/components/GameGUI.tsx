@@ -127,8 +127,8 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
     // Handle prize claiming logic here
     console.log(`Claiming ${type} prize`);
   };
-  // Tasks GUI Component
-  const Task = ({ onClaimPrize }: { onClaimPrize: () => void }) => {
+  // Task Component with inline UI
+  const TasksGUI = ({ onClaimPrize }: { onClaimPrize: () => void }) => {
     const [activeTab, setActiveTab] = useState("all");
     const filteredTask = activeTab === "all" ? mockTask : mockTask.filter(task => task.category === activeTab);
 
@@ -231,8 +231,9 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
       </div>
     );
   };
-  // Achievements GUI Component
-  const Achievements = ({ onClaimPrize }: { onClaimPrize: () => void }) => {
+
+  // Achievements Component with inline UI
+  const AchievementsGUI = ({ onClaimPrize }: { onClaimPrize: () => void }) => {
     const [activeTab, setActiveTab] = useState("all");
     const filteredAchievements = activeTab === "all" ? mockAchievements : mockAchievements.filter(achievements => achievements.category === activeTab);
 
@@ -425,10 +426,10 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               <TabsTrigger value="achievements">Achievements</TabsTrigger>
             </TabsList>
             <TabsContent value="tasks">
-              <Task onClaimPrize={() => handleClaimPrize('task')} />
+              <TasksGUI onClaimPrize={() => handleClaimPrize('task')} />
             </TabsContent>
             <TabsContent value="achievements">
-              <Achievements onClaimPrize={() => handleClaimPrize('achievements')} />
+              <AchievementsGUI onClaimPrize={() => handleClaimPrize('achievements')} />
             </TabsContent>
           </Tabs>
         </div>
