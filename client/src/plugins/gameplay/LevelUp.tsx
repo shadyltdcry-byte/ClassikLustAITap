@@ -48,7 +48,7 @@ interface UpgradeRequirement {
 
 interface LevelRequirement {
   level: number;
-  requirements: UpgradeRequirement[];
+  requirements?: UpgradeRequirement[]; // Made optional to handle server data
   rewards?: {
     lp?: number;
     coins?: number;
@@ -591,7 +591,7 @@ export default function LevelUp() {
                           <div>
                             <CardTitle className="text-white">Level {levelReq.level}</CardTitle>
                             <CardDescription className="text-gray-400">
-                              {levelReq.requirements.length} requirement(s)
+                              {levelReq.requirements?.length || 0} requirement(s)
                             </CardDescription>
                           </div>
                         </div>
@@ -608,7 +608,7 @@ export default function LevelUp() {
                         <div className="space-y-3">
                           <div>
                             <h4 className="text-white font-medium mb-2">Requirements:</h4>
-                            {levelReq.requirements.map((req, index) => (
+                            {(levelReq.requirements || []).map((req, index) => (
                               <div key={index} className="text-sm text-gray-300 mb-1">
                                 • {formatUpgradeRequirement(req)}
                               </div>
