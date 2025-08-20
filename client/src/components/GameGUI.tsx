@@ -144,17 +144,21 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
               <Coins className="w-4 h-4 text-yellow-400" />
               <span className="text-yellow-400 font-bold">{playerData?.lp || 0}</span>
             </div>
-            <div className="flex items-center gap-1">
-              <Gem className="w-4 h-4 text-purple-400" />
-              <span>{playerData?.lustGems || 0}</span>
+            <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
+              <Zap className="w-4 h-4 text-blue-400" />
+              <span className="text-blue-400 font-bold">{playerData?.lpPerHour || 0}/h</span>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
+              <Gem className="w-4 h-4 text-purple-400" />
+              <span className="text-purple-400 font-bold">{playerData?.lustGems || 0}</span>
+            </div>
+            <div className="flex items-center gap-1 bg-black/20 px-3 py-1 rounded-full">
               <Heart className="w-4 h-4 text-red-400" />
-              <span>
+              <span className="text-red-400 font-bold">
                 {playerData?.energy || 0}/{playerData?.maxEnergy || 100}
               </span>
             </div>

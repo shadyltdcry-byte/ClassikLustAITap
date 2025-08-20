@@ -42,24 +42,10 @@ export default function Game() {
           if (playerData && playerData.energy > 0) {
             const newLP = playerData.lp + playerData.lpPerTap;
             const newEnergy = Math.max(0, playerData.energy - 1);
-            const newXP = playerData.xp + 1;
-            let leveledUp = false;
-            let newLevel = playerData.level;
-            let newXPToNext = playerData.xpToNext;
-            
-            if (newXP >= playerData.xpToNext) {
-              leveledUp = true;
-              newLevel = playerData.level + 1;
-              newXPToNext = Math.floor(playerData.xpToNext * 1.5);
-            }
-            
             const updatedData = { 
               ...playerData, 
               lp: newLP, 
-              energy: newEnergy,
-              xp: leveledUp ? newXP - playerData.xpToNext : newXP,
-              level: newLevel,
-              xpToNext: newXPToNext
+              energy: newEnergy
             };
             setPlayerData(updatedData);
             
@@ -67,9 +53,7 @@ export default function Game() {
             try {
               await apiRequest('PUT', `/api/player/${playerData.id}`, {
                 lp: newLP,
-                energy: newEnergy,
-                xp: leveledUp ? newXP - playerData.xpToNext : newXP,
-                level: newLevel
+                energy: newEnergy
               });
             } catch (error) {
               console.error('Failed to sync player data:', error);

@@ -1,26 +1,16 @@
 /**
- * Upgrades.tsx
- * Last Edited: 2025-08-17 by Steven
- *
- *
- *
- * Please leave a detailed description
- *      of each function you add
+ * Upgrades Plugin - Manage character and gameplay upgrades
+ * Last Modified: 2025-08-20 by Assistant
+ * Features: Purchase upgrades to enhance tap power, passive generation, and energy capacity
  */
 
-
-
-import { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/hooks/use-toast";
 
 interface Upgrade {
   id: string;
@@ -28,55 +18,42 @@ interface Upgrade {
   description: string;
   cost: number;
   bonus: number;
-  maxLevel: number;
   currentLevel: number;
+  maxLevel: number;
+  type: 'lpPerHour' | 'energy' | 'lpPerTap';
 }
 
 interface GameStats {
   lustPoints: number;
-  tapPower: number;
-  maxEnergy: number;
+  lpPerHour: number;
+  lpPerTap: number;
   currentEnergy: number;
+  maxEnergy: number;
 }
 
 export default function Upgrade() {
-  const [activeTab, setActiveTab] = useState<"purchase" | "create" | "manage">("purchase");
-  const [newUpgrade, setNewUpgrade] = useState({
-    name: "",
-    description: "",
-    cost: 0,
-    bonus: 0,
-    maxLevel: 1,
-  });
+  const [activeTab, setActiveTab] = useState<"lpPerHour" | "energy" | "lpPerTap">("lpPerHour");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: upgrades, isLoading: isLoadingUpgrades } = useQuery<Upgrade[]>({
-    queryKey: ["/api/upgrades"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/upgrades");
-      return await response.json();
-    },
+  const { data: gameStats, isLoading: isLoadingStats } = useQuery({
+    queryKey: ["/api/game-stats"],
     enabled: true,
   });
 
-  const { data: gameStats } = useQuery<GameStats>({
-    queryKey: ["/api/gamestats"],
-    queryFn: async () => {
-      const response = await apiRequest("GET", "/api/gamestats");
-      return await response.json();
-    },
+  const { data: upgrades, isLoading: isLoadingUpgrades } = useQuery({
+    queryKey: ["/api/upgrades"],
     enabled: true,
   });
 
   const purchaseMutation = useMutation({
     mutationFn: async (upgradeId: string) => {
-      const response = await apiRequest("POST", `/api/upgrades/purchase/${upgradeId}`);
+      const response = await apiRequest("POST", `/api/upgrades/${upgradeId}/purchase`);
       return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/upgrades"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/gamestats"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/game-stats"] });
       toast({
         title: "Upgrade Purchased",
         description: "Your upgrade has been successfully purchased.",
@@ -84,161 +61,139 @@ export default function Upgrade() {
     },
   });
 
-  const createMutation = useMutation({
-    mutationFn: async (newUpgradeData: Omit<Upgrade, 'id' | 'currentLevel'>) => {
-      const response = await apiRequest("POST", "/api/upgrades", newUpgradeData);
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/upgrades"] });
-      toast({
-        title: "Upgrade Created",
-        description: "Your new upgrade has been successfully created.",
-      });
-      setNewUpgrade({
-        name: "",
-        description: "",
-        cost: 0,
-        bonus: 0,
-        maxLevel: 1,
-      });
-    },
-  });
-
-  const deleteMutation = useMutation({
-    mutationFn: async (upgradeId: string) => {
-      const response = await apiRequest("DELETE", `/api/upgrades/${upgradeId}`);
-      return await response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/upgrades"] });
-      toast({
-        title: "Upgrade Deleted",
-        description: "Your upgrade has been successfully deleted.",
-      });
-    },
-  });
-
-  const handlePurchase = (upgradeId: string) => {
+  const handlePurchase = (upgradeType: string, level: number) => {
+    const upgradeId = `${upgradeType}-${level}`;
     purchaseMutation.mutate(upgradeId);
-  };
-
-  const handleCreate = () => {
-    createMutation.mutate({
-      ...newUpgrade,
-    });
-  };
-
-  const handleDelete = (upgradeId: string) => {
-    deleteMutation.mutate(upgradeId);
-  };
-
-  const calculateCost = (baseCost: number, currentLevel: number) => {
-    return baseCost * (currentLevel + 1);
   };
 
   const canAfford = (cost: number) => {
     return gameStats?.lustPoints !== undefined && gameStats.lustPoints >= cost;
   };
 
-  const isMaxLevel = (upgrade: Upgrade) => {
-    return upgrade.currentLevel >= upgrade.maxLevel;
-  };
-
-  if (isLoadingUpgrades) {
-    return <div>Loading upgrades...</div>;
+  if (isLoadingUpgrades || isLoadingStats) {
+    return <div className="text-white p-4">Loading upgrades...</div>;
   }
 
   return (
     <div className="flex flex-col h-full bg-gray-900 text-white p-4">
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "purchase" | "create" | "manage")}>
-        <TabsList className="mb-4">
-          <TabsTrigger value="purchase" className="px-4 py-2">
-            Purchase
+      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "lpPerHour" | "energy" | "lpPerTap")}>
+        <TabsList className="mb-4 bg-gray-800">
+          <TabsTrigger value="lpPerHour" className="px-4 py-2 data-[state=active]:bg-blue-600">
+            LP per Hour
           </TabsTrigger>
-          <TabsTrigger value="create" className="px-4 py-2">
-            Create
+          <TabsTrigger value="energy" className="px-4 py-2 data-[state=active]:bg-purple-600">
+            Energy Upgrade
           </TabsTrigger>
-          <TabsTrigger value="manage" className="px-4 py-2">
-            Manage
+          <TabsTrigger value="lpPerTap" className="px-4 py-2 data-[state=active]:bg-red-600">
+            LP per Tap
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="purchase">
-          <div className="flex flex-col gap-4">
-            {upgrades?.map((upgrade) => (
-              <Card key={upgrade.id} className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                  <CardTitle>{upgrade.name}</CardTitle>
-                  <CardDescription>{upgrade.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p>Cost: {calculateCost(upgrade.cost, upgrade.currentLevel)} Lust Points</p>
-                  <p>Bonus: +{upgrade.bonus} per tap</p>
-                  <p>Level: {upgrade.currentLevel}/{upgrade.maxLevel}</p>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button
-                    onClick={() => handlePurchase(upgrade.id)}
-                    disabled={!canAfford(calculateCost(upgrade.cost, upgrade.currentLevel)) || isMaxLevel(upgrade)}
-                    className={`bg-blue-600 hover:bg-blue-700 ${(!canAfford(calculateCost(upgrade.cost, upgrade.currentLevel)) || isMaxLevel(upgrade)) && "opacity-50 cursor-not-allowed"}`}
-                  >
-                    {isMaxLevel(upgrade) ? "Max Level" : "Purchase"}
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="create">
+        <TabsContent value="lpPerHour">
           <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input id="name" value={newUpgrade.name} onChange={(e) => setNewUpgrade({...newUpgrade, name: e.target.value})} />
+            <h2 className="text-xl font-semibold text-white mb-4">LP per Hour Upgrades</h2>
+            <p className="text-gray-400 mb-4">Increase your passive LP generation rate</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5].map((level) => {
+                const cost = level * 100;
+                const bonus = level * 10;
+                return (
+                  <Card key={level} className="bg-gray-800 border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="text-white">LP/Hour Level {level}</CardTitle>
+                      <CardDescription className="text-gray-400">Increase LP generation by {bonus}/hour</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-gray-300">Cost: <span className="text-yellow-400 font-bold">{cost} LP</span></p>
+                        <p className="text-gray-300">Bonus: <span className="text-blue-400 font-bold">+{bonus}/hour</span></p>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button 
+                        onClick={() => handlePurchase("lpPerHour", level)}
+                        disabled={purchaseMutation.isPending || !canAfford(cost)}
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                      >
+                        {purchaseMutation.isPending ? "Purchasing..." : "Purchase"}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Input id="description" value={newUpgrade.description} onChange={(e) => setNewUpgrade({...newUpgrade, description: e.target.value})} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="cost">Base Cost</Label>
-              <Input id="cost" type="number" value={newUpgrade.cost} onChange={(e) => setNewUpgrade({...newUpgrade, cost: parseInt(e.target.value)})} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="bonus">Bonus</Label>
-              <Input id="bonus" type="number" value={newUpgrade.bonus} onChange={(e) => setNewUpgrade({...newUpgrade, bonus: parseInt(e.target.value)})} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="maxLevel">Max Level</Label>
-              <Input id="maxLevel" type="number" value={newUpgrade.maxLevel} onChange={(e) => setNewUpgrade({...newUpgrade, maxLevel: parseInt(e.target.value)})} />
-            </div>
-            <Button onClick={handleCreate} className="w-full bg-green-600 hover:bg-green-700">
-              Create Upgrade
-            </Button>
           </div>
         </TabsContent>
-
-        <TabsContent value="manage">
-          <div className="flex flex-col gap-4">
-            {upgrades?.map((upgrade) => (
-              <Card key={upgrade.id} className="bg-gray-800 border-gray-700">
-                <CardHeader>
-                  <CardTitle>{upgrade.name}</CardTitle>
-                  <CardDescription>{upgrade.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p>Cost: {upgrade.cost}</p>
-                  <p>Bonus: {upgrade.bonus}</p>
-                  <p>Max Level: {upgrade.maxLevel}</p>
-                </CardContent>
-                <CardFooter className="flex justify-between">
-                  <Button onClick={() => handleDelete(upgrade.id)} className="bg-red-600 hover:bg-red-700">
-                    Delete
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+        
+        <TabsContent value="energy">
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-white mb-4">Energy Upgrades</h2>
+            <p className="text-gray-400 mb-4">Increase your maximum energy and regeneration</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5].map((level) => {
+                const cost = level * 150;
+                const bonus = level * 20;
+                return (
+                  <Card key={level} className="bg-gray-800 border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="text-white">Energy Level {level}</CardTitle>
+                      <CardDescription className="text-gray-400">Increase max energy by {bonus}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-gray-300">Cost: <span className="text-yellow-400 font-bold">{cost} LP</span></p>
+                        <p className="text-gray-300">Bonus: <span className="text-red-400 font-bold">+{bonus} energy</span></p>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button 
+                        onClick={() => handlePurchase("energy", level)}
+                        disabled={purchaseMutation.isPending || !canAfford(cost)}
+                        className="w-full bg-purple-600 hover:bg-purple-700"
+                      >
+                        {purchaseMutation.isPending ? "Purchasing..." : "Purchase"}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="lpPerTap">
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold text-white mb-4">LP per Tap Upgrades</h2>
+            <p className="text-gray-400 mb-4">Increase LP gained from each character tap</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5].map((level) => {
+                const cost = level * 200;
+                const bonus = level * 2;
+                return (
+                  <Card key={level} className="bg-gray-800 border-gray-700">
+                    <CardHeader>
+                      <CardTitle className="text-white">Tap Power Level {level}</CardTitle>
+                      <CardDescription className="text-gray-400">Increase LP per tap by {bonus}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-gray-300">Cost: <span className="text-yellow-400 font-bold">{cost} LP</span></p>
+                        <p className="text-gray-300">Bonus: <span className="text-green-400 font-bold">+{bonus} LP/tap</span></p>
+                      </div>
+                    </CardContent>
+                    <CardFooter>
+                      <Button 
+                        onClick={() => handlePurchase("lpPerTap", level)}
+                        disabled={purchaseMutation.isPending || !canAfford(cost)}
+                        className="w-full bg-red-600 hover:bg-red-700"
+                      >
+                        {purchaseMutation.isPending ? "Purchasing..." : "Purchase"}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         </TabsContent>
       </Tabs>
