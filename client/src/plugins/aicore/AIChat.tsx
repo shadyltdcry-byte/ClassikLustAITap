@@ -120,7 +120,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       return;
     }
 
-    if (chatHistory !== undefined) {
+    if (chatHistory && Array.isArray(chatHistory)) {
       if (chatHistory.length > 0) {
         const formattedMessages = chatHistory.map((msg: any) => ({
           id: msg.id || `msg-${Date.now()}-${Math.random()}`,
@@ -133,7 +133,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         }));
         setMessages(formattedMessages);
       } else {
-        // Send initial greeting for new conversations
+        // Send initial greeting for new conversations only once
         const greeting = getCharacterGreeting();
         const greetingMessage = {
           id: 'initial-greeting',
@@ -144,16 +144,9 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
           mood: 'happy',
         };
         setMessages([greetingMessage]);
-        
-        // Save greeting to database
-        saveMessageMutation.mutate({
-          content: greeting,
-          isFromUser: false,
-          mood: 'happy'
-        });
       }
     }
-  }, [chatHistory, character?.id])
+  }, [character?.id]) // Remove chatHistory and saveMessageMutation from dependencies
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -246,16 +239,28 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
   // Save message to database
   const saveMessageMutation = useMutation({
     mutationFn: async (messageData: { content: string; isFromUser: boolean; mood?: string }) => {
-      const response = await apiRequest("POST", `/api/chat/${userId}/${character?.id}`, {
-        message: messageData.content,
-        isFromUser: messageData.isFromUser,
-        mood: messageData.mood,
-        type: 'text'
-      });
-      return response.json();
+      if (!character?.id) {
+        throw new Error("No character selected");
+      }
+      try {
+        const response = await apiRequest("POST", `/api/chat/${userId}/${character.id}`, {
+          message: messageData.content,
+          isFromUser: messageData.isFromUser,
+          mood: messageData.mood,
+          type: 'text'
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      } catch (error) {
+        console.error("Failed to save message:", error);
+        throw error;
+      }
     },
     onError: (error) => {
-      console.error("Failed to save message:", error);
+      // Don't show toast for save errors, just log them
+      console.error("Message save failed:", error);
     }
   });
 
@@ -344,17 +349,6 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
   const handleLocalMessage = async () => {
     const originalMessage = newMessage;
     
-    // Save user message to database
-    try {
-      await saveMessageMutation.mutateAsync({
-        content: originalMessage,
-        isFromUser: true,
-        mood: currentMood
-      });
-    } catch (error) {
-      console.error("Failed to save user message:", error);
-    }
-    
     const userMessage: ChatMessage = {
       id: `local-user-${Date.now()}`,
       content: originalMessage,
@@ -368,22 +362,20 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
     setMessages(prev => [...prev, userMessage]);
     setNewMessage("");
 
+    // Save user message to database (don't wait for it)
+    if (character?.id) {
+      saveMessageMutation.mutate({
+        content: originalMessage,
+        isFromUser: true,
+        mood: currentMood
+      });
+    }
+
     // Add 3-5 second delay for typing
     const delay = Math.random() * 2000 + 3000; // 3-5 seconds
-    setTimeout(async () => {
+    setTimeout(() => {
       const response = generateSmartResponse(originalMessage);
       const aiMood = getRandomMood();
-      
-      // Save local response to database
-      try {
-        await saveMessageMutation.mutateAsync({
-          content: response,
-          isFromUser: false,
-          mood: aiMood
-        });
-      } catch (error) {
-        console.error("Failed to save local response:", error);
-      }
       
       const characterMessage: ChatMessage = {
         id: `local-ai-${Date.now()}`,
@@ -398,6 +390,15 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       setMessages(prev => [...prev, characterMessage]);
       setCharacterMood(characterMessage.mood || 'normal');
       setTypingIndicator(false);
+      
+      // Save AI response to database (don't wait for it)
+      if (character?.id) {
+        saveMessageMutation.mutate({
+          content: response,
+          isFromUser: false,
+          mood: aiMood
+        });
+      }
     }, delay);
   };
 

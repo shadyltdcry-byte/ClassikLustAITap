@@ -433,7 +433,11 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
         </div>
       );
     } else if (guiState.activePlugin === "aiChat") {
-      return <AIChat userId={playerData?.id || 'default-player'} />;
+      return (
+        <div className="w-full max-w-2xl h-full">
+          <AIChat userId={playerData?.id || 'default-player'} />
+        </div>
+      );
     }
     return null; // Should not happen with current navigation
   };
@@ -486,7 +490,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
           {renderActivePlugin()}
         </div>
         {/* Bottom Navigation */}
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-900/90 to-red-900/90 border-t border-pink-500/30 p-1 backdrop-blur-sm">
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-pink-900/90 to-red-900/90 border-t border-pink-500/30 p-1 backdrop-blur-sm z-40">
           <div className="flex justify-around items-center">
             <Button
               variant="ghost"
@@ -536,7 +540,7 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
               onClick={() => updateGUIState({ activePlugin: "aiChat" })}
             >
               <MessageCircle className="w-4 h-4" />
-              <span className="text-xs">AI Chat</span>
+              <span className="text-xs">Chat</span>
             </Button>
           </div>
         </div>
