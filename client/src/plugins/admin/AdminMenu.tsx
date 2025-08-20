@@ -541,7 +541,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   </div>
 
                   {/* Character List */}
-                  <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden min-h-[400px]">
+                  <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden" style={{height: '500px'}}>
                     {charactersError ? (
                       <ErrorDisplay 
                         error={charactersError as Error} 
@@ -623,7 +623,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             {/* OTHER TABS */}
             {["upgrades", "tasks", "achievements", "game", "database", "system"].map((tabName) => (
               <TabsContent key={tabName} value={tabName} className="flex-1 px-6 py-4">
-                <div className="h-96 bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+                <div className="bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center" style={{height: '600px'}}>
                   <EmptyState
                     title={`${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Management`}
                     description={`Configure and manage ${tabName} settings, rules, and data`}

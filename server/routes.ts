@@ -284,20 +284,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Chat endpoints
   app.get("/api/chat/:userId/:characterId", (req, res) => {
     const { userId, characterId } = req.params;
-    // Mock chat history
-    res.json([
-      {
-        id: "1",
-        message: "Hello! I'm happy to chat with you!",
-        isFromUser: false,
-        createdAt: new Date().toISOString(),
-        mood: "happy"
+    const fs = require('fs');
+    const path = require('path');
+    
+    try {
+      const chatStoragePath = path.join(__dirname, 'chat-storage.json');
+      let chatStorage = { conversations: {} };
+      
+      if (fs.existsSync(chatStoragePath)) {
+        const data = fs.readFileSync(chatStoragePath, 'utf8');
+        chatStorage = JSON.parse(data);
       }
-    ]);
+      
+      const conversationKey = `${userId}-${characterId}`;
+      const conversation = chatStorage.conversations[conversationKey] || [
+        {
+          id: "1",
+          message: "Hello! I'm happy to chat with you!",
+          isFromUser: false,
+          createdAt: new Date().toISOString(),
+          mood: "happy"
+        }
+      ];
+      
+      res.json(conversation);
+    } catch (error) {
+      console.error('Error loading chat history:', error);
+      res.json([
+        {
+          id: "1",
+          message: "Hello! I'm happy to chat with you!",
+          isFromUser: false,
+          createdAt: new Date().toISOString(),
+          mood: "happy"
+        }
+      ]);
+    }
   });
 
   app.post("/api/chat/send", async (req, res) => {
     const { userId, characterId, message, isFromUser } = req.body;
+    const fs = require('fs');
+    const path = require('path');
+    
     const userMessage = {
       id: Date.now().toString(),
       message,
@@ -312,6 +341,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       createdAt: new Date().toISOString(),
       mood: getRandomMood()
     };
+
+    // Save conversation to JSON file
+    try {
+      const chatStoragePath = path.join(__dirname, 'chat-storage.json');
+      let chatStorage = { conversations: {} };
+      
+      if (fs.existsSync(chatStoragePath)) {
+        const data = fs.readFileSync(chatStoragePath, 'utf8');
+        chatStorage = JSON.parse(data);
+      }
+      
+      const conversationKey = `${userId}-${characterId}`;
+      if (!chatStorage.conversations[conversationKey]) {
+        chatStorage.conversations[conversationKey] = [];
+      }
+      
+      // Add both messages to conversation
+      chatStorage.conversations[conversationKey].push(userMessage, aiResponse);
+      
+      // Keep only last 100 messages per conversation to prevent file from getting too large
+      if (chatStorage.conversations[conversationKey].length > 100) {
+        chatStorage.conversations[conversationKey] = chatStorage.conversations[conversationKey].slice(-100);
+      }
+      
+      fs.writeFileSync(chatStoragePath, JSON.stringify(chatStorage, null, 2));
+      console.log(`Saved conversation for ${userId}-${characterId} to JSON file`);
+    } catch (error) {
+      console.error('Error saving chat history:', error);
+    }
 
     res.json({ userMessage, aiResponse });
   });
