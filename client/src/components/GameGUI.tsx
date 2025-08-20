@@ -170,44 +170,64 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
       <div className="flex-1 overflow-hidden relative bg-gradient-to-br from-pink-900/10 via-purple-900/10 to-red-900/10">
         {/* News ticker removed temporarily to fix layout */}
 
-        {/* Character Display */}
+        {/* Main Content Area - Plugin or Character Display */}
         <div className="flex-1 flex items-center justify-center">
-          <div className="max-w-md w-full">
-            <CharacterDisplay
-              character={{
-                id: "seraphina",
-                name: "Seraphina",
-                personality: "playful",
-                backstory: "Tap to interact with Seraphina!",
-                mood: "flirty",
-                level: 1,
-                isNsfw: false,
-                isVip: false,
-                levelRequirement: 1,
-                customTriggers: [],
-                createdAt: new Date(),
-              }}
-              user={{
-                ...playerData,
-                id: playerData?.id || 'default-player',
-                username: playerData?.name || 'Player',
-                password: '',
-                level: playerData?.level || 1,
-                lp: playerData?.lp || 0,
-                lpPerHour: playerData?.lpPerHour || 0,
-                lpPerTap: playerData?.lpPerTap || 1,
-                energy: playerData?.energy || 100,
-                maxEnergy: playerData?.maxEnergy || 100,
-                charisma: playerData?.charismaPoints || 0,
-                vipStatus: playerData?.isVip || false,
-                nsfwConsent: playerData?.nsfwEnabled || false,
-                lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
-                createdAt: new Date()
-              } as any}
-              onTap={handleTap}
-              isTapping={isTapping}
-            />
-          </div>
+          {guiState.activePlugin === "main" ? (
+            <div className="max-w-md w-full">
+              <CharacterDisplay
+                character={{
+                  id: "seraphina",
+                  name: "Seraphina",
+                  personality: "playful",
+                  backstory: "Tap to interact with Seraphina!",
+                  mood: "flirty",
+                  level: 1,
+                  isNsfw: false,
+                  isVip: false,
+                  levelRequirement: 1,
+                  customTriggers: [],
+                  createdAt: new Date(),
+                }}
+                user={{
+                  ...playerData,
+                  id: playerData?.id || 'default-player',
+                  username: playerData?.name || 'Player',
+                  password: '',
+                  level: playerData?.level || 1,
+                  lp: playerData?.lp || 0,
+                  lpPerHour: playerData?.lpPerHour || 0,
+                  lpPerTap: playerData?.lpPerTap || 1,
+                  energy: playerData?.energy || 100,
+                  maxEnergy: playerData?.maxEnergy || 100,
+                  charisma: playerData?.charismaPoints || 0,
+                  vipStatus: playerData?.isVip || false,
+                  nsfwConsent: playerData?.nsfwEnabled || false,
+                  lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
+                  createdAt: new Date()
+                } as any}
+                onTap={handleTap}
+                isTapping={isTapping}
+              />
+            </div>
+          ) : (
+            <div className="w-full h-full max-w-4xl mx-auto bg-black/20 rounded-xl border border-purple-500/30 overflow-hidden">
+              {guiState.activePlugin === "upgrades" && (
+                <Upgrades 
+                  playerData={playerData} 
+                  onUpgradeAction={onPluginAction}
+                />
+              )}
+              {guiState.activePlugin === "tasks" && (
+                <Tasks />
+              )}
+              {guiState.activePlugin === "achievements" && (
+                <Achievements />
+              )}
+              {guiState.activePlugin === "aiChat" && (
+                <AIChat />
+              )}
+            </div>
+          )}
         </div>
 
         {/* Bottom Navigation */}
@@ -215,24 +235,40 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
           <div className="flex justify-around">
             <Button
               variant="ghost"
-              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20"
-              onClick={() => onPluginChange?.('upgrades')}
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "main" ? "bg-pink-600/30" : ""}`}
+              onClick={() => updateGUIState({ activePlugin: "main" })}
+            >
+              <Heart className="w-5 h-5" />
+              <span className="text-xs">Character</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "upgrades" ? "bg-pink-600/30" : ""}`}
+              onClick={() => updateGUIState({ activePlugin: "upgrades" })}
             >
               <Star className="w-5 h-5" />
               <span className="text-xs">Upgrades</span>
             </Button>
             <Button
               variant="ghost"
-              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20"
-              onClick={() => onPluginChange?.('tasks')}
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "tasks" ? "bg-pink-600/30" : ""}`}
+              onClick={() => updateGUIState({ activePlugin: "tasks" })}
             >
               <Zap className="w-5 h-5" />
-              <span className="text-xs">Task</span>
+              <span className="text-xs">Tasks</span>
             </Button>
             <Button
               variant="ghost"
-              className="flex flex-col items-center gap-1 text-white hover:bg-pink-600/20"
-              onClick={() => onPluginChange?.('aiChat')}
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "achievements" ? "bg-pink-600/30" : ""}`}
+              onClick={() => updateGUIState({ activePlugin: "achievements" })}
+            >
+              <Star className="w-5 h-5" />
+              <span className="text-xs">Achievements</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 ${guiState.activePlugin === "aiChat" ? "bg-pink-600/30" : ""}`}
+              onClick={() => updateGUIState({ activePlugin: "aiChat" })}
             >
               <MessageCircle className="w-5 h-5" />
               <span className="text-xs">AI Chat</span>

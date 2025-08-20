@@ -29,7 +29,10 @@ import {
   Settings,
   Users,
   Database,
-  Activity
+  Activity,
+  Star,
+  Zap,
+  Trophy
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -141,7 +144,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
           {/* Main Content */}
           <div className="flex-1 overflow-hidden">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-              <TabsList className="grid grid-cols-5 mx-6 mt-4 bg-black/30">
+              <TabsList className="grid grid-cols-8 mx-6 mt-4 bg-black/30">
                 <TabsTrigger value="characters" className="text-white data-[state=active]:bg-purple-600">
                   <Users className="w-4 h-4 mr-2" />
                   Characters
@@ -149,6 +152,18 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                 <TabsTrigger value="media" className="text-white data-[state=active]:bg-purple-600">
                   <Heart className="w-4 h-4 mr-2" />
                   Media
+                </TabsTrigger>
+                <TabsTrigger value="upgrades" className="text-white data-[state=active]:bg-purple-600">
+                  <Star className="w-4 h-4 mr-2" />
+                  Upgrades
+                </TabsTrigger>
+                <TabsTrigger value="tasks" className="text-white data-[state=active]:bg-purple-600">
+                  <Zap className="w-4 h-4 mr-2" />
+                  Tasks
+                </TabsTrigger>
+                <TabsTrigger value="achievements" className="text-white data-[state=active]:bg-purple-600">
+                  <Trophy className="w-4 h-4 mr-2" />
+                  Achievements
                 </TabsTrigger>
                 <TabsTrigger value="game" className="text-white data-[state=active]:bg-purple-600">
                   <Activity className="w-4 h-4 mr-2" />
@@ -313,6 +328,162 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   </CardHeader>
                   <CardContent className="h-full overflow-auto">
                     <FileManagerCore />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Upgrades Management Tab */}
+              <TabsContent value="upgrades" className="flex-1 overflow-hidden mx-6">
+                <Card className="bg-black/20 border-purple-500/30 h-full">
+                  <CardHeader>
+                    <CardTitle className="text-white">Upgrade Management</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Create, edit, and manage game upgrades.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-2 mb-4">
+                      <Button className="bg-purple-600 hover:bg-purple-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add New Upgrade
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                        <div>
+                          <h3 className="text-white font-semibold">Increase Intellect</h3>
+                          <p className="text-sm text-gray-400">LP per Hour: 150 | Base Cost: 1500</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                        <div>
+                          <h3 className="text-white font-semibold">Energy Boost</h3>
+                          <p className="text-sm text-gray-400">Max Energy: +100 | Base Cost: 2000</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Tasks Management Tab */}
+              <TabsContent value="tasks" className="flex-1 overflow-hidden mx-6">
+                <Card className="bg-black/20 border-purple-500/30 h-full">
+                  <CardHeader>
+                    <CardTitle className="text-white">Task Management</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Create, edit, and manage game tasks and objectives.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-2 mb-4">
+                      <Button className="bg-purple-600 hover:bg-purple-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add New Task
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                        <div>
+                          <h3 className="text-white font-semibold">Daily Login</h3>
+                          <p className="text-sm text-gray-400">Reward: 50 LP | Difficulty: Easy</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                        <div>
+                          <h3 className="text-white font-semibold">Tap Master</h3>
+                          <p className="text-sm text-gray-400">Reward: 200 LP | Difficulty: Medium</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              {/* Achievements Management Tab */}
+              <TabsContent value="achievements" className="flex-1 overflow-hidden mx-6">
+                <Card className="bg-black/20 border-purple-500/30 h-full">
+                  <CardHeader>
+                    <CardTitle className="text-white">Achievement Management</CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Create, edit, and manage game achievements.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex gap-2 mb-4">
+                      <Button className="bg-purple-600 hover:bg-purple-700">
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add New Achievement
+                      </Button>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                        <div>
+                          <h3 className="text-white font-semibold">First Steps</h3>
+                          <p className="text-sm text-gray-400">Category: Beginner | Reward: 100 LP</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                        <div>
+                          <h3 className="text-white font-semibold">Tap Master</h3>
+                          <p className="text-sm text-gray-400">Category: Interaction | Reward: 500 LP</p>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
