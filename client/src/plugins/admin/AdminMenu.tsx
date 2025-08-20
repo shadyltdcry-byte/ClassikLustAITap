@@ -128,7 +128,7 @@ const CharacterCard = ({
       <div className="relative flex-shrink-0">
         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-600/50 group-hover:border-blue-500/50 transition-colors">
           <img 
-            src={character.imageUrl || '/api/placeholder/64/64'} 
+            src={'/api/placeholder/64/64'} 
             alt={character.name} 
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -616,8 +616,10 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
             {/* MEDIA TAB */}
             <TabsContent value="media" className="flex-1 flex flex-col min-h-0 px-6 py-4">
-              <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden">
-                <FileManagerCore />
+              <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden p-4">
+                <div className="h-full w-full">
+                  <FileManagerCore />
+                </div>
               </div>
             </TabsContent>
 

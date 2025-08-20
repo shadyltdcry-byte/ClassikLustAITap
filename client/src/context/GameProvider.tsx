@@ -409,11 +409,22 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      // Try to load from localStorage first
+      // Try to load from localStorage first with validation
       const savedData = localStorage.getItem('characterTapGame_playerData');
       if (savedData) {
-        const parsed = JSON.parse(savedData);
-        dispatch({ type: 'SET_PLAYER_DATA', payload: parsed });
+        try {
+          const parsed = JSON.parse(savedData);
+          // Only use saved data if it has valid values, otherwise clear it
+          if (parsed.lp > 0 || parsed.energy > 0 || parsed.lpPerHour > 0) {
+            dispatch({ type: 'SET_PLAYER_DATA', payload: parsed });
+          } else {
+            console.warn('Found invalid saved data with zero values, clearing localStorage');
+            localStorage.removeItem('characterTapGame_playerData');
+          }
+        } catch (error) {
+          console.warn('Invalid saved data, clearing localStorage:', error);
+          localStorage.removeItem('characterTapGame_playerData');
+        }
       }
 
       // Then try to sync with server

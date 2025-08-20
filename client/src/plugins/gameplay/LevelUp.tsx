@@ -200,7 +200,7 @@ export default function LevelUp() {
     onSuccess: (newLevel) => {
       toast.success(`Congratulations! You've reached level ${newLevel}!`);
       gameLevelUp();
-      onLevelUp?.(newLevel);
+      // Level up completed successfully
       queryClient.invalidateQueries({ queryKey: ['/api/player'] });
     },
     onError: (error: any) => {
@@ -242,7 +242,7 @@ export default function LevelUp() {
 
     const missingRequirements: UpgradeRequirement[] = [];
 
-    for (const req of levelRequirement.requirements) {
+    for (const req of (levelRequirement.requirements || [])) {
       let requirementMet = false;
 
       if (req.upgradeType === 'lpPerHour') {
@@ -325,7 +325,7 @@ export default function LevelUp() {
     }
 
     if (levelsGained === 0) {
-      toast.info('No level ups available. Continue upgrading!');
+      toast('No level ups available. Continue upgrading!');
     }
   };
 
