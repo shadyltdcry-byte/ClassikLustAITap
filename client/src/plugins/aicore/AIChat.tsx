@@ -110,7 +110,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       return data;
     },
     enabled: !!character?.id,
-    refetchInterval: 5000,
+    refetchOnWindowFocus: false,
   });
 
   // Load chat history on character change - prevent infinite loops
@@ -126,7 +126,9 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         reactionScore: msg.reactionScore,
       }));
       // Only update if messages have actually changed
-      if (JSON.stringify(messages) !== JSON.stringify(formattedMessages)) {
+      const messagesChanged = JSON.stringify(messages.map(m => ({ id: m.id, content: m.content, sender: m.sender }))) !== 
+                             JSON.stringify(formattedMessages.map((m: any) => ({ id: m.id, content: m.content, sender: m.sender })));
+      if (messagesChanged) {
         setMessages(formattedMessages);
       }
     } else if (character && chatHistory !== undefined && chatHistory.length === 0 && messages.length > 0) {
@@ -274,6 +276,9 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       setMessages(prev => [...prev, userMessage, aiMessage]);
       setCharacterMood(aiMessage.mood || 'normal');
       setNewMessage("");
+      
+      // Invalidate chat query to refetch and sync with server
+      queryClient.invalidateQueries({ queryKey: ["/api/chat", userId, character?.id] });
       
       toast({
         title: "Message sent!",

@@ -287,7 +287,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     
     try {
       const chatStoragePath = path.join(__dirname, 'chat-storage.json');
-      let chatStorage = { conversations: {} };
+      let chatStorage: { conversations: { [key: string]: any[] } } = { conversations: {} };
       
       if (fs.existsSync(chatStoragePath)) {
         const data = fs.readFileSync(chatStoragePath, 'utf8');
@@ -341,7 +341,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     // Save conversation to JSON file
     try {
       const chatStoragePath = path.join(__dirname, 'chat-storage.json');
-      let chatStorage = { conversations: {} };
+      let chatStorage: { conversations: { [key: string]: any[] } } = { conversations: {} };
       
       if (fs.existsSync(chatStoragePath)) {
         const data = fs.readFileSync(chatStoragePath, 'utf8');
