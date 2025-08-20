@@ -266,14 +266,23 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <Input
-              type="file"
-              multiple
-              onChange={handleFileUpload}
-              accept="image/*,video/*,image/gif"
-              className="bg-gray-700 border-gray-600 text-white"
-              disabled={uploadMutation.isPending}
-            />
+            <div className="flex flex-col space-y-3">
+              <Input
+                type="file"
+                multiple
+                onChange={handleFileUpload}
+                accept="image/*,video/*,image/gif"
+                className="bg-gray-700 border-gray-600 text-white file:bg-purple-600 file:text-white file:border-none file:rounded"
+                disabled={uploadMutation.isPending}
+              />
+              <Button
+                onClick={() => document.querySelector('input[type="file"]')?.click()}
+                className="bg-purple-600 hover:bg-purple-700 text-white w-full"
+                disabled={uploadMutation.isPending}
+              >
+                {uploadMutation.isPending ? 'Uploading...' : 'Choose Files to Upload'}
+              </Button>
+            </div>
             {uploadProgress > 0 && (
               <div className="w-full bg-gray-600 rounded-full h-2">
                 <div
@@ -358,7 +367,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       {/* File Details Modal */}
       {selectedFile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="bg-gray-800 border-gray-600 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <Card className="bg-gray-800 border-gray-600 max-w-4xl w-full h-[90vh] flex flex-col">
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-white">
@@ -388,7 +397,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 flex-1 overflow-y-auto">
               <div className="flex justify-center">
                 {renderMediaPreview(selectedFile, 'full')}
               </div>
@@ -411,11 +420,11 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       {/* Edit File Modal */}
       {editingFile && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="bg-gray-800 border-gray-600 max-w-2xl w-full">
+          <Card className="bg-gray-800 border-gray-600 max-w-2xl w-full max-h-[80vh] flex flex-col">
             <CardHeader>
               <CardTitle className="text-white">Edit File Metadata</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 flex-1 overflow-y-auto p-6">
               <div>
                 <Label className="text-white">Assign to Character</Label>
                 <Select

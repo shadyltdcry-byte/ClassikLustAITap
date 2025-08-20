@@ -216,22 +216,23 @@ export default function GameGUI({ playerData, onPluginAction, onPluginChange }: 
         {/* Character Display */}
         <div className="p-4 max-w-md mx-auto">
           <CharacterDisplay
-            user={playerData || {
-              id: 'default-player',
-              username: 'Player',
+            user={{
+              ...playerData,
+              id: playerData?.id || 'default-player',
+              username: playerData?.name || 'Player',
               password: '',
-              level: 1,
-              lp: 0,
-              lpPerHour: 0,
-              lpPerTap: 1,
-              energy: 100,
-              maxEnergy: 100,
-              charisma: 0,
-              vipStatus: false,
-              nsfwConsent: false,
-              lastTick: new Date(),
+              level: playerData?.level || 1,
+              lp: playerData?.lp || 0,
+              lpPerHour: playerData?.lpPerHour || 0,
+              lpPerTap: playerData?.lpPerTap || 1,
+              energy: playerData?.energy || 100,
+              maxEnergy: playerData?.maxEnergy || 100,
+              charisma: playerData?.charismaPoints || 0,
+              vipStatus: playerData?.isVip || false,
+              nsfwConsent: playerData?.nsfwEnabled || false,
+              lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
               createdAt: new Date()
-            }}
+            } as any}
             onTap={handleTap}
             isTapping={isTapping}
           />

@@ -11,6 +11,7 @@
 
 import React, { useState } from "react";
 import { useGame } from "@/context/GameProvider";
+import { apiRequest } from "@/lib/queryClient";
 import LoadingScreen from "@/components/LoadingScreen";
 import GameGUI from "@/components/GameGUI";
 import CharacterCreation from "@/components/CharacterCreation";
@@ -41,7 +42,37 @@ export default function Game() {
           if (playerData && playerData.energy > 0) {
             const newLP = playerData.lp + playerData.lpPerTap;
             const newEnergy = Math.max(0, playerData.energy - 1);
-            setPlayerData({ ...playerData, lp: newLP, energy: newEnergy });
+            const newXP = playerData.xp + 1;
+            let leveledUp = false;
+            let newLevel = playerData.level;
+            let newXPToNext = playerData.xpToNext;
+            
+            if (newXP >= playerData.xpToNext) {
+              leveledUp = true;
+              newLevel = playerData.level + 1;
+              newXPToNext = Math.floor(playerData.xpToNext * 1.5);
+            }
+            
+            setPlayerData({ 
+              ...playerData, 
+              lp: newLP, 
+              energy: newEnergy,
+              xp: leveledUp ? newXP - playerData.xpToNext : newXP,
+              level: newLevel,
+              xpToNext: newXPToNext
+            });
+            
+            // Force a re-render by updating the API
+            try {
+              await apiRequest('PUT', `/api/player/${playerData.id}`, {
+                lp: newLP,
+                energy: newEnergy,
+                xp: leveledUp ? newXP - playerData.xpToNext : newXP,
+                level: newLevel
+              });
+            } catch (error) {
+              console.error('Failed to sync player data:', error);
+            }
           }
           break;
         
@@ -56,13 +87,30 @@ export default function Game() {
         case 'purchaseUpgrade':
           // Handle upgrade purchases
           if (data && playerData && playerData.lp >= data.cost) {
+            const newLP = playerData.lp - data.cost;
+            const newLPPerHour = playerData.lpPerHour + (data.upgrade.includes('lpPerHour') ? data.effect : 0);
+            const newLPPerTap = playerData.lpPerTap + (data.upgrade.includes('lpPerTap') ? data.effect : 0);
+            const newMaxEnergy = playerData.maxEnergy + (data.upgrade.includes('energy') ? data.effect : 0);
+            
             setPlayerData({ 
               ...playerData, 
-              lp: playerData.lp - data.cost,
-              lpPerHour: playerData.lpPerHour + (data.upgrade.includes('lpPerHour') ? data.effect : 0),
-              lpPerTap: playerData.lpPerTap + (data.upgrade.includes('lpPerTap') ? data.effect : 0),
-              maxEnergy: playerData.maxEnergy + (data.upgrade.includes('energy') ? data.effect : 0)
+              lp: newLP,
+              lpPerHour: newLPPerHour,
+              lpPerTap: newLPPerTap,
+              maxEnergy: newMaxEnergy
             });
+            
+            // Sync with API
+            try {
+              await apiRequest('PUT', `/api/player/${playerData.id}`, {
+                lp: newLP,
+                lpPerHour: newLPPerHour,
+                lpPerTap: newLPPerTap,
+                maxEnergy: newMaxEnergy
+              });
+            } catch (error) {
+              console.error('Failed to sync upgrade purchase:', error);
+            }
           }
           break;
         
@@ -81,11 +129,24 @@ export default function Game() {
         case 'completeTask':
           // Handle task completion
           if (data && playerData) {
+            const newLP = playerData.lp + (data.reward || 100);
+            const newXP = playerData.xp + (data.xpReward || 50);
+            
             setPlayerData({
               ...playerData,
-              lp: playerData.lp + (data.reward || 100),
-              xp: playerData.xp + (data.xpReward || 50)
+              lp: newLP,
+              xp: newXP
             });
+            
+            // Sync with API
+            try {
+              await apiRequest('PUT', `/api/player/${playerData.id}`, {
+                lp: newLP,
+                xp: newXP
+              });
+            } catch (error) {
+              console.error('Failed to sync task reward:', error);
+            }
           }
           break;
         
