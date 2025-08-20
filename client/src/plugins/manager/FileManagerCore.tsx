@@ -5,7 +5,7 @@
  *
  * Verify CRUD for media, character assignments,
  * NSFW/VIP tags
- * 
+ *
  * ⚠️ DO Not ADD LOGIC TO GAME.TSX
  */
 
@@ -15,7 +15,7 @@
  *
  * Fixed schema imports, added proper error handling,
  * improved UI components, and added character assignment functionality
- * 
+ *
  * ⚠️ DO Not ADD LOGIC TO GAME.TSX
  */
 
@@ -42,7 +42,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  
+
   // Upload configuration state
   const [uploadConfig, setUploadConfig] = useState({
     characterId: '',
@@ -57,7 +57,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   const queryClient = useQueryClient();
 
   // Fetch media files
-  const { data: mediaFiles = [], isLoading: filesLoading } = useQuery({
+  const { data: mediaFiles = [], isLoading: filesLoading, refetch } = useQuery<MediaFile[]>({
     queryKey: ['/api/media'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/media');
@@ -66,7 +66,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   });
 
   // Fetch characters for assignment
-  const { data: characters = [] } = useQuery({
+  const { data: characters = [] } = useQuery<Character[]>({
     queryKey: ['/api/characters'],
     queryFn: async () => {
       const response = await apiRequest('GET', '/api/characters');
@@ -85,6 +85,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       toast.success(`Successfully uploaded ${Array.isArray(uploadedFiles) ? uploadedFiles.length : 1} file(s)`);
       setUploadProgress(0);
       setSelectedFiles([]);
+      refetch(); // Ensure the list is refreshed
     },
     onError: (error) => {
       console.error('Upload failed:', error);
@@ -204,9 +205,13 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     // Add upload configuration
     formData.append('config', JSON.stringify(uploadConfig));
 
-    setUploadProgress(10);
+    setUploadProgress(10); // Set initial progress to give feedback
+    // Simulate upload progress for demonstration if needed, otherwise rely on backend for actual progress
+    // For actual progress, you'd need to use a library that supports upload progress events with fetch or Axios
+    // For now, we'll just call the mutation
     uploadMutation.mutate(formData);
   };
+
 
   /**
    * Renders appropriate preview based on file type
@@ -228,12 +233,12 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
     if (file.fileType === 'image' || file.type === 'image' || file.fileType === 'gif') {
       return (
-        <img 
+        <img
           src={fileUrl}
-          alt="Media preview" 
+          alt="Media preview"
           style={commonStyles}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/api/placeholder-image';
+            (e.target as HTMLImageElement).src = '/api/placeholder-image'; // Fallback image
           }}
         />
       );
@@ -496,32 +501,38 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
         </TabsContent>
 
         <TabsContent value="folders" className="space-y-4">
-          {Object.entries(folderStructure).map(([folderName, files]) => (
-            <Card key={folderName} className="bg-gray-800/50 border-gray-600">
-              <CardHeader>
-                <CardTitle className="text-white text-lg">{folderName}</CardTitle>
-                <CardDescription className="text-gray-400">
-                  {files.length} file(s)
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {files.map((file) => (
-                    <div
-                      key={file.id}
-                      className="cursor-pointer hover:opacity-80 transition-opacity"
-                      onClick={() => setSelectedFile(file)}
-                    >
-                      {renderMediaPreview(file)}
-                      <p className="text-xs text-white mt-1 truncate">
-                        {file.fileName || `File ${file.id.slice(0, 8)}`}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+          {Object.entries(folderStructure).length > 0 ? (
+            Object.entries(folderStructure).map(([folderName, files]) => (
+              <Card key={folderName} className="bg-gray-800/50 border-gray-600">
+                <CardHeader>
+                  <CardTitle className="text-white text-lg">{folderName}</CardTitle>
+                  <CardDescription className="text-gray-400">
+                    {files.length} file(s)
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {files.map((file) => (
+                      <div
+                        key={file.id}
+                        className="cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setSelectedFile(file)}
+                      >
+                        {renderMediaPreview(file)}
+                        <p className="text-xs text-white mt-1 truncate">
+                          {file.fileName || `File ${file.id.slice(0, 8)}`}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-400">No files organized into folders yet.</p>
+            </div>
+          )}
         </TabsContent>
       </Tabs>
 
@@ -532,7 +543,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-white">
-                  {selectedFile.fileName || 'Media File'}
+                  {selectedFile.fileName || selectedFile.filename || selectedFile.originalName || 'Media File'}
                 </CardTitle>
                 <div className="flex gap-2">
                   <Button
@@ -563,15 +574,18 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 {renderMediaPreview(selectedFile, 'full')}
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
-                <div>Type: {selectedFile.fileType}</div>
+                <div>Type: {selectedFile.fileType || 'N/A'}</div>
                 <div>Character: {
-                  selectedFile.characterId 
+                  selectedFile.characterId
                     ? characters.find((c: Character) => c.id === selectedFile.characterId)?.name || 'Unknown'
                     : 'Unassigned'
                 }</div>
                 <div>Mood: {selectedFile.mood || 'None'}</div>
+                <div>Required Level: {selectedFile.requiredLevel || 1}</div>
                 <div>VIP: {selectedFile.isVip ? 'Yes' : 'No'}</div>
                 <div>NSFW: {selectedFile.isNsfw ? 'Yes' : 'No'}</div>
+                <div>Event: {selectedFile.isEvent ? 'Yes' : 'No'}</div>
+                <div>Random Send Chance: {selectedFile.randomSendChance || 5}%</div>
               </div>
             </CardContent>
           </Card>
@@ -590,7 +604,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 <Label className="text-white">Assign to Character</Label>
                 <Select
                   value={editingFile.characterId || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, characterId: value || ''})}
+                  onValueChange={(value) => setEditingFile({...editingFile, characterId: value || undefined})} // Ensure it's undefined if empty for backend
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character" />
@@ -610,7 +624,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 <Label className="text-white">Mood</Label>
                 <Select
                   value={editingFile.mood || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, mood: value || null})}
+                  onValueChange={(value) => setEditingFile({...editingFile, mood: value || undefined})} // Ensure it's undefined if empty for backend
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select mood" />
@@ -625,6 +639,30 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     <SelectItem value="shy" className="text-white">Shy</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div>
+                <Label className="text-white">Required Level</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={editingFile.requiredLevel || 1}
+                  onChange={(e) => setEditingFile({...editingFile, requiredLevel: parseInt(e.target.value) || 1})}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              </div>
+
+              <div>
+                <Label className="text-white">Random Send Chance (%)</Label>
+                <Input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={editingFile.randomSendChance || 5}
+                  onChange={(e) => setEditingFile({...editingFile, randomSendChance: parseInt(e.target.value) || 5})}
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
               </div>
 
 
@@ -642,6 +680,13 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     onCheckedChange={(checked) => setEditingFile({...editingFile, isNsfw: checked})}
                   />
                   <Label className="text-white">NSFW Content</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={editingFile.isEvent || false}
+                    onCheckedChange={(checked) => setEditingFile({...editingFile, isEvent: checked})}
+                  />
+                  <Label className="text-white">Event Content</Label>
                 </div>
               </div>
 

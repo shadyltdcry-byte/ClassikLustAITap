@@ -294,188 +294,182 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               </TabsContent>
 
               {/* Media Management Tab */}
-              <TabsContent value="media" className="flex-1 overflow-hidden mx-6">
-                <Card className="bg-black/20 border-purple-500/30 h-full">
-                  <CardHeader>
-                    <CardTitle className="text-white">Media Management</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Upload, organize, and manage character images and videos.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="h-full overflow-auto">
-                    <ScrollArea className="h-full">
-                      <FileManagerCore />
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
+              <TabsContent value="media" className="flex-1 flex flex-col overflow-hidden mx-4">
+                <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
+                  <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
+                    <h3 className="text-white font-semibold">Media Management</h3>
+                    <p className="text-gray-400 text-sm">Upload, organize, and manage character images and videos.</p>
+                  </div>
+                  <div className="flex-1 overflow-hidden p-4">
+                    <FileManagerCore />
+                  </div>
+                </div>
               </TabsContent>
 
               {/* Upgrades Management Tab */}
-              <TabsContent value="upgrades" className="flex-1 overflow-hidden mx-6">
-                <Card className="bg-black/20 border-purple-500/30 h-full">
-                  <CardHeader>
-                    <CardTitle className="text-white">Upgrade Management</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Create, edit, and manage game upgrades.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex gap-2 mb-4">
+              <TabsContent value="upgrades" className="flex-1 flex flex-col overflow-hidden mx-4">
+                <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
+                  <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
+                    <h3 className="text-white font-semibold">Upgrade Management</h3>
+                    <p className="text-gray-400 text-sm">Create, edit, and manage game upgrades.</p>
+                  </div>
+                  <div className="flex-1 overflow-hidden p-4 space-y-4">
+                    <div className="flex gap-2">
                       <Button className="bg-purple-600 hover:bg-purple-700">
                         <Plus className="w-4 h-4 mr-2" />
                         Add New Upgrade
                       </Button>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
-                        <div>
-                          <h3 className="text-white font-semibold">Increase Intellect</h3>
-                          <p className="text-sm text-gray-400">LP per Hour: 150 | Base Cost: 1500</p>
+                    <ScrollArea className="h-full">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                          <div>
+                            <h3 className="text-white font-semibold">Increase Intellect</h3>
+                            <p className="text-sm text-gray-400">LP per Hour: 150 | Base Cost: 1500</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                              <Edit3 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
-                            <Edit3 className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
-                        <div>
-                          <h3 className="text-white font-semibold">Energy Boost</h3>
-                          <p className="text-sm text-gray-400">Max Energy: +100 | Base Cost: 2000</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
-                            <Edit3 className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                        <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                          <div>
+                            <h3 className="text-white font-semibold">Energy Boost</h3>
+                            <p className="text-sm text-gray-400">Max Energy: +100 | Base Cost: 2000</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                              <Edit3 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </ScrollArea>
+                  </div>
+                </div>
               </TabsContent>
 
               {/* Tasks Management Tab */}
-              <TabsContent value="tasks" className="flex-1 overflow-hidden mx-6">
-                <Card className="bg-black/20 border-purple-500/30 h-full">
-                  <CardHeader>
-                    <CardTitle className="text-white">Task Management</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Create, edit, and manage game tasks and objectives.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex gap-2 mb-4">
+              <TabsContent value="tasks" className="flex-1 flex flex-col overflow-hidden mx-4">
+                <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
+                  <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
+                    <h3 className="text-white font-semibold">Task Management</h3>
+                    <p className="text-gray-400 text-sm">Create, edit, and manage game tasks and objectives.</p>
+                  </div>
+                  <div className="flex-1 overflow-hidden p-4 space-y-4">
+                    <div className="flex gap-2">
                       <Button className="bg-purple-600 hover:bg-purple-700">
                         <Plus className="w-4 h-4 mr-2" />
                         Add New Task
                       </Button>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
-                        <div>
-                          <h3 className="text-white font-semibold">Daily Login</h3>
-                          <p className="text-sm text-gray-400">Reward: 50 LP | Difficulty: Easy</p>
+                    <ScrollArea className="h-full">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                          <div>
+                            <h3 className="text-white font-semibold">Daily Login</h3>
+                            <p className="text-sm text-gray-400">Reward: 50 LP | Difficulty: Easy</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                              <Edit3 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
-                            <Edit3 className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
-                        <div>
-                          <h3 className="text-white font-semibold">Tap Master</h3>
-                          <p className="text-sm text-gray-400">Reward: 200 LP | Difficulty: Medium</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
-                            <Edit3 className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                        <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                          <div>
+                            <h3 className="text-white font-semibold">Tap Master</h3>
+                            <p className="text-sm text-gray-400">Reward: 200 LP | Difficulty: Medium</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                              <Edit3 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </ScrollArea>
+                  </div>
+                </div>
               </TabsContent>
 
               {/* Achievements Management Tab */}
-              <TabsContent value="achievements" className="flex-1 overflow-hidden mx-6">
-                <Card className="bg-black/20 border-purple-500/30 h-full">
-                  <CardHeader>
-                    <CardTitle className="text-white">Achievement Management</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Create, edit, and manage game achievements.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex gap-2 mb-4">
+              <TabsContent value="achievements" className="flex-1 flex flex-col overflow-hidden mx-4">
+                <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
+                  <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
+                    <h3 className="text-white font-semibold">Achievement Management</h3>
+                    <p className="text-gray-400 text-sm">Create, edit, and manage game achievements.</p>
+                  </div>
+                  <div className="flex-1 overflow-hidden p-4 space-y-4">
+                    <div className="flex gap-2">
                       <Button className="bg-purple-600 hover:bg-purple-700">
                         <Plus className="w-4 h-4 mr-2" />
                         Add New Achievement
                       </Button>
                     </div>
 
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
-                        <div>
-                          <h3 className="text-white font-semibold">First Steps</h3>
-                          <p className="text-sm text-gray-400">Category: Beginner | Reward: 100 LP</p>
+                    <ScrollArea className="h-full">
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                          <div>
+                            <h3 className="text-white font-semibold">First Steps</h3>
+                            <p className="text-sm text-gray-400">Category: Beginner | Reward: 100 LP</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                              <Edit3 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
-                            <Edit3 className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
 
-                      <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
-                        <div>
-                          <h3 className="text-white font-semibold">Tap Master</h3>
-                          <p className="text-sm text-gray-400">Category: Interaction | Reward: 500 LP</p>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
-                            <Edit3 className="w-4 h-4" />
-                          </Button>
-                          <Button size="sm" variant="outline" className="text-red-400 border-red-400">
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                        <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
+                          <div>
+                            <h3 className="text-white font-semibold">Tap Master</h3>
+                            <p className="text-sm text-gray-400">Category: Interaction | Reward: 500 LP</p>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="outline" className="text-blue-400 border-blue-400">
+                              <Edit3 className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" className="text-red-400 border-red-400">
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </ScrollArea>
+                  </div>
+                </div>
               </TabsContent>
 
               {/* Game Management Tab */}
-              <TabsContent value="game" className="flex-1 overflow-hidden mx-6">
-                <Card className="bg-black/20 border-purple-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-white">Game Management</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Control game settings and player modifications.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
+              <TabsContent value="game" className="flex-1 flex flex-col overflow-hidden mx-4">
+                <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
+                  <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
+                    <h3 className="text-white font-semibold">Game Management</h3>
+                    <p className="text-gray-400 text-sm">Control game settings and player modifications.</p>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label className="text-white">Add LP</Label>
@@ -525,20 +519,18 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     <Button className="w-full bg-purple-600 hover:bg-purple-700">
                       Apply Changes
                     </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </TabsContent>
 
               {/* Database Tab */}
-              <TabsContent value="database" className="flex-1 overflow-hidden mx-6">
-                <Card className="bg-black/20 border-purple-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-white">Database Management</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Database operations and maintenance tools.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+              <TabsContent value="database" className="flex-1 flex flex-col overflow-hidden mx-4">
+                <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
+                  <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
+                    <h3 className="text-white font-semibold">Database Management</h3>
+                    <p className="text-gray-400 text-sm">Database operations and maintenance tools.</p>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4 space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <Button variant="outline" className="text-white border-white hover:bg-white hover:text-black">
                         Backup Database
@@ -553,20 +545,18 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         Reset Game Data
                       </Button>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </TabsContent>
 
               {/* System Tab */}
-              <TabsContent value="system" className="flex-1 overflow-hidden mx-6">
-                <Card className="bg-black/20 border-purple-500/30">
-                  <CardHeader>
-                    <CardTitle className="text-white">System Settings</CardTitle>
-                    <CardDescription className="text-gray-400">
-                      System configuration and server management.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
+              <TabsContent value="system" className="flex-1 flex flex-col overflow-hidden mx-4">
+                <div className="bg-black/20 border border-purple-500/30 rounded-lg h-full flex flex-col">
+                  <div className="p-4 border-b border-purple-500/30 flex-shrink-0">
+                    <h3 className="text-white font-semibold">System Settings</h3>
+                    <p className="text-gray-400 text-sm">System configuration and server management.</p>
+                  </div>
+                  <div className="flex-1 overflow-auto p-4 space-y-4">
                     <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                       <div>
                         <Label className="text-white">Maintenance Mode</Label>
@@ -590,8 +580,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </div>
                       <Switch defaultChecked />
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
