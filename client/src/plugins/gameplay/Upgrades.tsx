@@ -1,202 +1,237 @@
+
 /**
- * Upgrades Plugin - Manage character and gameplay upgrades
- * Last Modified: 2025-08-20 by Assistant
- * Features: Purchase upgrades to enhance tap power, passive generation, and energy capacity
+ * Upgrades.tsx - Upgrade System Interface
+ * Last Edited: 2025-08-19 by Assistant
+ * 
+ * Complete upgrade interface with proper styling matching AI Chat
  */
 
 import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Star, Zap, Heart, Coins, TrendingUp, ShoppingCart } from "lucide-react";
+import { toast } from "react-hot-toast";
+import { apiRequest } from "@/lib/queryClient";
 
 interface Upgrade {
   id: string;
   name: string;
   description: string;
   cost: number;
-  bonus: number;
+  effect: string;
   currentLevel: number;
   maxLevel: number;
-  type: 'lpPerHour' | 'energy' | 'lpPerTap';
+  category: "lp" | "energy" | "special";
+  icon: string;
 }
 
-interface GameStats {
-  lustPoints: number;
-  lpPerHour: number;
-  lpPerTap: number;
-  currentEnergy: number;
-  maxEnergy: number;
+interface UpgradesProps {
+  playerData?: any;
+  onUpgradeAction?: (action: string, data?: any) => void;
 }
 
-export default function Upgrade() {
-  const [activeTab, setActiveTab] = useState<"lpPerHour" | "energy" | "lpPerTap">("lpPerHour");
-  const { toast } = useToast();
+export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps) {
+  const [activeTab, setActiveTab] = useState("lp");
   const queryClient = useQueryClient();
 
-  const { data: gameStats, isLoading: isLoadingStats } = useQuery({
-    queryKey: ["/api/game-stats"],
-    enabled: true,
-  });
-
-  const { data: upgrades, isLoading: isLoadingUpgrades } = useQuery({
+  // Fetch upgrades
+  const { data: upgrades = [], isLoading } = useQuery({
     queryKey: ["/api/upgrades"],
-    enabled: true,
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/upgrades");
+      return await response.json();
+    },
   });
 
-  const purchaseMutation = useMutation({
+  // Purchase upgrade mutation
+  const purchaseUpgradeMutation = useMutation({
     mutationFn: async (upgradeId: string) => {
       const response = await apiRequest("POST", `/api/upgrades/${upgradeId}/purchase`);
       return await response.json();
     },
     onSuccess: () => {
+      toast.success("Upgrade purchased successfully!");
       queryClient.invalidateQueries({ queryKey: ["/api/upgrades"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/game-stats"] });
-      toast({
-        title: "Upgrade Purchased",
-        description: "Your upgrade has been successfully purchased.",
-      });
+      if (onUpgradeAction) {
+        onUpgradeAction('purchase');
+      }
+    },
+    onError: () => {
+      toast.error("Failed to purchase upgrade");
     },
   });
 
-  const handlePurchase = (upgradeType: string, level: number) => {
-    const upgradeId = `${upgradeType}-${level}`;
-    purchaseMutation.mutate(upgradeId);
+  const getUpgradeIcon = (category: string) => {
+    switch (category) {
+      case "lp":
+        return "💰";
+      case "energy":
+        return "⚡";
+      case "special":
+        return "✨";
+      default:
+        return "🔧";
+    }
   };
 
-  const canAfford = (cost: number) => {
-    return gameStats?.lustPoints !== undefined && gameStats.lustPoints >= cost;
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case "lp":
+        return "bg-yellow-500/20 text-yellow-400";
+      case "energy":
+        return "bg-blue-500/20 text-blue-400";
+      case "special":
+        return "bg-purple-500/20 text-purple-400";
+      default:
+        return "bg-gray-500/20 text-gray-400";
+    }
   };
 
-  if (isLoadingUpgrades || isLoadingStats) {
-    return <div className="text-white p-4">Loading upgrades...</div>;
-  }
+  const getFilteredUpgrades = () => {
+    if (activeTab === "all") return upgrades;
+    return upgrades.filter((upgrade: Upgrade) => upgrade.category === activeTab);
+  };
+
+  const canAffordUpgrade = (cost: number) => {
+    return (playerData?.lp || 0) >= cost;
+  };
+
+  const handlePurchase = (upgradeId: string) => {
+    purchaseUpgradeMutation.mutate(upgradeId);
+  };
 
   return (
-    <div className="flex flex-col h-full bg-gray-900 text-white p-4">
-      <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "lpPerHour" | "energy" | "lpPerTap")}>
-        <TabsList className="mb-4 bg-gray-800">
-          <TabsTrigger value="lpPerHour" className="px-4 py-2 data-[state=active]:bg-blue-600">
-            LP per Hour
-          </TabsTrigger>
-          <TabsTrigger value="energy" className="px-4 py-2 data-[state=active]:bg-purple-600">
-            Energy Upgrade
-          </TabsTrigger>
-          <TabsTrigger value="lpPerTap" className="px-4 py-2 data-[state=active]:bg-red-600">
-            LP per Tap
-          </TabsTrigger>
-        </TabsList>
+    <div className="h-full flex flex-col">
+      {/* Header */}
+      <div className="p-4 bg-black/30 border-b border-purple-500/30">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+            <Star className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-white">Upgrades</h3>
+            <p className="text-sm text-gray-400">Enhance your character's abilities</p>
+          </div>
+          <div className="text-right">
+            <div className="flex items-center gap-2">
+              <Coins className="w-4 h-4 text-yellow-400" />
+              <span className="text-yellow-400 font-bold">{playerData?.lp || 0} LP</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <TabsContent value="lpPerHour">
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-white mb-4">LP per Hour Upgrades</h2>
-            <p className="text-gray-400 mb-4">Increase your passive LP generation rate</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5].map((level) => {
-                const cost = level * 100;
-                const bonus = level * 10;
-                return (
-                  <Card key={level} className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <CardTitle className="text-white">LP/Hour Level {level}</CardTitle>
-                      <CardDescription className="text-gray-400">Increase LP generation by {bonus}/hour</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <p className="text-gray-300">Cost: <span className="text-yellow-400 font-bold">{cost} LP</span></p>
-                        <p className="text-gray-300">Bonus: <span className="text-blue-400 font-bold">+{bonus}/hour</span></p>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        onClick={() => handlePurchase("lpPerHour", level)}
-                        disabled={purchaseMutation.isPending || !canAfford(cost)}
-                        className="w-full bg-blue-600 hover:bg-blue-700"
-                      >
-                        {purchaseMutation.isPending ? "Purchasing..." : "Purchase"}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
-            </div>
+      {/* Upgrade Tabs */}
+      <div className="flex gap-2 p-4 bg-black/20">
+        <Button 
+          onClick={() => setActiveTab("all")}
+          className={`px-6 py-2 rounded-full ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+        >
+          ⭐ All
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("lp")}
+          className={`px-6 py-2 rounded-full ${activeTab === "lp" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+        >
+          💰 LP per Hour
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("energy")}
+          className={`px-6 py-2 rounded-full ${activeTab === "energy" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+        >
+          ⚡ Energy
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("special")}
+          className={`px-6 py-2 rounded-full ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+        >
+          ✨ Special
+        </Button>
+      </div>
+
+      {/* Upgrade List */}
+      <div className="flex-1 overflow-hidden">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full"></div>
           </div>
-        </TabsContent>
-        
-        <TabsContent value="energy">
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-white mb-4">Energy Upgrades</h2>
-            <p className="text-gray-400 mb-4">Increase your maximum energy and regeneration</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5].map((level) => {
-                const cost = level * 150;
-                const bonus = level * 20;
-                return (
-                  <Card key={level} className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <CardTitle className="text-white">Energy Level {level}</CardTitle>
-                      <CardDescription className="text-gray-400">Increase max energy by {bonus}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <p className="text-gray-300">Cost: <span className="text-yellow-400 font-bold">{cost} LP</span></p>
-                        <p className="text-gray-300">Bonus: <span className="text-red-400 font-bold">+{bonus} energy</span></p>
+        ) : (
+          <ScrollArea className="h-full">
+            <div className="space-y-4 p-4">
+              {getFilteredUpgrades().map((upgrade: Upgrade) => (
+                <div
+                  key={upgrade.id}
+                  className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:border-purple-500/50 transition-colors"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Upgrade Icon */}
+                    <div className="w-16 h-16 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="text-3xl">{getUpgradeIcon(upgrade.category)}</span>
+                    </div>
+
+                    {/* Upgrade Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="text-white font-semibold">{upgrade.name}</h4>
+                        <Badge className={getCategoryColor(upgrade.category)}>
+                          {upgrade.category.toUpperCase()}
+                        </Badge>
+                        {upgrade.currentLevel > 0 && (
+                          <Badge className="bg-green-500/20 text-green-400">
+                            Lv. {upgrade.currentLevel}
+                          </Badge>
+                        )}
                       </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        onClick={() => handlePurchase("energy", level)}
-                        disabled={purchaseMutation.isPending || !canAfford(cost)}
-                        className="w-full bg-purple-600 hover:bg-purple-700"
-                      >
-                        {purchaseMutation.isPending ? "Purchasing..." : "Purchase"}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="lpPerTap">
-          <div className="space-y-4">
-            <h2 className="text-xl font-semibold text-white mb-4">LP per Tap Upgrades</h2>
-            <p className="text-gray-400 mb-4">Increase LP gained from each character tap</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {[1, 2, 3, 4, 5].map((level) => {
-                const cost = level * 200;
-                const bonus = level * 2;
-                return (
-                  <Card key={level} className="bg-gray-800 border-gray-700">
-                    <CardHeader>
-                      <CardTitle className="text-white">Tap Power Level {level}</CardTitle>
-                      <CardDescription className="text-gray-400">Increase LP per tap by {bonus}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <p className="text-gray-300">Cost: <span className="text-yellow-400 font-bold">{cost} LP</span></p>
-                        <p className="text-gray-300">Bonus: <span className="text-green-400 font-bold">+{bonus} LP/tap</span></p>
+                      
+                      <p className="text-gray-400 text-sm mb-3">{upgrade.description}</p>
+                      
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-green-400" />
+                          <span className="text-green-400 text-sm font-medium">{upgrade.effect}</span>
+                        </div>
                       </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button 
-                        onClick={() => handlePurchase("lpPerTap", level)}
-                        disabled={purchaseMutation.isPending || !canAfford(cost)}
-                        className="w-full bg-red-600 hover:bg-red-700"
-                      >
-                        {purchaseMutation.isPending ? "Purchasing..." : "Purchase"}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
+
+                      {/* Cost & Purchase */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Coins className="w-4 h-4 text-yellow-400" />
+                          <span className={`font-bold ${canAffordUpgrade(upgrade.cost) ? "text-yellow-400" : "text-red-400"}`}>
+                            {upgrade.cost} LP
+                          </span>
+                        </div>
+                        
+                        <Button
+                          onClick={() => handlePurchase(upgrade.id)}
+                          disabled={!canAffordUpgrade(upgrade.cost) || purchaseUpgradeMutation.isPending}
+                          className={`px-6 py-2 rounded-full ${
+                            canAffordUpgrade(upgrade.cost)
+                              ? "bg-blue-600 hover:bg-blue-700 text-white"
+                              : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                          }`}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          {purchaseUpgradeMutation.isPending ? "Purchasing..." : "Purchase"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {getFilteredUpgrades().length === 0 && (
+                <div className="text-center text-gray-400 py-8">
+                  <Star className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">No upgrades available in this category</p>
+                </div>
+              )}
             </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+          </ScrollArea>
+        )}
+      </div>
     </div>
   );
 }

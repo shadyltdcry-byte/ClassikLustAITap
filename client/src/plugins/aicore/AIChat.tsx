@@ -126,8 +126,8 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         reactionScore: msg.reactionScore,
       }));
       setMessages(formattedMessages);
-    } else if (character) {
-      // Send initial greeting
+    } else if (character && (!messages.length || messages[0]?.id !== 'initial')) {
+      // Send initial greeting only if no messages exist or no initial message
       const greeting = getCharacterGreeting();
       setMessages([{
         id: 'initial',
@@ -138,7 +138,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         mood: 'happy',
       }]);
     }
-  }, [chatHistory, character]);
+  }, [chatHistory, character?.id]); // Only depend on character.id, not the whole character object
 
   // Auto-scroll to bottom
   useEffect(() => {

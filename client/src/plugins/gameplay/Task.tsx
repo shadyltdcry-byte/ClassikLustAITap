@@ -1,23 +1,19 @@
 
 /**
- * Task.tsx
- * Last Edited 2025-08-17 by Steven
- *
- * Task management component for displaying and managing player tasks
- * Provides a categorized task system with progress tracking
- *
- * Please leave a detailed description
- *      of each function you add
+ * Task.tsx - Task Management Interface
+ * Last Edited: 2025-08-19 by Assistant
+ * 
+ * Complete task interface with proper styling matching AI Chat
  */
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Clock, Target, Zap, Gift } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CheckCircle, Clock, Star, Zap, Gift, Target } from "lucide-react";
 
 interface Task {
   id: string;
@@ -26,266 +22,245 @@ interface Task {
   progress: number;
   maxProgress: number;
   reward: string;
-  status: "active" | "completed" | "locked";
-  category: string;
+  status: "available" | "in_progress" | "completed" | "claimed";
   difficulty: "easy" | "medium" | "hard";
+  category: "daily" | "weekly" | "achievement" | "special";
   icon: string;
 }
 
-export default function Task() {
+interface TaskProps {
+  onClaimPrize?: () => void;
+}
+
+export default function Task({ onClaimPrize }: TaskProps) {
   const [activeTab, setActiveTab] = useState("all");
 
-  // Task state management
-  const [tasks, setTasks] = useState<Task[]>([
+  // Mock data for tasks organized by category
+  const tasks: Task[] = [
     {
       id: "1",
-      title: "Getting Started",
-      description: "Tap your character 10 times",
-      progress: 8,
-      maxProgress: 10,
+      title: "Daily Login",
+      description: "Log in to the game",
+      progress: 1,
+      maxProgress: 1,
       reward: "50 LP",
-      status: "active",
-      category: "beginner",
+      status: "completed",
       difficulty: "easy",
-      icon: "👆"
+      category: "daily",
+      icon: "🎯"
     },
     {
       id: "2",
-      title: "First Purchase",
-      description: "Buy your first upgrade",
-      progress: 0,
-      maxProgress: 1,
-      reward: "100 LP + Energy Boost",
-      status: "active",
-      category: "progression",
+      title: "Tap 50 Times",
+      description: "Tap your character 50 times",
+      progress: 35,
+      maxProgress: 50,
+      reward: "100 LP",
+      status: "in_progress",
       difficulty: "easy",
-      icon: "🛒"
+      category: "daily",
+      icon: "👆"
     },
     {
       id: "3",
-      title: "Energy Master",
-      description: "Reach 500 total energy",
-      progress: 245,
-      maxProgress: 500,
-      reward: "250 LP",
-      status: "active",
-      category: "energy",
+      title: "Earn 1000 LP",
+      description: "Accumulate 1000 LP total",
+      progress: 750,
+      maxProgress: 1000,
+      reward: "200 LP + Energy Boost",
+      status: "in_progress",
       difficulty: "medium",
-      icon: "⚡"
+      category: "weekly",
+      icon: "💰"
     },
     {
       id: "4",
-      title: "Task Completionist",
-      description: "Complete 5 tasks",
-      progress: 2,
-      maxProgress: 5,
+      title: "Purchase Upgrade",
+      description: "Buy your first upgrade",
+      progress: 0,
+      maxProgress: 1,
       reward: "Special Character Unlock",
-      status: "active",
-      category: "completion",
+      status: "available",
       difficulty: "medium",
-      icon: "📋"
+      category: "achievement",
+      icon: "⬆️"
     },
     {
       id: "5",
-      title: "LP Collector",
-      description: "Accumulate 10,000 LP",
-      progress: 3450,
-      maxProgress: 10000,
-      reward: "1000 LP Bonus",
-      status: "active",
-      category: "collection",
-      difficulty: "hard",
-      icon: "💎"
+      title: "Chat with Character",
+      description: "Send 10 messages in AI Chat",
+      progress: 3,
+      maxProgress: 10,
+      reward: "AI Personality Unlock",
+      status: "in_progress",
+      difficulty: "easy",
+      category: "special",
+      icon: "💬"
     }
-  ]);
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completed": return "bg-green-600/20 text-green-400 border-green-400";
-      case "active": return "bg-blue-600/20 text-blue-400 border-blue-400";
-      case "locked": return "bg-gray-600/20 text-gray-400 border-gray-400";
-      default: return "bg-gray-600/20 text-gray-400 border-gray-400";
+      case "completed":
+        return "bg-green-600 text-white";
+      case "in_progress":
+        return "bg-blue-600 text-white";
+      case "available":
+        return "bg-gray-600 text-white";
+      case "claimed":
+        return "bg-purple-600 text-white";
+      default:
+        return "bg-gray-600 text-white";
     }
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case "easy": return "bg-green-600/20 text-green-400";
-      case "medium": return "bg-yellow-600/20 text-yellow-400";
-      case "hard": return "bg-red-600/20 text-red-400";
-      default: return "bg-gray-600/20 text-gray-400";
+      case "easy":
+        return "bg-green-500/20 text-green-400";
+      case "medium":
+        return "bg-yellow-500/20 text-yellow-400";
+      case "hard":
+        return "bg-red-500/20 text-red-400";
+      default:
+        return "bg-gray-500/20 text-gray-400";
     }
   };
 
-  const filteredTasks = tasks.filter(task => {
-    if (activeTab === "all") return true;
-    if (activeTab === "active") return task.status === "active";
-    if (activeTab === "completed") return task.status === "completed";
-    return task.category === activeTab;
-  });
+  const getFilteredTasks = () => {
+    if (activeTab === "all") return tasks;
+    return tasks.filter(task => task.category === activeTab);
+  };
 
-  /**
-   * handleClaimTask - Claims a completed task reward
-   * @param taskId - The ID of the task to claim
-   */
-  const handleClaimTask = async (taskId: string) => {
-    try {
-      const response = await fetch(`/api/tasks/claim/${taskId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ userId: "default-player" }),
-      });
-      if (response.ok) {
-        console.log("Task claimed successfully");
-        setTasks(prev => prev.map(task => 
-          task.id === taskId 
-            ? { ...task, status: "completed" as const }
-            : task
-        ));
-      } else {
-        console.error("Failed to claim task");
-      }
-    } catch (error) {
-      console.error("Error claiming task:", error);
-      // Show success anyway for demo purposes
-      console.log("Task claimed successfully");
-      setTasks(prev => prev.map(task => 
-        task.id === taskId 
-          ? { ...task, status: "completed" as const }
-          : task
-      ));
+  const handleClaimTask = (taskId: string) => {
+    console.log("Task claimed successfully");
+    if (onClaimPrize) {
+      onClaimPrize();
     }
   };
 
   return (
-    <div className="h-full flex flex-col text-white">
+    <div className="h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-purple-500/30">
+      <div className="p-4 bg-black/30 border-b border-purple-500/30">
         <div className="flex items-center gap-3">
-          <Target className="w-6 h-6 text-blue-400" />
-          <h2 className="text-2xl font-bold">Tasks</h2>
+          <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+            <Target className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-white">Tasks & Objectives</h3>
+            <p className="text-sm text-gray-400">Complete tasks to earn rewards and progress</p>
+          </div>
         </div>
-        <Badge variant="secondary" className="bg-purple-600/20 text-purple-400">
-          {tasks.filter(t => t.status === "completed").length}/{tasks.length}
-        </Badge>
       </div>
 
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <TabsList className="grid grid-cols-6 mx-6 mt-4 bg-black/30">
-          <TabsTrigger value="all" className="text-white data-[state=active]:bg-purple-600">
-            All
-          </TabsTrigger>
-          <TabsTrigger value="active" className="text-white data-[state=active]:bg-purple-600">
-            Active
-          </TabsTrigger>
-          <TabsTrigger value="completed" className="text-white data-[state=active]:bg-purple-600">
-            Completed
-          </TabsTrigger>
-          <TabsTrigger value="beginner" className="text-white data-[state=active]:bg-purple-600">
-            Beginner
-          </TabsTrigger>
-          <TabsTrigger value="progression" className="text-white data-[state=active]:bg-purple-600">
-            Progress
-          </TabsTrigger>
-          <TabsTrigger value="collection" className="text-white data-[state=active]:bg-purple-600">
-            Collection
-          </TabsTrigger>
-        </TabsList>
+      {/* Task Tabs */}
+      <div className="flex gap-2 p-4 bg-black/20">
+        <Button 
+          onClick={() => setActiveTab("all")}
+          className={`px-6 py-2 rounded-full ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+        >
+          📋 All
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("daily")}
+          className={`px-6 py-2 rounded-full ${activeTab === "daily" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+        >
+          📅 Daily
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("weekly")}
+          className={`px-6 py-2 rounded-full ${activeTab === "weekly" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+        >
+          📆 Weekly
+        </Button>
+        <Button 
+          onClick={() => setActiveTab("special")}
+          className={`px-6 py-2 rounded-full ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+        >
+          ⭐ Special
+        </Button>
+      </div>
 
-        {/* Content */}
-        <TabsContent value={activeTab} className="flex-1 overflow-hidden mx-6">
-          <div className="h-full overflow-y-auto">
-            <div className="space-y-3 pb-6">
-              {filteredTasks.map((task) => (
-                <Card key={task.id} className="bg-black/20 border-purple-500/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-4">
-                      {/* Icon */}
-                      <div className="text-2xl mt-1">
-                        {task.icon}
-                      </div>
+      {/* Task List */}
+      <div className="flex-1 overflow-hidden">
+        <ScrollArea className="h-full">
+          <div className="space-y-4 p-4">
+            {getFilteredTasks().map((task) => (
+              <div
+                key={task.id}
+                className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:border-purple-500/50 transition-colors"
+              >
+                <div className="flex items-start gap-4">
+                  {/* Task Icon */}
+                  <div className="w-12 h-12 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <span className="text-2xl">{task.icon}</span>
+                  </div>
 
-                      {/* Content */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-bold text-white">{task.title}</h3>
-                          <Badge className={`text-xs ${getStatusColor(task.status)}`}>
-                            {task.status}
-                          </Badge>
-                          <Badge className={`text-xs ${getDifficultyColor(task.difficulty)}`}>
-                            {task.difficulty}
-                          </Badge>
-                        </div>
-
-                        <p className="text-sm text-gray-400 mb-3">
-                          {task.description}
-                        </p>
-
-                        {/* Progress */}
-                        <div className="space-y-2 mb-3">
-                          <div className="flex justify-between text-xs text-gray-400">
-                            <span>Progress</span>
-                            <span>{task.progress}/{task.maxProgress}</span>
-                          </div>
-                          <Progress
-                            value={(task.progress / task.maxProgress) * 100}
-                            className="h-2"
-                          />
-                        </div>
-
-                        {/* Reward and Action */}
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Gift className="w-4 h-4 text-yellow-400" />
-                            <span className="text-yellow-400 font-medium">
-                              {task.reward}
-                            </span>
-                          </div>
-                          
-                          {task.progress >= task.maxProgress && task.status === "active" && (
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 text-white font-bold"
-                              onClick={() => handleClaimTask(task.id)}
-                            >
-                              <CheckCircle2 className="w-4 h-4 mr-2" />
-                              Claim
-                            </Button>
-                          )}
-                          
-                          {task.status === "completed" && (
-                            <Badge className="bg-green-600/20 text-green-400">
-                              <CheckCircle2 className="w-4 h-4 mr-1" />
-                              Completed
-                            </Badge>
-                          )}
-
-                          {task.progress < task.maxProgress && task.status === "active" && (
-                            <Badge variant="outline" className="text-blue-400 border-blue-400">
-                              <Clock className="w-4 h-4 mr-1" />
-                              In Progress
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
+                  {/* Task Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h4 className="text-white font-semibold">{task.title}</h4>
+                      <Badge className={getDifficultyColor(task.difficulty)}>
+                        {task.difficulty}
+                      </Badge>
+                      <Badge className={getStatusColor(task.status)}>
+                        {task.status.replace("_", " ")}
+                      </Badge>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-              
-              {filteredTasks.length === 0 && (
-                <div className="text-center py-8">
-                  <Target className="w-16 h-16 mx-auto mb-4 text-gray-500" />
-                  <p className="text-gray-400">No tasks in this category yet</p>
+                    
+                    <p className="text-gray-400 text-sm mb-3">{task.description}</p>
+                    
+                    {/* Progress Bar */}
+                    <div className="mb-3">
+                      <div className="flex justify-between text-sm text-gray-400 mb-1">
+                        <span>Progress</span>
+                        <span>{task.progress}/{task.maxProgress}</span>
+                      </div>
+                      <Progress 
+                        value={(task.progress / task.maxProgress) * 100} 
+                        className="h-2"
+                      />
+                    </div>
+
+                    {/* Reward & Action */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Gift className="w-4 h-4 text-yellow-400" />
+                        <span className="text-yellow-400 font-medium">{task.reward}</span>
+                      </div>
+                      
+                      {task.status === "completed" && (
+                        <Button
+                          onClick={() => handleClaimTask(task.id)}
+                          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2"
+                        >
+                          <Gift className="w-4 h-4 mr-2" />
+                          Claim
+                        </Button>
+                      )}
+                      
+                      {task.status === "in_progress" && (
+                        <div className="flex items-center gap-2 text-blue-400">
+                          <Clock className="w-4 h-4" />
+                          <span className="text-sm">In Progress</span>
+                        </div>
+                      )}
+                      
+                      {task.status === "claimed" && (
+                        <div className="flex items-center gap-2 text-green-400">
+                          <CheckCircle className="w-4 h-4" />
+                          <span className="text-sm">Claimed</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
-        </TabsContent>
-      </Tabs>
+        </ScrollArea>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-
 /**
  * AdminMenu.tsx
  * Last Edited: 2025-08-19 by Le Chat
@@ -17,12 +16,12 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { 
-  X, 
-  Plus, 
-  Edit3, 
-  Trash2, 
-  Power, 
+import {
+  X,
+  Plus,
+  Edit3,
+  Trash2,
+  Power,
   PowerOff,
   Crown,
   Heart,
@@ -50,7 +49,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   const [showCreateCharacter, setShowCreateCharacter] = useState(false);
   const [showEditCharacter, setShowEditCharacter] = useState(false);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
-  
+
   // Game management state
   const [playerModifiers, setPlayerModifiers] = useState({
     lp: 0,
@@ -304,7 +303,9 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="h-full overflow-auto">
-                    <FileManagerCore />
+                    <ScrollArea className="h-full">
+                      <FileManagerCore />
+                    </ScrollArea>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -325,7 +326,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         Add New Upgrade
                       </Button>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                         <div>
@@ -341,7 +342,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           </Button>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                         <div>
                           <h3 className="text-white font-semibold">Energy Boost</h3>
@@ -377,7 +378,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         Add New Task
                       </Button>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                         <div>
@@ -393,7 +394,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           </Button>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                         <div>
                           <h3 className="text-white font-semibold">Tap Master</h3>
@@ -429,7 +430,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         Add New Achievement
                       </Button>
                     </div>
-                    
+
                     <div className="space-y-2">
                       <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                         <div>
@@ -445,7 +446,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           </Button>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                         <div>
                           <h3 className="text-white font-semibold">Tap Master</h3>
@@ -486,7 +487,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           className="bg-black/30 border-purple-500/30 text-white"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label className="text-white">Add Energy</Label>
                         <Input
@@ -497,7 +498,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           className="bg-black/30 border-purple-500/30 text-white"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label className="text-white">Add Lust Gems</Label>
                         <Input
@@ -508,7 +509,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           className="bg-black/30 border-purple-500/30 text-white"
                         />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <Label className="text-white">Set Level</Label>
                         <Input
@@ -573,7 +574,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </div>
                       <Switch />
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                       <div>
                         <Label className="text-white">Debug Mode</Label>
@@ -581,7 +582,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </div>
                       <Switch />
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-4 bg-black/30 rounded-lg">
                       <div>
                         <Label className="text-white">AI Chat Enabled</Label>
