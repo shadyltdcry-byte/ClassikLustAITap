@@ -34,65 +34,6 @@ interface Achievement {
 export default function Achievements() {
   const [activeTab, setActiveTab] = useState("all");
 
-  // Mock data for achievements organized by category
-  const achievements: Achievement[] = [
-    {
-      id: "1",
-      title: "First Steps",
-      description: "Complete your first task",
-      progress: 1,
-      maxProgress: 1,
-      reward: "100 LP",
-      status: "completed",
-      category: "beginner",
-      icon: "🎯"
-    },
-    {
-      id: "2",
-      title: "Tap Master",
-      description: "Tap character 100 times",
-      progress: 45,
-      maxProgress: 100,
-      reward: "500 LP",
-      status: "in_progress",
-      category: "interaction",
-      icon: "👆"
-    },
-    {
-      id: "3",
-      title: "Level Up",
-      description: "Reach level 5",
-      progress: 3,
-      maxProgress: 5,
-      reward: "1000 LP + Energy Boost",
-      status: "in_progress",
-      category: "progression",
-      icon: "⬆️"
-    },
-    {
-      id: "4",
-      title: "Collector",
-      description: "Unlock 5 different characters",
-      progress: 1,
-      maxProgress: 5,
-      reward: "Special Character Unlock",
-      status: "in_progress",
-      category: "collection",
-      icon: "📦"
-    },
-    {
-      id: "5",
-      title: "VIP Status",
-      description: "Purchase VIP membership",
-      progress: 0,
-      maxProgress: 1,
-      reward: "VIP Benefits Access",
-      status: "locked",
-      category: "premium",
-      icon: "👑"
-    }
-  ];
-
   const getStatusColor = (status: string) => {
     switch (status) {
       case "completed": return "bg-green-600/20 text-green-400 border-green-400";
