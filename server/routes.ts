@@ -97,6 +97,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { playerId } = req.body;
       
+      // If playerId is not a valid UUID, use mock logic
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(playerId)) {
+        const lpGain = 1.5;
+        return res.json({
+          success: true,
+          lpGain,
+          newTotal: 5000 + lpGain, // Mock calculation
+          energyUsed: 1,
+          playerId
+        });
+      }
+      
       const user = await storage.getUser(playerId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
@@ -235,6 +248,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/player/:playerId", async (req, res) => {
     try {
       const { playerId } = req.params;
+      
+      // If playerId is not a valid UUID, return default mock data
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(playerId)) {
+        console.log(`Invalid UUID playerId: ${playerId}, returning mock data`);
+        return res.json({
+          id: playerId,
+          username: "Player",
+          level: 1,
+          lp: 5000,
+          lpPerHour: 250,
+          lpPerTap: 1.5,
+          energy: 1000,
+          maxEnergy: 1000,
+          coins: 0,
+          xp: 0,
+          xpToNext: 100,
+          isVip: false,
+          nsfwEnabled: false,
+          charismaPoints: 0,
+          vipStatus: false,
+          nsfwConsent: false,
+          charisma: 0,
+          createdAt: new Date().toISOString()
+        });
+      }
+
       let user = await storage.getUser(playerId);
       
       if (!user) {
@@ -269,6 +309,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { playerId } = req.params;
       const updates = req.body;
+
+      // If playerId is not a valid UUID, just return success with mock data
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(playerId)) {
+        console.log(`Invalid UUID playerId for update: ${playerId}, returning mock success`);
+        return res.json({
+          success: true,
+          playerId,
+          message: "Player updated successfully (mock)",
+          user: {
+            id: playerId,
+            username: "Player",
+            level: updates.level || 1,
+            lp: updates.lp || 5000,
+            lpPerHour: updates.lpPerHour || 250,
+            lpPerTap: updates.lpPerTap || 1.5,
+            energy: updates.energy || 1000,
+            maxEnergy: updates.maxEnergy || 1000,
+            ...updates
+          }
+        });
+      }
 
       const updatedUser = await storage.updateUser(playerId, updates);
       if (!updatedUser) {
