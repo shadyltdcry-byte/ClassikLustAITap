@@ -386,7 +386,7 @@ interface GameProviderProps {
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  // Initialize storage - we'll use local storage instead of SupabaseStorage on client
+  // Initialize storage - we'll use local storage with server sync
   const saveToLocalStorage = (data: PlayerData) => {
     try {
       localStorage.setItem('gameData', JSON.stringify(data));

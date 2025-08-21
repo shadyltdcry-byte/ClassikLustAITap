@@ -11,7 +11,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
-import { SupabaseStorage } from '../shared/SupabaseStorage';
+import { PostgresStorage } from '../shared/PostgresStorage';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
@@ -25,7 +25,7 @@ const sql = postgres(connectionString);
 export const db = drizzle(sql);
 
 function main() {
-  console.log("Starting custom plugin-based game server with Supabase...");
+  console.log("Starting custom plugin-based game server with PostgreSQL...");
   console.log("Database connected successfully");
 }
 
@@ -103,10 +103,10 @@ app.use((req, res, next) => {
       host: '0.0.0.0'
     });
 
-    wss.on('error', (error) => {
+    wss.on('error', (error: any) => {
       console.error('WebSocket server error:', error.message);
     });
-  } catch (error) {
+  } catch (error: any) {
     console.warn('WebSocket server failed to start:', error.message);
   }
 
@@ -123,4 +123,4 @@ app.use((req, res, next) => {
 })();
 
 // Initialize storage for server operations
-const storage = new SupabaseStorage();
+const storage = new PostgresStorage();
