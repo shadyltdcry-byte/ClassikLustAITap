@@ -103,8 +103,17 @@ const generateUUID = () => {
   });
 };
 
+// Check for existing Telegram auth token
+const getStoredAuthToken = () => {
+  return localStorage.getItem('telegram_auth_token');
+};
+
+const getStoredUserId = () => {
+  return localStorage.getItem('telegram_user_id') || generateUUID();
+};
+
 const initialPlayerData: PlayerData = {
-  id: generateUUID(),
+  id: getStoredUserId(),
   name: 'Player',
   level: 1,
   lp: 5000,

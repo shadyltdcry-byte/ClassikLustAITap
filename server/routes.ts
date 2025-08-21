@@ -12,10 +12,40 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import path from 'path';
 import fs from 'fs';
+import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import { storage } from '../shared/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+
+// Telegram authentication verification
+function verifyTelegramAuth(data: any, botToken: string): boolean {
+  const { hash, ...authData } = data;
+  
+  // Create data-check-string
+  const dataCheckString = Object.keys(authData)
+    .sort()
+    .map(key => `${key}=${authData[key]}`)
+    .join('\n');
+  
+  // Create secret key
+  const secretKey = crypto.createHash('sha256').update(botToken).digest();
+  
+  // Calculate expected hash
+  const expectedHash = crypto
+    .createHmac('sha256', secretKey)
+    .update(dataCheckString)
+    .digest('hex');
+  
+  return hash === expectedHash;
+}
+
+// Generate JWT token for authenticated users
+function generateJWT(userId: string): string {
+  const secret = process.env.JWT_SECRET || 'your-secret-key';
+  return jwt.sign({ userId }, secret, { expiresIn: '7d' });
+}
 
 // Helper functions for AI responses
 async function generateAIResponse(userMessage: string): Promise<string> {
@@ -901,6 +931,78 @@ Respond as if you're having a real conversation with someone you care about.`;
         response: "I'm having trouble analyzing your code right now. Please try again."
       });
     }
+  });
+
+  // Telegram Authentication endpoints
+  app.post("/api/auth/telegram", async (req, res) => {
+    try {
+      const telegramData = req.body;
+      
+      // Verify Telegram authentication data
+      const botToken = process.env.TELEGRAM_BOT_TOKEN;
+      if (!botToken) {
+        return res.status(500).json({ error: "Telegram bot token not configured" });
+      }
+
+      const isValid = verifyTelegramAuth(telegramData, botToken);
+      if (!isValid) {
+        return res.status(401).json({ error: "Invalid Telegram authentication" });
+      }
+
+      // Create or get user based on Telegram ID
+      const telegramUserId = `telegram_${telegramData.id}`;
+      let user = await storage.getUser(telegramUserId);
+
+      if (!user) {
+        // Create new user from Telegram data
+        const username = telegramData.username || `${telegramData.first_name}_${telegramData.id}`;
+        user = await storage.createUser({
+          id: telegramUserId,
+          username: username,
+          level: 1,
+          lp: 5000,
+          lpPerHour: 250,
+          lpPerTap: 1.5,
+          energy: 1000,
+          maxEnergy: 1000,
+          coins: 0,
+          xp: 0,
+          xpToNext: 100,
+          isVip: false,
+          nsfwEnabled: false,
+          charismaPoints: 0
+        });
+      }
+
+      // Update user with latest Telegram info
+      await storage.updateUser(telegramUserId, {
+        username: telegramData.username || user.username,
+        telegramData: JSON.stringify(telegramData)
+      });
+
+      res.json({
+        success: true,
+        user: user,
+        token: generateJWT(telegramUserId),
+        message: "Telegram authentication successful"
+      });
+
+    } catch (error) {
+      console.error("Telegram auth error:", error);
+      res.status(500).json({ error: "Failed to authenticate with Telegram" });
+    }
+  });
+
+  app.get("/api/auth/telegram/verify", (req, res) => {
+    const { hash, ...data } = req.query;
+    
+    const botToken = process.env.TELEGRAM_BOT_TOKEN;
+    if (!botToken) {
+      return res.status(500).json({ error: "Telegram bot token not configured" });
+    }
+
+    const isValid = verifyTelegramAuth({ hash, ...data }, botToken);
+    res.json({ valid: isValid });
   });
 
   // Serve static files in production
