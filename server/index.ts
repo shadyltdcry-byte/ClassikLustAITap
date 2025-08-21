@@ -11,7 +11,7 @@
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
-import { PostgresStorage } from '../shared/PostgresStorage';
+import { SupabaseStorage } from '../shared/SupabaseStorage';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
@@ -25,7 +25,7 @@ const sql = postgres(connectionString);
 export const db = drizzle(sql);
 
 function main() {
-  console.log("Starting custom plugin-based game server with PostgreSQL...");
+  console.log("Starting custom plugin-based game server with Supabase...");
   console.log("Database connected successfully");
 }
 
@@ -95,11 +95,11 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const PORT = process.env.PORT || 5001;
   
-  // WebSocket server for real-time features
+  // WebSocket server for real-time features - using different port to avoid conflicts
   let wss;
   try {
     wss = new WebSocketServer({ 
-      port: 8080,
+      port: 8081,
       host: '0.0.0.0'
     });
 
@@ -123,4 +123,4 @@ app.use((req, res, next) => {
 })();
 
 // Initialize storage for server operations
-const storage = new PostgresStorage();
+const storage = new SupabaseStorage();
