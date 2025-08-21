@@ -134,7 +134,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         }));
         setMessages(formattedMessages);
         console.log(`Loaded ${formattedMessages.length} messages from chat history for ${character.name}`);
-      } else if (!messagesLoading) {
+      } else {
         // Only show greeting if we're sure there are no messages and loading is complete
         const greeting = getCharacterGreeting();
         const greetingMessage = {
@@ -149,33 +149,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         console.log(`Showing initial greeting for ${character.name}`);
       }
     }
-  }, [character?.id, messagesLoading]) // Remove chatHistory from dependencies to prevent infinite loop
-
-  // Handle chat history updates separately to avoid infinite loops
-  useEffect(() => {
-    if (chatHistory && Array.isArray(chatHistory) && character?.id && !messagesLoading) {
-      if (chatHistory.length > 0) {
-        const formattedMessages = chatHistory.map((msg: any) => ({
-          id: msg.id || `msg-${Date.now()}-${Math.random()}`,
-          content: msg.message || msg.content || '',
-          sender: msg.isFromUser ? 'user' : 'character',
-          timestamp: new Date(msg.createdAt || Date.now()),
-          type: msg.type || 'text',
-          mood: msg.mood || 'normal',
-          reactionScore: msg.reactionScore,
-        }));
-        
-        // Only update if messages are actually different
-        const currentMessageIds = messages.map(m => m.id).join(',');
-        const newMessageIds = formattedMessages.map(m => m.id).join(',');
-        
-        if (currentMessageIds !== newMessageIds) {
-          setMessages(formattedMessages);
-          console.log(`Updated messages from chat history: ${formattedMessages.length} messages`);
-        }
-      }
-    }
-  }, [chatHistory?.length, character?.id]); // Only depend on length and character ID
+  }, [character?.id, chatHistory?.length, messagesLoading])
 
   // Auto-scroll to bottom
   useEffect(() => {

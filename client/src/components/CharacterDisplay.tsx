@@ -60,12 +60,14 @@ export default function CharacterDisplay({
         <div className="relative mx-auto max-w-xs mb-6">
           <div className="relative">
             <img
-              src={`/uploads/${character?.id || 'default'}-avatar.jpg`}
+              src={character?.imageUrl || character?.avatarUrl || '/default-character.jpg'}
               alt={character?.name || "Player"}
               onClick={handleTap}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = '/default-character.jpg';
+                if (target.src !== window.location.origin + '/default-character.jpg') {
+                  target.src = '/default-character.jpg';
+                }
               }}
               className={`w-full h-auto aspect-[3/4] object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-transform duration-200 ${
                 tapEffect ? 'tap-effect' : ''

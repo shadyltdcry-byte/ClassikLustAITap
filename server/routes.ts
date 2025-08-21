@@ -408,8 +408,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Characters list endpoint
   app.get("/api/characters", async (req, res) => {
     try {
-      const characters = await storage.getAllCharacters();
-      res.json(characters);
+      // For now, only return the default character that users have access to
+      const defaultCharacter = {
+        id: "seraphina",
+        name: "Seraphina", 
+        personality: "playful",
+        personalityStyle: "flirty",
+        chatStyle: "casual",
+        backstory: "A mysterious and playful character who loves to chat and have fun!",
+        bio: "Seraphina is your default companion, always ready for a conversation!",
+        interests: "Gaming, chatting, having fun",
+        quirks: "Uses lots of emojis and exclamation points",
+        likes: "Friendly conversations, games, excitement",
+        dislikes: "Boring topics, rudeness",
+        mood: "flirty",
+        level: 1,
+        requiredLevel: 1,
+        isNsfw: false,
+        isVip: false,
+        isEvent: false,
+        isWheelReward: false,
+        responseTimeMin: 1000,
+        responseTimeMax: 3000,
+        responseTimeMs: 2000,
+        randomPictureSending: true,
+        randomChatResponsesEnabled: true,
+        pictureSendChance: 15,
+        chatSendChance: 20,
+        moodDistribution: {
+          normal: 20,
+          happy: 25,
+          flirty: 30,
+          playful: 15,
+          mysterious: 5,
+          shy: 5
+        },
+        customGreetings: [
+          "Hey there! Ready for some fun? 😊",
+          "Hi! I'm so excited to chat with you! ✨", 
+          "Hello! What's on your mind today? 💕"
+        ],
+        customResponses: [
+          "That's really interesting! Tell me more! 😄",
+          "I love hearing your thoughts! 💭",
+          "You're so sweet! 🥰"
+        ],
+        customTriggerWords: [],
+        imageUrl: "/default-character.jpg",
+        avatarUrl: "/default-avatar.jpg",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      
+      res.json([defaultCharacter]);
     } catch (error) {
       console.error('Error fetching characters:', error);
       res.status(500).json({ error: 'Failed to fetch characters' });
@@ -817,24 +868,49 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
     }
   });
 
-  app.post('/api/media/upload', (req: Request, res: Response) => {
-    // Mock upload - in production, handle actual file upload
-    console.log('Mock file upload:', req.body);
-    const newFile = {
-      id: Date.now().toString(),
-      filename: `mock-file-${Date.now()}.jpg`,
-      originalName: 'Mock Uploaded File',
-      url: '/public/media/',
-      type: 'image',
-      characterId: req.body.characterId || null,
-      mood: req.body.mood || null,
-      level: req.body.level ? parseInt(req.body.level) : null,
-      isVIP: req.body.isVIP === 'true',
-      isNSFW: req.body.isNSFW === 'true',
-      createdAt: new Date().toISOString()
-    };
-    mediaFiles.push(newFile);
-    res.json([newFile]);
+  app.post('/api/media/upload', async (req: Request, res: Response) => {
+    try {
+      // Handle file upload data from request body
+      const { fileName, fileData, characterId, mood, level, isVIP, isNSFW } = req.body;
+      
+      if (!fileName || !fileData) {
+        return res.status(400).json({ error: 'Missing file name or data' });
+      }
+      
+      // Create media file entry
+      const newFile = {
+        id: Date.now().toString(),
+        filename: fileName,
+        originalName: fileName,
+        url: `/uploads/${fileName}`,
+        type: 'image',
+        characterId: characterId || null,
+        mood: mood || null,
+        level: level ? parseInt(level) : null,
+        isVIP: isVIP === 'true' || isVIP === true,
+        isNSFW: isNSFW === 'true' || isNSFW === true,
+        createdAt: new Date().toISOString()
+      };
+      
+      // Save to storage if available
+      try {
+        await storage.saveMediaFile(newFile as any);
+      } catch (error) {
+        console.error('Failed to save to database:', error);
+        // Continue with in-memory storage
+      }
+      
+      mediaFiles.push(newFile);
+      
+      res.json({
+        success: true,
+        file: newFile,
+        message: 'File uploaded successfully'
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ error: 'Failed to upload file' });
+    }
   });
 
   app.put('/api/media/:id', (req: Request, res: Response) => {

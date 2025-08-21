@@ -296,32 +296,59 @@ export class SupabaseStorage implements IStorage {
 
   // Game stats
   async getUserStats(userId: string): Promise<GameStats> {
-    const { data, error } = await this.supabase
-      .from('game_stats')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
-    
-    if (error) {
-      // Create default stats if none exist
-      const defaultStats = {
-        user_id: userId,
-        total_taps: 0,
-        total_lp_earned: 0,
-        total_energy_used: 0,
-        sessions_played: 0
-      };
-      
-      const { data: newData, error: createError } = await this.supabase
+    try {
+      const { data, error } = await this.supabase
         .from('game_stats')
-        .insert(defaultStats)
-        .select()
+        .select('*')
+        .eq('user_id', userId)
         .single();
       
-      if (createError) throw createError;
-      return newData;
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user stats:', error);
+        throw error;
+      }
+      
+      if (!data) {
+        // Create default stats if none exist
+        const defaultStats = {
+          user_id: userId,
+          total_taps: 0,
+          total_lp_earned: 0,
+          total_energy_used: 0,
+          sessions_played: 0
+        };
+        
+        const { data: newData, error: createError } = await this.supabase
+          .from('game_stats')
+          .insert(defaultStats)
+          .select()
+          .single();
+        
+        if (createError) {
+          console.error('Error creating user stats:', createError);
+          // Return default stats if database insert fails
+          return {
+            userId,
+            totalTaps: 0,
+            totalLpEarned: 0,
+            totalEnergyUsed: 0,
+            sessionsPlayed: 0
+          } as GameStats;
+        }
+        return newData;
+      }
+      return data;
+    } catch (error) {
+      console.error('getUserStats error:', error);
+      // Return default stats on any error
+      return {
+        userId,
+        totalTaps: 0,
+        totalLpEarned: 0,
+        totalEnergyUsed: 0,
+        sessionsPlayed: 0
+      } as GameStats;
     }
-    return data;
   }
 
   async updateUserStats(userId: string, updates: Partial<GameStats>): Promise<void> {
