@@ -146,7 +146,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         setMessages([greetingMessage]);
       }
     }
-  }, [character?.id]) // Remove chatHistory and saveMessageMutation from dependencies
+  }, [character?.id, chatHistory]) // Include chatHistory to reload when data changes
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -302,15 +302,19 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
 
       try {
         // Generate AI response using Mistral
+        // Use more conversation history for better memory (last 10 messages or all if fewer)
+        const allMessages = [...messages, userMessage];
+        const conversationHistory = allMessages.slice(-10).map(m => ({
+          role: m.sender === 'user' ? 'user' : 'assistant',
+          content: m.content
+        }));
+
         const response = await apiRequest("POST", "/api/mistral/chat", {
           message,
           characterName: character?.name || "Seraphina",
           characterPersonality: character?.personality || "playful",
           currentMood: characterMood,
-          conversationHistory: messages.slice(-5).map(m => ({
-            role: m.sender === 'user' ? 'user' : 'assistant',
-            content: m.content
-          }))
+          conversationHistory
         });
         
         if (!response.ok) {

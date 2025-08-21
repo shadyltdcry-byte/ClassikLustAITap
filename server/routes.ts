@@ -205,13 +205,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Update game stats - track cumulative statistics
       try {
-        const currentStats = await storage.getUserStats(userId);
-        await storage.updateUserStats(userId, {
-          totalTaps: (currentStats.totalTaps || 0) + 1,
-          totalLpEarned: (currentStats.totalLpEarned || 0) + lpGain,
-          totalEnergyUsed: (currentStats.totalEnergyUsed || 0) + 1,
-          lastUpdated: new Date()
+        // Use SQL increment for better performance and accuracy
+        const { error } = await storage.supabase.rpc('increment_user_stats', {
+          p_user_id: userId,
+          p_taps: 1,
+          p_lp_earned: lpGain,
+          p_energy_used: 1
         });
+        
+        if (error) {
+          console.error('Error updating game stats with RPC:', error);
+          // Fallback to manual update
+          const currentStats = await storage.getUserStats(userId);
+          await storage.updateUserStats(userId, {
+            totalTaps: (currentStats.totalTaps || 0) + 1,
+            totalLpEarned: (currentStats.totalLpEarned || 0) + lpGain,
+            totalEnergyUsed: (currentStats.totalEnergyUsed || 0) + 1
+          });
+        }
       } catch (statsError) {
         console.error('Error updating game stats:', statsError);
         // Don't fail the tap if stats update fails

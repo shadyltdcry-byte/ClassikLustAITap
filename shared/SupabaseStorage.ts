@@ -37,6 +37,7 @@ interface GameSettings {
 
 export class SupabaseStorage implements IStorage {
   private supabase;
+  public get supabase() { return this.supabase; }
 
   constructor() {
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -324,9 +325,29 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateUserStats(userId: string, updates: Partial<GameStats>): Promise<void> {
+    // Get current stats first
+    const currentStats = await this.getUserStats(userId);
+    
+    // Increment values instead of replacing them
+    const incrementedUpdates: any = {
+      ...updates,
+      updated_at: new Date().toISOString()
+    };
+    
+    // If specific stats are being updated, add to existing values
+    if (updates.totalTaps !== undefined) {
+      incrementedUpdates.total_taps = (currentStats.totalTaps || 0) + (updates.totalTaps - (currentStats.totalTaps || 0));
+    }
+    if (updates.totalLpEarned !== undefined) {
+      incrementedUpdates.total_lp_earned = (currentStats.totalLpEarned || 0) + (updates.totalLpEarned - (currentStats.totalLpEarned || 0));
+    }
+    if (updates.totalEnergyUsed !== undefined) {
+      incrementedUpdates.total_energy_used = (currentStats.totalEnergyUsed || 0) + (updates.totalEnergyUsed - (currentStats.totalEnergyUsed || 0));
+    }
+    
     const { error } = await this.supabase
       .from('game_stats')
-      .update(updates)
+      .update(incrementedUpdates)
       .eq('user_id', userId);
     
     if (error) throw error;
