@@ -547,13 +547,31 @@ export class SupabaseStorage implements IStorage {
   }
 
   async saveMediaFile(file: MediaFile): Promise<MediaFile> {
+    // Map the file object to match database schema
+    const dbFile = {
+      id: file.id,
+      character_id: file.characterId,
+      file_name: file.filename || file.fileName,
+      file_path: file.url || file.filePath,
+      file_type: file.fileType || file.type || 'image',
+      mood: file.mood,
+      pose: file.pose,
+      animation_sequence: file.animationSequence,
+      is_nsfw: file.isNsfw || file.isNSFW || false,
+      is_vip: file.isVip || file.isVIP || file.isVipOnly || false,
+      created_at: file.createdAt || new Date().toISOString()
+    };
+
     const { data, error } = await this.supabase
       .from('media_files')
-      .insert(file)
+      .insert(dbFile)
       .select()
       .single();
     
-    if (error) throw error;
+    if (error) {
+      console.error('Database insert error:', error);
+      throw error;
+    }
     return data;
   }
 
