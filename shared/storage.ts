@@ -70,11 +70,100 @@ export interface IStorage {
   deleteMediaFile(id: string): Promise<void>;
 }
 
-// Import Supabase implementation
-import { SupabaseStorage } from './SupabaseStorage';
+// Import Drizzle implementation for local PostgreSQL
+import { drizzle } from 'drizzle-orm/postgres-js';
+import { eq } from 'drizzle-orm';
+import postgres from 'postgres';
+import * as schema from './schema.js';
 
-// Create and export storage instance
-export const storage = new SupabaseStorage();
+// Create connection to local PostgreSQL database
+const connectionString = process.env.DATABASE_URL!;
+const client = postgres(connectionString);
+export const db = drizzle(client, { schema });
+
+// Create a simple Drizzle-based storage implementation
+class DrizzleStorage implements IStorage {
+  async getUser(id: string) {
+    const result = await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1);
+    return result[0];
+  }
+  
+  async createUser(userData: any) {
+    const result = await db.insert(schema.users).values({
+      username: userData.username || userData.id,
+      password: "temp_password", // Required field
+      level: userData.level || 1,
+      lp: userData.lp || 5000,
+      lpPerHour: userData.lpPerHour || 250,
+      lpPerTap: userData.lpPerTap || 1.5,
+      energy: userData.energy || 1000,
+      maxEnergy: userData.maxEnergy || 1000,
+      charisma: userData.charismaPoints || 0,
+      vipStatus: userData.isVip || false,
+      nsfwConsent: userData.nsfwEnabled || false
+    }).returning();
+    return result[0];
+  }
+  
+  async updateUser(id: string, updates: any) {
+    const result = await db.update(schema.users).set(updates).where(eq(schema.users.id, id)).returning();
+    return result[0];
+  }
+  
+  async deleteUser(id: string) {
+    await db.delete(schema.users).where(eq(schema.users.id, id));
+  }
+  
+  async getAllCharacters() {
+    return await db.select().from(schema.characters);
+  }
+  
+  async getSelectedCharacter(userId: string) {
+    // For now, return undefined - can implement selection logic later
+    return undefined;
+  }
+  
+  async getUserUpgrades(userId: string) {
+    return []; // Return empty for now
+  }
+  
+  async getAllMedia() {
+    return await db.select().from(schema.mediaFiles);
+  }
+  
+  // Placeholder implementations for other methods
+  async getCharacter(id: string) { return undefined; }
+  async getUserCharacters(userId: string) { return []; }
+  async createCharacter(character: any) { return character; }
+  async updateCharacter(id: string, updates: any) { return undefined; }
+  async deleteCharacter(id: string) {}
+  async selectCharacter(userId: string, characterId: string) {}
+  async getUpgrade(id: string) { return undefined; }
+  async getAllUpgrades() { return []; }
+  async createUpgrade(upgrade: any) { return upgrade; }
+  async updateUpgrade(id: string, updates: any) { return undefined; }
+  async purchaseUpgrade(userId: string, upgradeId: string) { return { id: 'upgrade1', name: 'Test' }; }
+  async upgradeUserUpgrade(userId: string, upgradeId: string) { return { id: 'upgrade1', name: 'Test' }; }
+  async deleteUpgrade(id: string) {}
+  async getChatMessages(userId: string, characterId?: string) { return []; }
+  async createChatMessage(message: any) { return message; }
+  async clearChatHistory(userId: string, characterId?: string) {}
+  async getLastWheelSpin(userId: string) { return null; }
+  async recordWheelSpin(userId: string, reward: string) {}
+  async getGameSettings() { return {}; }
+  async updateGameSettings(settings: any) {}
+  async getSystemStats() { return {}; }
+  async exportAllData() { return {}; }
+  async getMediaFiles(characterId?: string) { return []; }
+  async getMediaFile(id: string) { return undefined; }
+  async saveMediaFile(file: any) { return file; }
+  async uploadMedia(file: any) { return file; }
+  async updateMediaFile(id: string, updates: any) { return undefined; }
+  async deleteMediaFile(id: string) {}
+}
+
+// Create and export storage instance  
+export const storage = new DrizzleStorage();
 
 // For backward compatibility, also export DB initialization
 let dbInitialized = false;
