@@ -279,9 +279,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       if (!user) {
         // Create default user if not exists
+        const uniqueUsername = `Player${Math.floor(Math.random() * 10000)}`;
         user = await storage.createUser({
           id: playerId,
-          username: "Player",
+          username: uniqueUsername,
           level: 1,
           lp: 5000,
           lpPerHour: 250,
