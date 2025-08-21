@@ -12,11 +12,32 @@ import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from '../shared/schema.js';
 
+// Initialize database connection
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL environment variable is required');
+}
+
+const sql = postgres(connectionString);
+export const db = drizzle(sql, { schema });
+
+// Test database connection
+async function testConnection() {
+  try {
+    const result = await db.select().from(schema.users).limit(1);
+    console.log("✅ Database connected successfully");
+  } catch (error) {
+    console.error("❌ Database connection failed:", error);
+  }
+}
 
 function main() {
-  // Database and energy system removed as per user request
-  console.log("Starting custom plugin-based game server...");
+  console.log("Starting custom plugin-based game server with Supabase...");
+  testConnection();
 }
 
 main();
@@ -84,7 +105,7 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const PORT = process.env.PORT || 5001;
-  
+
   // WebSocket server for real-time features
   let wss;
   try {
