@@ -60,12 +60,12 @@ export default function CharacterDisplay({
         <div className="relative mx-auto max-w-xs mb-6">
           <div className="relative">
             <img
-              src={'/uploads/default-character.jpg'}
+              src={`/uploads/${character?.id || 'default'}-avatar.jpg`}
               alt={character?.name || "Player"}
               onClick={handleTap}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                target.src = 'https://placehold.co/256x320/666666/FFFFFF?text=' + encodeURIComponent(character?.name || "Player");
+                target.src = '/default-character.jpg';
               }}
               className={`w-full h-auto aspect-[3/4] object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-transform duration-200 ${
                 tapEffect ? 'tap-effect' : ''

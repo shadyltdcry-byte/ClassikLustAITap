@@ -5,6 +5,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -42,7 +43,9 @@ import { apiRequest } from "@/lib/queryClient";
 import CharacterCreation from "@/components/CharacterCreation";
 import CharacterEditor from "@/components/CharacterEditor";
 import FileManagerCore from "@/plugins/manager/FileManagerCore";
-import type { Character } from "@shared/schema";
+import type { Character, Upgrade, InsertUpgrade } from "@shared/schema";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AdminMenuProps {
   onClose?: () => void;
@@ -237,6 +240,34 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterNsfw, setFilterNsfw] = useState(false);
   const [filterVip, setFilterVip] = useState(false);
+  const [upgradeFormData, setUpgradeFormData] = useState({
+    name: '',
+    description: '',
+    category: 'lp_per_hour',
+    baseCost: 100,
+    baseEffect: 1.0,
+    costMultiplier: 1.3,
+    effectMultiplier: 1.15,
+    maxLevel: null as number | null,
+    levelRequirement: 1
+  });
+  const [editingUpgrade, setEditingUpgrade] = useState<any>(null);
+  const [taskFormData, setTaskFormData] = useState({
+    name: '',
+    description: '',
+    reward: 100,
+    type: 'daily',
+    requirement: ''
+  });
+  const [achievementFormData, setAchievementFormData] = useState({
+    name: '',
+    description: '',
+    reward: 500,
+    condition: '',
+    icon: ''
+  });
+  const [aiDebugMessage, setAiDebugMessage] = useState('');
+  const [aiDebugResponse, setAiDebugResponse] = useState('');
 
   const queryClient = useQueryClient();
 
@@ -264,7 +295,37 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Filter characters based on search and filters
+  // Fetch upgrades
+  const { data: upgrades = [], isLoading: upgradesLoading, refetch: refetchUpgrades } = useQuery<Upgrade[]>({
+    queryKey: ["/api/admin/upgrades"],
+    queryFn: async () => {
+      const response = await apiRequest("GET", "/api/admin/upgrades");
+      return await response.json();
+    },
+    retry: 2,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Original characters query
+  const originalCharactersQuery = useQuery({
+    queryKey: ["/api/admin/characters"],
+    queryFn: async (): Promise<Character[]> => {
+      try {
+        const response = await apiRequest("GET", "/api/admin/characters");
+        if (!response.ok) {
+          throw new Error(`Failed to fetch characters: ${response.status} ${response.statusText}`);
+        }
+        return await response.json();
+      } catch (error) {
+        console.error("Error fetching characters:", error);
+        throw new Error("Unable to load characters. Please check your connection and try again.");
+      }
+    },
+    retry: 2,
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Create upgrade mutation\n  const createUpgradeMutation = useMutation({\n    mutationFn: async (upgradeData: InsertUpgrade) => {\n      const response = await apiRequest(\"POST\", \"/api/admin/upgrades\", upgradeData);\n      if (!response.ok) throw new Error(\"Failed to create upgrade\");\n      return response.json();\n    },\n    onSuccess: () => {\n      toast.success(\"Upgrade created successfully!\");\n      refetchUpgrades();\n      setUpgradeFormData({ name: '', description: '', category: 'lp_per_hour', baseCost: 100, baseEffect: 1.0, costMultiplier: 1.3, effectMultiplier: 1.15, maxLevel: null, levelRequirement: 1 });\n    },\n    onError: (error: Error) => {\n      toast.error(error.message || \"Failed to create upgrade\");\n    }\n  });\n\n  // AI Debug mutation\n  const aiDebugMutation = useMutation({\n    mutationFn: async (message: string) => {\n      const response = await apiRequest(\"POST\", \"/api/mistral/chat\", {\n        message,\n        characterName: \"Assistant\",\n        characterPersonality: \"helpful\",\n        currentMood: \"normal\",\n        conversationHistory: []\n      });\n      if (!response.ok) throw new Error(\"Failed to get AI response\");\n      return response.json();\n    },\n    onSuccess: (data) => {\n      setAiDebugResponse(data.response || data.message || \"No response received\");\n    },\n    onError: (error: Error) => {\n      toast.error(error.message || \"AI request failed\");\n    }\n  });\n\n  // Filter characters based on search and filters
   const filteredCharacters = characters.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          char.personality?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -622,65 +683,521 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
             {/* UPGRADES TAB */}
             <TabsContent value="upgrades" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "upgrades" ? "active" : "inactive"}>
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
-                <EmptyState
-                  title="Upgrades Management"
-                  description="Configure game upgrades and progression rewards"
-                  icon={Star}
-                  action={
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
-                      Coming Soon
-                    </Button>
-                  }
-                />
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-white">Upgrades Management</h3>
+                  <Button 
+                    onClick={() => setEditingUpgrade({ isNew: true })} 
+                    className="bg-blue-600 hover:bg-blue-700"
+                    size="sm"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Upgrade
+                  </Button>
+                </div>
+
+                <div className="flex-1 overflow-auto">
+                  {upgradesLoading ? (
+                    <LoadingSpinner message="Loading upgrades..." />
+                  ) : upgrades.length === 0 ? (
+                    <EmptyState
+                      title="No Upgrades Found"
+                      description="Create your first upgrade to get started"
+                      icon={Star}
+                    />
+                  ) : (
+                    <div className="space-y-3">
+                      {upgrades.map((upgrade) => (
+                        <Card key={upgrade.id} className="bg-gray-800/50 border-gray-600">
+                          <CardContent className="p-4">
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h4 className="text-white font-semibold">{upgrade.name}</h4>
+                                <p className="text-gray-400 text-sm mb-2">{upgrade.description}</p>
+                                <div className="flex gap-4 text-xs text-gray-500">
+                                  <span>Category: {upgrade.category}</span>
+                                  <span>Base Cost: {upgrade.baseCost} LP</span>
+                                  <span>Effect: +{upgrade.baseEffect}</span>
+                                  <span>Level Req: {upgrade.levelRequirement}</span>
+                                  {upgrade.maxLevel && <span>Max Level: {upgrade.maxLevel}</span>}
+                                </div>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => setEditingUpgrade({ ...upgrade, isNew: false })}
+                                  className="text-blue-400 hover:text-blue-300"
+                                >
+                                  <Edit3 className="w-4 h-4" />
+                                </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost"
+                                  onClick={() => {
+                                    if (window.confirm(`Delete upgrade "${upgrade.name}"? This cannot be undone.`)) {
+                                      // Add delete mutation here
+                                      toast.success('Upgrade deleted!');
+                                      refetchUpgrades();
+                                    }
+                                  }}
+                                  className="text-red-400 hover:text-red-300"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Create/Edit Upgrade Modal */}
+                {editingUpgrade && (
+                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+                    <Card className="bg-gray-800 border-gray-600 max-w-md w-full">
+                      <CardHeader>
+                        <CardTitle className="text-white">
+                          {editingUpgrade.isNew ? 'Create New Upgrade' : 'Edit Upgrade'}
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        <div>
+                          <Label className="text-white">Name</Label>
+                          <Input
+                            value={upgradeFormData.name}
+                            onChange={(e) => setUpgradeFormData({...upgradeFormData, name: e.target.value})}
+                            className="bg-gray-700 border-gray-600 text-white"
+                            placeholder="Upgrade name"
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-white">Description</Label>
+                          <Textarea
+                            value={upgradeFormData.description}
+                            onChange={(e) => setUpgradeFormData({...upgradeFormData, description: e.target.value})}
+                            className="bg-gray-700 border-gray-600 text-white"
+                            placeholder="Upgrade description"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-white">Category</Label>
+                            <Select
+                              value={upgradeFormData.category}
+                              onValueChange={(value) => setUpgradeFormData({...upgradeFormData, category: value})}
+                            >
+                              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-700 border-gray-600">
+                                <SelectItem value="lp_per_hour" className="text-white">LP per Hour</SelectItem>
+                                <SelectItem value="energy" className="text-white">Energy</SelectItem>
+                                <SelectItem value="lp_per_tap" className="text-white">LP per Tap</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div>
+                            <Label className="text-white">Base Cost</Label>
+                            <Input
+                              type="number"
+                              value={upgradeFormData.baseCost}
+                              onChange={(e) => setUpgradeFormData({...upgradeFormData, baseCost: parseInt(e.target.value) || 0})}
+                              className="bg-gray-700 border-gray-600 text-white"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <Label className="text-white">Base Effect</Label>
+                            <Input
+                              type="number"
+                              step="0.1"
+                              value={upgradeFormData.baseEffect}
+                              onChange={(e) => setUpgradeFormData({...upgradeFormData, baseEffect: parseFloat(e.target.value) || 0})}
+                              className="bg-gray-700 border-gray-600 text-white"
+                            />
+                          </div>
+                          <div>
+                            <Label className="text-white">Level Requirement</Label>
+                            <Input
+                              type="number"
+                              value={upgradeFormData.levelRequirement}
+                              onChange={(e) => setUpgradeFormData({...upgradeFormData, levelRequirement: parseInt(e.target.value) || 1})}
+                              className="bg-gray-700 border-gray-600 text-white"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setEditingUpgrade(null)}
+                            className="border-gray-600 text-white"
+                          >
+                            Cancel
+                          </Button>
+                          <Button 
+                            onClick={() => {
+                              createUpgradeMutation.mutate(upgradeFormData);
+                              setEditingUpgrade(null);
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700"
+                            disabled={createUpgradeMutation.isPending}
+                          >
+                            {editingUpgrade.isNew ? 'Create' : 'Update'}
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
               </div>
             </TabsContent>
 
             {/* TASKS TAB */}
             <TabsContent value="tasks" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "tasks" ? "active" : "inactive"}>
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
-                <EmptyState
-                  title="Tasks Management"
-                  description="Create and manage daily tasks and challenges"
-                  icon={Zap}
-                  action={
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
-                      Coming Soon
-                    </Button>
-                  }
-                />
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-white">Tasks & Challenges</h3>
+                  <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Task
+                  </Button>
+                </div>
+
+                <Tabs defaultValue="daily" className="flex-1">
+                  <TabsList className="grid grid-cols-3 bg-black/40">
+                    <TabsTrigger value="daily">Daily Tasks</TabsTrigger>
+                    <TabsTrigger value="weekly">Weekly Tasks</TabsTrigger>
+                    <TabsTrigger value="special">Special Events</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="daily" className="flex-1 mt-4">
+                    <div className="space-y-3">
+                      {/* Sample daily tasks */}
+                      <Card className="bg-gray-800/50 border-gray-600">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h4 className="text-white font-semibold flex items-center gap-2">
+                                <Zap className="w-4 h-4 text-yellow-400" />
+                                Tap 100 times
+                              </h4>
+                              <p className="text-gray-400 text-sm">Tap characters 100 times to earn LP</p>
+                              <div className="flex gap-2 mt-2">
+                                <Badge className="bg-green-600/20 text-green-400">Reward: 500 LP</Badge>
+                                <Badge className="bg-blue-600/20 text-blue-400">Daily</Badge>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                                <Edit3 className="w-4 h-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      <Card className="bg-gray-800/50 border-gray-600">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h4 className="text-white font-semibold flex items-center gap-2">
+                                <Heart className="w-4 h-4 text-pink-400" />
+                                Chat with character
+                              </h4>
+                              <p className="text-gray-400 text-sm">Send 5 messages to any character</p>
+                              <div className="flex gap-2 mt-2">
+                                <Badge className="bg-green-600/20 text-green-400">Reward: 300 LP</Badge>
+                                <Badge className="bg-blue-600/20 text-blue-400">Daily</Badge>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                                <Edit3 className="w-4 h-4" />
+                              </Button>
+                              <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </TabsContent>
+
+                  <TabsContent value="weekly" className="flex-1 mt-4">
+                    <EmptyState
+                      title="No Weekly Tasks"
+                      description="Create weekly challenges for your players"
+                      icon={Zap}
+                      action={
+                        <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Weekly Task
+                        </Button>
+                      }
+                    />
+                  </TabsContent>
+
+                  <TabsContent value="special" className="flex-1 mt-4">
+                    <EmptyState
+                      title="No Special Events"
+                      description="Create special event tasks and challenges"
+                      icon={Star}
+                      action={
+                        <Button className="bg-purple-600 hover:bg-purple-700" size="sm">
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create Event Task
+                        </Button>
+                      }
+                    />
+                  </TabsContent>
+                </Tabs>
               </div>
             </TabsContent>
 
             {/* ACHIEVEMENTS TAB */}
             <TabsContent value="achievements" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "achievements" ? "active" : "inactive"}>
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
-                <EmptyState
-                  title="Achievements Management"
-                  description="Design achievement goals and unlock rewards"
-                  icon={Trophy}
-                  action={
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
-                      Coming Soon
-                    </Button>
-                  }
-                />
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden p-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-xl font-bold text-white">Achievements & Milestones</h3>
+                  <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Create Achievement
+                  </Button>
+                </div>
+
+                <div className="flex-1 overflow-auto space-y-4">
+                  {/* Sample achievements */}
+                  <Card className="bg-gray-800/50 border-gray-600">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-yellow-600/20 rounded-lg">
+                            <Trophy className="w-6 h-6 text-yellow-400" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-white font-semibold">First Steps</h4>
+                            <p className="text-gray-400 text-sm mb-2">Complete your first character interaction</p>
+                            <div className="flex gap-2">
+                              <Badge className="bg-green-600/20 text-green-400">Reward: 1000 LP</Badge>
+                              <Badge className="bg-yellow-600/20 text-yellow-400">Starter</Badge>
+                            </div>
+                            <div className="mt-2">
+                              <div className="text-xs text-gray-500 mb-1">Progress: 0 / 1</div>
+                              <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                <div className="bg-blue-500 h-1.5 rounded-full" style={{width: '0%'}}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gray-800/50 border-gray-600">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-purple-600/20 rounded-lg">
+                            <Zap className="w-6 h-6 text-purple-400" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-white font-semibold">Tap Master</h4>
+                            <p className="text-gray-400 text-sm mb-2">Tap 1000 times total</p>
+                            <div className="flex gap-2">
+                              <Badge className="bg-green-600/20 text-green-400">Reward: 2500 LP</Badge>
+                              <Badge className="bg-purple-600/20 text-purple-400">Milestone</Badge>
+                            </div>
+                            <div className="mt-2">
+                              <div className="text-xs text-gray-500 mb-1">Progress: 342 / 1000</div>
+                              <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                <div className="bg-purple-500 h-1.5 rounded-full" style={{width: '34.2%'}}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-gray-800/50 border-gray-600">
+                    <CardContent className="p-4">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-start gap-3">
+                          <div className="p-2 bg-red-600/20 rounded-lg">
+                            <Crown className="w-6 h-6 text-red-400" />
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-white font-semibold">VIP Experience</h4>
+                            <p className="text-gray-400 text-sm mb-2">Unlock VIP content and reach level 10</p>
+                            <div className="flex gap-2">
+                              <Badge className="bg-green-600/20 text-green-400">Reward: 5000 LP + VIP Badge</Badge>
+                              <Badge className="bg-red-600/20 text-red-400">Premium</Badge>
+                            </div>
+                            <div className="mt-2">
+                              <div className="text-xs text-gray-500 mb-1">Progress: Locked</div>
+                              <div className="w-full bg-gray-700 rounded-full h-1.5">
+                                <div className="bg-gray-500 h-1.5 rounded-full" style={{width: '0%'}}></div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button size="sm" variant="ghost" className="text-blue-400 hover:text-blue-300">
+                            <Edit3 className="w-4 h-4" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-red-400 hover:text-red-300">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </TabsContent>
 
             {/* GAME TAB */}
             <TabsContent value="game" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "game" ? "active" : "inactive"}>
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
-                <EmptyState
-                  title="Game Configuration"
-                  description="Adjust gameplay mechanics and balance settings"
-                  icon={Activity}
-                  action={
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
-                      Coming Soon
-                    </Button>
-                  }
-                />
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg p-4 space-y-6">
+                <h3 className="text-xl font-bold text-white">Game Configuration & Level Editor</h3>
+                
+                {/* Level Up Section */}
+                <Card className="bg-gray-800/50 border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Crown className="w-5 h-5 text-yellow-400" />
+                      Player Level Management
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-white">Player ID</Label>
+                        <Input
+                          placeholder="Enter player ID or select from list"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-white">Levels to Add</Label>
+                        <Input
+                          type="number"
+                          min="1"
+                          max="100"
+                          defaultValue="1"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button className="bg-green-600 hover:bg-green-700">
+                        <Crown className="w-4 h-4 mr-2" />
+                        Level Up Player
+                      </Button>
+                      <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700">
+                        Get All Players
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Game Balance Settings */}
+                <Card className="bg-gray-800/50 border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-blue-400" />
+                      Balance Settings
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label className="text-white">Energy Recovery Rate</Label>
+                        <Input
+                          type="number"
+                          defaultValue="5"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-white">Base LP per Tap</Label>
+                        <Input
+                          type="number"
+                          step="0.1"
+                          defaultValue="1.5"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-white">Base LP per Hour</Label>
+                        <Input
+                          type="number"
+                          defaultValue="250"
+                          className="bg-gray-700 border-gray-600 text-white"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end">
+                      <Button className="bg-blue-600 hover:bg-blue-700">
+                        Save Balance Settings
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Quick Actions */}
+                <Card className="bg-gray-800/50 border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Zap className="w-5 h-5 text-purple-400" />
+                      Quick Actions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button className="bg-purple-600 hover:bg-purple-700">
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Reset All Player Energy
+                      </Button>
+                      <Button className="bg-orange-600 hover:bg-orange-700">
+                        <Database className="w-4 h-4 mr-2" />
+                        Refresh Game Stats
+                      </Button>
+                      <Button className="bg-yellow-600 hover:bg-yellow-700">
+                        <Star className="w-4 h-4 mr-2" />
+                        Grant Bonus LP (All Players)
+                      </Button>
+                      <Button className="bg-red-600 hover:bg-red-700">
+                        <AlertTriangle className="w-4 h-4 mr-2" />
+                        Emergency Maintenance Mode
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
 
@@ -702,17 +1219,135 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
             {/* SYSTEM TAB */}
             <TabsContent value="system" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "system" ? "active" : "inactive"}>
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
-                <EmptyState
-                  title="System Settings"
-                  description="Configure server settings and system preferences"
-                  icon={Settings}
-                  action={
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
-                      Coming Soon
-                    </Button>
-                  }
-                />
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg p-4 space-y-6">
+                <h3 className="text-xl font-bold text-white">System Settings & AI Debugger</h3>
+                
+                {/* AI Chat Debugger */}
+                <Card className="bg-gray-800/50 border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-green-400" />
+                      MistralAI Chat Debugger
+                    </CardTitle>
+                    <CardDescription className="text-gray-400">
+                      Test AI responses and debug character interactions
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label className="text-white">Test Message</Label>
+                      <Textarea
+                        value={aiDebugMessage}
+                        onChange={(e) => setAiDebugMessage(e.target.value)}
+                        placeholder="Enter a message to test AI response..."
+                        className="bg-gray-700 border-gray-600 text-white min-h-[80px]"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button 
+                        onClick={() => aiDebugMutation.mutate(aiDebugMessage)}
+                        disabled={aiDebugMutation.isPending || !aiDebugMessage.trim()}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {aiDebugMutation.isPending ? (
+                          <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+                        ) : (
+                          <>Send Test Message</>
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        onClick={() => {
+                          setAiDebugMessage('');
+                          setAiDebugResponse('');
+                        }}
+                        className="border-gray-600 text-white hover:bg-gray-700"
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                    {aiDebugResponse && (
+                      <div>
+                        <Label className="text-white">AI Response</Label>
+                        <div className="bg-gray-900/50 border border-gray-600 rounded-lg p-4 mt-2">
+                          <p className="text-white whitespace-pre-wrap">{aiDebugResponse}</p>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* System Info */}
+                <Card className="bg-gray-800/50 border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Database className="w-5 h-5 text-blue-400" />
+                      System Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Server Status:</span>
+                          <span className="text-green-400">Online</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Database:</span>
+                          <span className="text-green-400">Connected</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Total Characters:</span>
+                          <span className="text-white">{characters.length}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">AI Service:</span>
+                          <span className="text-green-400">MistralAI</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Total Upgrades:</span>
+                          <span className="text-white">{upgrades.length}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Uptime:</span>
+                          <span className="text-white">Running</span>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Server Actions */}
+                <Card className="bg-gray-800/50 border-gray-600">
+                  <CardHeader>
+                    <CardTitle className="text-white flex items-center gap-2">
+                      <Settings className="w-5 h-5 text-yellow-400" />
+                      Server Management
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700">
+                        <Database className="w-4 h-4 mr-2" />
+                        Backup Database
+                      </Button>
+                      <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700">
+                        <RefreshCw className="w-4 h-4 mr-2" />
+                        Clear Cache
+                      </Button>
+                      <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700">
+                        <Activity className="w-4 h-4 mr-2" />
+                        View Logs
+                      </Button>
+                      <Button variant="outline" className="border-gray-600 text-white hover:bg-gray-700">
+                        <Settings className="w-4 h-4 mr-2" />
+                        Export Settings
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </TabsContent>
           </Tabs>

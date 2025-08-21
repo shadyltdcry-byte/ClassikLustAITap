@@ -203,6 +203,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         energy: newEnergy
       });
       
+      // Update game stats - track cumulative statistics
+      try {
+        const currentStats = await storage.getUserStats(userId);
+        await storage.updateUserStats(userId, {
+          totalTaps: (currentStats.totalTaps || 0) + 1,
+          totalLpEarned: (currentStats.totalLpEarned || 0) + lpGain,
+          totalEnergyUsed: (currentStats.totalEnergyUsed || 0) + 1,
+          lastUpdated: new Date()
+        });
+      } catch (statsError) {
+        console.error('Error updating game stats:', statsError);
+        // Don't fail the tap if stats update fails
+      }
+      
       res.json({
         success: true,
         lpGain,
@@ -412,16 +426,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ error: 'User not found' });
       }
       
+      // Get actual game stats from database
+      const gameStats = await storage.getUserStats(playerId);
+      
       res.json({
         playerId,
         level: user.level,
         totalLp: user.lp,
-        totalTaps: 0, // Could track this separately if needed
+        totalTaps: gameStats.totalTaps || 0,
+        totalLpEarned: gameStats.totalLpEarned || 0,
         totalEnergy: user.energy,
+        totalEnergyUsed: gameStats.totalEnergyUsed || 0,
         maxEnergy: user.maxEnergy,
         lpPerHour: user.lpPerHour,
         lpPerTap: user.lpPerTap,
-        charisma: user.charismaPoints,
+        charisma: user.charisma || 0,
+        sessionsPlayed: gameStats.sessionsPlayed || 0,
         upgrades: {
           intellect: 1,
           dexterity: 1,
@@ -805,6 +825,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
     res.end(transparentPixel);
   });*/
+
+  // Admin Upgrades endpoints
+  app.get('/api/admin/upgrades', async (req, res) => {
+    try {
+      const upgrades = await storage.getAllUpgrades();
+      res.json(upgrades);
+    } catch (error) {
+      console.error('Error fetching upgrades:', error);
+      res.status(500).json({ error: 'Failed to fetch upgrades' });
+    }
+  });
+
+  app.post('/api/admin/upgrades', async (req, res) => {
+    try {
+      const upgrade = await storage.createUpgrade(req.body);
+      res.json(upgrade);
+    } catch (error) {
+      console.error('Error creating upgrade:', error);
+      res.status(500).json({ error: 'Failed to create upgrade' });
+    }
+  });
+
+  app.put('/api/admin/upgrades/:id', async (req, res) => {
+    try {
+      const upgrade = await storage.updateUpgrade(req.params.id, req.body);
+      res.json(upgrade);
+    } catch (error) {
+      console.error('Error updating upgrade:', error);
+      res.status(500).json({ error: 'Failed to update upgrade' });
+    }
+  });
+
+  app.delete('/api/admin/upgrades/:id', async (req, res) => {
+    try {
+      await storage.deleteUpgrade(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting upgrade:', error);
+      res.status(500).json({ error: 'Failed to delete upgrade' });
+    }
+  });
+
+  // Level up player endpoint
+  app.post('/api/admin/player/:playerId/level-up', async (req, res) => {
+    try {
+      const { playerId } = req.params;
+      const { levels } = req.body;
+      
+      const user = await storage.getUser(playerId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      const updatedUser = await storage.updateUser(playerId, {
+        level: user.level + (levels || 1)
+      });
+      
+      res.json({ success: true, user: updatedUser });
+    } catch (error) {
+      console.error('Error leveling up player:', error);
+      res.status(500).json({ error: 'Failed to level up player' });
+    }
+  });
 
   // Mistral AI Chat endpoint
   app.post("/api/mistral/chat", async (req, res) => {

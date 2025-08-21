@@ -229,9 +229,9 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     };
 
     // Get the correct file URL
-    const fileUrl = file.url || file.filePath || file.path || `/uploads/${file.fileName || file.filename}`;
+    const fileUrl = file.filePath || `/uploads/${file.fileName}`;
 
-    if (file.fileType === 'image' || file.type === 'image' || file.fileType === 'gif') {
+    if (file.fileType === 'image' || file.fileType === 'gif') {
       return (
         <img
           src={fileUrl}
@@ -242,7 +242,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
           }}
         />
       );
-    } else if (file.fileType === 'video' || file.type === 'video') {
+    } else if (file.fileType === 'video') {
       return (
         <video controls style={commonStyles}>
           <source src={fileUrl} type="video/mp4" />
@@ -472,7 +472,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     {renderMediaPreview(file)}
                     <div className="mt-2 space-y-1">
                       <p className="text-xs text-white truncate">
-                        {file.fileName || file.filename || file.originalName || `File ${file.id.slice(0, 8)}`}
+                        {file.fileName || `File ${file.id.slice(0, 8)}`}
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {file.isVip && (
@@ -483,9 +483,6 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                         )}
                         {file.mood && (
                           <span className="text-xs bg-blue-600 text-white px-1 rounded">{file.mood}</span>
-                        )}
-                        {file.isEvent && (
-                          <span className="text-xs bg-purple-600 text-white px-1 rounded">Event</span>
                         )}
                       </div>
                     </div>
@@ -543,7 +540,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle className="text-white">
-                  {selectedFile.fileName || selectedFile.filename || selectedFile.originalName || 'Media File'}
+                  {selectedFile.fileName || 'Media File'}
                 </CardTitle>
                 <div className="flex gap-2">
                   <Button
@@ -581,11 +578,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     : 'Unassigned'
                 }</div>
                 <div>Mood: {selectedFile.mood || 'None'}</div>
-                <div>Required Level: {selectedFile.requiredLevel || 1}</div>
                 <div>VIP: {selectedFile.isVip ? 'Yes' : 'No'}</div>
                 <div>NSFW: {selectedFile.isNsfw ? 'Yes' : 'No'}</div>
-                <div>Event: {selectedFile.isEvent ? 'Yes' : 'No'}</div>
-                <div>Random Send Chance: {selectedFile.randomSendChance || 5}%</div>
               </div>
             </CardContent>
           </Card>
@@ -641,29 +635,6 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 </Select>
               </div>
 
-              <div>
-                <Label className="text-white">Required Level</Label>
-                <Input
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={editingFile.requiredLevel || 1}
-                  onChange={(e) => setEditingFile({...editingFile, requiredLevel: parseInt(e.target.value) || 1})}
-                  className="bg-gray-700 border-gray-600 text-white"
-                />
-              </div>
-
-              <div>
-                <Label className="text-white">Random Send Chance (%)</Label>
-                <Input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={editingFile.randomSendChance || 5}
-                  onChange={(e) => setEditingFile({...editingFile, randomSendChance: parseInt(e.target.value) || 5})}
-                  className="bg-gray-700 border-gray-600 text-white"
-                />
-              </div>
 
 
               <div className="flex items-center space-x-4">
@@ -680,13 +651,6 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     onCheckedChange={(checked) => setEditingFile({...editingFile, isNsfw: checked})}
                   />
                   <Label className="text-white">NSFW Content</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={editingFile.isEvent || false}
-                    onCheckedChange={(checked) => setEditingFile({...editingFile, isEvent: checked})}
-                  />
-                  <Label className="text-white">Event Content</Label>
                 </div>
               </div>
 
