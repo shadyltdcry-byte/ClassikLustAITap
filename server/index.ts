@@ -10,6 +10,8 @@
 
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { WebSocketServer } from 'ws';
+import { SupabaseStorage } from '../shared/SupabaseStorage';
 
 
 function main() {
@@ -75,21 +77,40 @@ app.use((req, res, next) => {
     process.exit(1);
   });
 
-  
+
 
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const port = parseInt(process.env.PORT || "5000", 10);
+  const PORT = process.env.PORT || 5001;
+  
+  // WebSocket server for real-time features
+  let wss;
+  try {
+    wss = new WebSocketServer({ 
+      port: 8080,
+      host: '0.0.0.0'
+    });
+
+    wss.on('error', (error) => {
+      console.error('WebSocket server error:', error.message);
+    });
+  } catch (error) {
+    console.warn('WebSocket server failed to start:', error.message);
+  }
+
   server.listen(
     {
-      port,
+      port: PORT,
       host: "0.0.0.0",
       reusePort: true,
     },
     () => {
-      console.log(`serving on port ${port}`);
+      console.log(`serving on port ${PORT}`);
     },
   );
 })();
+
+// Initialize storage for server operations
+const storage = new SupabaseStorage();

@@ -18,6 +18,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { apiRequest } from '@/lib/queryClient';
+import { SupabaseStorage } from '@shared/SupabaseStorage'; // Updated import
 
 // Types based on your game's requirements
 interface PlayerData {
@@ -80,7 +81,7 @@ interface GameState {
   gameVersion: string;
 }
 
-type GameAction = 
+type GameAction =
   | { type: 'SET_PLAYER_DATA'; payload: Partial<PlayerData> }
   | { type: 'TAP'; payload?: { multiplier?: number } }
   | { type: 'UPDATE_TICK' }
@@ -368,11 +369,14 @@ interface GameProviderProps {
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  // Auto-save to localStorage
+  // Initialize storage
+  const storage = new SupabaseStorage(); // Initialize SupabaseStorage instance
+
+  // Auto-save to SupabaseStorage
   useEffect(() => {
     if (!state.isLoading && state.playerData.settings.autoSave) {
-      localStorage.setItem('characterTapGame_playerData', JSON.stringify(state.playerData));
-      localStorage.setItem('characterTapGame_lastSave', Date.now().toString());
+      storage.savePlayerData(state.playerData);
+      storage.saveLastSaveTime(Date.now());
     }
   }, [state.playerData, state.isLoading]);
 
@@ -394,9 +398,9 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
       );
 
       if (activeBoosters.length !== state.playerData.activeBoosters.length) {
-        dispatch({ 
-          type: 'SET_PLAYER_DATA', 
-          payload: { activeBoosters } 
+        dispatch({
+          type: 'SET_PLAYER_DATA',
+          payload: { activeBoosters }
         });
       }
     }, 10000); // Check every 10 seconds
@@ -409,30 +413,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      // Try to load from localStorage first with validation
-      const savedData = localStorage.getItem('characterTapGame_playerData');
+      // Try to load from SupabaseStorage first
+      const savedData = await storage.loadPlayerData();
       if (savedData) {
-        try {
-          const parsed = JSON.parse(savedData);
-          // Clear localStorage and force default stats if data is invalid
-          if (!parsed || parsed.lp <= 0 && parsed.energy <= 0 && parsed.lpPerHour <= 0) {
-            console.warn('Found invalid saved data with zero values, clearing localStorage and using defaults');
-            localStorage.clear();
-            // Force default values
-            dispatch({ type: 'SET_PLAYER_DATA', payload: {
-              lp: 5000,
-              energy: 1000,
-              maxEnergy: 1000,
-              lpPerHour: 250,
-              lpPerTap: 1.5,
-              level: 1
-            }});
-          } else {
-            dispatch({ type: 'SET_PLAYER_DATA', payload: parsed });
-          }
-        } catch (error) {
-          console.warn('Invalid saved data, clearing localStorage and using defaults:', error);
-          localStorage.clear();
+        // Clear localStorage and force default stats if data is invalid
+        if (!savedData || savedData.lp <= 0 && savedData.energy <= 0 && savedData.lpPerHour <= 0) {
+          console.warn('Found invalid saved data with zero values, clearing Supabase data and using defaults');
+          await storage.clear(); // Clear Supabase data
           // Force default values
           dispatch({ type: 'SET_PLAYER_DATA', payload: {
             lp: 5000,
@@ -442,6 +429,8 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
             lpPerTap: 1.5,
             level: 1
           }});
+        } else {
+          dispatch({ type: 'SET_PLAYER_DATA', payload: savedData });
         }
       }
 
@@ -465,10 +454,11 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   // Save game data
   const saveGame = useCallback(async () => {
     try {
-      // Save to localStorage
-      localStorage.setItem('characterTapGame_playerData', JSON.stringify(state.playerData));
+      // Save to SupabaseStorage
+      await storage.savePlayerData(state.playerData);
+      await storage.saveLastSaveTime(Date.now());
 
-      // Sync with server
+      // Sync with server (if necessary, though SupabaseStorage might handle this)
       await apiRequest('POST', `/api/player/${state.playerData.id}/save`, state.playerData);
     } catch (error) {
       console.error('Failed to save game:', error);
@@ -482,10 +472,10 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
   // Action creators
   const actions = {
-    setPlayerData: (data: Partial<PlayerData>) => 
+    setPlayerData: (data: Partial<PlayerData>) =>
       dispatch({ type: 'SET_PLAYER_DATA', payload: data }),
 
-    tap: (multiplier?: number) => 
+    tap: (multiplier?: number) =>
       dispatch({ type: 'TAP', payload: { multiplier } }),
 
     purchaseUpgrade: (type: string, name: string, cost: number, effect: any) =>
@@ -494,7 +484,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     activateBooster: (booster: any) =>
       dispatch({ type: 'ACTIVATE_BOOSTER', payload: booster }),
 
-    levelUp: () => 
+    levelUp: () =>
       dispatch({ type: 'LEVEL_UP' }),
 
     selectCharacter: (character: any) =>
@@ -506,7 +496,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     completeTask: (task: any) =>
       dispatch({ type: 'COMPLETE_TASK', payload: task }),
 
-    resetGame: () => 
+    resetGame: () =>
       dispatch({ type: 'RESET_GAME' }),
 
     saveGame,
