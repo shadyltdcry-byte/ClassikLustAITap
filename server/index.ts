@@ -39,6 +39,9 @@ function main() {
   } else {
     console.log("Running in mock mode without database");
   }
+  
+  // Initialize storage
+  console.log("Initializing storage system...");
 }
 
 main();
