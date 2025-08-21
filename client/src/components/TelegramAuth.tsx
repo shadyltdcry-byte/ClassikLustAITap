@@ -32,11 +32,18 @@ export const TelegramAuth: React.FC<TelegramAuthProps> = ({
   className = "" 
 }) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     // Check if script is already loaded
     if (window.TelegramLoginWidget) {
       setIsLoaded(true);
+      return;
+    }
+
+    // Validate bot username
+    if (!botUsername || botUsername === "YourBotUsername") {
+      setError("Telegram bot username not configured");
       return;
     }
 
@@ -51,10 +58,16 @@ export const TelegramAuth: React.FC<TelegramAuthProps> = ({
 
     // Create global callback function
     (window as any).onTelegramAuth = (user: TelegramUser) => {
-      onAuth(user);
+      try {
+        onAuth(user);
+      } catch (err) {
+        console.error('Telegram auth callback error:', err);
+        setError('Authentication failed');
+      }
     };
 
     script.onload = () => setIsLoaded(true);
+    script.onerror = () => setError('Failed to load Telegram widget');
     document.head.appendChild(script);
 
     return () => {
@@ -67,11 +80,15 @@ export const TelegramAuth: React.FC<TelegramAuthProps> = ({
 
   return (
     <div className={`telegram-auth ${className}`}>
-      {!isLoaded && (
-        <Button variant="outline" disabled>
+      {error ? (
+        <Button variant="outline" disabled className="w-full">
+          {error}
+        </Button>
+      ) : !isLoaded ? (
+        <Button variant="outline" disabled className="w-full">
           Loading Telegram Auth...
         </Button>
-      )}
+      ) : null}
       <div id="telegram-login-widget"></div>
     </div>
   );

@@ -76,11 +76,42 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLogin, onGuestLogin 
               🚀 New Auto-Authentication Feature!
             </p>
             <TelegramAuth
-              botUsername={process.env.VITE_TELEGRAM_BOT_USERNAME || "YourBotUsername"}
+              botUsername={import.meta.env.VITE_TELEGRAM_BOT_USERNAME || "YourBotUsername"}
               onAuth={handleTelegramAuth}
               className="w-full"
             />
           </div>
+          
+          {/* Guest Login Option */}
+          <div className="space-y-2">
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-white/20" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-black/80 px-2 text-white/60">Or continue as guest</span>
+              </div>
+            </div>
+            <Button
+              onClick={onGuestLogin}
+              variant="outline"
+              className="w-full bg-white/10 border-white/20 text-white hover:bg-white/20"
+              disabled={isLoading}
+            >
+              Continue as Guest
+            </Button>
+          </div>
+          
+          {isLoading && (
+            <div className="text-center text-sm text-white/60">
+              Authenticating...
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};iv>
 
           <div className="relative">
             <div className="absolute inset-0 flex items-center">

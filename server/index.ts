@@ -93,13 +93,13 @@ app.use((req, res, next) => {
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
-  const PORT = process.env.PORT || 5001;
+  const PORT = process.env.PORT || 5000;
   
   // WebSocket server for real-time features - using different port to avoid conflicts
   let wss;
   try {
     wss = new WebSocketServer({ 
-      port: 8081,
+      port: 8082,
       host: '0.0.0.0'
     });
 

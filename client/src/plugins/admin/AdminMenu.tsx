@@ -46,8 +46,6 @@ import FileManagerCore from "@/plugins/manager/FileManagerCore";
 import type { Character, Upgrade, InsertUpgrade } from "@shared/schema";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AdminMenuProps {
   onClose?: () => void;
@@ -327,7 +325,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     staleTime: 5 * 60 * 1000,
   });
 
-  // Create upgrade mutation\n  const createUpgradeMutation = useMutation({\n    mutationFn: async (upgradeData: InsertUpgrade) => {\n      const response = await apiRequest(\"POST\", \"/api/admin/upgrades\", upgradeData);\n      if (!response.ok) throw new Error(\"Failed to create upgrade\");\n      return response.json();\n    },\n    onSuccess: () => {\n      toast.success(\"Upgrade created successfully!\");\n      refetchUpgrades();\n      setUpgradeFormData({ name: '', description: '', category: 'lp_per_hour', baseCost: 100, baseEffect: 1.0, costMultiplier: 1.3, effectMultiplier: 1.15, maxLevel: null, levelRequirement: 1 });\n    },\n    onError: (error: Error) => {\n      toast.error(error.message || \"Failed to create upgrade\");\n    }\n  });\n\n  // AI Debug mutation\n  const aiDebugMutation = useMutation({\n    mutationFn: async (message: string) => {\n      const response = await apiRequest(\"POST\", \"/api/mistral/chat\", {\n        message,\n        characterName: \"Assistant\",\n        characterPersonality: \"helpful\",\n        currentMood: \"normal\",\n        conversationHistory: []\n      });\n      if (!response.ok) throw new Error(\"Failed to get AI response\");\n      return response.json();\n    },\n    onSuccess: (data) => {\n      setAiDebugResponse(data.response || data.message || \"No response received\");\n    },\n    onError: (error: Error) => {\n      toast.error(error.message || \"AI request failed\");\n    }\n  });\n\n  // Filter characters based on search and filters
+  // Filter characters based on search and filters
   const filteredCharacters = characters.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          char.personality?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1124,7 +1122,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             <TabsContent value="game" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "game" ? "active" : "inactive"}>
               <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg p-4 space-y-6">
                 <h3 className="text-xl font-bold text-white">Game Configuration & Level Editor</h3>
-                
+
                 {/* Level Up Section */}
                 <Card className="bg-gray-800/50 border-gray-600">
                   <CardHeader>
@@ -1261,7 +1259,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             <TabsContent value="system" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "system" ? "active" : "inactive"}>
               <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg p-4 space-y-6">
                 <h3 className="text-xl font-bold text-white">System Settings & AI Debugger</h3>
-                
+
                 {/* AI Chat Debugger */}
                 <Card className="bg-gray-800/50 border-gray-600">
                   <CardHeader>

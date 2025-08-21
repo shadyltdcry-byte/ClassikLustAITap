@@ -544,22 +544,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   app.post("/api/chat/send", async (req, res) => {
-    const { userId, characterId, message, isFromUser } = req.body;
-    
-    const userMessage = {
-      id: Date.now().toString(),
-      message,
-      isFromUser: true,
-      createdAt: new Date().toISOString()
-    };
+    try {
+      const { userId, characterId, message, isFromUser } = req.body;
+      
+      if (!userId || !characterId || !message) {
+        return res.status(400).json({ error: 'Missing required fields' });
+      }
+      
+      const userMessage = {
+        id: Date.now().toString(),
+        message,
+        isFromUser: true,
+        createdAt: new Date().toISOString()
+      };
 
-    const aiResponse = {
-      id: (Date.now() + 1).toString(),
-      message: await generateAIResponse(message),
-      isFromUser: false,
-      createdAt: new Date().toISOString(),
-      mood: getRandomMood()
-    };
+      const aiResponse = {
+        id: (Date.now() + 1).toString(),
+        message: await generateAIResponse(message),
+        isFromUser: false,
+        createdAt: new Date().toISOString(),
+        mood: getRandomMood()
+      };
 
     // Save conversation to JSON file
     try {
@@ -591,6 +596,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
 
     res.json({ userMessage, aiResponse });
+    } catch (error) {
+      console.error('Chat send error:', error);
+      res.status(500).json({ error: 'Failed to process chat message' });
+    }
   });
 
   // Level requirements endpoint
