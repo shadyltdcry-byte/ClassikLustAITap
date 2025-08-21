@@ -30,6 +30,11 @@ export function useGameState() {
   // Fetch user stats
   const statsQuery = useQuery<GameStats>({
     queryKey: ["/api/stats", MOCK_USER_ID],
+    queryFn: async () => {
+      const response = await fetch(`/api/stats/${MOCK_USER_ID}`);
+      if (!response.ok) throw new Error('Failed to fetch stats');
+      return response.json();
+    }
   });
 
   // Tap mutation

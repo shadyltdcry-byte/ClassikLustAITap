@@ -46,6 +46,8 @@ import FileManagerCore from "@/plugins/manager/FileManagerCore";
 import type { Character, Upgrade, InsertUpgrade } from "@shared/schema";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface AdminMenuProps {
   onClose?: () => void;
@@ -380,6 +382,44 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
       console.error("Toggle character error:", error);
       toast.error(error.message || "Failed to update character");
     },
+  });
+
+  // Create upgrade mutation
+  const createUpgradeMutation = useMutation({
+    mutationFn: async (upgradeData: InsertUpgrade) => {
+      const response = await apiRequest("POST", "/api/admin/upgrades", upgradeData);
+      if (!response.ok) throw new Error("Failed to create upgrade");
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success("Upgrade created successfully!");
+      refetchUpgrades();
+      setUpgradeFormData({ name: '', description: '', category: 'lp_per_hour', baseCost: 100, baseEffect: 1.0, costMultiplier: 1.3, effectMultiplier: 1.15, maxLevel: null, levelRequirement: 1 });
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to create upgrade");
+    }
+  });
+
+  // AI Debug mutation
+  const aiDebugMutation = useMutation({
+    mutationFn: async (message: string) => {
+      const response = await apiRequest("POST", "/api/mistral/chat", {
+        message,
+        characterName: "Assistant",
+        characterPersonality: "helpful",
+        currentMood: "normal",
+        conversationHistory: []
+      });
+      if (!response.ok) throw new Error("Failed to get AI response");
+      return response.json();
+    },
+    onSuccess: (data) => {
+      setAiDebugResponse(data.response || data.message || "No response received");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || "AI request failed");
+    }
   });
 
   // Event handlers
