@@ -14,7 +14,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { storage } from '../shared/storage.js';
+import { storage } from '../shared/storage';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);

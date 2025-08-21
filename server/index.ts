@@ -15,18 +15,30 @@ import { SupabaseStorage } from '../shared/SupabaseStorage';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 
-// Initialize database connection
+// Initialize database connection only if DATABASE_URL is provided
+let db: any = null;
 const connectionString = process.env.DATABASE_URL;
-if (!connectionString) {
-  throw new Error('DATABASE_URL environment variable is required');
+if (connectionString) {
+  try {
+    const sql = postgres(connectionString);
+    db = drizzle(sql);
+    console.log('Database connection established');
+  } catch (error) {
+    console.warn('Database connection failed, running in mock mode:', error);
+  }
+} else {
+  console.warn('DATABASE_URL not provided, running in mock mode');
 }
 
-const sql = postgres(connectionString);
-export const db = drizzle(sql);
+export { db };
 
 function main() {
-  console.log("Starting custom plugin-based game server with Supabase...");
-  console.log("Database connected successfully");
+  console.log("Starting custom plugin-based game server...");
+  if (db) {
+    console.log("Database connected successfully");
+  } else {
+    console.log("Running in mock mode without database");
+  }
 }
 
 main();
