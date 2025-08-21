@@ -16,6 +16,10 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
 localPort = 24678
 externalPort = 3000
 
@@ -47,10 +51,6 @@ waitForPort = 5000
 name = "Start Game Server"
 author = 46709597
 mode = "sequential"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npx supabase start"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
