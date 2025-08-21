@@ -12,6 +12,7 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import path from 'path';
 import fs from 'fs';
+import { storage } from '../shared/storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -91,12 +92,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
-  // Character tap endpoint
-  app.post("/api/game/tap", (req, res) => {
+  // Character tap endpoint  
+  app.post("/api/game/tap", async (req, res) => {
     try {
       const { playerId } = req.body;
-      const lpGain = Math.floor(1.5); // Base LP per tap
-      const newTotal = 5000 + lpGain; // This would normally come from database
+      
+      const user = await storage.getUser(playerId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Check if user has enough energy
+      if (user.energy < 1) {
+        return res.status(400).json({ error: 'Not enough energy' });
+      }
+      
+      // Calculate new values
+      const lpGain = user.lpPerTap || 1.5;
+      const newTotal = user.lp + lpGain;
+      const newEnergy = Math.max(0, user.energy - 1);
+      
+      // Update user in database
+      await storage.updateUser(playerId, {
+        lp: newTotal,
+        energy: newEnergy
+      });
 
       res.json({
         success: true,
@@ -111,6 +131,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
         success: false,
         error: 'Internal server error'
       });
+    }
+  });
+
+  // Additional tap endpoint for frontend compatibility
+  app.post("/api/tap", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      // Check if user has enough energy
+      if (user.energy < 1) {
+        return res.status(400).json({ error: 'Not enough energy' });
+      }
+      
+      // Calculate new values
+      const lpGain = user.lpPerTap || 1.5;
+      const newLp = user.lp + lpGain;
+      const newEnergy = Math.max(0, user.energy - 1);
+      
+      // Update user in database
+      const updatedUser = await storage.updateUser(userId, {
+        lp: newLp,
+        energy: newEnergy
+      });
+      
+      res.json({
+        success: true,
+        lpGain,
+        energyUsed: 1,
+        newLp,
+        newEnergy,
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error('Error processing tap:', error);
+      res.status(500).json({ error: 'Failed to process tap' });
     }
   });
 
@@ -145,60 +205,97 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Character endpoints
-  app.get("/api/character/selected/:playerId", (req, res) => {
-    const { playerId } = req.params;
-    res.json({
-      id: "seraphina",
-      name: "Seraphina",
-      personality: "playful",
-      mood: "flirty",
-      level: 1,
-      isNSFW: false,
-      isVIP: false,
-      playerId
-    });
+  app.get("/api/character/selected/:playerId", async (req, res) => {
+    try {
+      const { playerId } = req.params;
+      const selectedCharacter = await storage.getSelectedCharacter(playerId);
+      
+      if (!selectedCharacter) {
+        // Return default character if none selected
+        res.json({
+          id: "seraphina",
+          name: "Seraphina",
+          personality: "playful",
+          mood: "flirty",
+          level: 1,
+          isNSFW: false,
+          isVIP: false,
+          playerId
+        });
+      } else {
+        res.json(selectedCharacter);
+      }
+    } catch (error) {
+      console.error('Error fetching selected character:', error);
+      res.status(500).json({ error: 'Failed to fetch selected character' });
+    }
   });
 
   // Player endpoint
-  app.get("/api/player/:playerId", (req, res) => {
-    const { playerId } = req.params;
-    res.json({
-      id: playerId,
-      name: "Player1",
-      level: 1,
-      lp: 5000,
-      lpPerHour: 250,
-      lpPerTap: 1.5,
-      energy: 4500,
-      maxEnergy: 4500,
-      coins: 250,
-      lustGems: 50,
-      xp: 75,
-      xpToNext: 100,
-      avatar: null,
-      activeBoosters: [],
-      isVip: false
-    });
+  app.get("/api/player/:playerId", async (req, res) => {
+    try {
+      const { playerId } = req.params;
+      let user = await storage.getUser(playerId);
+      
+      if (!user) {
+        // Create default user if not exists
+        user = await storage.createUser({
+          id: playerId,
+          username: "Player",
+          level: 1,
+          lp: 5000,
+          lpPerHour: 250,
+          lpPerTap: 1.5,
+          energy: 1000,
+          maxEnergy: 1000,
+          coins: 0,
+          xp: 0,
+          xpToNext: 100,
+          isVip: false,
+          nsfwEnabled: false,
+          charismaPoints: 0
+        });
+      }
+      
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching player:', error);
+      res.status(500).json({ error: 'Failed to fetch player data' });
+    }
   });
 
   // Player update endpoint
-  app.put("/api/player/:playerId", (req, res) => {
-    const { playerId } = req.params;
-    const updates = req.body;
+  app.put("/api/player/:playerId", async (req, res) => {
+    try {
+      const { playerId } = req.params;
+      const updates = req.body;
 
-    // In a real app, you'd update the database here
-    // For now, just return success with the updated data
-    res.json({
-      success: true,
-      playerId,
-      message: "Player updated successfully",
-      updates
-    });
+      const updatedUser = await storage.updateUser(playerId, updates);
+      if (!updatedUser) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json({
+        success: true,
+        playerId,
+        message: "Player updated successfully",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error('Error updating player:', error);
+      res.status(500).json({ error: 'Failed to update player data' });
+    }
   });
 
   // Characters list endpoint
-  app.get("/api/characters", (req, res) => {
-    res.json(characters);
+  app.get("/api/characters", async (req, res) => {
+    try {
+      const characters = await storage.getAllCharacters();
+      res.json(characters);
+    } catch (error) {
+      console.error('Error fetching characters:', error);
+      res.status(500).json({ error: 'Failed to fetch characters' });
+    }
   });
 
   // Media endpoint
@@ -213,34 +310,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Player stats endpoint
-  app.get("/api/stats/:playerId", (req, res) => {
-    const { playerId } = req.params;
-    res.json({
-      playerId,
-      level: 1,
-      totalLp: 5000,
-      totalTaps: 0,
-      totalEnergy: 800,
-      maxEnergy: 1000,
-      lpPerHour: 125,
-      lpPerTap: 1.5,
-      charisma: 150,
-      upgrades: {
-        intellect: 1,
-        dexterity: 1,
-        booksmarts: 1
+  app.get("/api/stats/:playerId", async (req, res) => {
+    try {
+      const { playerId } = req.params;
+      const user = await storage.getUser(playerId);
+      
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
       }
-    });
+      
+      res.json({
+        playerId,
+        level: user.level,
+        totalLp: user.lp,
+        totalTaps: 0, // Could track this separately if needed
+        totalEnergy: user.energy,
+        maxEnergy: user.maxEnergy,
+        lpPerHour: user.lpPerHour,
+        lpPerTap: user.lpPerTap,
+        charisma: user.charismaPoints,
+        upgrades: {
+          intellect: 1,
+          dexterity: 1,
+          booksmarts: 1
+        }
+      });
+    } catch (error) {
+      console.error('Error fetching player stats:', error);
+      res.status(500).json({ error: 'Failed to fetch player stats' });
+    }
   });
 
   // Player upgrades endpoint
-  app.get("/api/upgrades/:playerId", (req, res) => {
-    const { playerId } = req.params;
-    res.json([
-      { id: "intellect", name: "Increase Intellect", category: "lpPerHour", level: 1, cost: 1500, effect: 150, playerId },
-      { id: "dexterity", name: "Dexterity", category: "lpPerTap", level: 1, cost: 2500, effect: 1, playerId },
-      { id: "booksmarts", name: "Book Smarts", category: "energy", level: 1, cost: 1500, effect: 100, playerId }
-    ]);
+  app.get("/api/upgrades/:playerId", async (req, res) => {
+    try {
+      const { playerId } = req.params;
+      const upgrades = await storage.getUserUpgrades(playerId);
+      res.json(upgrades);
+    } catch (error) {
+      console.error('Error fetching player upgrades:', error);
+      res.status(500).json({ error: 'Failed to fetch player upgrades' });
+    }
   });
 
   // Plugin endpoints for your custom plugins
@@ -527,8 +637,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   ];
 
   // Media management endpoints
-  app.get('/api/media', (req: Request, res: Response) => {
-    res.json(mediaFiles);
+  app.get('/api/media', async (req: Request, res: Response) => {
+    try {
+      const mediaFiles = await storage.getAllMedia();
+      res.json(mediaFiles);
+    } catch (error) {
+      console.error('Error fetching media files:', error);
+      res.status(500).json({ error: 'Failed to fetch media files' });
+    }
   });
 
   app.post('/api/media/upload', (req: Request, res: Response) => {

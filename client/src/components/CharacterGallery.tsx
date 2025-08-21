@@ -116,7 +116,7 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
   const getImageUrl = (media: MediaFile) => {
     if (media.url) return media.url;
     if (media.path) return media.path.startsWith('/') ? media.path : `/uploads/${media.path}`;
-    return media.filename ? `/uploads/${media.filename}` : '/public/default-character.jpg';
+    return media.filename ? `/uploads/${media.filename}` : '/default-character.jpg';
   };
 
   const getCurrentImage = () => {
@@ -190,11 +190,11 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                       <CardContent className="p-3 flex items-center gap-3">
                         <div className="relative">
                           <img
-                            src={char.avatarUrl?.startsWith('/') ? char.avatarUrl : `/uploads/${char.avatarUrl}` || char.imageUrl || '/public/default-avatar.jpg'}
+                            src={char.avatarUrl?.startsWith('/') ? char.avatarUrl : `/uploads/${char.avatarUrl}` || char.imageUrl || '/default-avatar.jpg'}
                             alt={char.name}
                             className="w-12 h-12 rounded-full object-cover"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/public/default-avatar.jpg';
+                              (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                             }}
                           />
                           {!char.isUnlocked && (
@@ -283,7 +283,7 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                           alt={`${selectedCharacter.name} - Image ${currentImageIndex + 1}`}
                           className="w-full h-full object-contain"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/public/default-character.jpg ';
+                            (e.target as HTMLImageElement).src = '/default-character.jpg';
                           }}
                         />
 
@@ -315,11 +315,11 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                         <div className="text-center text-gray-400">
                           <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center">
                             <img
-                              src={selectedCharacter.imageUrl?.startsWith('/') ? selectedCharacter.imageUrl : `/uploads/${selectedCharacter.imageUrl}` || '/public/default-character.jpg'}
+                              src={selectedCharacter.imageUrl?.startsWith('/') ? selectedCharacter.imageUrl : `/uploads/${selectedCharacter.imageUrl}` || '/default-character.jpg'}
                               alt={selectedCharacter.name}
                               className="w-12 h-12 rounded-full object-cover"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/public/default-character.jpg';
+                                (e.target as HTMLImageElement).src = '/default-character.jpg';
                               }}
                             />
                           </div>
@@ -348,7 +348,7 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                             alt={`Thumbnail ${index + 1}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/public/default-avatar.jpg';
+                              (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                             }}
                           />
                         </button>

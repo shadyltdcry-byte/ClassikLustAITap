@@ -660,7 +660,7 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
                             alt="Main Preview"
                             className="w-full h-40 object-contain rounded"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/public/default-character.jpg";
+                              (e.target as HTMLImageElement).src = "/default-character.jpg";
                             }}
                           />
                         </div>
@@ -676,7 +676,7 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
                             alt="Avatar Preview"
                             className="w-20 h-20 object-cover rounded-full mx-auto"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/public/default-avatar.jpg";
+                              (e.target as HTMLImageElement).src = "/default-avatar.jpg";
                             }}
                           />
                         </div>

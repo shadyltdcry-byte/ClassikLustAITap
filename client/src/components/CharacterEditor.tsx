@@ -495,7 +495,7 @@ export default function CharacterEditor({
                             alt="Main Preview"
                             className="w-full h-40 object-contain rounded"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/public/default-character.jpg";
+                              (e.target as HTMLImageElement).src = "/default-character.jpg";
                             }}
                           />
                         </div>
@@ -511,7 +511,7 @@ export default function CharacterEditor({
                             alt="Avatar Preview"
                             className="w-20 h-20 object-cover rounded-full mx-auto"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/public/default-avatar";
+                              (e.target as HTMLImageElement).src = "/default-avatar.jpg";
                             }}
                           />
                         </div>
