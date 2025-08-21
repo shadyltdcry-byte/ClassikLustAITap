@@ -120,7 +120,8 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       return;
     }
 
-    if (chatHistory && Array.isArray(chatHistory)) {
+    // Only update messages when we actually have chat history data
+    if (chatHistory && Array.isArray(chatHistory) && !messagesLoading) {
       if (chatHistory.length > 0) {
         const formattedMessages = chatHistory.map((msg: any) => ({
           id: msg.id || `msg-${Date.now()}-${Math.random()}`,
@@ -132,8 +133,9 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
           reactionScore: msg.reactionScore,
         }));
         setMessages(formattedMessages);
-      } else {
-        // Send initial greeting for new conversations only once
+        console.log(`Loaded ${formattedMessages.length} messages from chat history for ${character.name}`);
+      } else if (!messagesLoading) {
+        // Only show greeting if we're sure there are no messages and loading is complete
         const greeting = getCharacterGreeting();
         const greetingMessage = {
           id: 'initial-greeting',
@@ -144,9 +146,36 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
           mood: 'happy',
         };
         setMessages([greetingMessage]);
+        console.log(`Showing initial greeting for ${character.name}`);
       }
     }
-  }, [character?.id, chatHistory]) // Include chatHistory to reload when data changes
+  }, [character?.id, messagesLoading]) // Remove chatHistory from dependencies to prevent infinite loop
+
+  // Handle chat history updates separately to avoid infinite loops
+  useEffect(() => {
+    if (chatHistory && Array.isArray(chatHistory) && character?.id && !messagesLoading) {
+      if (chatHistory.length > 0) {
+        const formattedMessages = chatHistory.map((msg: any) => ({
+          id: msg.id || `msg-${Date.now()}-${Math.random()}`,
+          content: msg.message || msg.content || '',
+          sender: msg.isFromUser ? 'user' : 'character',
+          timestamp: new Date(msg.createdAt || Date.now()),
+          type: msg.type || 'text',
+          mood: msg.mood || 'normal',
+          reactionScore: msg.reactionScore,
+        }));
+        
+        // Only update if messages are actually different
+        const currentMessageIds = messages.map(m => m.id).join(',');
+        const newMessageIds = formattedMessages.map(m => m.id).join(',');
+        
+        if (currentMessageIds !== newMessageIds) {
+          setMessages(formattedMessages);
+          console.log(`Updated messages from chat history: ${formattedMessages.length} messages`);
+        }
+      }
+    }
+  }, [chatHistory?.length, character?.id]); // Only depend on length and character ID
 
   // Auto-scroll to bottom
   useEffect(() => {
