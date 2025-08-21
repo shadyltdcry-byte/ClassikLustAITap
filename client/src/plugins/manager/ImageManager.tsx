@@ -253,8 +253,8 @@ export default function ImageManager({
           onError={(e) => {
             console.warn("Media failed to load:", src);
             const img = e.target as HTMLImageElement;
-            if (!img.src.includes("placeholder-image")) {
-              img.src = "/api/placeholder-image";
+            if (!img.src.includes("default-character")) {
+              img.src = "/public/default-character.jpg";
             }
           }}
         />

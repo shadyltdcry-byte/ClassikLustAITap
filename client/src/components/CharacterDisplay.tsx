@@ -60,7 +60,7 @@ export default function CharacterDisplay({
         <div className="relative mx-auto max-w-xs mb-6">
           <div className="relative">
             <img
-              src={'/uploads/placeholder.jpg'}
+              src={'/uploads/default-character.jpg'}
               alt={character?.name || "Player"}
               onClick={handleTap}
               onError={(e) => {

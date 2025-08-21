@@ -495,7 +495,7 @@ export default function CharacterEditor({
                             alt="Main Preview"
                             className="w-full h-40 object-contain rounded"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/api/placeholder-image";
+                              (e.target as HTMLImageElement).src = "/public/default-character.jpg";
                             }}
                           />
                         </div>
@@ -511,7 +511,7 @@ export default function CharacterEditor({
                             alt="Avatar Preview"
                             className="w-20 h-20 object-cover rounded-full mx-auto"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/api/placeholder-image";
+                              (e.target as HTMLImageElement).src = "/public/default-avatar";
                             }}
                           />
                         </div>
@@ -700,6 +700,35 @@ export default function CharacterEditor({
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="chatSendChance"
+                      render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border border-gray-600 p-4 bg-gray-700/50">
+                            <div className="space-y-0.5">
+                          <FormLabel className="text-white">
+                        Picture Chance %
+                          </FormLabel>
+                          <FormDescription className="text-gray-400">
+                            % To Send A Random Picture via Chat
+                            </FormDescription>
+                          </div>
+                          <FormControl>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              {...field}
+                              onChange={(e) =>
+                                field.onChange(parseInt(e.target.value))
+                              }
+                              className="bg-gray-700 border-gray-600 text-white"
+                            />
+                          </FormControl>
+                        </FormItem>
+                          )}
+                        />
+
                     <FormField
                       control={form.control}
                       name="isVip"

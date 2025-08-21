@@ -238,7 +238,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
           alt="Media preview"
           style={commonStyles}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/api/placeholder-image'; // Fallback image
+            (e.target as HTMLImageElement).src = '/public/default-character.jpg'; // Fallback image
           }}
         />
       );

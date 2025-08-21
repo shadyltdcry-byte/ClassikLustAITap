@@ -1,4 +1,3 @@
-console.log("AdminMenu instance rendering:", Math.random());
 import React, { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -128,12 +127,12 @@ const CharacterCard = ({
       <div className="relative flex-shrink-0">
         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-600/50 group-hover:border-blue-500/50 transition-colors">
           <img 
-            src={'/api/placeholder/64/64'} 
+            src={character.avatarUrl || character.imageUrl || '/default-avatar.jpg'} 
             alt={character.name} 
             className="w-full h-full object-cover"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = '/api/placeholder/64/64';
+              target.src = '/default-avatar.jpg';
             }}
           />
         </div>
@@ -167,7 +166,7 @@ const CharacterCard = ({
         </p>
 
         <div className="flex items-center gap-4 text-xs text-gray-500">
-          <span>Level {character.levelRequirement}+</span>
+          <span>Level {character.requiredLevel}+</span>
           <span>ID: {character.id.slice(0, 8)}...</span>
         </div>
       </div>
@@ -396,11 +395,11 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col min-h-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
+        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
 
             {/* Tab Navigation */}
-            <div className="px-6 py-3 border-b border-gray-800/50 flex-shrink-0">
+            <div className="px-6 py-3 border-b border-gray-800/50">
               <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-black/40 p-1 rounded-lg">
                 <TabsTrigger value="characters" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Users className="w-3 h-3 mr-1" />
@@ -438,7 +437,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </div>
 
             {/* CHARACTERS TAB */}
-            <TabsContent value="characters" className="flex-1 flex flex-col px-6 py-4">
+            <TabsContent value="characters" className="flex-1 flex flex-col overflow-hidden px-6 py-4 min-h-0">
               {/* Character Submenu */}
               <div className="flex items-center gap-2 mb-4">
                 <div className="flex bg-black/40 p-1 rounded-lg">
@@ -541,7 +540,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   </div>
 
                   {/* Character List */}
-                  <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg overflow-hidden" style={{height: '500px'}}>
+                  <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden min-h-0">
                     {charactersError ? (
                       <ErrorDisplay 
                         error={charactersError as Error} 
@@ -567,18 +566,17 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       />
                     ) : (
                       <ScrollArea className="h-full">
-                        <div className="space-y-4 p-6">
+                        <div className="space-y-3 p-4">
                           {filteredCharacters.map((char) => (
-                            <div key={char.id} className="mb-4">
-                              <CharacterCard
-                                character={char}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                                onToggleVip={handleToggleVip}
-                                onToggleNsfw={handleToggleNsfw}
-                                isUpdating={toggleCharacterMutation.isPending}
-                              />
-                            </div>
+                            <CharacterCard
+                              key={char.id}
+                              character={char}
+                              onEdit={handleEdit}
+                              onDelete={handleDelete}
+                              onToggleVip={handleToggleVip}
+                              onToggleNsfw={handleToggleNsfw}
+                              isUpdating={toggleCharacterMutation.isPending}
+                            />
                           ))}
                         </div>
                       </ScrollArea>
@@ -616,14 +614,16 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* MEDIA TAB */}
-            <TabsContent value="media" className="flex-1 p-6">
-              <FileManagerCore />
+            <TabsContent value="media" className="flex-1 overflow-hidden px-6 py-4">
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg overflow-auto">
+                <FileManagerCore />
+              </div>
             </TabsContent>
 
             {/* OTHER TABS */}
             {["upgrades", "tasks", "achievements", "game", "database", "system"].map((tabName) => (
-              <TabsContent key={tabName} value={tabName} className="flex-1 px-6 py-4">
-                <div className="bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center" style={{height: '600px'}}>
+              <TabsContent key={tabName} value={tabName} className="flex-1 overflow-hidden px-6 py-4">
+                <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
                   <EmptyState
                     title={`${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Management`}
                     description={`Configure and manage ${tabName} settings, rules, and data`}
@@ -651,9 +651,9 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
         {/* EDIT CHARACTER DIALOG */}
         {showEditCharacter && selectedCharacter && (
           <Dialog open={showEditCharacter} onOpenChange={handleDialogClose}>
-            <DialogContent className="max-w-3xl max-h-[95vh] bg-gradient-to-br from-gray-950 to-blue-950/30 text-white border-blue-500/30 overflow-hidden p-0">
+            <DialogContent className="max-w-6xl max-h-[95vh] bg-gradient-to-br from-gray-950 to-blue-950/30 text-white border-blue-500/30 overflow-hidden p-0">
               <DialogHeader className="p-6 pb-3 border-b border-blue-500/20">
-                <DialogTitle className="text-xl flex items-center gap-3">
+                <DialogTitle className="text-x2 flex items-center gap-2">
                   <Edit3 className="w-5 h-5 text-blue-400" />
                   Edit Character: {selectedCharacter.name}
                 </DialogTitle>

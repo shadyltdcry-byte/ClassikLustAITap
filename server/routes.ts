@@ -459,10 +459,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "You're so sweet! 🥰"
       ],
       customTriggerWords: [],
-      imageUrl: "/api/placeholder-image",
-      avatarUrl: "/api/placeholder-image",
+      imageUrl: "/public/default-character.jpg",
+      avatarUrl: "/public/default-avatar.jpg",
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     }
   ];
 
@@ -502,9 +502,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   let mediaFiles: any[] = [
     {
       id: '1',
-      filename: 'sample1.png',
-      originalName: 'Sample Image 1',
-      url: '/api/placeholder-image',
+      filename: 'default-character.jpg',
+      originalName: 'Default Character',
+      url: '/public/default-character.jpg',
       type: 'image',
       characterId: null,
       mood: null,
@@ -514,9 +514,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
     {
       id: '2', 
-      filename: 'sample2.png',
-      originalName: 'Sample Image 2',
-      url: '/api/placeholder-image',
+      filename: 'default-avatar.jpg',
+      originalName: 'Default Avatar',
+      url: '/public/default-avatar.jpg',
       type: 'image',
       characterId: null,
       mood: null,
@@ -538,7 +538,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       id: Date.now().toString(),
       filename: `mock-file-${Date.now()}.jpg`,
       originalName: 'Mock Uploaded File',
-      url: '/api/placeholder-image',
+      url: '/public/media/',
       type: 'image',
       characterId: req.body.characterId || null,
       mood: req.body.mood || null,
@@ -573,7 +573,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Placeholder image endpoint
+/*  // Placeholder image endpoint
   app.get('/api/placeholder-image', (req: Request, res: Response) => {
     // Return a simple 1x1 pixel transparent PNG
     const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
@@ -595,7 +595,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       'Cache-Control': 'public, max-age=86400'
     });
     res.end(transparentPixel);
-  });
+  });*/
 
   // Mistral AI Chat endpoint
   app.post("/api/mistral/chat", async (req, res) => {
