@@ -127,7 +127,7 @@ const CharacterCard = ({
       <div className="relative flex-shrink-0">
         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-600/50 group-hover:border-blue-500/50 transition-colors">
           <img 
-            src={character.imageUrl || '/default-avatar.jpg'} 
+            src={'/default-avatar.jpg'} 
             alt={character.name} 
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -399,8 +399,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
 
             {/* Tab Navigation */}
-            <div className="px-6 py-3 border-b border-gray-800/50">
-              <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-black/40 p-1 rounded-lg">
+            <div className="px-6 py-2 border-b border-gray-800/50">
+              <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-black/40 p-1 rounded-lg w-full h-10">
                 <TabsTrigger value="characters" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Users className="w-3 h-3 mr-1" />
                   Characters
@@ -437,9 +437,9 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </div>
 
             {/* CHARACTERS TAB */}
-            <TabsContent value="characters" className="flex-1 flex flex-col overflow-hidden px-6 py-4 min-h-0">
+            <TabsContent value="characters" className="flex-1 flex flex-col overflow-hidden px-6 py-2 min-h-0 mt-0" data-state={activeTab === "characters" ? "active" : "inactive"}>
               {/* Character Submenu */}
-              <div className="flex items-center gap-2 mb-4">
+              <div className="flex items-center gap-2 mb-3">
                 <div className="flex bg-black/40 p-1 rounded-lg">
                   <Button
                     size="sm"
@@ -475,7 +475,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               {characterSubmenu === "overview" && (
                 <>
                   {/* Search and Filters */}
-                  <div className="flex gap-4 mb-4 p-4 bg-black/20 rounded-lg border border-gray-800/50">
+                  <div className="flex gap-4 mb-3 p-3 bg-black/20 rounded-lg border border-gray-800/50">
                     <div className="flex-1">
                       <div className="relative">
                         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -510,7 +510,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   </div>
 
                   {/* Character Stats */}
-                  <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="grid grid-cols-3 gap-3 mb-3">
                     <Card className="bg-black/20 border-gray-800/50">
                       <CardContent className="p-4">
                         <div className="text-center">
