@@ -314,7 +314,9 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         });
         
         if (!response.ok) {
-          throw new Error(`Mistral API error: ${response.status}`);
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Mistral API error:", response.status, errorData);
+          throw new Error(`Mistral API error: ${response.status} - ${errorData.error || 'Unknown error'}`);
         }
         
         const result = await response.json();

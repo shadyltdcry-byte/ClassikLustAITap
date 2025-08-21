@@ -940,7 +940,8 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
     try {
       const { message, characterName, characterPersonality, currentMood, conversationHistory } = req.body;
 
-      const mistralApiKey = process.env.MISTRAL_API_KEY;
+      // Use MISTRAL_MODEL_API_KEY for chat, fallback to main API key
+      const mistralApiKey = process.env.MISTRAL_MODEL_API_KEY || process.env.MISTRAL_API_KEY;
       if (!mistralApiKey) {
         return res.status(500).json({ error: "Mistral API key not configured" });
       }
@@ -1016,6 +1017,7 @@ Respond as if you're having a real conversation with someone you care about.`;
     try {
       const { prompt, temperature = 0.3, maxTokens = 1000, systemPrompt } = req.body;
 
+      // Use MISTRAL_DEBUG_API_KEY for debugging, fallback to main API key
       const mistralDebugApiKey = process.env.MISTRAL_DEBUG_API_KEY || process.env.MISTRAL_API_KEY;
       if (!mistralDebugApiKey) {
         return res.status(500).json({ error: "Mistral Debug API key not configured" });
