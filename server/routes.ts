@@ -505,6 +505,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Chat endpoints
+app.get("/api/chat/:userId/:characterId", async (req, res) => {
+  try {
+    const { userId, characterId } = req.params;
+    const messages = await storage.getChatMessages(userId, characterId);
+    res.json(messages);
+  } catch (error) {
+    console.error("Error fetching chat messages:", error);
+    res.status(500).json({ error: "Failed to fetch messages" });
+  }
+});
+
+app.post("/api/chat/:userId/:characterId", async (req, res) => {
+  try {
+    const { userId, characterId } = req.params;
+    const { message, isFromUser, mood, type = 'text' } = req.body;
+    
+    if (!message || typeof isFromUser !== 'boolean') {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const chatMessage = await storage.createChatMessage({
+      userId,
+      characterId,
+      message,
+      isFromUser,
+      mood: mood || 'normal',
+      type
+    });
+    
+    res.json(chatMessage);
+  } catch (error) {
+    console.error("Error saving chat message:", error);
+    res.status(500).json({ error: "Failed to save message" });
+  }
+});
+
+// Chat endpoints
   app.get("/api/chat/:userId/:characterId", (req, res) => {
     const { userId, characterId } = req.params;
     

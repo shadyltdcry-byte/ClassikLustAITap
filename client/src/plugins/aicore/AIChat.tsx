@@ -246,11 +246,12 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         const response = await apiRequest("POST", `/api/chat/${userId}/${character.id}`, {
           message: messageData.content,
           isFromUser: messageData.isFromUser,
-          mood: messageData.mood,
+          mood: messageData.mood || 'normal',
           type: 'text'
         });
         if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
+          const errorText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errorText}`);
         }
         return response.json();
       } catch (error) {
@@ -259,7 +260,6 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       }
     },
     onError: (error) => {
-      // Don't show toast for save errors, just log them
       console.error("Message save failed:", error);
     }
   });
@@ -267,13 +267,6 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
   // Send message with Mistral AI
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
-      // Save user message to database first
-      await saveMessageMutation.mutateAsync({
-        content: message,
-        isFromUser: true,
-        mood: currentMood
-      });
-
       // Add user message immediately to UI
       const userMessage: ChatMessage = {
         id: `user-${Date.now()}`,
@@ -286,6 +279,20 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       setMessages(prev => [...prev, userMessage]);
       setNewMessage("");
 
+      // Save user message to database (non-blocking)
+      if (character?.id) {
+        try {
+          await saveMessageMutation.mutateAsync({
+            content: message,
+            isFromUser: true,
+            mood: currentMood
+          });
+        } catch (error) {
+          console.error("Failed to save user message:", error);
+          // Continue with AI response even if save fails
+        }
+      }
+
       // Show typing indicator
       setTypingIndicator(true);
       
@@ -293,20 +300,36 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       const delay = Math.random() * 2000 + 3000; // 3-5 seconds
       await new Promise(resolve => setTimeout(resolve, delay));
 
-      // Generate AI response using Mistral
-      const response = await apiRequest("POST", "/api/mistral/chat", {
-        message,
-        characterName: character?.name || "Seraphina",
-        characterPersonality: character?.personality || "playful",
-        currentMood: characterMood,
-        conversationHistory: messages.slice(-5).map(m => ({
-          role: m.sender === 'user' ? 'user' : 'assistant',
-          content: m.content
-        }))
-      });
-      
-      const result = await response.json();
-      return { result, originalMessage: message };
+      try {
+        // Generate AI response using Mistral
+        const response = await apiRequest("POST", "/api/mistral/chat", {
+          message,
+          characterName: character?.name || "Seraphina",
+          characterPersonality: character?.personality || "playful",
+          currentMood: characterMood,
+          conversationHistory: messages.slice(-5).map(m => ({
+            role: m.sender === 'user' ? 'user' : 'assistant',
+            content: m.content
+          }))
+        });
+        
+        if (!response.ok) {
+          throw new Error(`Mistral API error: ${response.status}`);
+        }
+        
+        const result = await response.json();
+        return { result, originalMessage: message };
+      } catch (error) {
+        console.error("Mistral API failed, using fallback:", error);
+        // Return fallback response
+        return { 
+          result: { 
+            response: generateSmartResponse(message),
+            mood: getRandomMood()
+          }, 
+          originalMessage: message 
+        };
+      }
     },
     onSuccess: async (data) => {
       const { result } = data;
@@ -316,13 +339,6 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       
       const aiResponse = result.response || "I'm sorry, I didn't understand that.";
       const aiMood = result.mood || getRandomMood();
-      
-      // Save AI response to database
-      await saveMessageMutation.mutateAsync({
-        content: aiResponse,
-        isFromUser: false,
-        mood: aiMood
-      });
       
       // Add AI response to UI
       const aiMessage: ChatMessage = {
@@ -337,6 +353,20 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
 
       setMessages(prev => [...prev, aiMessage]);
       setCharacterMood(aiMessage.mood || 'normal');
+      
+      // Save AI response to database (non-blocking)
+      if (character?.id) {
+        try {
+          await saveMessageMutation.mutateAsync({
+            content: aiResponse,
+            isFromUser: false,
+            mood: aiMood
+          });
+        } catch (error) {
+          console.error("Failed to save AI message:", error);
+          // Don't block UI for save failures
+        }
+      }
     },
     onError: (error: any) => {
       console.error("AI Chat error:", error);
