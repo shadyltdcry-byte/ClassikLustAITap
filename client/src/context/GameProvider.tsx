@@ -94,8 +94,17 @@ type GameAction =
   | { type: 'SYNC_WITH_SERVER'; payload: Partial<PlayerData> }
   | { type: 'RESET_GAME' };
 
+// Generate a proper UUID for the player
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
 const initialPlayerData: PlayerData = {
-  id: 'default-player',
+  id: generateUUID(),
   name: 'Player',
   level: 1,
   lp: 5000,

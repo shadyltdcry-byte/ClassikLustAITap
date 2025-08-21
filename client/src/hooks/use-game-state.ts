@@ -2,7 +2,16 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import type { User, Character, GameStats } from "@shared/schema";
 
-const MOCK_USER_ID = "mock-user-id";
+// Generate a proper UUID for the mock user
+const generateUUID = () => {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+};
+
+const MOCK_USER_ID = generateUUID();
 
 export function useGameState() {
   const queryClient = useQueryClient();
