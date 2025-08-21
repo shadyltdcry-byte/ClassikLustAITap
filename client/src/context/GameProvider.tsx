@@ -18,7 +18,6 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
 import { apiRequest } from '@/lib/queryClient';
-import { SupabaseStorage } from '@shared/SupabaseStorage'; // Updated import
 
 // Types based on your game's requirements
 interface PlayerData {
@@ -369,14 +368,29 @@ interface GameProviderProps {
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  // Initialize storage
-  const storage = new SupabaseStorage(); // Initialize SupabaseStorage instance
+  // Initialize storage - we'll use local storage instead of SupabaseStorage on client
+  const saveToLocalStorage = (data: PlayerData) => {
+    try {
+      localStorage.setItem('gameData', JSON.stringify(data));
+    } catch (error) {
+      console.warn('Failed to save to localStorage:', error);
+    }
+  };
 
-  // Auto-save to SupabaseStorage
+  const loadFromLocalStorage = (): Partial<PlayerData> | null => {
+    try {
+      const saved = localStorage.getItem('gameData');
+      return saved ? JSON.parse(saved) : null;
+    } catch (error) {
+      console.warn('Failed to load from localStorage:', error);
+      return null;
+    }
+  };
+
+  // Auto-save to localStorage
   useEffect(() => {
     if (!state.isLoading && state.playerData.settings.autoSave) {
-      storage.savePlayerData(state.playerData);
-      storage.saveLastSaveTime(Date.now());
+      saveToLocalStorage(state.playerData);
     }
   }, [state.playerData, state.isLoading]);
 
@@ -413,13 +427,13 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      // Try to load from SupabaseStorage first
-      const savedData = await storage.loadPlayerData();
+      // Try to load from localStorage first
+      const savedData = loadFromLocalStorage();
       if (savedData) {
         // Clear localStorage and force default stats if data is invalid
-        if (!savedData || savedData.lp <= 0 && savedData.energy <= 0 && savedData.lpPerHour <= 0) {
-          console.warn('Found invalid saved data with zero values, clearing Supabase data and using defaults');
-          await storage.clear(); // Clear Supabase data
+        if (!savedData || (savedData.lp && savedData.lp <= 0) && (savedData.energy && savedData.energy <= 0) && (savedData.lpPerHour && savedData.lpPerHour <= 0)) {
+          console.warn('Found invalid saved data with zero values, clearing localStorage and using defaults');
+          localStorage.removeItem('gameData');
           // Force default values
           dispatch({ type: 'SET_PLAYER_DATA', payload: {
             lp: 5000,
@@ -454,12 +468,11 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   // Save game data
   const saveGame = useCallback(async () => {
     try {
-      // Save to SupabaseStorage
-      await storage.savePlayerData(state.playerData);
-      await storage.saveLastSaveTime(Date.now());
+      // Save to localStorage
+      saveToLocalStorage(state.playerData);
 
-      // Sync with server (if necessary, though SupabaseStorage might handle this)
-      await apiRequest('POST', `/api/player/${state.playerData.id}/save`, state.playerData);
+      // Sync with server
+      await apiRequest('PUT', `/api/player/${state.playerData.id}`, state.playerData);
     } catch (error) {
       console.error('Failed to save game:', error);
     }
