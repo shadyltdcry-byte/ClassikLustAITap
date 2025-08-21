@@ -127,7 +127,7 @@ const CharacterCard = ({
       <div className="relative flex-shrink-0">
         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-600/50 group-hover:border-blue-500/50 transition-colors">
           <img 
-            src={character.avatarUrl || character.imageUrl || '/default-avatar.jpg'} 
+            src={character.imageUrl || '/default-avatar.jpg'} 
             alt={character.name} 
             className="w-full h-full object-cover"
             onError={(e) => {
@@ -166,7 +166,7 @@ const CharacterCard = ({
         </p>
 
         <div className="flex items-center gap-4 text-xs text-gray-500">
-          <span>Level {character.requiredLevel}+</span>
+          <span>Level {character.levelRequirement}+</span>
           <span>ID: {character.id.slice(0, 8)}...</span>
         </div>
       </div>
@@ -370,8 +370,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   }, []);
 
   return (
-    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50 p-2">
-      <div className="bg-gradient-to-br from-gray-950 via-blue-950/50 to-black w-full max-w-7xl h-[95vh] rounded-2xl border border-blue-500/20 flex flex-col overflow-hidden shadow-2xl shadow-blue-500/10">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-start justify-center z-50 p-2 pt-4">
+      <div className="bg-gradient-to-br from-gray-950 via-blue-950/50 to-black w-full max-w-7xl h-[90vh] rounded-2xl border border-blue-500/20 flex flex-col overflow-hidden shadow-2xl shadow-blue-500/10">
 
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-blue-500/20 bg-black/20">
