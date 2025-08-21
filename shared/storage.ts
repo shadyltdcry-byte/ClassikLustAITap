@@ -6,11 +6,8 @@ import {
   type Upgrade,
   type InsertUpgrade,
   type GameStats,
-  type InsertGameStats,
   type ChatMessage,
   type InsertChatMessage,
-  type GameSettings,
-  type InsertGameSettings,
   type MediaFile,
   type WheelReward,
   type UserCharacter
@@ -58,8 +55,8 @@ export interface IStorage {
   recordWheelSpin(userId: string, reward: string): Promise<void>;
 
   // Admin/Settings
-  getGameSettings(): Promise<GameSettings>;
-  updateGameSettings(settings: Partial<GameSettings>): Promise<void>;
+  getGameSettings(): Promise<any>;
+  updateGameSettings(settings: Partial<any>): Promise<void>;
   getSystemStats(): Promise<any>;
   exportAllData(): Promise<any>;
 
@@ -73,11 +70,11 @@ export interface IStorage {
   deleteMediaFile(id: string): Promise<void>;
 }
 
-// Import Memory implementation
-import { MemStorage } from './MemStorage';
+// Import Supabase implementation
+import { SupabaseStorage } from './SupabaseStorage';
 
 // Create and export storage instance
-export const storage = new MemStorage();
+export const storage = new SupabaseStorage();
 
 // For backward compatibility, also export DB initialization
 let dbInitialized = false;

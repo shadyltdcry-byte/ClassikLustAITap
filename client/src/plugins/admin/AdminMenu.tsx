@@ -614,37 +614,107 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* MEDIA TAB */}
-            <TabsContent value="media" className="flex-1 overflow-hidden px-6 py-4">
+            <TabsContent value="media" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "media" ? "active" : "inactive"}>
               <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg overflow-auto">
                 <FileManagerCore />
               </div>
             </TabsContent>
 
-            {/* OTHER TABS */}
-            {["upgrades", "tasks", "achievements", "game", "database", "system"].map((tabName) => (
-              <TabsContent key={tabName} value={tabName} className="flex-1 overflow-hidden px-6 py-4">
-                <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
-                  <EmptyState
-                    title={`${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Management`}
-                    description={`Configure and manage ${tabName} settings, rules, and data`}
-                    icon={tabName === "upgrades" ? Star : 
-                          tabName === "tasks" ? Zap :
-                          tabName === "achievements" ? Trophy :
-                          tabName === "game" ? Activity :
-                          tabName === "database" ? Database : Settings}
-                    action={
-                      <Button 
-                        className="bg-blue-600 hover:bg-blue-700 text-white" 
-                        size="sm"
-                        disabled
-                      >
-                        Coming Soon
-                      </Button>
-                    }
-                  />
-                </div>
-              </TabsContent>
-            ))}
+            {/* UPGRADES TAB */}
+            <TabsContent value="upgrades" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "upgrades" ? "active" : "inactive"}>
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+                <EmptyState
+                  title="Upgrades Management"
+                  description="Configure game upgrades and progression rewards"
+                  icon={Star}
+                  action={
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
+                      Coming Soon
+                    </Button>
+                  }
+                />
+              </div>
+            </TabsContent>
+
+            {/* TASKS TAB */}
+            <TabsContent value="tasks" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "tasks" ? "active" : "inactive"}>
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+                <EmptyState
+                  title="Tasks Management"
+                  description="Create and manage daily tasks and challenges"
+                  icon={Zap}
+                  action={
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
+                      Coming Soon
+                    </Button>
+                  }
+                />
+              </div>
+            </TabsContent>
+
+            {/* ACHIEVEMENTS TAB */}
+            <TabsContent value="achievements" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "achievements" ? "active" : "inactive"}>
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+                <EmptyState
+                  title="Achievements Management"
+                  description="Design achievement goals and unlock rewards"
+                  icon={Trophy}
+                  action={
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
+                      Coming Soon
+                    </Button>
+                  }
+                />
+              </div>
+            </TabsContent>
+
+            {/* GAME TAB */}
+            <TabsContent value="game" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "game" ? "active" : "inactive"}>
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+                <EmptyState
+                  title="Game Configuration"
+                  description="Adjust gameplay mechanics and balance settings"
+                  icon={Activity}
+                  action={
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
+                      Coming Soon
+                    </Button>
+                  }
+                />
+              </div>
+            </TabsContent>
+
+            {/* DATABASE TAB */}
+            <TabsContent value="database" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "database" ? "active" : "inactive"}>
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+                <EmptyState
+                  title="Database Management"
+                  description="Monitor database health and run administrative queries"
+                  icon={Database}
+                  action={
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
+                      Coming Soon
+                    </Button>
+                  }
+                />
+              </div>
+            </TabsContent>
+
+            {/* SYSTEM TAB */}
+            <TabsContent value="system" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "system" ? "active" : "inactive"}>
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
+                <EmptyState
+                  title="System Settings"
+                  description="Configure server settings and system preferences"
+                  icon={Settings}
+                  action={
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white" size="sm" disabled>
+                      Coming Soon
+                    </Button>
+                  }
+                />
+              </div>
+            </TabsContent>
           </Tabs>
         </div>
 
