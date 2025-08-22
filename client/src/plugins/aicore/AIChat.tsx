@@ -243,7 +243,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
   const saveMessageMutation = useMutation({
     mutationFn: async (messageData: { content: string; isFromUser: boolean; mood?: string }) => {
       if (!character?.id) {
-        throw new Error("No character selected");
+         Error("No character selected");
       }
       try {
         const response = await apiRequest("POST", `/api/chat/${userId}/${character.id}`, {

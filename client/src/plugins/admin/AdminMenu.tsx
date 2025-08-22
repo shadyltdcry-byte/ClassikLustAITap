@@ -15,19 +15,19 @@ import { Switch } from "@/components/ui/switch";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { 
-  X, 
-  Plus, 
-  Users, 
-  Heart, 
-  Star, 
-  Zap, 
-  Trophy, 
-  Activity, 
-  Database, 
-  Settings, 
-  Crown, 
-  Edit3, 
+import {
+  X,
+  Plus,
+  Users,
+  Heart,
+  Star,
+  Zap,
+  Trophy,
+  Activity,
+  Database,
+  Settings,
+  Crown,
+  Edit3,
   Trash2,
   AlertTriangle,
   RefreshCw,
@@ -63,9 +63,9 @@ const ErrorDisplay = ({ error, retry }: { error: Error; retry?: () => void }) =>
     <h3 className="text-lg font-semibold text-white mb-2">System Error</h3>
     <p className="text-gray-400 mb-4 max-w-md">{error.message}</p>
     {retry && (
-      <Button 
-        onClick={retry} 
-        variant="outline" 
+      <Button
+        onClick={retry}
+        variant="outline"
         className="border-red-400/50 text-red-400 hover:bg-red-500/10"
       >
         <RefreshCw className="w-4 h-4 mr-2" />
@@ -87,11 +87,11 @@ const LoadingSpinner = ({ message = "Loading..." }: { message?: string }) => (
 );
 
 // Empty State Component
-const EmptyState = ({ 
-  title, 
-  description, 
-  icon: Icon, 
-  action 
+const EmptyState = ({
+  title,
+  description,
+  icon: Icon,
+  action
 }: {
   title: string;
   description: string;
@@ -109,10 +109,10 @@ const EmptyState = ({
 );
 
 // Character Card Component
-const CharacterCard = ({ 
-  character, 
-  onEdit, 
-  onDelete, 
+const CharacterCard = ({
+  character,
+  onEdit,
+  onDelete,
   onToggleVip,
   onToggleNsfw,
   isUpdating
@@ -129,9 +129,9 @@ const CharacterCard = ({
       {/* Character Avatar */}
       <div className="relative flex-shrink-0">
         <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-gray-600/50 group-hover:border-blue-500/50 transition-colors">
-          <img 
-            src={'/default-avatar.jpg'} 
-            alt={character.name} 
+          <img
+            src={'/default-avatar.jpg'}
+            alt={character.name}
             className="w-full h-full object-cover"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -145,7 +145,6 @@ const CharacterCard = ({
           </div>
         )}
       </div>
-
       {/* Character Info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-2">
@@ -163,51 +162,46 @@ const CharacterCard = ({
             )}
           </div>
         </div>
-
         <p className="text-gray-400 text-sm mb-1 line-clamp-2">
           {character.personality || "No personality set"}
         </p>
-
         <div className="flex items-center gap-4 text-xs text-gray-500">
           <span>Level {character.levelRequirement}+</span>
           <span>ID: {character.id.slice(0, 8)}...</span>
         </div>
       </div>
-
       {/* Actions */}
       <div className="flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           variant="ghost"
           disabled={isUpdating}
           onClick={() => onToggleVip(character.id, character.isVip)}
           className={`h-8 w-8 p-0 ${
-            character.isVip 
-              ? "text-yellow-400 hover:text-yellow-300" 
+            character.isVip
+              ? "text-yellow-400 hover:text-yellow-300"
               : "text-gray-500 hover:text-yellow-400"
           }`}
           title={character.isVip ? "Remove VIP" : "Make VIP"}
         >
           <Crown className="w-4 h-4" />
         </Button>
-
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           variant="ghost"
           disabled={isUpdating}
           onClick={() => onToggleNsfw(character.id, character.isNsfw)}
           className={`h-8 w-8 p-0 ${
-            character.isNsfw 
-              ? "text-red-400 hover:text-red-300" 
+            character.isNsfw
+              ? "text-red-400 hover:text-red-300"
               : "text-gray-500 hover:text-red-400"
           }`}
           title={character.isNsfw ? "Remove NSFW" : "Mark NSFW"}
         >
           {character.isNsfw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
         </Button>
-
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           variant="ghost"
           onClick={() => onEdit(character)}
           className="text-blue-400 hover:text-blue-300 h-8 w-8 p-0"
@@ -215,9 +209,8 @@ const CharacterCard = ({
         >
           <Edit3 className="w-4 h-4" />
         </Button>
-
-        <Button 
-          size="sm" 
+        <Button
+          size="sm"
           variant="ghost"
           disabled={isUpdating}
           onClick={() => onDelete(character.id, character.name)}
@@ -268,15 +261,14 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   });
   const [aiDebugMessage, setAiDebugMessage] = useState('');
   const [aiDebugResponse, setAiDebugResponse] = useState('');
-
   const queryClient = useQueryClient();
 
   // Fetch characters with better error handling
-  const { 
-    data: characters = [], 
-    isLoading: charactersLoading, 
+  const {
+    data: characters = [],
+    isLoading: charactersLoading,
     error: charactersError,
-    refetch: refetchCharacters 
+    refetch: refetchCharacters
   } = useQuery({
     queryKey: ["/api/admin/characters"],
     queryFn: async (): Promise<Character[]> => {
@@ -328,7 +320,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   // Filter characters based on search and filters
   const filteredCharacters = characters.filter(char => {
     const matchesSearch = char.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         char.personality?.toLowerCase().includes(searchQuery.toLowerCase());
+                          char.personality?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesNsfw = !filterNsfw || char.isNsfw;
     const matchesVip = !filterVip || char.isVip;
     return matchesSearch && matchesNsfw && matchesVip;
@@ -355,17 +347,17 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
   // Toggle character properties mutation
   const toggleCharacterMutation = useMutation({
-    mutationFn: async ({ 
-      characterId, 
-      field, 
-      value 
-    }: { 
-      characterId: string; 
-      field: string; 
-      value: boolean 
+    mutationFn: async ({
+      characterId,
+      field,
+      value
+    }: {
+      characterId: string;
+      field: string;
+      value: boolean
     }) => {
-      const response = await apiRequest("PUT", `/api/admin/characters/${characterId}`, { 
-        [field]: value 
+      const response = await apiRequest("PUT", `/api/admin/characters/${characterId}`, {
+        [field]: value
       });
       if (!response.ok) {
         throw new Error(`Failed to update character: ${response.status} ${response.statusText}`);
@@ -392,7 +384,17 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     onSuccess: () => {
       toast.success("Upgrade created successfully!");
       refetchUpgrades();
-      setUpgradeFormData({ name: '', description: '', category: 'lp_per_hour', baseCost: 100, baseEffect: 1.0, costMultiplier: 1.3, effectMultiplier: 1.15, maxLevel: null, levelRequirement: 1 });
+      setUpgradeFormData({
+        name: '',
+        description: '',
+        category: 'lp_per_hour',
+        baseCost: 100,
+        baseEffect: 1.0,
+        costMultiplier: 1.3,
+        effectMultiplier: 1.15,
+        maxLevel: null,
+        levelRequirement: 1
+      });
     },
     onError: (error: Error) => {
       toast.error(error.message || "Failed to create upgrade");
@@ -434,18 +436,18 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   }, [deleteCharacterMutation]);
 
   const handleToggleVip = useCallback((id: string, current: boolean) => {
-    toggleCharacterMutation.mutate({ 
-      characterId: id, 
-      field: "isVip", 
-      value: !current 
+    toggleCharacterMutation.mutate({
+      characterId: id,
+      field: "isVip",
+      value: !current
     });
   }, [toggleCharacterMutation]);
 
   const handleToggleNsfw = useCallback((id: string, current: boolean) => {
-    toggleCharacterMutation.mutate({ 
-      characterId: id, 
-      field: "isNsfw", 
-      value: !current 
+    toggleCharacterMutation.mutate({
+      characterId: id,
+      field: "isNsfw",
+      value: !current
     });
   }, [toggleCharacterMutation]);
 
@@ -471,7 +473,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   return (
     <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-start justify-center z-50 p-2 pt-4">
       <div className="bg-gradient-to-br from-gray-950 via-blue-950/50 to-black w-full max-w-7xl h-[90vh] rounded-2xl border border-blue-500/20 flex flex-col overflow-hidden shadow-2xl shadow-blue-500/10">
-
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-blue-500/20 bg-black/20">
           <div className="flex items-center gap-3">
@@ -483,10 +484,10 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               <p className="text-gray-400 text-sm">System management & configuration</p>
             </div>
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={onClose} 
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
             className="text-gray-400 hover:text-white hover:bg-white/10 transition-all duration-200 rounded-lg"
           >
             <X className="w-6 h-6" />
@@ -494,9 +495,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
         </div>
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col min-h-0">
-
+        <div className="flex-1 flex-col overflow-hidden">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-col min-h-0">
             {/* Tab Navigation */}
             <div className="px-6 py-2 border-b border-gray-800/50">
               <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-black/40 p-1 rounded-lg w-full h-10">
@@ -536,7 +536,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </div>
 
             {/* CHARACTERS TAB */}
-            <TabsContent value="characters" className="flex-1 flex flex-col overflow-hidden px-6 py-2 min-h-0 mt-0" data-state={activeTab === "characters" ? "active" : "inactive"}>
+            <TabsContent value="characters" className="flex-1 flex-col overflow-hidden px-6 py-2 min-h-0 mt-0" data-state={activeTab === "characters" ? "active" : "inactive"}>
               {/* Character Submenu */}
               <div className="flex items-center gap-2 mb-3">
                 <div className="flex bg-black/40 p-1 rounded-lg">
@@ -586,7 +586,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         />
                       </div>
                     </div>
-
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
                         <Switch
@@ -596,7 +595,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         />
                         <Label className="text-sm text-gray-300">VIP Only</Label>
                       </div>
-
                       <div className="flex items-center gap-2">
                         <Switch
                           checked={filterNsfw}
@@ -618,7 +616,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         </div>
                       </CardContent>
                     </Card>
-
                     <Card className="bg-black/20 border-gray-800/50">
                       <CardContent className="p-4">
                         <div className="text-center">
@@ -627,7 +624,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         </div>
                       </CardContent>
                     </Card>
-
                     <Card className="bg-black/20 border-gray-800/50">
                       <CardContent className="p-4">
                         <div className="text-center">
@@ -641,8 +637,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   {/* Character List */}
                   <div className="flex-1 bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden min-h-0">
                     {charactersError ? (
-                      <ErrorDisplay 
-                        error={charactersError as Error} 
+                      <ErrorDisplay
+                        error={charactersError as Error}
                         retry={() => refetchCharacters()}
                       />
                     ) : charactersLoading ? (
@@ -653,7 +649,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         description={searchQuery || filterVip || filterNsfw ? "Try adjusting your search or filters" : "Create your first character to get started"}
                         icon={Users}
                         action={
-                          <Button 
+                          <Button
                             onClick={() => setCharacterSubmenu("create")}
                             className="bg-blue-600 hover:bg-blue-700 text-white"
                             size="sm"
@@ -713,19 +709,19 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* MEDIA TAB */}
-            <TabsContent value="media" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "media" ? "active" : "inactive"}>
+            <TabsContent value="media" className="flex-1 overflow-hidden p-6">
               <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg overflow-auto">
                 <FileManagerCore />
               </div>
             </TabsContent>
 
             {/* UPGRADES TAB */}
-            <TabsContent value="upgrades" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "upgrades" ? "active" : "inactive"}>
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden p-4">
-                <div className="flex justify-between items-center mb-4">
+            <TabsContent value="upgrades" className="flex-1 overflow-hidden p-6">
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden">
+                <div className="flex justify-between items-center p-4">
                   <h3 className="text-xl font-bold text-white">Upgrades Management</h3>
-                  <Button 
-                    onClick={() => setEditingUpgrade({ isNew: true })} 
+                  <Button
+                    onClick={() => setEditingUpgrade({ isNew: true })}
                     className="bg-blue-600 hover:bg-blue-700"
                     size="sm"
                   >
@@ -733,8 +729,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     Create Upgrade
                   </Button>
                 </div>
-
-                <div className="flex-1 overflow-auto">
+                <div className="flex-1 overflow-auto p-4">
                   {upgradesLoading ? (
                     <LoadingSpinner message="Loading upgrades..." />
                   ) : upgrades.length === 0 ? (
@@ -761,20 +756,15 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                                 </div>
                               </div>
                               <div className="flex gap-2">
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost"
+                                <Button size="sm" variant="ghost"
                                   onClick={() => setEditingUpgrade({ ...upgrade, isNew: false })}
                                   className="text-blue-400 hover:text-blue-300"
                                 >
                                   <Edit3 className="w-4 h-4" />
                                 </Button>
-                                <Button 
-                                  size="sm" 
-                                  variant="ghost"
+                                <Button size="sm" variant="ghost"
                                   onClick={() => {
                                     if (window.confirm(`Delete upgrade "${upgrade.name}"? This cannot be undone.`)) {
-                                      // Add delete mutation here
                                       toast.success('Upgrade deleted!');
                                       refetchUpgrades();
                                     }
@@ -791,137 +781,33 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     </div>
                   )}
                 </div>
-
-                {/* Create/Edit Upgrade Modal */}
-                {editingUpgrade && (
-                  <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-                    <Card className="bg-gray-800 border-gray-600 max-w-md w-full">
-                      <CardHeader>
-                        <CardTitle className="text-white">
-                          {editingUpgrade.isNew ? 'Create New Upgrade' : 'Edit Upgrade'}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <Label className="text-white">Name</Label>
-                          <Input
-                            value={upgradeFormData.name}
-                            onChange={(e) => setUpgradeFormData({...upgradeFormData, name: e.target.value})}
-                            className="bg-gray-700 border-gray-600 text-white"
-                            placeholder="Upgrade name"
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-white">Description</Label>
-                          <Textarea
-                            value={upgradeFormData.description}
-                            onChange={(e) => setUpgradeFormData({...upgradeFormData, description: e.target.value})}
-                            className="bg-gray-700 border-gray-600 text-white"
-                            placeholder="Upgrade description"
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-white">Category</Label>
-                            <Select
-                              value={upgradeFormData.category}
-                              onValueChange={(value) => setUpgradeFormData({...upgradeFormData, category: value})}
-                            >
-                              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent className="bg-gray-700 border-gray-600">
-                                <SelectItem value="lp_per_hour" className="text-white">LP per Hour</SelectItem>
-                                <SelectItem value="energy" className="text-white">Energy</SelectItem>
-                                <SelectItem value="lp_per_tap" className="text-white">LP per Tap</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div>
-                            <Label className="text-white">Base Cost</Label>
-                            <Input
-                              type="number"
-                              value={upgradeFormData.baseCost}
-                              onChange={(e) => setUpgradeFormData({...upgradeFormData, baseCost: parseInt(e.target.value) || 0})}
-                              className="bg-gray-700 border-gray-600 text-white"
-                            />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div>
-                            <Label className="text-white">Base Effect</Label>
-                            <Input
-                              type="number"
-                              step="0.1"
-                              value={upgradeFormData.baseEffect}
-                              onChange={(e) => setUpgradeFormData({...upgradeFormData, baseEffect: parseFloat(e.target.value) || 0})}
-                              className="bg-gray-700 border-gray-600 text-white"
-                            />
-                          </div>
-                          <div>
-                            <Label className="text-white">Level Requirement</Label>
-                            <Input
-                              type="number"
-                              value={upgradeFormData.levelRequirement}
-                              onChange={(e) => setUpgradeFormData({...upgradeFormData, levelRequirement: parseInt(e.target.value) || 1})}
-                              className="bg-gray-700 border-gray-600 text-white"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button 
-                            variant="outline" 
-                            onClick={() => setEditingUpgrade(null)}
-                            className="border-gray-600 text-white"
-                          >
-                            Cancel
-                          </Button>
-                          <Button 
-                            onClick={() => {
-                              createUpgradeMutation.mutate(upgradeFormData);
-                              setEditingUpgrade(null);
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700"
-                            disabled={createUpgradeMutation.isPending}
-                          >
-                            {editingUpgrade.isNew ? 'Create' : 'Update'}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-                )}
               </div>
             </TabsContent>
 
-            {/* TASKS TAB */}
-            <TabsContent value="tasks" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "tasks" ? "active" : "inactive"}>
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden p-4">
-                <div className="flex justify-between items-center mb-4">
+            {/* Tasks TAB */}
+            <TabsContent value="tasks" className="flex-1 overflow-hidden p-6">
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col">
+                <div className="flex justify-between items-center mb-4 p-4">
                   <h3 className="text-xl font-bold text-white">Tasks & Challenges</h3>
                   <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Task
+                    <Plus className="w-4 h-4 mr-2" /> Create Task
                   </Button>
                 </div>
-
                 <Tabs defaultValue="daily" className="flex-1">
                   <TabsList className="grid grid-cols-3 bg-black/40">
                     <TabsTrigger value="daily">Daily Tasks</TabsTrigger>
                     <TabsTrigger value="weekly">Weekly Tasks</TabsTrigger>
                     <TabsTrigger value="special">Special Events</TabsTrigger>
                   </TabsList>
-
                   <TabsContent value="daily" className="flex-1 mt-4">
-                    <div className="space-y-3">
+                    <div className="space-y-3 p-4">
                       {/* Sample daily tasks */}
                       <Card className="bg-gray-800/50 border-gray-600">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <h4 className="text-white font-semibold flex items-center gap-2">
-                                <Zap className="w-4 h-4 text-yellow-400" />
-                                Tap 100 times
+                                <Zap className="w-4 h-4 text-yellow-400" /> Tap 100 times
                               </h4>
                               <p className="text-gray-400 text-sm">Tap characters 100 times to earn LP</p>
                               <div className="flex gap-2 mt-2">
@@ -940,14 +826,12 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           </div>
                         </CardContent>
                       </Card>
-
                       <Card className="bg-gray-800/50 border-gray-600">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
                               <h4 className="text-white font-semibold flex items-center gap-2">
-                                <Heart className="w-4 h-4 text-pink-400" />
-                                Chat with character
+                                <Heart className="w-4 h-4 text-pink-400" /> Chat with character
                               </h4>
                               <p className="text-gray-400 text-sm">Send 5 messages to any character</p>
                               <div className="flex gap-2 mt-2">
@@ -968,7 +852,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </Card>
                     </div>
                   </TabsContent>
-
                   <TabsContent value="weekly" className="flex-1 mt-4">
                     <EmptyState
                       title="No Weekly Tasks"
@@ -982,7 +865,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       }
                     />
                   </TabsContent>
-
                   <TabsContent value="special" className="flex-1 mt-4">
                     <EmptyState
                       title="No Special Events"
@@ -1001,17 +883,15 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* ACHIEVEMENTS TAB */}
-            <TabsContent value="achievements" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "achievements" ? "active" : "inactive"}>
-              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col overflow-hidden p-4">
-                <div className="flex justify-between items-center mb-4">
+            <TabsContent value="achievements" className="flex-1 overflow-hidden p-6">
+              <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex flex-col">
+                <div className="flex justify-between items-center mb-4 p-4">
                   <h3 className="text-xl font-bold text-white">Achievements & Milestones</h3>
                   <Button className="bg-blue-600 hover:bg-blue-700" size="sm">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Achievement
+                    <Plus className="w-4 h-4 mr-2" /> Create Achievement
                   </Button>
                 </div>
-
-                <div className="flex-1 overflow-auto space-y-4">
+                <div className="flex-1 overflow-auto space-y-4 p-4">
                   {/* Sample achievements */}
                   <Card className="bg-gray-800/50 border-gray-600">
                     <CardContent className="p-4">
@@ -1046,7 +926,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </div>
                     </CardContent>
                   </Card>
-
                   <Card className="bg-gray-800/50 border-gray-600">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
@@ -1080,7 +959,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       </div>
                     </CardContent>
                   </Card>
-
                   <Card className="bg-gray-800/50 border-gray-600">
                     <CardContent className="p-4">
                       <div className="flex justify-between items-start">
@@ -1119,7 +997,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* GAME TAB */}
-            <TabsContent value="game" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "game" ? "active" : "inactive"}>
+            <TabsContent value="game" className="flex-1 overflow-hidden p-6">
               <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg p-4 space-y-6">
                 <h3 className="text-xl font-bold text-white">Game Configuration & Level Editor</h3>
 
@@ -1240,7 +1118,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* DATABASE TAB */}
-            <TabsContent value="database" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "database" ? "active" : "inactive"}>
+            <TabsContent value="database" className="flex-1 overflow-hidden p-6">
               <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg flex items-center justify-center">
                 <EmptyState
                   title="Database Management"
@@ -1256,7 +1134,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </TabsContent>
 
             {/* SYSTEM TAB */}
-            <TabsContent value="system" className="flex-1 overflow-hidden px-6 py-2 mt-0" data-state={activeTab === "system" ? "active" : "inactive"}>
+            <TabsContent value="system" className="flex-1 overflow-hidden p-6">
               <div className="h-full bg-black/20 border border-gray-800/50 rounded-lg p-4 space-y-6">
                 <h3 className="text-xl font-bold text-white">System Settings & AI Debugger</h3>
 
@@ -1282,19 +1160,22 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       />
                     </div>
                     <div className="flex gap-2">
-                      <Button 
+                      <Button
                         onClick={() => aiDebugMutation.mutate(aiDebugMessage)}
                         disabled={aiDebugMutation.isPending || !aiDebugMessage.trim()}
                         className="bg-green-600 hover:bg-green-700"
                       >
                         {aiDebugMutation.isPending ? (
-                          <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />Processing...</>
+                          <>
+                            <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                            Processing...
+                          </>
                         ) : (
                           <>Send Test Message</>
                         )}
                       </Button>
-                      <Button 
-                        variant="outline" 
+                      <Button
+                        variant="outline"
                         onClick={() => {
                           setAiDebugMessage('');
                           setAiDebugResponse('');
