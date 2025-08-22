@@ -25,107 +25,71 @@ debugger
 =====================================================
 */
 
+const DebuggerPlugin = require('./DebuggerPlugin');
 
+class DebuggerCore {
+  constructor() {
+    this.plugins = [];
+    this.isInitialized = false;
+  }
 
-export default class GameCore { constructor(config = {}) { // Holds references to all loaded modules this.modules = {};
+  register(plugin) {
+    if (!(plugin instanceof DebuggerPlugin)) {
+      throw new Error('Plugin must extend DebuggerPlugin');
+    }
+    this.plugins.push(plugin);
+  }
 
-// Centralized configuration
-this.config = {
-	debug: true,
-	...config,
-};
+  // Color-coded logging helper
+  log(message, level = 'info') {
+    const colorCodes = {
+      info: '\x1b[33m',    // Yellow
+      success: '\x1b[32m', // Green
+      error: '\x1b[31m'    // Red
+    };
+    const reset = '\x1b[0m';
+    const timestamp = new Date().toISOString();
+    const color = colorCodes[level] || colorCodes.info;
+    console.log(`${color}[${timestamp}] ${message}${reset}`);
+  }
 
-// Tracks initialization state
-this.initialized = false;
+  async initAll() {
+    for (const plugin of this.plugins) {
+      try {
+        await plugin.init(this);
+        this.log(`[Green] ${plugin.name} initialized successfully`, 'success');
+      } catch (error) {
+        this.log(`[Red] ${plugin.name} initialization error: ${error.message}`, 'error');
+      }
+    }
+    this.isInitialized = true;
+  }
 
+  async runCommand(command, data) {
+    if (!this.isInitialized) {
+      throw new Error("DebuggerCore not initialized - call initAll first");
+    }
+
+    for (const plugin of this.plugins) {
+      try {
+        await plugin.run(command, data);
+        this.log(`[Green] ${plugin.name} handled command: ${command}`, 'success');
+      } catch (error) {
+        this.log(`[Red] ${plugin.name} error during command '${command}': ${error.message}`, 'error');
+      }
+    }
+  }
+
+  async stopAll() {
+    for (const plugin of this.plugins) {
+      try {
+        await plugin.stop();
+        this.log(`[Green] ${plugin.name} stopped cleanly`, 'success');
+      } catch (error) {
+        this.log(`[Red] ${plugin.name} error during stop: ${error.message}`, 'error');
+      }
+    }
+  }
 }
 
-/**
-
-Register a new module.
-
-@param {string} name - Identifier for the module (e.g., "database", "ai").
-
-@param {object} module - The module object itself.
-
-Each module must implement:
-
-init(core): called once at load with reference to GameCore
-
-
-shutdown(): cleanly stop the module */ registerModule(name, module) { if (this.modules[name]) { throw new Error(Module '${name}' already registered.); } this.modules[name] = module; if (this.config.debug) console.log(✅ Registered module: ${name}); }
-
-
-
-/**
-
-Initialize all modules in order.
-
-Loading Order (example):
-
-1. database → ensures persistence
-
-
-
-2. ai → provides logic & NPC behavior
-
-
-
-3. characters → uses DB + AI
-
-
-
-4. inventory, quests, misc → depend on characters/AI */ async init() { if (this.initialized) return; try { // Load database first if (this.modules.database) await this.modules.database.init(this);
-
-
-
-// Then AI if (this.modules.ai) await this.modules.ai.init(this);
-
-// Then characters if (this.modules.characters) await this.modules.characters.init(this);
-
-// Load everything else for (const [name, mod] of Object.entries(this.modules)) { if (!["database", "ai", "characters"].includes(name)) { await mod.init(this); } }
-
-this.initialized = true; if (this.config.debug) console.log("🚀 GameCore fully initialized."); } catch (err) { console.error("❌ Initialization failed:", err); } }
-
-
-/**
-
-Shutdown all modules cleanly.
-
-Called when the game is closed or reset. */ 
-		 async shutdown() { for (const [name, mod] of Object.entries(this.modules)) { if (typeof mod.shutdown === "function") { await mod.shutdown(); if (this.config.debug) console.log(🛑 Shutdown module: ${name}); } } this.initialized = false; } }
-
-
-/**
-
-────────── Example of what a Module looks like ─────────
-
-const DatabaseModule = {
-
-async init(core) {
-
-console.log("DB Connected");
-
-this.db = {}; // fake DB placeholder
-
-},
-
-async shutdown() {
-
-console.log("DB Disconnected");
-
-}
-
-};
-
-// Register it:
-
-const core = new GameCore();
-
-core.registerModule("database", DatabaseModule);
-
-core.init();
-
-────────────────────────────────────────────────── */
-
-
+module.exports = DebuggerCore;
