@@ -498,25 +498,25 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
         <div className="flex-1 flex-col overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-col min-h-0">
             {/* Tab Navigation */}
-            <div className="px-6 py-2 border-b border-gray-800/50">
-              <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-black/40 p-1 rounded-lg w-full h-10">
-                <TabsTrigger value="characters" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+            <div className="px-4 py-2 border-b border-gray-800/50">
+              <TabsList className="grid grid-cols-4 lg:grid-cols-8 bg-black/30 p-1 rounded-lg w-full h-10" >
+                <TabsTrigger value="characters" className="text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white ">
                   <Users className="w-3 h-3 mr-1" />
                   Characters
                 </TabsTrigger>
-                <TabsTrigger value="media" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <TabsTrigger value="media" className="text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Heart className="w-3 h-3 mr-1" />
                   Media
                 </TabsTrigger>
-                <TabsTrigger value="upgrades" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <TabsTrigger value="upgrades" className="text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Star className="w-3 h-3 mr-1" />
                   Upgrades
                 </TabsTrigger>
-                <TabsTrigger value="tasks" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <TabsTrigger value="tasks" className="text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Zap className="w-3 h-3 mr-1" />
                   Tasks
                 </TabsTrigger>
-                <TabsTrigger value="achievements" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <TabsTrigger value="achievements" className="text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Trophy className="w-3 h-3 mr-1" />
                   Achievements
                 </TabsTrigger>
@@ -524,11 +524,11 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   <Activity className="w-3 h-3 mr-1" />
                   Game
                 </TabsTrigger>
-                <TabsTrigger value="database" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <TabsTrigger value="database" className="text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Database className="w-3 h-3 mr-1" />
                   Database
                 </TabsTrigger>
-                <TabsTrigger value="system" className="text-xs data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+                <TabsTrigger value="system" className="text-sm data-[state=active]:bg-blue-600 data-[state=active]:text-white">
                   <Settings className="w-3 h-3 mr-1" />
                   System
                 </TabsTrigger>
