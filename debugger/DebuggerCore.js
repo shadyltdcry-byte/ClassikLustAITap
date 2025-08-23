@@ -40,6 +40,33 @@ class DebuggerCore {
     this.plugins.push(plugin);
   }
 
+const DebuggerCore = require('./DebuggerCore');
+const CharactersPlugin = require('./modules/characters');
+
+async function main() {
+  const core = new DebuggerCore();
+
+  // Register Characters plugin (and others if you have)
+  core.register(new DebuggerPlugin());
+  core.register(new CharactersPlugin());
+
+  // Initialize all plugins
+  await core.initAll();
+
+  // Example: add a character via command
+  await core.runCommand('addCharacter', { id: 'char1', name: 'Hero', level: 1 });
+
+  // Other commands...
+  await core.runCommand('editCharacter', { id: 'char1', name: 'Super Hero', level: 2 });
+
+  // Stop all plugins cleanly on shutdown
+  await core.stopAll();
+}
+
+main().catch(err => {
+  console.error('DebuggerCore runtime error:', err);
+});
+  
   // Color-coded logging helper
   log(message, level = 'info') {
     const colorCodes = {
