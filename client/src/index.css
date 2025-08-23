@@ -454,3 +454,46 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+    .admin-section {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  font-family: monospace;
+  font-size: 14px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin-bottom: 1em;
+}
+
+.admin-pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+    .admin-toggler-button {
+  position: fixed;
+  bottom: 10px;
+  right: 10px;
+  z-index: 1000;
+  padding: 8px 16px;
+}
+
+.admin-toggler-panel {
+  position: fixed;
+  bottom: 50px;
+  right: 10px;
+  width: 400px;
+  height: 600px;
+  background-color: white;
+  border: 1px solid black;
+  overflow: auto;
+  z-index: 1000;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+

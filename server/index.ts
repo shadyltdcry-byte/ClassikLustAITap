@@ -14,6 +14,12 @@ import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import express from 'express';
+import { registerAdminApi } from '../debugger/modules/adminAPI'; // adjust import as needed
+import DebuggerCore from '../debugger/DebuggerCore';
+import DebuggerAssist from '../debugger/DebuggerAssist';
+import CharactersPlugin from '../debugger/modules/characters';
+import AdminUIPlugin from '../debugger/modules/adminUI';
 
 // Initialize database connection only if DATABASE_URL is provided
 let db: any = null;
@@ -24,7 +30,7 @@ if (connectionString) {
     db = drizzle(sql);
     console.log('Database connection established');
   } catch (error) {
-    console.warn('Database connection failed, running in mock mode:', error);
+    console.warn('Database connection fail, running in mock mode:', error);
   }
 } else {
   console.warn('DATABASE_URL not provided, running in mock mode');
@@ -54,6 +60,8 @@ app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {

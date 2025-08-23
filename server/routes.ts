@@ -96,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
-  // Game state endpoint (mock data for now)
+ /** Game state endpoint (mock data for now)
   app.get("/api/game/state", (req, res) => {
     res.json({
       player: {
@@ -120,8 +120,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isVIP: false
       }]
     });
-  });
+  });*/
 
+  
+// in your backend route setup
+app.get('/api/admin/plugins/stats', async (req, res) => {
+  const stats = await core.runCommand('getPluginStats', {});
+  res.json(stats);
+});
+  
   // Character tap endpoint  
   app.post("/api/game/tap", async (req, res) => {
     try {

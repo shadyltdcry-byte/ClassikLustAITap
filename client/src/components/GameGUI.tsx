@@ -23,6 +23,8 @@ import AdminMenu from "@/plugins/admin/AdminMenu";
 import AIChat from "@/plugins/aicore/AIChat";
 import LevelUp from "@/plugins/gameplay/LevelUp";
 import Upgrades from "@/plugins/gameplay/Upgrades";
+//import { AdminUIToggler } from './debugger/modules/adminUI';
+
 
 // Mock Data
 const mockTasks = [
@@ -648,3 +650,33 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     </div>
   );
 }
+
+
+/**  Admin Debugger UI Menu Modal 
+
+    
+      const [isOpen, setIsOpen] = useState(false);
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        title="Open Admin UI"
+        className="fixed bottom-4 right-4 bg-blue-600 p-3 rounded-full shadow-lg text-white hover:bg-blue-700 z-50"
+      >
+        <Bug className="w-5 h-5" />
+      </button>
+      {isOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center">
+          <div className="bg-gray-900 rounded-lg w-5/6 h-5/6 overflow-auto p-6 relative">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="absolute top-4 right-4 text-white hover:text-red-500"
+            >✕</button>
+            <AdminUI />
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+*/
