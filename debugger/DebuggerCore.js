@@ -40,7 +40,6 @@ class DebuggerCore {
     this.plugins.push(plugin);
   }
 
-const DebuggerCore = require('./DebuggerCore');
 const CharactersPlugin = require('./modules/characters');
 
 async function main() {
