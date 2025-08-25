@@ -85,7 +85,6 @@ function App() {
       <TooltipProvider>
         <GameProvider>
           <Router />
-          <AdminUIToggler />
           <Toaster />
         </GameProvider>
       </TooltipProvider>

@@ -63,8 +63,7 @@ function App() {
       <TooltipProvider>
         <GameProvider>
           <Router />
-          <AdminUIToggler />
-          <Toaster />
+                  <Toaster />
         </GameProvider>
       </TooltipProvider>
     </QueryClientProvider>

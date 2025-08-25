@@ -109,6 +109,14 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
   const [triggerResponse, setTriggerResponse] = useState("");
 
   const queryClient = useQueryClient();
+  // Inside CharacterCreation component, before return statement
+const uniqueMediaFiles = Array.isArray(mediaFiles)
+  ? Array.from(new Map(mediaFiles
+      .filter(file => file.id != null) // Filter out undefined/null ids
+      .map(file => [file.id, file]))
+    .values())
+  : [];
+  
 
   // Fetch media files for avatars
   const { data: mediaFiles = [], isError: mediaError } = useQuery({
@@ -569,7 +577,6 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
                     )}
                   />
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
                       name="imageUrl"
@@ -592,16 +599,15 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
                               <SelectItem value="" className="text-white">
                                 No image selected
                               </SelectItem>
-                              {Array.isArray(mediaFiles) &&
-                                mediaFiles.map((file: MediaFile) => (
-                                  <SelectItem
-                                    key={file.id}
-                                    value={file.url || file.path || `/uploads/${file.filename}`}
-                                    className="text-white"
-                                  >
-                                    {file.originalName || file.filename || `File ${file.id.slice(0, 8)}`}
-                                  </SelectItem>
-                                ))}
+                              {uniqueMediaFiles.map((file: MediaFile) => (
+                                <SelectItem
+                                  key={file.id}
+                                  value={file.url || file.path || `/uploads/${file.filename}`}
+                                  className="text-white"
+                                >
+                                  {file.originalName || file.filename || `File ${file.id.slice(0, 8)}`}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -631,23 +637,22 @@ export default function CharacterCreation({ onSuccess, onCancel }: CharacterCrea
                               <SelectItem value="" className="text-white">
                                 No avatar selected
                               </SelectItem>
-                              {Array.isArray(mediaFiles) &&
-                                mediaFiles.map((file: MediaFile) => (
-                                  <SelectItem
-                                    key={file.id}
-                                    value={file.url || file.path || `/uploads/${file.filename}`}
-                                    className="text-white"
-                                  >
-                                    {file.originalName || file.filename || `File ${file.id.slice(0, 8)}`}
-                                  </SelectItem>
-                                ))}
+                              {uniqueMediaFiles.map((file: MediaFile) => (
+                                <SelectItem
+                                  key={file.id}
+                                  value={file.url || file.path || `/uploads/${file.filename}`}
+                                  className="text-white"
+                                >
+                                  {file.originalName || file.filename || `File ${file.id.slice(0, 8)}`}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                  </div>
+                  
 
                   {/* Preview Section */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">

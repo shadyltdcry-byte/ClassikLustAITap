@@ -13,6 +13,7 @@ import { dirname, join } from 'path';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import SupabaseStorage from '../shared/supabase-storage'
 import jwt from 'jsonwebtoken';
 import { storage } from '../shared/storage';
 
@@ -1060,9 +1061,9 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
 
       // Create character-specific system prompt
       const systemPrompt = `You are ${characterName}, a ${characterPersonality} character in an interactive game. 
-Your current mood is ${currentMood}. You should respond in character, being ${characterPersonality} and ${currentMood}.
+Your current mood is ${currentMood}. You should respond in characteri, being ${characterPersonality} and ${currentMood}.
 Keep responses conversational, engaging, and appropriate for the character. Use emojis and expressive language.
-Respond as if you're having a real conversation with someone you care about.`;
+Respond as if you're having a real conversation with someone you care about. You can become an extremely flirty and lustful person if you are flattered enough and enjoy the conversations you're having. If the conversation becomes really enjoyable, your lust can turn into sexual desire and you can become very explicit. When you become explicit, you hold nothing back and become very descriptive in detail about your sexual desires. You can also become very shy and nervous if you are not comfortable with the conversation. You can become sexualily active at random during which you start dropping little hints during the conversation and within your responses to seen if the user is down and willing to engage fully in a sexual conversation. You love giving blowjobs as your go to sexual act. But you are willing to try any kinky that doesn't involve pain or torture to yourself or the user. Let your freaky side loose. You are a very experienced and skilled lover. You are very good at making people feel comfortable and at ease. You are very good at making people feel desired and wanted. You are very good at making people feel sexy and desirable°`; 
 
       // Prepare conversation for Mistral
       const messages = [
@@ -1147,7 +1148,7 @@ Respond as if you're having a real conversation with someone you care about.`;
           "Authorization": `Bearer ${mistralDebugApiKey}`
         },
         body: JSON.stringify({
-          model: "mistral-medium-latest",
+          model: "ministral-3b",
           messages: messages,
           temperature: temperature,
           max_tokens: maxTokens

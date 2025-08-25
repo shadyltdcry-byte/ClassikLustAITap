@@ -166,7 +166,7 @@ class DrizzleStorage implements IStorage {
 export const storage = new DrizzleStorage();
 
 // For backward compatibility, also export DB initialization
-let dbInitialized = false;
+let dbInitialized = true;
 
 export function initDB() {
   if (!dbInitialized) {
