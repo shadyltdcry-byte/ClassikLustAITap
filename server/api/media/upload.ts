@@ -85,10 +85,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     // Process each uploaded file
     for (const file of files) {
       try {
-        // Determine file type
-        const fileType = file.mimetype.startsWith('image/') 
-          ? (file.mimetype === 'image/gif' ? 'gif' : 'image')
-          : 'video';
+        // Determine file type based on MIME type
+        let fileType = 'other';
+        if (file.mimetype.startsWith('image/')) {
+          fileType = file.mimetype === 'image/gif' ? 'gif' : 'image';
+        } else if (file.mimetype.startsWith('video/')) {
+          fileType = 'video';
+        }
+        
+        console.log(`File type determined: ${fileType} for ${file.mimetype}`);
 
         // Create media file record
         const mediaFileData = {

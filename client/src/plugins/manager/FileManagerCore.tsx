@@ -237,27 +237,40 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       borderRadius: '8px',
     };
 
-    // Get the correct file URL - ensure proper path format
-    const fileUrl = file.filePath?.startsWith('/') 
-      ? file.filePath 
-      : file.filePath 
-        ? `/uploads/${file.filePath}` 
-        : file.fileName 
-          ? `/uploads/${file.fileName}` 
+    // Handle both old and new file path formats
+    const filePath = file.filePath || (file as any).filepath || (file as any).url;
+    const fileUrl = filePath?.startsWith('/') 
+      ? filePath 
+      : filePath 
+        ? `/uploads/${filePath}` 
+        : fileName 
+          ? `/uploads/${fileName}` 
           : '/uploads/placeholder-character.jpg';
 
-    if (file.fileType === 'image' || file.fileType === 'gif') {
+    // Handle both old and new file data formats
+    const fileName = file.fileName || (file as any).filename || '';
+    const fileExt = fileName.toLowerCase().split('.').pop() || '';
+    
+    // Better file type detection - check fileType field and filename extension
+    const isImage = file.fileType === 'image' || 
+                   file.fileType === 'gif' || 
+                   ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(fileExt);
+    const isVideo = file.fileType === 'video' || 
+                   ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv'].includes(fileExt);
+
+    if (isImage) {
       return (
         <img
           src={fileUrl}
           alt="Media preview"
           style={commonStyles}
           onError={(e) => {
-            (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg'; // Fallback image
+            console.log('Image failed to load:', fileUrl);
+            (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg';
           }}
         />
       );
-    } else if (file.fileType === 'video') {
+    } else if (isVideo) {
       return (
         <video controls style={commonStyles}>
           <source src={fileUrl} type="video/mp4" />
@@ -267,7 +280,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     }
     return (
       <div style={{ ...commonStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#374151' }}>
-        <span className="text-white text-xs">Unsupported type</span>
+        <span className="text-white text-xs">Type: {file.fileType || fileExt || 'unknown'}</span>
       </div>
     );
   };
@@ -497,8 +510,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                   <CardContent className="p-2">
                     {renderMediaPreview(file)}
                     <div className="mt-2 space-y-1">
-                      <p className="text-xs text-white truncate">
-                        {file.fileName || `File ${file.id.slice(0, 8)}`}
+                      <p className="text-xs text-white truncate" title={`ID: ${file.id}, Type: ${file.fileType || 'missing'}, Path: ${file.filePath || (file as any).filepath || (file as any).url || 'missing'}`}>
+                        {file.fileName || (file as any).filename || `File ${file.id.slice(0, 8)}`}
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {file.isVip && (

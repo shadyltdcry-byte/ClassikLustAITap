@@ -62,9 +62,9 @@ function AppContent() {
             clearInterval(interval);
             return 100;
           }
-          return prev + 5; // Slower increment
+          return prev + 10; // Normal increment
         });
-      }, 800); // Even slower interval
+      }, 300); // Normal interval
 
       return () => clearInterval(interval);
     }
