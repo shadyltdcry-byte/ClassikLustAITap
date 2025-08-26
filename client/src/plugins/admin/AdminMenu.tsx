@@ -549,12 +549,64 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     {showBackendDebugger && <AdminBackendDebugger />}
                   </div>
                   
-                  {/* Admin Management Components */}
-                  <div className="mt-8 space-y-6">
-                    <h3 className="text-lg font-semibold text-white">Admin Management</h3>
-                    <LevelManagement />
-                    <UpgradeManagement />
-                    <AchievementManagement />
+                  {/* Quick Admin Tools */}
+                  <div className="mt-8">
+                    <h3 className="text-lg font-semibold text-white mb-4">Quick Admin Tools</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <Card className="bg-gray-800/50 border-gray-700">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-white text-sm flex items-center gap-2">
+                            <Target className="w-4 h-4 text-pink-500" />
+                            Level Management
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <Button
+                            onClick={() => setShowLevelUp(true)}
+                            size="sm"
+                            className="w-full bg-pink-600 hover:bg-pink-700"
+                          >
+                            Manage Levels
+                          </Button>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="bg-gray-800/50 border-gray-700">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-white text-sm flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 text-blue-500" />
+                            Upgrade Management
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <Button
+                            onClick={() => setShowUpgrades(true)}
+                            size="sm"
+                            className="w-full bg-blue-600 hover:bg-blue-700"
+                          >
+                            Manage Upgrades
+                          </Button>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="bg-gray-800/50 border-gray-700">
+                        <CardHeader className="pb-2">
+                          <CardTitle className="text-white text-sm flex items-center gap-2">
+                            <Trophy className="w-4 h-4 text-yellow-500" />
+                            Achievement Management
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-0">
+                          <Button
+                            onClick={() => setShowAchievements(true)}
+                            size="sm"
+                            className="w-full bg-yellow-600 hover:bg-yellow-700"
+                          >
+                            Manage Achievements
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
                   </div>
                 </TabsContent>
 
@@ -627,7 +679,9 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <LevelUp isAdminMode={true} />
+            <div className="p-6">
+              <LevelManagement />
+            </div>
           </div>
         </div>
       )}
@@ -643,7 +697,9 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <Upgrades isAdminMode={true} />
+            <div className="p-6">
+              <UpgradeManagement />
+            </div>
           </div>
         </div>
       )}
@@ -675,7 +731,9 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <Achievements isAdminMode={true} />
+            <div className="p-6">
+              <AchievementManagement />
+            </div>
           </div>
         </div>
       )}
