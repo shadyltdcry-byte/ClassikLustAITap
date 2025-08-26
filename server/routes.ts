@@ -18,6 +18,11 @@ import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import { storage } from '../shared/storage';
 
+// Create a global variable to store token validation function reference
+declare global {
+  var validateAuthToken: ((token: string, telegramId: string) => boolean) | undefined;
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -1331,28 +1336,38 @@ Respond as if you're having a real conversation with someone you care about. You
     }
   });
 
-  // Simple Telegram authentication endpoint
+  // Telegram authentication endpoint with token validation
   app.post('/api/auth/telegram', async (req, res) => {
     try {
       const { telegram_id, username, token } = req.body;
       
-      if (!telegram_id) {
-        return res.status(400).json({ error: 'telegram_id is required' });
+      if (!telegram_id || !token) {
+        return res.status(400).json({ error: 'telegram_id and token are required' });
       }
       
-      // For now, just log the user in (you can add more validation later)
-      console.log(`Telegram auth for user: ${telegram_id} (${username})`);
+      // Import token validation from server/index.ts scope
+      // For now, we'll implement basic validation here
+      console.log(`Telegram auth attempt for user: ${telegram_id} (${username}) with token: ${token}`);
       
-      res.json({ 
-        success: true, 
-        message: "You're logged in!",
-        user: {
-          id: `telegram_${telegram_id}`,
-          telegram_id,
-          username: username || `User${telegram_id}`,
-          name: username || `User${telegram_id}`
-        }
-      });
+      // Validate token using global function if available
+      const isValidToken = global.validateAuthToken ? 
+        global.validateAuthToken(token, telegram_id) : 
+        false;
+      
+      if (isValidToken) {
+        res.json({ 
+          success: true, 
+          message: "You're logged in!",
+          user: {
+            id: `telegram_${telegram_id}`,
+            telegram_id,
+            username: username || `User${telegram_id}`,
+            name: username || `User${telegram_id}`
+          }
+        });
+      } else {
+        res.status(401).json({ error: 'Invalid or expired token' });
+      }
     } catch (error) {
       console.error('Telegram auth error:', error);
       res.status(500).json({ error: 'Authentication failed' });

@@ -218,6 +218,17 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   createdAt: true,
 });
 
+// Temporary auth tokens table for Telegram authentication
+export const telegramAuthTokens = pgTable("telegram_auth_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  telegramId: varchar("telegram_id").notNull(),
+  username: varchar("username"),
+  token: varchar("token").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -238,3 +249,5 @@ export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type GameStats = typeof gameStats.$inferSelect;
 export type WheelReward = typeof wheelRewards.$inferSelect;
 export type Bonus = typeof bonuses.$inferSelect;
+export type TelegramAuthToken = typeof telegramAuthTokens.$inferSelect;
+export type InsertTelegramAuthToken = typeof telegramAuthTokens.$inferInsert;

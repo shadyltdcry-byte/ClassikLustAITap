@@ -20,6 +20,7 @@ import DebuggerCore from '../debugger/DebuggerCore';
 import DebuggerAssist from '../debugger/modules/CharactersPlugin';
 import AdminUIPlugin from '../debugger/modules/adminUI';
 import TelegramBot from 'node-telegram-bot-api';
+import crypto from 'crypto';
 
 // Initialize database connection only if DATABASE_URL is provided
 let db: any = null;
@@ -52,6 +53,75 @@ function main() {
 
 main();
 
+// In-memory token storage (replace with database later)
+const telegramTokens = new Map<string, { 
+  telegramId: string, 
+  username: string, 
+  expiresAt: Date, 
+  used: boolean 
+}>();
+
+// Generate temporary auth token (6-12 chars alphanumeric)
+function generateAuthToken(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const length = Math.floor(Math.random() * 7) + 6; // 6-12 chars
+  let token = '';
+  for (let i = 0; i < length; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+// Store token with expiration (5-10 minutes)
+function storeAuthToken(telegramId: string, username: string): string {
+  const token = generateAuthToken();
+  const expirationMinutes = Math.floor(Math.random() * 6) + 5; // 5-10 minutes
+  const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000);
+  
+  telegramTokens.set(token, {
+    telegramId,
+    username,
+    expiresAt,
+    used: false
+  });
+  
+  console.log(`Generated token ${token} for Telegram user ${telegramId} (${username}), expires at ${expiresAt}`);
+  return token;
+}
+
+// Validate token
+export function validateAuthToken(token: string, telegramId: string): boolean {
+  const tokenData = telegramTokens.get(token);
+  if (!tokenData) {
+    console.log(`Token ${token} not found`);
+    return false;
+  }
+  
+  if (tokenData.used) {
+    console.log(`Token ${token} already used`);
+    return false;
+  }
+  
+  if (new Date() > tokenData.expiresAt) {
+    console.log(`Token ${token} expired`);
+    telegramTokens.delete(token);
+    return false;
+  }
+  
+  if (tokenData.telegramId !== telegramId) {
+    console.log(`Token ${token} telegram_id mismatch`);
+    return false;
+  }
+  
+  // Mark as used
+  tokenData.used = true;
+  console.log(`Token ${token} validated successfully for ${telegramId}`);
+  return true;
+}
+
+// Set global reference for routes to access
+global.validateAuthToken = validateAuthToken;
+
 // Initialize Telegram Bot
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (token) {
@@ -62,11 +132,14 @@ if (token) {
     bot.on('message', async (msg: any) => {
       const chatId = msg.chat.id;
       const messageText = msg.text;
-      const telegram_id = msg.from.id;
+      const telegram_id = msg.from.id.toString();
       const username = msg.from.username;
 
       try {
-        // Auto-authenticate user on every message
+        // 1. Generate temporary authentication token
+        const token = storeAuthToken(telegram_id, username);
+        
+        // 2. POST to game backend auth endpoint with token
         const authResponse = await fetch('http://localhost:5000/api/auth/telegram', {
           method: 'POST',
           headers: {
@@ -74,20 +147,24 @@ if (token) {
           },
           body: JSON.stringify({
             telegram_id,
-            username
+            username,
+            token
           })
         });
 
+        // 3. Wait for backend validation
         if (authResponse.ok) {
           const authData = await authResponse.json();
           console.log(`Telegram user authenticated: ${username} (${telegram_id})`);
           
+          // 4. Send confirmation message
           if (messageText === '/start') {
             bot.sendMessage(chatId, `Welcome ${username || `User${telegram_id}`}!\nYou're logged in!`);
           } else if (messageText) {
             bot.sendMessage(chatId, `${username || `User${telegram_id}`} said: ${messageText}\nYou're logged in!`);
           }
         } else {
+          // 5. If validation fails, ask to try again
           bot.sendMessage(chatId, 'Authentication failed. Please try again.');
         }
       } catch (error) {
