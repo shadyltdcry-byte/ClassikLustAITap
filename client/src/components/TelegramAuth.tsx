@@ -74,8 +74,8 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
           </CardTitle>
           
           <CardDescription className="text-white/70">
-            🚀 New Auto-Authentication Feature! 
-            <br />Click /start in Telegram for instant login!
+            🚀 Welcome to ClassikLust! 
+            <br />Login with Telegram or continue as guest!
           </CardDescription>
         </CardHeader>
 
@@ -110,23 +110,21 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
                 Open Telegram Bot
               </Button>
 
-              {process.env.NODE_ENV === "development" && (
-                <Button
-                  onClick={handleManualLogin}
-                  variant="outline"
-                  className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Authenticating...
-                    </>
-                  ) : (
-                    "Dev Mode: Manual Login"
-                  )}
-                </Button>
-              )}
+              <Button
+                onClick={handleManualLogin}
+                variant="outline"
+                className="w-full border-pink-600 text-pink-300 hover:bg-pink-900/20 hover:border-pink-500"
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Authenticating...
+                  </>
+                ) : (
+                  "🎮 Continue as Guest"
+                )}
+              </Button>
             </div>
           </div>
 

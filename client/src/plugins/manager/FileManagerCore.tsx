@@ -237,8 +237,14 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       borderRadius: '8px',
     };
 
-    // Get the correct file URL
-    const fileUrl = file.filePath || `/uploads/${file.fileName}`;
+    // Get the correct file URL - ensure proper path format
+    const fileUrl = file.filePath?.startsWith('/') 
+      ? file.filePath 
+      : file.filePath 
+        ? `/uploads/${file.filePath}` 
+        : file.fileName 
+          ? `/uploads/${file.fileName}` 
+          : '/uploads/placeholder-character.jpg';
 
     if (file.fileType === 'image' || file.fileType === 'gif') {
       return (

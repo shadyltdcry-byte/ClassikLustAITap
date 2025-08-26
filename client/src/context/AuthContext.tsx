@@ -53,7 +53,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    const timer = setTimeout(initializeAuth, 2500);
+    const timer = setTimeout(initializeAuth, 5000);
     return () => clearTimeout(timer);
   }, []);
 
