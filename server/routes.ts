@@ -520,9 +520,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (file.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
             publicFiles.push({
               id: `public_${file}`,
-              filename: file,
-              filepath: `/uploads/${file}`,
+              fileName: file,
+              filePath: `/uploads/${file}`,
               url: `/uploads/${file}`,
+              fileType: 'image',
               category: 'misc',
               characterId: null,
               createdAt: new Date().toISOString()

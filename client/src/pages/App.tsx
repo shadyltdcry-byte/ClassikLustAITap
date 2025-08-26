@@ -1,3 +1,4 @@
+import React from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "@/lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -38,6 +39,11 @@ function Router() {
 }
 
 function App() {
+  // Force clear React Query cache on app start to fix phantom requests
+  React.useEffect(() => {
+    queryClient.clear();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
