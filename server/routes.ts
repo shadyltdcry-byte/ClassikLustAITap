@@ -16,7 +16,9 @@ import crypto from 'crypto';
 import multer from 'multer';
 // Using Drizzle storage instead of Supabase
 import jwt from 'jsonwebtoken';
-import { storage } from '../shared/storage';
+import { storage, db } from '../shared/storage';
+import { eq } from 'drizzle-orm';
+import { users } from '../shared/schema';
 
 // Create a global variable to store token validation function reference
 declare global {
@@ -211,9 +213,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.body;
 
-      // If userId is not a valid UUID, return mock tap data for guest users
+      // Check if userId is valid UUID or telegram format
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(userId)) {
+      const telegramRegex = /^telegram_\d+$/;
+      if (!uuidRegex.test(userId) && !telegramRegex.test(userId)) {
         console.log(`Invalid UUID userId: ${userId}, returning mock tap data`);
         const lpGain = 1.5;
         return res.json({
@@ -316,9 +319,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId, characterId } = req.params;
       
-      // If userId is not a valid UUID, return empty chat history for guest users
+      // Check if userId is valid UUID or telegram format  
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(userId)) {
+      const telegramRegex = /^telegram_\d+$/;
+      if (!uuidRegex.test(userId) && !telegramRegex.test(userId)) {
         console.log(`Invalid UUID userId: ${userId}, returning empty chat history`);
         return res.json([]);
       }
@@ -382,38 +386,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+
   // Player endpoint
   app.get("/api/player/:playerId", async (req, res) => {
     try {
       const { playerId } = req.params;
 
-      // If playerId is not a valid UUID, return default mock data
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(playerId)) {
-        console.log(`Invalid UUID playerId: ${playerId}, returning mock data`);
-        return res.json({
-          id: playerId,
-          username: "Player",
-          level: 1,
-          lp: 5000,
-          lpPerHour: 250,
-          lpPerTap: 1.5,
-          energy: 1000,
-          maxEnergy: 1000,
-          coins: 0,
-          xp: 0,
-          xpToNext: 100,
-          isVip: false,
-          nsfwEnabled: false,
-          charismaPoints: 0,
-          vipStatus: false,
-          nsfwConsent: false,
-          charisma: 0,
-          createdAt: new Date().toISOString()
-        });
+      // Get real user ID if telegram format
+      let realUserId = playerId;
+      if (playerId.startsWith('telegram_')) {
+        const telegramId = playerId.replace('telegram_', '');
+        try {
+          const result = await db.select({id: users.id}).from(users).where(eq(users.telegramId, telegramId));
+          if (result[0]?.id) {
+            realUserId = result[0].id;
+          } else {
+            console.log(`No database user found for ${playerId}, returning mock data`);
+            return res.json({
+              id: playerId,
+              username: "Player",
+              level: 1,
+              lp: 5000,
+              lpPerHour: 250,
+              lpPerTap: 1.5,
+              energy: 1000,
+              maxEnergy: 1000,
+              coins: 0,
+              xp: 0,
+              xpToNext: 100,
+              isVip: false,
+              nsfwEnabled: false,
+              charismaPoints: 0,
+              vipStatus: false,
+              nsfwConsent: false,
+              charisma: 0,
+              createdAt: new Date().toISOString()
+            });
+          }
+        } catch (dbError) {
+          console.error('Database lookup error:', dbError);
+          return res.json({
+            id: playerId,
+            username: "Player",
+            level: 1,
+            lp: 5000,
+            lpPerHour: 250,
+            lpPerTap: 1.5,
+            energy: 1000,
+            maxEnergy: 1000,
+            coins: 0,
+            xp: 0,
+            xpToNext: 100,
+            isVip: false,
+            nsfwEnabled: false,
+            charismaPoints: 0,
+            vipStatus: false,
+            nsfwConsent: false,
+            charisma: 0,
+            createdAt: new Date().toISOString()
+          });
+        }
       }
 
-      let user = await storage.getUser(playerId);
+      let user = await storage.getUser(realUserId);
 
       if (!user) {
         // Create default user if not exists - using timestamp-based username to avoid duplicates
@@ -722,9 +757,64 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { playerId } = req.params;
       
-      // If playerId is not a valid UUID, return mock stats data for guest users
+      // Get real user ID if telegram format
+      let realUserId = playerId;
+      if (playerId.startsWith('telegram_')) {
+        const telegramId = playerId.replace('telegram_', '');
+        try {
+          const result = await db.select({id: users.id}).from(users).where(eq(users.telegramId, telegramId));
+          if (result[0]?.id) {
+            realUserId = result[0].id;
+          } else {
+            console.log(`No database user found for ${playerId}, returning mock stats data`);
+            return res.json({
+              playerId,
+              level: 1,
+              totalLp: 5000,
+              totalTaps: 50,
+              totalLpEarned: 1000,
+              totalEnergy: 1000,
+              totalEnergyUsed: 100,
+              maxEnergy: 1000,
+              lpPerHour: 250,
+              lpPerTap: 1.5,
+              charisma: 0,
+              sessionsPlayed: 5,
+              upgrades: {
+                intellect: 1,
+                dexterity: 1,
+                booksmarts: 1
+              }
+            });
+          }
+        } catch (dbError) {
+          console.error('Database lookup error:', dbError);
+          return res.json({
+            playerId,
+            level: 1,
+            totalLp: 5000,
+            totalTaps: 50,
+            totalLpEarned: 1000,
+            totalEnergy: 1000,
+            totalEnergyUsed: 100,
+            maxEnergy: 1000,
+            lpPerHour: 250,
+            lpPerTap: 1.5,
+            charisma: 0,
+            sessionsPlayed: 5,
+            upgrades: {
+              intellect: 1,
+              dexterity: 1,
+              booksmarts: 1
+            }
+          });
+        }
+      }
+
+      // Check if playerId is valid UUID or telegram format
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(playerId)) {
+      const telegramRegex = /^telegram_\d+$/;
+      if (!uuidRegex.test(realUserId) && !telegramRegex.test(playerId)) {
         console.log(`Invalid UUID playerId: ${playerId}, returning mock stats data`);
         return res.json({
           playerId,
@@ -754,7 +844,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get actual game stats from database
-      const gameStats = await storage.getUserStats(playerId);
+      const gameStats = await storage.getUserStats(realUserId);
 
       res.json({
         playerId,
