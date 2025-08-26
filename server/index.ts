@@ -17,8 +17,7 @@ import postgres from 'postgres';
 import express from 'express';
 import { registerAdminApi } from '../debugger/modules/adminAPI'; // adjust import as needed
 import DebuggerCore from '../debugger/DebuggerCore';
-import DebuggerAssist from '../debugger/DebuggerAssist';
-import CharactersPlugin from '../debugger/modules/characters';
+import DebuggerAssist from '../debugger/modules/CharactersPlugin';
 import AdminUIPlugin from '../debugger/modules/adminUI';
 
 // Initialize database connection only if DATABASE_URL is provided
@@ -39,15 +38,15 @@ if (connectionString) {
 export { db };
 
 function main() {
-  console.log("Starting custom plugin-based game server...");
+  console.log("[Main] Server loaded and started successfully... ");
   if (db) {
-    console.log("Database connected successfully");
+    console.log("[SupabaseDB] Database connected and loaded successfully...");
   } else {
     console.log("Running in mock mode without database");
   }
   
   // Initialize storage
-  console.log("Initializing storage system...");
+  console.log("[Storage] Initialized SupabaseDB local storage system... ");
 }
 
 main();

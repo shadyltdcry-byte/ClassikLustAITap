@@ -701,11 +701,11 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       )}
 
       {/* Character Gallery Modal */}
-      {guiState.showCharacterGallery && userId && (
+      {guiState.showCharacterGallery && (userId || playerData?.id) && (
         <CharacterGallery 
           isOpen={guiState.showCharacterGallery}
           onClose={() => updateGUIState({ showCharacterGallery: false })}
-          userId={userId}
+          userId={userId || playerData?.id}
           onCharacterSelected={(characterId) => {
             // Invalidate queries to refresh character data
             queryClient.invalidateQueries({ queryKey: ['/api/character/selected', userId] });
