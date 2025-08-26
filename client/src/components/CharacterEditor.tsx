@@ -194,6 +194,7 @@ export default function CharacterEditor({
                             placeholder="Short bio"
                             className="bg-gray-700 border-gray-600 text-white"
                             {...field}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -211,6 +212,7 @@ export default function CharacterEditor({
                             placeholder="Character description"
                             className="bg-gray-700 border-gray-600 text-white"
                             {...field}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -260,7 +262,7 @@ export default function CharacterEditor({
                       <FormItem>
                         <FormLabel className="text-white">Chat Style</FormLabel>
                         <FormControl>
-                          <Select onValueChange={field.onChange} value={field.value}>
+                          <Select onValueChange={field.onChange} value={field.value || ""}>
                             <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                               <SelectValue placeholder="Select chat style" />
                             </SelectTrigger>
@@ -288,6 +290,7 @@ export default function CharacterEditor({
                             placeholder="Likes"
                             className="bg-gray-700 border-gray-600 text-white"
                             {...field}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -305,6 +308,7 @@ export default function CharacterEditor({
                             placeholder="Dislikes"
                             className="bg-gray-700 border-gray-600 text-white"
                             {...field}
+                            value={field.value || ""}
                           />
                         </FormControl>
                         <FormMessage />
@@ -323,6 +327,7 @@ export default function CharacterEditor({
                             min="1"
                             max="100"
                             {...field}
+                            value={field.value || 1}
                             onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                             className="bg-gray-700 border-gray-600 text-white"
                           />
@@ -343,6 +348,7 @@ export default function CharacterEditor({
                             min="1"
                             max="60"
                             {...field}
+                            value={field.value || 1}
                             onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                             className="bg-gray-700 border-gray-600 text-white"
                           />
@@ -363,6 +369,7 @@ export default function CharacterEditor({
                             min="1"
                             max="60"
                             {...field}
+                            value={field.value || 1}
                             onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                             className="bg-gray-700 border-gray-600 text-white"
                           />
@@ -442,7 +449,7 @@ export default function CharacterEditor({
                       {form.watch("imageUrl") && (
                         <div className="border border-gray-600 rounded-lg p-2 bg-gray-700/50">
                           <img
-                            src={form.watch("imageUrl")}
+                            src={form.watch("imageUrl") || ""}
                             alt="Main Preview"
                             className="w-full h-40 object-contain rounded"
                             onError={e => {
@@ -457,7 +464,7 @@ export default function CharacterEditor({
                       {form.watch("avatarUrl") && (
                         <div className="border border-gray-600 rounded-lg p-2 bg-gray-700/50">
                           <img
-                            src={form.watch("avatarUrl")}
+                            src={form.watch("avatarUrl") || ""}
                             alt="Avatar Preview"
                             className="w-20 h-20 object-cover rounded-full mx-auto"
                             onError={e => {

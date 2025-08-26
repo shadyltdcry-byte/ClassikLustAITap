@@ -36,8 +36,8 @@ interface GameSettings {
 }
 
 export class SupabaseStorage implements IStorage {
-  private supabase;
-  public get supabase() { return this.supabase; }
+  private supabaseClient;
+  public get supabase() { return this.supabaseClient; }
 
   constructor() {
     const supabaseUrl = process.env.VITE_SUPABASE_URL;
@@ -47,7 +47,7 @@ export class SupabaseStorage implements IStorage {
       throw new Error("Missing Supabase environment variables");
     }
 
-    this.supabase = createClient(supabaseUrl, supabaseKey, {
+    this.supabaseClient = createClient(supabaseUrl, supabaseKey, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
@@ -551,14 +551,14 @@ export class SupabaseStorage implements IStorage {
     const dbFile = {
       id: file.id,
       character_id: file.characterId,
-      file_name: file.filename || file.fileName,
-      file_path: file.url || file.filePath,
-      file_type: file.fileType || file.type || 'image',
+      file_name: file.fileName,
+      file_path: file.filePath,
+      file_type: file.fileType || 'image',
       mood: file.mood,
       pose: file.pose,
       animation_sequence: file.animationSequence,
-      is_nsfw: file.isNsfw || file.isNSFW || false,
-      is_vip: file.isVip || file.isVIP || file.isVipOnly || false,
+      is_nsfw: file.isNsfw || false,
+      is_vip: file.isVip || false,
       created_at: file.createdAt || new Date().toISOString()
     };
 

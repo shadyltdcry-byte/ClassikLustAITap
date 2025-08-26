@@ -51,7 +51,7 @@ export default function ImageManager({
   const [formFields, setFormFields] = useState({
     mood: "",
     pose: "",
-    requiredLevel: 1,
+    levelRequirement: 1,
     chatSendChance: 5,
     isNsfw: false,
     isVipOnly: false,
@@ -98,7 +98,7 @@ export default function ImageManager({
       formData.append('imageType', imageType);
       formData.append('mood', formFields.mood);
       formData.append('pose', formFields.pose);
-      formData.append('requiredLevel', formFields.requiredLevel.toString());
+      formData.append('levelRequirement', formFields.levelRequirement.toString());
       formData.append('chatSendChance', formFields.chatSendChance.toString());
       formData.append('isNsfw', formFields.isNsfw.toString());
       formData.append('isVipOnly', formFields.isVipOnly.toString());
@@ -136,7 +136,7 @@ export default function ImageManager({
       setFormFields({
         mood: "",
         pose: "",
-        requiredLevel: 1,
+        levelRequirement: 1,
         chatSendChance: 5,
         isNsfw: false,
         isVipOnly: false,
@@ -317,8 +317,8 @@ export default function ImageManager({
               <Input
                 type="number"
                 min="1"
-                value={formFields.requiredLevel}
-                onChange={(e) => setFormFields(prev => ({ ...prev, requiredLevel: parseInt(e.target.value) || 1 }))}
+                value={formFields.levelRequirement}
+                onChange={(e) => setFormFields(prev => ({ ...prev, levelRequirement: parseInt(e.target.value) || 1 }))}
                 className="bg-black/30 border-white/20 text-white"
               />
             </div>

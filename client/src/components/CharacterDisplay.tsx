@@ -37,7 +37,6 @@ const defaultCharacter: Character = {
   responseTimeMax: 3,
   likes: "",
   dislikes: "",
-  requiredLevel: 1,
   createdAt: new Date(),
 };
 

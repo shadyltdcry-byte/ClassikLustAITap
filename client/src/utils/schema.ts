@@ -42,7 +42,7 @@ export interface Character {
   chatStyle: string;
   likes?: string;
   dislikes?: string;
-  requiredLevel: number;
+  levelRequirement: number;
   level: number;
   responseTimeMin: number;
   responseTimeMax: number;
@@ -114,7 +114,7 @@ export interface LevelRequirementSchema {
   requirements: {
     upgradeType: 'lpPerHour' | 'energy' | 'lpPerTap';
     upgradeName?: string;
-    requiredLevel: number;
+    levelRequirement: number;
   }[];
 }
 
