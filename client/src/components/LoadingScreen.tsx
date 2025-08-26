@@ -6,7 +6,7 @@ interface LoadingScreenProps {
   progress: number;
 }
 
-export default function LoadingScreen({ progress }: LoadingScreenProps) {
+export function LoadingScreen({ progress }: LoadingScreenProps) {
   const [displayProgress, setDisplayProgress] = useState(0);
 
   useEffect(() => {

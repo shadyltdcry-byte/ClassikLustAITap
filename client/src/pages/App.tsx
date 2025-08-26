@@ -8,9 +8,10 @@ import AdminMenu from "@/plugins/admin/AdminMenu";
 import NotFound from "@/pages/not-found";
 import { GameProvider } from "@/context/GameProvider";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { AdminUIToggler } from "@/plugins/admin/adminGUI";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import TelegramAuth from "@/components/TelegramAuth";
 
 // Wrapper component for GameGUI to handle routing
 function GameGUIPage() {
@@ -49,17 +50,37 @@ function App() {
 }
 
 function AppContent() {
-  const { isLoading, isAuthenticated, loginAsGuest } = useAuth();
+  const { isLoading, isAuthenticated, login } = useAuth();
+  const [loadingProgress, setLoadingProgress] = useState(0);
 
   useEffect(() => {
-    // Auto-login as guest if not authenticated
-    if (!isLoading && !isAuthenticated) {
-      loginAsGuest();
+    if (isLoading) {
+      // Simulate loading progress
+      const interval = setInterval(() => {
+        setLoadingProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(interval);
+            return 100;
+          }
+          return prev + 10;
+        });
+      }, 200);
+
+      return () => clearInterval(interval);
     }
-  }, [isLoading, isAuthenticated, loginAsGuest]);
+  }, [isLoading]);
+
+  const handleAuthSuccess = (user: any) => {
+    console.log('Authentication successful:', user);
+    login(user.id, user);
+  };
 
   if (isLoading) {
-    return <LoadingScreen />;
+    return <LoadingScreen progress={loadingProgress} />;
+  }
+
+  if (!isAuthenticated) {
+    return <TelegramAuth onAuthSuccess={handleAuthSuccess} />;
   }
 
   return (

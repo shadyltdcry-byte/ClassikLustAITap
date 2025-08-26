@@ -1,93 +1,140 @@
 
-import React, { useEffect } from 'react';
-import { Button } from './ui/button';
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Smartphone, ExternalLink, Loader2 } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface TelegramAuthProps {
-  onAuth: (authData: any) => void;
+  onAuthSuccess: (user: any) => void;
 }
 
-declare global {
-  interface Window {
-    onTelegramAuth: (user: any) => void;
-  }
-}
+export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-export default function TelegramAuth({ onAuth }: TelegramAuthProps) {
   useEffect(() => {
-    // Create and inject Telegram Login Widget script
-    const script = document.createElement('script');
-    script.src = 'https://telegram.org/js/telegram-widget.js?22';
-    script.setAttribute('data-telegram-login', 'ClassikLoyalty_Bot');
-    script.setAttribute('data-size', 'large');
-    script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-    script.setAttribute('data-request-access', 'write');
-    script.async = true;
+    // Check if we're running inside Telegram WebApp
+    const tg = (window as any).Telegram?.WebApp;
+    if (tg) {
+      tg.ready();
+      handleTelegramAuth(tg.initData);
+    }
+  }, []);
 
-    // Define the callback function globally
-    window.onTelegramAuth = (user: any) => {
-      console.log('Telegram authentication successful:', user);
-      onAuth(user);
-    };
-
-    // Find the container and append the script
-    const container = document.getElementById('telegram-login-container');
-    if (container && !container.hasChildNodes()) {
-      container.appendChild(script);
+  const handleTelegramAuth = async (initData: string) => {
+    if (!initData) {
+      setError("No Telegram data available");
+      return;
     }
 
-    return () => {
-      // Cleanup
-      if (container && container.hasChildNodes()) {
-        container.innerHTML = '';
-      }
-      if (window.onTelegramAuth) {
-        delete window.onTelegramAuth;
-      }
-    };
-  }, [onAuth]);
+    setIsLoading(true);
+    setError(null);
 
-  const handleManualAuth = () => {
-    // Fallback manual authentication
-    const telegramWebApp = (window as any).Telegram?.WebApp;
-    if (telegramWebApp) {
-      const user = telegramWebApp.initDataUnsafe?.user;
-      if (user) {
-        console.log('Manual Telegram auth:', user);
-        onAuth({
-          id: user.id,
-          first_name: user.first_name,
-          last_name: user.last_name,
-          username: user.username,
-          photo_url: user.photo_url,
-          auth_date: Math.floor(Date.now() / 1000),
-          hash: 'webapp_auth'
-        });
+    try {
+      const response = await apiRequest("POST", "/api/auth/telegram", { initData });
+      const data = await response.json();
+
+      if (data.success) {
+        onAuthSuccess(data.user);
       } else {
-        alert('Please open this game through Telegram to use Telegram login.');
+        setError(data.error || "Authentication failed");
       }
-    } else {
-      alert('Telegram Web App not detected. Please open through Telegram or use Guest login.');
+    } catch (err: any) {
+      setError(err.message || "Authentication failed");
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  const handleManualLogin = () => {
+    // Fallback for development/testing
+    const mockUser = {
+      id: "default-player",
+      username: "Player",
+      firstName: "Test",
+      lastName: "User"
+    };
+    onAuthSuccess(mockUser);
+  };
+
   return (
-    <div className="space-y-3">
-      {/* Telegram Login Widget Container */}
-      <div id="telegram-login-container" className="flex justify-center">
-        {/* Widget will be injected here */}
-      </div>
-      
-      {/* Fallback Manual Button */}
-      <Button 
-        onClick={handleManualAuth}
-        className="w-full bg-blue-500 hover:bg-blue-600 text-white"
-        variant="default"
-      >
-        <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
-        </svg>
-        Login with Telegram
-      </Button>
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-pink-900 flex items-center justify-center p-4">
+      {/* Background Effects */}
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg width=%2760%27 height=%2760%27 viewBox=%270 0 60 60%27 xmlns=%27http://www.w3.org/2000/svg%27%3E%3Cg fill=%27none%27 fill-rule=%27evenodd%27%3E%3Cg fill=%27%23ff69b4%27 fill-opacity=%270.05%27%3E%3Ccircle cx=%2730%27 cy=%2730%27 r=%272%27/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')] opacity-20"></div>
+
+      <Card className="w-full max-w-md bg-gray-900/90 backdrop-blur-sm border-gray-700 relative z-10">
+        <CardHeader className="text-center">
+          <div className="w-24 h-24 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 shadow-2xl flex items-center justify-center border-4 border-pink-400/50">
+            <span className="text-3xl font-bold text-white">CL</span>
+          </div>
+          
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-pink-400 via-purple-500 to-indigo-400 bg-clip-text text-transparent">
+            ClassikLust
+          </CardTitle>
+          
+          <CardDescription className="text-white/70">
+            🚀 New Auto-Authentication Feature! 
+            <br />Click /start in Telegram for instant login!
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="space-y-6">
+          {error && (
+            <div className="bg-red-900/20 border border-red-500/50 rounded-lg p-3">
+              <p className="text-red-400 text-sm">{error}</p>
+            </div>
+          )}
+
+          <div className="text-center space-y-4">
+            <div className="flex items-center justify-center space-x-2 text-white/80">
+              <Smartphone className="w-5 h-5" />
+              <span>Connect via Telegram</span>
+            </div>
+
+            <p className="text-sm text-white/60">
+              Start the game by opening it through our Telegram bot: 
+              <br />
+              <span className="font-mono bg-gray-800/50 px-2 py-1 rounded text-blue-400 mt-1 inline-block">
+                @ClassikLoyalty_Bot
+              </span>
+            </p>
+
+            <div className="space-y-3">
+              <Button
+                onClick={() => window.open("https://t.me/ClassikLoyalty_Bot", "_blank")}
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                disabled={isLoading}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Open Telegram Bot
+              </Button>
+
+              {process.env.NODE_ENV === "development" && (
+                <Button
+                  onClick={handleManualLogin}
+                  variant="outline"
+                  className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Authenticating...
+                    </>
+                  ) : (
+                    "Dev Mode: Manual Login"
+                  )}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="text-center text-xs text-white/50">
+            <p>v2.0.0 - Secure Telegram Authentication</p>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
