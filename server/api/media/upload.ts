@@ -108,12 +108,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           isNsfw: config.isNsfw || false,
           isEvent: config.isEvent || false,
           randomSendChance: config.randomSendChance || 5,
+          enabledForChat: config.enabledForChat !== false, // Default true
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
 
         // Save to database
-        const savedFile = await supabase.createMediaFile(mediaFileData);
+        const savedFile = await supabase.saveMediaFile(mediaFileData);
         
         if (savedFile) {
           uploadedFiles.push(savedFile);

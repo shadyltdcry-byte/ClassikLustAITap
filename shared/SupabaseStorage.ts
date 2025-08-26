@@ -645,6 +645,10 @@ export class SupabaseStorage implements IStorage {
       animation_sequence: file.animationSequence,
       is_nsfw: file.isNsfw || false,
       is_vip: file.isVip || false,
+      is_event: file.isEvent || false,
+      random_send_chance: file.randomSendChance || 5,
+      required_level: file.requiredLevel || 1,
+      enabled_for_chat: file.enabledForChat !== false,
       created_at: file.createdAt || new Date().toISOString()
     };
 

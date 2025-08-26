@@ -52,7 +52,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     isNsfw: false,
     isEvent: false,
     randomSendChance: 5,
-    category: 'Character' // New category field
+    category: 'Character', // New category field
+    enabledForChat: true // Default enabled for chat sending
   });
 
   const queryClient = useQueryClient();
@@ -451,7 +452,16 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 />
               </div>
 
-              {/* Removed Event Content Switch - replaced with dropdown below */}
+              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+                <div>
+                  <Label className="text-white">Chat Sending</Label>
+                  <p className="text-xs text-gray-400">Enable for chat</p>
+                </div>
+                <Switch
+                  checked={uploadConfig.enabledForChat}
+                  onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, enabledForChat: checked }))}
+                />
+              </div>
             </div>
 
             {/* Selected Files Preview */}
