@@ -57,7 +57,10 @@ const getIcon = (id: string) => {
 };
 
 const calculateCost = (baseCost: number, level: number): number => {
-  return Math.floor(baseCost * Math.pow(1.15, level));
+  // Cap the level to prevent exponential explosion
+  const cappedLevel = Math.min(level, 50);
+  // Use a more reasonable scaling factor
+  return Math.floor(baseCost * Math.pow(1.12, cappedLevel));
 };
 
 const calculateHourlyBonus = (baseBonus: number, level: number): number => {
@@ -164,6 +167,11 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
   };
 
   const handlePurchase = (boosterId: string) => {
+    // Prevent multiple rapid purchases
+    if (purchaseBoosterMutation.isPending) {
+      return;
+    }
+    
     // This is still a mock, as the user data isn't tied to the mock booster data
     // In a real app, this would deduct the points from the user.
     purchaseBoosterMutation.mutate(boosterId);

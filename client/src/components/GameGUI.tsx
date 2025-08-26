@@ -77,8 +77,8 @@ interface GUIState {
 
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   // Auth is handled at App level, use player data directly
-  const userId = playerData?.id || "";
-  const isAuthenticated = true; // If we're here, we're authenticated
+  const userId = playerData?.id;
+  const isAuthenticated = !!userId; // If we have a userId, we're authenticated
 
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
@@ -696,11 +696,17 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       )}
 
       {/* Character Gallery Modal */}
-      {guiState.showCharacterGallery && (
+      {guiState.showCharacterGallery && userId && (
         <CharacterGallery 
           isOpen={guiState.showCharacterGallery}
           onClose={() => updateGUIState({ showCharacterGallery: false })}
           userId={userId}
+          onCharacterSelected={(characterId) => {
+            // Invalidate queries to refresh character data
+            queryClient.invalidateQueries({ queryKey: ['/api/character/selected', userId] });
+            queryClient.invalidateQueries({ queryKey: ['/api/player', userId] });
+            updateGUIState({ showCharacterGallery: false });
+          }}
         />
       )}
     </div>

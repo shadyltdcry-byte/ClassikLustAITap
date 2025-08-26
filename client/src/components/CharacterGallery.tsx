@@ -20,21 +20,25 @@ import {
   Image as ImageIcon
 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Character, MediaFile } from "@shared/schema";
 
 interface CharacterGalleryProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
+  onCharacterSelected?: (characterId: string) => void;
 }
 
-export default function CharacterGallery({ isOpen, onClose, userId }: CharacterGalleryProps) {
+export default function CharacterGallery({ isOpen, onClose, userId, onCharacterSelected }: CharacterGalleryProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSlideshow, setIsSlideshow] = useState(false);
   const [slideshowSpeed, setSlideshowSpeed] = useState(3000);
   const [filter, setFilter] = useState<'all' | 'unlocked' | 'locked' | 'vip' | 'event'>('all');
   const slideshowRef = useRef<NodeJS.Timeout | null>(null);
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch characters - using correct endpoint
   const { data: characters = [], isLoading: charactersLoading } = useQuery({
@@ -56,6 +60,37 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
     enabled: isOpen && !!selectedCharacter
   });
 
+  // Character selection mutation
+  const selectCharacterMutation = useMutation({
+    mutationFn: async (characterId: string) => {
+      const response = await apiRequest("POST", `/api/player/${userId}/select-character`, {
+        characterId
+      });
+      if (!response.ok) {
+        throw new Error("Failed to select character");
+      }
+      return response.json();
+    },
+    onSuccess: (data, characterId) => {
+      const character = characters.find((c: Character) => c.id === characterId);
+      toast({
+        title: "Character Selected!",
+        description: `You've chosen ${character?.name}`,
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/character/selected", userId] });
+      if (onCharacterSelected) {
+        onCharacterSelected(characterId);
+      }
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to select character. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   // Filter characters based on current filter
   const filteredCharacters = characters.filter((char: Character) => {
     switch (filter) {
@@ -66,6 +101,19 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
       default: return true;
     }
   });
+
+  const handleSelectCharacter = (characterId: string) => {
+    const character = characters.find((c: Character) => c.id === characterId);
+    if (!character?.isEnabled) {
+      toast({
+        title: "Character Locked",
+        description: "This character is not yet unlocked.",
+        variant: "destructive",
+      });
+      return;
+    }
+    selectCharacterMutation.mutate(characterId);
+  };
 
   // Slideshow functionality
   useEffect(() => {
@@ -208,7 +256,7 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                             {getCharacterIcon(char)}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-gray-300">
-                            <span>Level {char.levelRequirement}+</span>
+                            <span>Level {char.level || 1}</span>
                             {char.isEnabled ? (
                               <Badge variant="secondary" className="bg-green-600/20 text-green-400">
                                 <Unlock className="w-2 h-2 mr-1" /> Unlocked
@@ -239,6 +287,16 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                         {getCharacterIcon(selectedCharacter)}
                       </h2>
                       <div className="flex gap-2">
+                        {selectedCharacter.isEnabled && onCharacterSelected && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleSelectCharacter(selectedCharacter.id)}
+                            disabled={selectCharacterMutation.isPending}
+                            data-testid="button-select-character"
+                          >
+                            {selectCharacterMutation.isPending ? "Selecting..." : "Select Character"}
+                          </Button>
+                        )}
                         {characterImages.length > 1 && (
                           <>
                             <Button
@@ -333,7 +391,7 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                     <div className="flex gap-2 overflow-x-auto pb-2">
                       {characterImages.map((img: MediaFile, index: number) => (
                         <button
-                          key={img.id}
+                          key={`thumbnail-${img.id}-${index}`}
                           className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
                             index === currentImageIndex 
                               ? 'border-purple-400 ring-1 ring-purple-400' 
