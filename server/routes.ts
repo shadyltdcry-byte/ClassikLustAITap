@@ -646,10 +646,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // User endpoint for useGameState hook
+  app.get("/api/user/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      
+      // If userId is not a valid UUID, return mock user data for guest users
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(userId)) {
+        console.log(`Invalid UUID userId: ${userId}, returning mock user data`);
+        return res.json({
+          id: userId,
+          username: "Player",
+          password: "",
+          level: 1,
+          lp: 5000,
+          lpPerHour: 250,
+          lpPerTap: 1.5,
+          energy: 1000,
+          maxEnergy: 1000,
+          charisma: 0,
+          vipStatus: false,
+          nsfwConsent: false,
+          lastTick: new Date(),
+          createdAt: new Date()
+        });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      res.status(500).json({ error: 'Failed to fetch user data' });
+    }
+  });
+
   // Player stats endpoint
   app.get("/api/stats/:playerId", async (req, res) => {
     try {
       const { playerId } = req.params;
+      
+      // If playerId is not a valid UUID, return mock stats data for guest users
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(playerId)) {
+        console.log(`Invalid UUID playerId: ${playerId}, returning mock stats data`);
+        return res.json({
+          playerId,
+          level: 1,
+          totalLp: 5000,
+          totalTaps: 50,
+          totalLpEarned: 1000,
+          totalEnergy: 1000,
+          totalEnergyUsed: 100,
+          maxEnergy: 1000,
+          lpPerHour: 250,
+          lpPerTap: 1.5,
+          charisma: 0,
+          sessionsPlayed: 5,
+          upgrades: {
+            intellect: 1,
+            dexterity: 1,
+            booksmarts: 1
+          }
+        });
+      }
+
       const user = await storage.getUser(playerId);
 
       if (!user) {
