@@ -1331,6 +1331,32 @@ Respond as if you're having a real conversation with someone you care about. You
     }
   });
 
+  // Simple Telegram authentication endpoint
+  app.post('/api/auth/telegram', async (req, res) => {
+    try {
+      const { telegram_id, username, token } = req.body;
+      
+      if (!telegram_id) {
+        return res.status(400).json({ error: 'telegram_id is required' });
+      }
+      
+      // For now, just log the user in (you can add more validation later)
+      console.log(`Telegram auth for user: ${telegram_id} (${username})`);
+      
+      res.json({ 
+        success: true, 
+        message: "You're logged in!",
+        user: {
+          telegram_id,
+          username
+        }
+      });
+    } catch (error) {
+      console.error('Telegram auth error:', error);
+      res.status(500).json({ error: 'Authentication failed' });
+    }
+  });
+
   app.get("/api/auth/telegram/verify", (req, res) => {
     const { hash, ...data } = req.query;
 

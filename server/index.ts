@@ -59,14 +59,39 @@ if (token) {
   try {
     const bot = new TelegramBot(token, { polling: true });
 
-    bot.on('message', (msg: any) => {
+    bot.on('message', async (msg: any) => {
       const chatId = msg.chat.id;
       const messageText = msg.text;
+      const telegram_id = msg.from.id;
+      const username = msg.from.username;
 
-      if (messageText === '/start') {
-        bot.sendMessage(chatId, 'Welcome to your Replit Telegram Bot!');
-      } else if (messageText) {
-        bot.sendMessage(chatId, `You said: ${messageText}`);
+      try {
+        // Auto-authenticate user on every message
+        const authResponse = await fetch('http://localhost:5000/api/auth/telegram', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            telegram_id,
+            username
+          })
+        });
+
+        if (authResponse.ok) {
+          const authData = await authResponse.json();
+          
+          if (messageText === '/start') {
+            bot.sendMessage(chatId, 'Welcome to your Replit Telegram Bot!\nYou\'re logged in!');
+          } else if (messageText) {
+            bot.sendMessage(chatId, `You said: ${messageText}\nYou're logged in!`);
+          }
+        } else {
+          bot.sendMessage(chatId, 'Authentication failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Bot auth error:', error);
+        bot.sendMessage(chatId, 'Service temporarily unavailable.');
       }
     });
 
