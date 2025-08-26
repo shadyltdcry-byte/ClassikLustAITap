@@ -1,0 +1,17 @@
+[
+  {
+    "id": "user-1756198054585",
+    "content": "Hey",
+    "sender": "user",
+    "timestamp": "2025-08-26T08:47:34.585Z",
+    "characterId": "seraphina"
+  },
+  {
+    "id": "ai-1756198054586",
+    "content": "Hey there! 😊 What's been going on with you today? Anything fun or exciting happen?",
+    "sender": "character",
+    "timestamp": "2025-08-26T08:47:34.585Z",
+    "characterId": "seraphina",
+    "mood": "normal"
+  }
+]

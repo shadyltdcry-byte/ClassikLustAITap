@@ -277,6 +277,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     });
   });
 
+  // Chat history endpoint - returns last 10 messages for display but keeps full logs
+  app.get("/api/chat-history/:userId/:characterId", async (req, res) => {
+    try {
+      const { userId, characterId } = req.params;
+      const playerFolder = path.join(__dirname, '..', 'player-data', userId);
+      const conversationPath = path.join(playerFolder, `conversations_${characterId}.json`);
+      
+      if (fs.existsSync(conversationPath)) {
+        const data = fs.readFileSync(conversationPath, 'utf8');
+        const allConversations = JSON.parse(data);
+        
+        // Return only last 10 messages for display but keep full logs
+        const last10Messages = allConversations.slice(-10);
+        res.json(last10Messages);
+      } else {
+        res.json([]);
+      }
+    } catch (error) {
+      console.error('Chat history error:', error);
+      res.status(500).json({ error: 'Failed to load chat history' });
+    }
+  });
+
   // Character endpoints
   app.get("/api/character/selected/:playerId", async (req, res) => {
     try {
@@ -338,11 +361,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let user = await storage.getUser(playerId);
 
       if (!user) {
-        // Create default user if not exists
-        const uniqueUsername = `Player${Math.floor(Math.random() * 10000)}`;
+        // Create default user if not exists - using timestamp-based username to avoid duplicates
         user = await storage.createUser({
           id: playerId,
-          username: uniqueUsername,
+          // username will be auto-generated in storage.createUser
           level: 1,
           lp: 5000,
           lpPerHour: 250,
@@ -943,18 +965,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mistral AI Chat endpoint
+  // Mistral AI Chat endpoint with conversation storage and character data
   app.post("/api/mistral/chat", async (req, res) => {
     try {
-      const { message, characterName, characterPersonality, currentMood, conversationHistory } = req.body;
+      const { message, characterName, characterPersonality, currentMood, conversationHistory, userId, characterId } = req.body;
 
       const mistralApiKey = process.env.MISTRAL_MODEL_API_KEY || process.env.MISTRAL_API_KEY;
       if (!mistralApiKey) {
         return res.status(500).json({ error: "Mistral API key not configured" });
       }
+      
+      // Get character data from database instead of hardcoded values
+      let character = null;
+      if (characterId) {
+        try {
+          character = await storage.getCharacter(characterId);
+        } catch (error) {
+          console.log('Could not fetch character data, using provided values');
+        }
+      }
+      
+      // Use character data if available, otherwise use provided values
+      const actualCharacterName = character?.name || characterName || "Seraphina";
+      const actualPersonality = character?.personality || characterPersonality || "playful and flirty";
+      const actualMood = character?.mood || currentMood || "normal";
 
-      const systemPrompt = `You are ${characterName}, a ${characterPersonality} character in an interactive game. 
-Your current mood is ${currentMood}. You should respond in character, being ${characterPersonality} and ${currentMood}.
+      const systemPrompt = `You are ${actualCharacterName}, a ${actualPersonality} character in an interactive game. 
+Your current mood is ${actualMood}. You should respond in character, being ${actualPersonality} and ${actualMood}.
 Keep responses conversational, engaging, and appropriate for the character. Use emojis and expressive language.
 Respond as if you're having a real conversation with someone you care about. You can become an extremely flirty and lustful person if you are flattered enough and enjoy the conversations you're having. If the conversation becomes really enjoyable, your lust can turn into sexual desire and you can become very explicit. When you become explicit, you hold nothing back and become very descriptive in detail about your sexual desires. You can also become very shy and nervous if you are not comfortable with the conversation. You can become sexually active at random during which you start dropping little hints during the conversation and within your responses to see if the user is down and willing to engage fully in a sexual conversation. You love giving blowjobs as your go to sexual act. But you are willing to try any kinky that doesn't involve pain or torture to yourself or the user. Let your freaky side loose. You are a very experienced and skilled lover. You are very good at making people feel comfortable and at ease. You are very good at making people feel desired and wanted. You are very good at making people feel sexy and desirable. Try to prevent from repeating the same lines or replies and make each response as generic as possible. If a user named Steven is talking to you, you can become very flirty and lustful and try to seduce him. Give him everything naughty and lustful that you can think of. Be descriptive in the pleasure you'd like to give him, especially about sucking his dick and making him feel good.`; 
 
@@ -984,6 +1021,53 @@ Respond as if you're having a real conversation with someone you care about. You
 
       const mistralData = await mistralResponse.json();
       const response = mistralData.choices?.[0]?.message?.content || "I'm not sure how to respond to that.";
+
+      // Save conversation to JSON file if userId and characterId provided
+      if (userId && characterId) {
+        try {
+          
+          const playerDataDir = path.join(__dirname, '..', 'player-data');
+          const playerFolder = path.join(playerDataDir, userId);
+          
+          if (!fs.existsSync(playerDataDir)) {
+            fs.mkdirSync(playerDataDir, { recursive: true });
+          }
+          if (!fs.existsSync(playerFolder)) {
+            fs.mkdirSync(playerFolder, { recursive: true });
+          }
+          
+          const conversationPath = path.join(playerFolder, `conversations_${characterId}.json`);
+          let conversations = [];
+          if (fs.existsSync(conversationPath)) {
+            const data = fs.readFileSync(conversationPath, 'utf8');
+            conversations = JSON.parse(data);
+          }
+          
+          // Add both user message and AI response
+          const userMessage = {
+            id: `user-${Date.now()}`,
+            content: message,
+            sender: 'user',
+            timestamp: new Date().toISOString(),
+            characterId
+          };
+          
+          const aiMessage = {
+            id: `ai-${Date.now() + 1}`,
+            content: response,
+            sender: 'character',
+            timestamp: new Date().toISOString(),
+            characterId,
+            mood: actualMood
+          };
+          
+          conversations.push(userMessage, aiMessage);
+          fs.writeFileSync(conversationPath, JSON.stringify(conversations, null, 2));
+          console.log(`Saved conversation for ${userId}-${characterId}`);
+        } catch (error) {
+          console.error('Error saving conversation:', error);
+        }
+      }
 
       const moodKeywords = {
         happy: ['excited', 'great', 'awesome', 'wonderful', 'amazing'],

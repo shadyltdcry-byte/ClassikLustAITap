@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Send, Heart, Settings, Sparkles, MessageCircle, Bot, User as UserIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/context/AuthContext";
 import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {
@@ -305,7 +306,9 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
           characterName: character?.name || "Seraphina",
           characterPersonality: character?.personality || "playful and flirty",
           currentMood: characterMood,
-          conversationHistory
+          conversationHistory,
+          userId: userId || "default-player",
+          characterId: character?.id || "seraphina"
         });
         
         if (!response.ok) {
