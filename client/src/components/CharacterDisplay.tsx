@@ -16,17 +16,22 @@ interface CharacterDisplayProps {
 
 // Fallback default character
 const defaultCharacter: Character = {
-  id: "550e8400-e29b-41d4-a716-446655440001", // Valid UUID format
-  name: "Seraphina",
-  personality: "playful",
-  backstory: "A mysterious and playful character who loves to chat and have fun!",
-  mood: "flirty",
+  id: "default-character-display", // Unique default ID
+  name: "Select Character",
+  personality: "neutral",
+  bio: null,
+  description: null,
+  backstory: "Please select a character to interact with!",
+  mood: "neutral",
   level: 1,
   isNsfw: false,
   isVip: false,
   levelRequirement: 1,
   isEnabled: true,
   customTriggers: [],
+  avatarPath: null,
+  imageUrl: null,
+  avatarUrl: null,
   createdAt: new Date(),
 };
 

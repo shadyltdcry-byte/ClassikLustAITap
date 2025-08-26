@@ -59,10 +59,10 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
   // Filter characters based on current filter
   const filteredCharacters = characters.filter((char: Character) => {
     switch (filter) {
-      case 'unlocked': return char.isUnlocked;
-      case 'locked': return !char.isUnlocked;
+      case 'unlocked': return char.isEnabled; // Use isEnabled instead of isUnlocked
+      case 'locked': return !char.isEnabled;
       case 'vip': return char.isVip;
-      case 'event': return char.isEvent;
+      case 'event': return false; // No event field exists, return false
       default: return true;
     }
   });
@@ -106,17 +106,15 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
   };
 
   const getCharacterIcon = (char: Character) => {
-    if (char.isEvent) return <Sparkles className="w-3 h-3 text-purple-400" />;
     if (char.isVip) return <Crown className="w-3 h-3 text-yellow-400" />;
     if (char.level && char.level > 5) return <Star className="w-3 h-3 text-blue-400" />;
     return <Heart className="w-3 h-3 text-pink-400" />;
   };
 
-  // Fixed image URL handling
+  // Fixed image URL handling using correct MediaFile schema fields
   const getImageUrl = (media: MediaFile) => {
-    if (media.url) return media.url;
-    if (media.path) return media.path.startsWith('/') ? media.path : `/uploads/${media.path}`;
-    return media.filename ? `/uploads/${media.filename}` : '/default-character.jpg';
+    if (media.filePath) return media.filePath.startsWith('/') ? media.filePath : `/uploads/${media.filePath}`;
+    return media.fileName ? `/uploads/${media.fileName}` : '/default-character.jpg';
   };
 
   const getCurrentImage = () => {
@@ -197,7 +195,7 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                               (e.target as HTMLImageElement).src = '/default-avatar.jpg';
                             }}
                           />
-                          {!char.isUnlocked && (
+                          {!char.isEnabled && (
                             <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
                               <Lock className="w-4 h-4 text-red-400" />
                             </div>
@@ -210,8 +208,8 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                             {getCharacterIcon(char)}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-gray-300">
-                            <span>Level {char.requiredLevel}+</span>
-                            {char.isUnlocked ? (
+                            <span>Level {char.levelRequirement}+</span>
+                            {char.isEnabled ? (
                               <Badge variant="secondary" className="bg-green-600/20 text-green-400">
                                 <Unlock className="w-2 h-2 mr-1" /> Unlocked
                               </Badge>

@@ -25,6 +25,7 @@ import AdminMenu from "@/plugins/admin/AdminMenu";
 import AIChat from "@/plugins/aicore/AIChat";
 import LevelUp from "@/plugins/gameplay/LevelUp";
 import Upgrades from "@/plugins/gameplay/Upgrades";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 //import { AdminUIToggler } from './debugger/modules/adminUI';
 
 
@@ -302,13 +303,13 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           <div className="max-w-sm w-full">
             <CharacterDisplay
               character={{
-                id: "550e8400-e29b-41d4-a716-446655440001",
-                name: "Seraphina",
-                personality: "playful",
-                bio: "A cheerful AI companion who loves to chat and play games.",
-                description: "You are a playful and flirty character named Seraphina.",
-                backstory: "Tap to interact with Seraphina!",
-                mood: "flirty",
+                id: "game-gui-character",
+                name: "Select Character",
+                personality: "neutral",
+                bio: "Please select a character to interact with!",
+                description: "Default game character placeholder.",
+                backstory: "Tap to start your adventure!",
+                mood: "neutral",
                 level: 1,
                 isNsfw: false,
                 isVip: false,
