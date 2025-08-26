@@ -201,6 +201,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.body;
 
+      // If userId is not a valid UUID, return mock tap data for guest users
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(userId)) {
+        console.log(`Invalid UUID userId: ${userId}, returning mock tap data`);
+        const lpGain = 1.5;
+        return res.json({
+          success: true,
+          lpGain,
+          newTotal: 5000 + lpGain, // Mock calculation
+          energyUsed: 1,
+          userId
+        });
+      }
+
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
