@@ -13,8 +13,14 @@
   "levelRequirement": 5,
   "customTriggers": [],
   "avatarPath": "/uploads/luna-neutral.jpg",
-  "imageUrl": "/uploads/miscsfw_hs6a4c9d.gif",
-  "avatarUrl": "/uploads/miscsfw_ao2ikhcf.gif",
+  "imageUrl": "/uploads/default-character (copy).jpg",
+  "avatarUrl": "/uploads/default-avatar.jpg",
   "createdAt": "2025-08-26T10:00:00.000Z",
-  "updatedAt": "2025-08-26T13:03:26.834Z"
+  "updatedAt": "2025-08-26T13:24:57.983Z",
+  "chatStyle": "casual",
+  "likes": "",
+  "dislikes": "",
+  "requiredLevel": 1,
+  "responseTimeMin": 1,
+  "responseTimeMax": 3
 }

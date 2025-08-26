@@ -9,6 +9,7 @@
 
 
 import express, { type Request, Response, NextFunction } from "express";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
@@ -52,6 +53,10 @@ function main() {
 main();
 
 const app = express();
+
+// Serve static files from public directory
+app.use(express.static(path.join(process.cwd(), 'public')));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
