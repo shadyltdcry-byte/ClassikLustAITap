@@ -51,7 +51,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     isVip: false,
     isNsfw: false,
     isEvent: false,
-    randomSendChance: 5
+    randomSendChance: 5,
+    category: 'Character' // New category field
   });
 
   const queryClient = useQueryClient();
@@ -341,6 +342,26 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 </Select>
               </div>
 
+              {/* Category Dropdown */}
+              <div>
+                <Label className="text-white">Content Category</Label>
+                <Select
+                  value={uploadConfig.category}
+                  onValueChange={(value) => setUploadConfig(prev => ({ ...prev, category: value }))}
+                >
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-700 border-gray-600">
+                    <SelectItem value="Character" className="text-white">Character</SelectItem>
+                    <SelectItem value="Avatar" className="text-white">Avatar</SelectItem>
+                    <SelectItem value="Misc" className="text-white">Misc</SelectItem>
+                    <SelectItem value="Event" className="text-white">Event</SelectItem>
+                    <SelectItem value="Other" className="text-white">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div>
                 <Label className="text-white">Mood</Label>
                 <Select
@@ -411,16 +432,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
-                <div>
-                  <Label className="text-white">Event Content</Label>
-                  <p className="text-xs text-gray-400">Special event media</p>
-                </div>
-                <Switch
-                  checked={uploadConfig.isEvent}
-                  onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, isEvent: checked }))}
-                />
-              </div>
+              {/* Removed Event Content Switch - replaced with dropdown below */}
             </div>
 
             {/* Selected Files Preview */}

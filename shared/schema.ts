@@ -25,6 +25,8 @@ export const characters = pgTable("characters", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   personality: text("personality").notNull(),
+  bio: text("bio"), // For players to see
+  description: text("description"), // For AI system prompts with variables like {characterName}, {mood}
   backstory: text("backstory"),
   mood: text("mood").notNull().default("neutral"),
   level: integer("level").notNull().default(1),
@@ -48,7 +50,7 @@ export const userCharacters = pgTable("user_characters", {
 
 export const mediaFiles = pgTable("media_files", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  characterId: uuid("character_id").notNull().references(() => characters.id, { onDelete: "cascade" }),
+  characterId: uuid("character_id").references(() => characters.id, { onDelete: "cascade" }),
   fileName: text("file_name").notNull(),
   filePath: text("file_path").notNull(),
   fileType: text("file_type").notNull(), // image, video, gif
@@ -57,6 +59,10 @@ export const mediaFiles = pgTable("media_files", {
   animationSequence: integer("animation_sequence"),
   isNsfw: boolean("is_nsfw").notNull().default(false),
   isVip: boolean("is_vip").notNull().default(false),
+  isEvent: boolean("is_event").notNull().default(false),
+  randomSendChance: integer("random_send_chance").notNull().default(5),
+  requiredLevel: integer("required_level").notNull().default(1),
+  category: text("category").default("Character"), // Character, Avatar, Misc, Event, Other
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 

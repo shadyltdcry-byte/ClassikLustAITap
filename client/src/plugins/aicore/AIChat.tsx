@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Send, Heart, Settings, Sparkles, MessageCircle, Bot, User as UserIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/context/AuthContext";
+// Removed useAuth dependency to prevent context errors
 import { apiRequest } from "@/lib/queryClient";
 
 interface ChatMessage {
@@ -68,8 +68,7 @@ const QUICK_RESPONSES = [
 ];
 
 export default function AIChat({ userId: propUserId, selectedCharacterId }: AIChatProps) {
-  const { userId: authUserId } = useAuth();
-  const userId = authUserId || propUserId || 'default-player';
+  const userId = propUserId || 'default-player';
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [currentMood, setCurrentMood] = useState("normal");

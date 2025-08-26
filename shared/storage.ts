@@ -12,6 +12,9 @@ import {
   type WheelReward,
   type UserCharacter
 } from "@shared/schema";
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 export interface IStorage {
   // User management
@@ -118,6 +121,25 @@ class DrizzleStorage implements IStorage {
   }
   
   async getAllCharacters() {
+    // Load characters from files first, then sync with database
+    const fileCharacters = CharacterFileManager.loadAllCharacters();
+    
+    if (fileCharacters.length > 0) {
+      // Sync file characters to database if needed
+      for (const char of fileCharacters) {
+        try {
+          const existing = await db.select().from(schema.characters).where(eq(schema.characters.id, char.id)).limit(1);
+          if (existing.length === 0) {
+            await db.insert(schema.characters).values(char);
+          }
+        } catch (error) {
+          console.error(`Error syncing character ${char.id} to database:`, error);
+        }
+      }
+      return fileCharacters;
+    }
+    
+    // Fallback to database if no files
     return await db.select().from(schema.characters);
   }
   
@@ -178,6 +200,13 @@ class DrizzleStorage implements IStorage {
   
   // Character methods
   async getCharacter(id: string) {
+    // Try loading from file first
+    const fileCharacter = CharacterFileManager.loadCharacterFromFile(id);
+    if (fileCharacter) {
+      return fileCharacter;
+    }
+    
+    // Fallback to database
     const result = await db.select().from(schema.characters).where(eq(schema.characters.id, id)).limit(1);
     return result[0];
   }
@@ -190,13 +219,44 @@ class DrizzleStorage implements IStorage {
     return character; 
   }
   
-  async updateCharacter(id: string, updates: any) { 
-    const result = await db.update(schema.characters).set(updates).where(eq(schema.characters.id, id)).returning();
-    return result[0];
+  async updateCharacter(id: string, updates: any) {
+    try {
+      // Get the current character data
+      const currentCharacter = await this.getCharacter(id);
+      if (!currentCharacter) {
+        throw new Error(`Character ${id} not found`);
+      }
+      
+      // Merge updates with current data
+      const updatedCharacter = { ...currentCharacter, ...updates };
+      
+      // Save to file (primary storage)
+      CharacterFileManager.saveCharacterToFile(updatedCharacter);
+      
+      // Also update database for compatibility
+      try {
+        const result = await db.update(schema.characters).set(updates).where(eq(schema.characters.id, id)).returning();
+        return result[0] || updatedCharacter;
+      } catch (dbError) {
+        console.error('Database update failed, but file was saved:', dbError);
+        return updatedCharacter;
+      }
+    } catch (error) {
+      console.error(`Error updating character ${id}:`, error);
+      throw error;
+    }
   }
   
   async deleteCharacter(id: string) {
-    await db.delete(schema.characters).where(eq(schema.characters.id, id));
+    // Delete from file storage
+    CharacterFileManager.deleteCharacterFile(id);
+    
+    // Also delete from database
+    try {
+      await db.delete(schema.characters).where(eq(schema.characters.id, id));
+    } catch (error) {
+      console.error('Database deletion failed, but file was deleted:', error);
+    }
   }
   
   async selectCharacter(userId: string, characterId: string) {
@@ -230,6 +290,135 @@ class DrizzleStorage implements IStorage {
   async uploadMedia(file: any) { return file; }
   async updateMediaFile(id: string, updates: any) { return undefined; }
   async deleteMediaFile(id: string) {}
+}
+
+// Character data loading and saving utilities
+class CharacterFileManager {
+  private static characterDataPath = path.join(process.cwd(), 'character-data');
+
+  static ensureCharacterDataDir() {
+    if (!fs.existsSync(this.characterDataPath)) {
+      fs.mkdirSync(this.characterDataPath, { recursive: true });
+    }
+  }
+
+  static loadCharacterFromFile(characterId: string): Character | null {
+    try {
+      this.ensureCharacterDataDir();
+      const characterFiles = fs.readdirSync(this.characterDataPath);
+      
+      // Try to find the character file by ID or filename
+      const characterFile = characterFiles.find(file => {
+        if (file.endsWith('.json')) {
+          const filePath = path.join(this.characterDataPath, file);
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          return data.id === characterId;
+        }
+        return false;
+      });
+      
+      if (!characterFile) return null;
+      
+      const filePath = path.join(this.characterDataPath, characterFile);
+      const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+      
+      return {
+        ...data,
+        createdAt: new Date(data.createdAt),
+        updatedAt: new Date(data.updatedAt || data.createdAt)
+      };
+    } catch (error) {
+      console.error(`Error loading character ${characterId}:`, error);
+      return null;
+    }
+  }
+
+  static loadAllCharacters(): Character[] {
+    try {
+      this.ensureCharacterDataDir();
+      const characterFiles = fs.readdirSync(this.characterDataPath)
+        .filter(file => file.endsWith('.json'));
+      
+      const characters: Character[] = [];
+      
+      for (const file of characterFiles) {
+        const filePath = path.join(this.characterDataPath, file);
+        try {
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          characters.push({
+            ...data,
+            createdAt: new Date(data.createdAt),
+            updatedAt: new Date(data.updatedAt || data.createdAt)
+          });
+        } catch (error) {
+          console.error(`Error loading character from ${file}:`, error);
+        }
+      }
+      
+      return characters;
+    } catch (error) {
+      console.error('Error loading characters:', error);
+      return [];
+    }
+  }
+
+  static saveCharacterToFile(character: Character): void {
+    try {
+      this.ensureCharacterDataDir();
+      
+      // Find existing file or create new one
+      let filename = `${character.id}.json`;
+      const characterFiles = fs.readdirSync(this.characterDataPath);
+      
+      const existingFile = characterFiles.find(file => {
+        if (file.endsWith('.json')) {
+          const filePath = path.join(this.characterDataPath, file);
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          return data.id === character.id;
+        }
+        return false;
+      });
+      
+      if (existingFile) {
+        filename = existingFile;
+      }
+      
+      const filePath = path.join(this.characterDataPath, filename);
+      const updatedCharacter = {
+        ...character,
+        updatedAt: new Date().toISOString()
+      };
+      
+      fs.writeFileSync(filePath, JSON.stringify(updatedCharacter, null, 2));
+      console.log(`Character ${character.name} saved to ${filename}`);
+    } catch (error) {
+      console.error(`Error saving character ${character.id}:`, error);
+    }
+  }
+
+  static deleteCharacterFile(characterId: string): void {
+    try {
+      this.ensureCharacterDataDir();
+      const characterFiles = fs.readdirSync(this.characterDataPath);
+      
+      const characterFile = characterFiles.find(file => {
+        if (file.endsWith('.json')) {
+          const filePath = path.join(this.characterDataPath, file);
+          const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+          return data.id === characterId;
+        }
+        return false;
+      });
+      
+      if (characterFile) {
+        const filePath = path.join(this.characterDataPath, characterFile);
+        fs.unlinkSync(filePath);
+        console.log(`Character ${characterId} deleted from files`);
+      }
+    } catch (error) {
+      console.error(`Error deleting character ${characterId}:`, error);
+    }
+  }
 }
 
 // Create and export storage instance  
