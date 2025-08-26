@@ -198,7 +198,6 @@ class DrizzleStorage implements IStorage {
       }
       // Create default stats if none exist
       const defaultStats = {
-        id: `stats-${realUserId}-${Date.now()}`,
         userId: realUserId,
         totalTaps: 0,
         totalLpEarned: 0,
@@ -252,6 +251,63 @@ class DrizzleStorage implements IStorage {
   async getUserByUsername(username: string) {
     const result = await db.select().from(schema.users).where(eq(schema.users.username, username)).limit(1);
     return result[0];
+  }
+
+  // Level Requirements Management
+  async getLevelRequirements() {
+    return await db.select().from(schema.levelRequirements).orderBy(schema.levelRequirements.level);
+  }
+
+  async createLevelRequirement(levelReq: any) {
+    const created = await db.insert(schema.levelRequirements).values(levelReq).returning();
+    return created[0];
+  }
+
+  async updateLevelRequirement(id: string, updates: any) {
+    const updated = await db.update(schema.levelRequirements).set(updates).where(eq(schema.levelRequirements.id, id)).returning();
+    return updated[0];
+  }
+
+  async deleteLevelRequirement(id: string) {
+    await db.delete(schema.levelRequirements).where(eq(schema.levelRequirements.id, id));
+  }
+
+  // Upgrades Management
+  async getUpgrades() {
+    return await db.select().from(schema.upgrades).orderBy(schema.upgrades.category, schema.upgrades.name);
+  }
+
+  async createUpgrade(upgrade: any) {
+    const created = await db.insert(schema.upgrades).values(upgrade).returning();
+    return created[0];
+  }
+
+  async updateUpgrade(id: string, updates: any) {
+    const updated = await db.update(schema.upgrades).set(updates).where(eq(schema.upgrades.id, id)).returning();
+    return updated[0];
+  }
+
+  async deleteUpgrade(id: string) {
+    await db.delete(schema.upgrades).where(eq(schema.upgrades.id, id));
+  }
+
+  // Achievements Management
+  async getAchievements() {
+    return await db.select().from(schema.achievements).orderBy(schema.achievements.category, schema.achievements.sortOrder);
+  }
+
+  async createAchievement(achievement: any) {
+    const created = await db.insert(schema.achievements).values(achievement).returning();
+    return created[0];
+  }
+
+  async updateAchievement(id: string, updates: any) {
+    const updated = await db.update(schema.achievements).set(updates).where(eq(schema.achievements.id, id)).returning();
+    return updated[0];
+  }
+
+  async deleteAchievement(id: string) {
+    await db.delete(schema.achievements).where(eq(schema.achievements.id, id));
   }
   
   async getAllMedia() {
@@ -351,24 +407,7 @@ class DrizzleStorage implements IStorage {
   }
   async getUpgrade(id: string) { return undefined; }
   async getAllUpgrades() { return []; }
-  async createUpgrade(upgrade: any) { return upgrade; }
-  async updateUpgrade(id: string, updates: any) { return undefined; }
   async purchaseUpgrade(userId: string, upgradeId: string) { return { id: 'upgrade1', name: 'Test' }; }
-  async upgradeUserUpgrade(userId: string, upgradeId: string) {
-    return {
-      id: upgradeId,
-      name: 'Test Upgrade',
-      description: 'Test upgrade description',
-      baseCost: 100,
-      maxLevel: 10,
-      levelRequirement: 1,
-      category: 'test',
-      baseEffect: 1.0,
-      costMultiplier: 1.5,
-      effectMultiplier: 1.2
-    };
-  }
-  async deleteUpgrade(id: string) {}
   async getChatMessages(userId: string, characterId?: string) { return []; }
   async createChatMessage(message: any) { return message; }
   async clearChatHistory(userId: string, characterId?: string) {}

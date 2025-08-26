@@ -44,6 +44,9 @@ import LevelUp from "@/plugins/gameplay/LevelUp";
 import Upgrades from "@/plugins/gameplay/Upgrades";
 import Tasks from "@/plugins/gameplay/Task";
 import Achievements from "@/plugins/gameplay/Achievements";
+import LevelManagement from "@/components/admin/LevelManagement";
+import UpgradeManagement from "@/components/admin/UpgradeManagement";
+import AchievementManagement from "@/components/admin/AchievementManagement";
 import type { Character } from "@shared/schema";
 import { Textarea } from "@/components/ui/textarea";
 import MistralDebugger from "@/plugins/aicore/MistralDebugger";
@@ -544,6 +547,14 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     </Card>
 
                     {showBackendDebugger && <AdminBackendDebugger />}
+                  </div>
+                  
+                  {/* Admin Management Components */}
+                  <div className="mt-8 space-y-6">
+                    <h3 className="text-lg font-semibold text-white">Admin Management</h3>
+                    <LevelManagement />
+                    <UpgradeManagement />
+                    <AchievementManagement />
                   </div>
                 </TabsContent>
 

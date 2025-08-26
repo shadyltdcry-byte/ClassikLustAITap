@@ -145,6 +145,40 @@ export const bonuses = pgTable("bonuses", {
   claimedAt: timestamp("claimed_at").notNull().default(sql`now()`),
 });
 
+export const levelRequirements = pgTable("level_requirements", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  level: integer("level").notNull().unique(),
+  lpRequired: integer("lp_required").notNull(),
+  description: text("description"),
+  unlockRewards: jsonb("unlock_rewards").default(sql`'[]'::jsonb`), // Array of rewards {type, amount}
+  functions: jsonb("functions").default(sql`'[]'::jsonb`), // Multiple functions for level
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const achievements = pgTable("achievements", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  category: text("category").notNull(), // tapping, chatting, progression, special
+  requirement: jsonb("requirement").notNull(), // {type: "total_taps", target: 1000}
+  reward: jsonb("reward").notNull(), // {type: "lp", amount: 500}
+  icon: text("icon"),
+  isHidden: boolean("is_hidden").notNull().default(false),
+  isEnabled: boolean("is_enabled").notNull().default(true),
+  sortOrder: integer("sort_order").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+});
+
+export const userAchievements = pgTable("user_achievements", {
+  id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  achievementId: uuid("achievement_id").notNull().references(() => achievements.id, { onDelete: "cascade" }),
+  progress: integer("progress").notNull().default(0),
+  completed: boolean("completed").notNull().default(false),
+  completedAt: timestamp("completed_at"),
+  claimedAt: timestamp("claimed_at"),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   userCharacters: many(userCharacters),
@@ -178,6 +212,15 @@ export const upgradesRelations = relations(upgrades, ({ many }) => ({
 export const userUpgradesRelations = relations(userUpgrades, ({ one }) => ({
   user: one(users, { fields: [userUpgrades.userId], references: [users.id] }),
   upgrade: one(upgrades, { fields: [userUpgrades.upgradeId], references: [upgrades.id] }),
+}));
+
+export const achievementsRelations = relations(achievements, ({ many }) => ({
+  userAchievements: many(userAchievements),
+}));
+
+export const userAchievementsRelations = relations(userAchievements, ({ one }) => ({
+  user: one(users, { fields: [userAchievements.userId], references: [users.id] }),
+  achievement: one(achievements, { fields: [userAchievements.achievementId], references: [achievements.id] }),
 }));
 
 // Insert schemas
@@ -221,6 +264,20 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
   createdAt: true,
 });
 
+export const insertLevelRequirementSchema = createInsertSchema(levelRequirements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAchievementSchema = createInsertSchema(achievements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserAchievementSchema = createInsertSchema(userAchievements).omit({
+  id: true,
+});
+
 // Temporary auth tokens table for Telegram authentication
 export const telegramAuthTokens = pgTable("telegram_auth_tokens", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -254,3 +311,9 @@ export type WheelReward = typeof wheelRewards.$inferSelect;
 export type Bonus = typeof bonuses.$inferSelect;
 export type TelegramAuthToken = typeof telegramAuthTokens.$inferSelect;
 export type InsertTelegramAuthToken = typeof telegramAuthTokens.$inferInsert;
+export type LevelRequirement = typeof levelRequirements.$inferSelect;
+export type InsertLevelRequirement = z.infer<typeof insertLevelRequirementSchema>;
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = z.infer<typeof insertUserAchievementSchema>;

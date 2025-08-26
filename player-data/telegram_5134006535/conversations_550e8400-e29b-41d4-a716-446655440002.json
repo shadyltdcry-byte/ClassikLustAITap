@@ -43,5 +43,20 @@
     "timestamp": "2025-08-26T21:24:40.110Z",
     "characterId": "550e8400-e29b-41d4-a716-446655440002",
     "mood": "neutral"
+  },
+  {
+    "id": "user-1756245284529",
+    "content": "mmmm u",
+    "sender": "user",
+    "timestamp": "2025-08-26T21:54:44.529Z",
+    "characterId": "550e8400-e29b-41d4-a716-446655440002"
+  },
+  {
+    "id": "ai-1756245284530",
+    "content": "Oh, darling, you're making me blush! *giggles* I must say, I do love a man who knows how to compliment a woman. So, tell me, what's your favorite part of a woman's body? I want to know what makes you weak in the knees and ready to pounce. *winks* And don't be shy, I'm not easily offended. In fact, I love a good, dirty talk. It gets me all hot and bothered. 😈",
+    "sender": "character",
+    "timestamp": "2025-08-26T21:54:44.529Z",
+    "characterId": "550e8400-e29b-41d4-a716-446655440002",
+    "mood": "neutral"
   }
 ]

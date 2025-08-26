@@ -153,6 +153,129 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === ADMIN LEVEL REQUIREMENTS ENDPOINTS ===
+  app.get('/api/admin/level-requirements', async (req, res) => {
+    try {
+      const levelReqs = await storage.getLevelRequirements();
+      res.json(levelReqs);
+    } catch (error) {
+      console.error('Error fetching level requirements:', error);
+      res.status(500).json({ error: 'Failed to fetch level requirements' });
+    }
+  });
+
+  app.post('/api/admin/level-requirements', async (req, res) => {
+    try {
+      const created = await storage.createLevelRequirement(req.body);
+      res.json(created);
+    } catch (error) {
+      console.error('Error creating level requirement:', error);
+      res.status(500).json({ error: 'Failed to create level requirement' });
+    }
+  });
+
+  app.put('/api/admin/level-requirements/:id', async (req, res) => {
+    try {
+      const updated = await storage.updateLevelRequirement(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating level requirement:', error);
+      res.status(500).json({ error: 'Failed to update level requirement' });
+    }
+  });
+
+  app.delete('/api/admin/level-requirements/:id', async (req, res) => {
+    try {
+      await storage.deleteLevelRequirement(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting level requirement:', error);
+      res.status(500).json({ error: 'Failed to delete level requirement' });
+    }
+  });
+
+  // === ADMIN UPGRADES ENDPOINTS ===
+  app.get('/api/admin/upgrades', async (req, res) => {
+    try {
+      const upgrades = await storage.getUpgrades();
+      res.json(upgrades);
+    } catch (error) {
+      console.error('Error fetching upgrades:', error);
+      res.status(500).json({ error: 'Failed to fetch upgrades' });
+    }
+  });
+
+  app.post('/api/admin/upgrades', async (req, res) => {
+    try {
+      const created = await storage.createUpgrade(req.body);
+      res.json(created);
+    } catch (error) {
+      console.error('Error creating upgrade:', error);
+      res.status(500).json({ error: 'Failed to create upgrade' });
+    }
+  });
+
+  app.put('/api/admin/upgrades/:id', async (req, res) => {
+    try {
+      const updated = await storage.updateUpgrade(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating upgrade:', error);
+      res.status(500).json({ error: 'Failed to update upgrade' });
+    }
+  });
+
+  app.delete('/api/admin/upgrades/:id', async (req, res) => {
+    try {
+      await storage.deleteUpgrade(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting upgrade:', error);
+      res.status(500).json({ error: 'Failed to delete upgrade' });
+    }
+  });
+
+  // === ADMIN ACHIEVEMENTS ENDPOINTS ===
+  app.get('/api/admin/achievements', async (req, res) => {
+    try {
+      const achievements = await storage.getAchievements();
+      res.json(achievements);
+    } catch (error) {
+      console.error('Error fetching achievements:', error);
+      res.status(500).json({ error: 'Failed to fetch achievements' });
+    }
+  });
+
+  app.post('/api/admin/achievements', async (req, res) => {
+    try {
+      const created = await storage.createAchievement(req.body);
+      res.json(created);
+    } catch (error) {
+      console.error('Error creating achievement:', error);
+      res.status(500).json({ error: 'Failed to create achievement' });
+    }
+  });
+
+  app.put('/api/admin/achievements/:id', async (req, res) => {
+    try {
+      const updated = await storage.updateAchievement(req.params.id, req.body);
+      res.json(updated);
+    } catch (error) {
+      console.error('Error updating achievement:', error);
+      res.status(500).json({ error: 'Failed to update achievement' });
+    }
+  });
+
+  app.delete('/api/admin/achievements/:id', async (req, res) => {
+    try {
+      await storage.deleteAchievement(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting achievement:', error);
+      res.status(500).json({ error: 'Failed to delete achievement' });
+    }
+  });
+
   // Character tap endpoint  
   app.post("/api/game/tap", async (req, res) => {
     try {
