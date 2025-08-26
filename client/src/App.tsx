@@ -15,11 +15,15 @@ import { AdminUIToggler } from "@/plugins/admin/adminGUI";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={() => <GameGUI onPluginAction={() => {}} />} />
+      <Route path="/" component={GameGUIPage} />
       <Route path="/AdminMenu" component={() => <AdminMenu onClose={() => {}} />} />
       <Route component={NotFound} />
     </Switch>
   );
+}
+
+function GameGUIPage() {
+  return <GameGUI onPluginAction={() => {}} />;
 }
 
 function AppContent() {

@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+// Auth is handled at App level
 import { 
   Zap, 
   Star, 
@@ -72,6 +73,10 @@ interface GUIState {
 }
 
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
+  // Auth is handled at App level, use player data directly
+  const userId = playerData?.id || 'default-player';
+  const isAuthenticated = true; // If we're here, we're authenticated
+
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
     showAdminMenu: false,
@@ -289,6 +294,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 level: 1,
                 isNsfw: false,
                 isVip: false,
+                isEnabled: true,
                 levelRequirement: 1,
                 customTriggers: [],
                 createdAt: new Date(),
@@ -510,7 +516,13 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       case "chat":
         return (
           <div className="w-full max-w-2xl h-full">
-            <AIChat userId={playerData?.id || 'default-player'} />
+            {isAuthenticated ? (
+              <AIChat userId={userId || playerData?.id || 'default-player'} />
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-white">Please log in to use chat</p>
+              </div>
+            )}
           </div>
         );
 

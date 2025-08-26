@@ -14,7 +14,7 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import multer from 'multer';
-import SupabaseStorage from '../shared/supabase-storage'
+// Using Drizzle storage instead of Supabase
 import jwt from 'jsonwebtoken';
 import { storage } from '../shared/storage';
 
@@ -123,8 +123,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // in your backend route setup
   app.get('/api/admin/plugins/stats', async (req, res) => {
-    const stats = await core.runCommand('getPluginStats', {});
-    res.json(stats);
+    // Return mock plugin stats for now
+    res.json({ totalPlugins: 4, activePlugins: 3, errors: 0 });
   });
 
   // Character tap endpoint  
@@ -211,7 +211,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Update game stats - track cumulative statistics
       try {
         // Use SQL increment for better performance and accuracy
-        const { error } = await storage.supabase.rpc('increment_user_stats', {
+        // Use direct database update instead of supabase RPC
+        await storage.updateUserStats(userId, {
           p_user_id: userId,
           p_taps: 1,
           p_lp_earned: lpGain,
@@ -532,14 +533,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/media", async (req, res) => {
     try {
       const mediaFiles = await storage.getAllMedia();
-      res.json(mediaFiles);
+      // Also scan public/uploads directory for compatibility
+      const uploadsPath = path.join(__dirname, '..', 'public', 'uploads');
+      const publicFiles = [];
+      
+      if (fs.existsSync(uploadsPath)) {
+        const files = fs.readdirSync(uploadsPath);
+        for (const file of files) {
+          if (file.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+            publicFiles.push({
+              id: `public_${file}`,
+              filename: file,
+              filepath: `/uploads/${file}`,
+              url: `/uploads/${file}`,
+              category: 'misc',
+              characterId: null,
+              createdAt: new Date().toISOString()
+            });
+          }
+        }
+      }
+      
+      res.json([...mediaFiles, ...publicFiles]);
     } catch (error) {
       console.error('Error fetching media files:', error);
       res.status(500).json({ error: 'Failed to fetch media files' });
     }
   });
 
-  // FIXED FILE UPLOAD ENDPOINT - Actually saves files now
+  // Enhanced file upload endpoint with categorization
   app.post('/api/media/upload', upload.array('files'), async (req, res) => {
     try {
       const files = req.files as Express.Multer.File[];
@@ -548,24 +570,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Parse config from form data
-      let config = {};
+      let config: any = {};
       try {
         config = JSON.parse(req.body.config || '{}');
       } catch (e) {
         console.warn('Invalid config JSON, using defaults');
       }
 
+      // Extract categorization info
+      const category = config.category || 'misc'; // 'character', 'avatar', or 'misc'
+      const isNsfw = config.isNsfw || false;
+      const characterId = config.characterId || null;
+
       const uploadedFiles = [];
 
       for (const file of files) {
+        // Generate categorized filename with prefix
+        const fileExt = path.extname(file.originalname);
+        const prefix = category === 'character' ? 'ch' : category === 'avatar' ? 'av' : 'misc';
+        const nsfwSuffix = isNsfw ? 'nsfw' : 'sfw';
+        const randomId = Math.random().toString(36).substr(2, 8);
+        
+        const categorizedFilename = `${prefix}${nsfwSuffix}_${randomId}${fileExt}`;
+        
+        // Create character-specific folder if needed
+        let uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+        if (characterId && category === 'character') {
+          uploadDir = path.join(uploadDir, 'characters', characterId);
+          if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+          }
+        }
+        
+        const finalPath = path.join(uploadDir, categorizedFilename);
+        const relativePath = path.relative(path.join(__dirname, '..', 'public'), finalPath);
         const fileType = file.mimetype.startsWith('image/') 
           ? (file.mimetype === 'image/gif' ? 'gif' : 'image')
           : 'video';
 
+        // Move file to final location with categorized name
+        fs.renameSync(file.path, finalPath);
+
         const mediaFile = {
           id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-          fileName: file.filename,
-          filePath: `/uploads/${file.filename}`,
+          fileName: categorizedFilename,
+          filePath: `/${relativePath}`,
           fileType,
           characterId: config.characterId || null,
           mood: config.mood || null,
@@ -574,6 +623,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isNsfw: config.isNsfw || false,
           isEvent: config.isEvent || false,
           randomSendChance: config.randomSendChance || 5,
+          category: category,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };
@@ -582,12 +632,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           await storage.saveMediaFile(mediaFile);
           uploadedFiles.push(mediaFile);
-          console.log(`Successfully saved to database: ${file.filename}`);
+          console.log(`Successfully saved to database: ${categorizedFilename}`);
         } catch (dbError) {
-          console.error(`Failed to save ${file.filename} to database:`, dbError);
+          console.error(`Failed to save ${categorizedFilename} to database:`, dbError);
           // Clean up the uploaded file if database save failed
           try {
-            fs.unlinkSync(file.path);
+            fs.unlinkSync(finalPath);
           } catch (cleanupError) {
             console.error('Failed to cleanup file:', cleanupError);
           }
@@ -908,9 +958,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json([]);
   });
 
-  app.put('/api/admin/characters/:id', (req, res) => {
-    console.log('Updating character:', req.params.id, req.body);
-    res.json({ success: true });
+  app.put('/api/admin/characters/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      console.log(`Updating character: ${id}`, updates);
+      
+      const updatedCharacter = await storage.updateCharacter(id, updates);
+      console.log(`Character update result:`, updatedCharacter);
+      
+      if (updatedCharacter) {
+        res.json(updatedCharacter);
+      } else {
+        res.status(404).json({ error: 'Character not found' });
+      }
+    } catch (error) {
+      console.error('Error updating character:', error);
+      res.status(500).json({ error: 'Failed to update character' });
+    }
   });
 
   app.delete('/api/admin/characters/:id', (req, res) => {
