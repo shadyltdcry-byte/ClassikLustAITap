@@ -102,9 +102,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     
     try {
       // Call API directly instead of relying on onPluginAction
-      const response = await apiRequest(`/api/player/${userId}/tap`, {
-        method: 'POST'
-      });
+      const response = await apiRequest('POST', `/api/player/${userId}/tap`);
       
       // Force refetch player data to see updated stats
       queryClient.invalidateQueries({ queryKey: ['/api/player'] });

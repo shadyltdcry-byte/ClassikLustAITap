@@ -324,17 +324,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const selectedCharacter = await storage.getSelectedCharacter(playerId);
 
       if (!selectedCharacter) {
-        // Return default character if none selected
-        res.json({
-          id: "seraphina",
-          name: "Seraphina",
-          personality: "playful",
-          mood: "flirty",
-          level: 1,
-          isNSFW: false,
-          isVIP: false,
-          playerId
-        });
+        // No character selected, return null to let frontend handle it
+        res.json(null);
       } else {
         res.json(selectedCharacter);
       }
@@ -455,60 +446,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get characters from database
       const dbCharacters = await storage.getAllCharacters();
 
-      // If no characters in database, return default
+      // If no characters in database, return empty array to let frontend handle it
       if (!dbCharacters || dbCharacters.length === 0) {
-        const defaultCharacter = {
-          id: "seraphina",
-          name: "Seraphina", 
-          personality: "playful",
-          personalityStyle: "flirty",
-          chatStyle: "casual",
-          backstory: "A mysterious and playful character who loves to chat and have fun!",
-          bio: "Seraphina is your default companion, always ready for a conversation!",
-          interests: "Gaming, chatting, having fun",
-          quirks: "Uses lots of emojis and exclamation points",
-          likes: "Friendly conversations, games, excitement",
-          dislikes: "Boring topics, rudeness",
-          mood: "flirty",
-          level: 1,
-          requiredLevel: 1,
-          isNsfw: false,
-          isVip: false,
-          isEvent: false,
-          isWheelReward: false,
-          responseTimeMin: 1000,
-          responseTimeMax: 3000,
-          responseTimeMs: 2000,
-          randomPictureSending: true,
-          randomChatResponsesEnabled: true,
-          pictureSendChance: 15,
-          chatSendChance: 20,
-          moodDistribution: {
-            normal: 20,
-            happy: 25,
-            flirty: 30,
-            playful: 15,
-            mysterious: 5,
-            shy: 5
-          },
-          customGreetings: [
-            "Hey there! Ready for some fun?",
-            "Hi! I'm so excited to chat with you!", 
-            "Hello! What's on your mind today?"
-          ],
-          customResponses: [
-            "That's really interesting! Tell me more!",
-            "I love hearing your thoughts!",
-            "You're so sweet!"
-          ],
-          customTriggerWords: [],
-          imageUrl: "/default-character.jpg",
-          avatarUrl: "/default-avatar.jpg",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-
-        return res.json([defaultCharacter]);
+        return res.json([]);
       }
 
       res.json(dbCharacters);
