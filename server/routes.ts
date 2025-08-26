@@ -1255,7 +1255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mistral AI Chat endpoint with conversation storage and character data
+  // Mistral AI Chat endpoint with conversation storage and character data  
   app.post("/api/mistral/chat", async (req, res) => {
     try {
       const { message, characterName, characterDescription, currentMood, conversationHistory, userId, characterId } = req.body;
@@ -1325,6 +1325,37 @@ You are comfortable with adult conversations when appropriate and can become fli
       const mistralData = await mistralResponse.json();
       const response = mistralData.choices?.[0]?.message?.content || "I'm not sure how to respond to that.";
 
+      // Check if AI should send a picture with this response
+      let sentImageUrl = null;
+      if (character && Math.random() <= 0.3) { // 30% base chance to consider sending image
+        try {
+          // Get character images that are enabled for chat
+          const characterImages = await storage.getMediaFiles(characterId);
+          const chatEnabledImages = characterImages.filter(img => 
+            img.enabledForChat !== false && // Default to true if not set
+            (img.randomSendChance || 0) > 0
+          );
+          
+          if (chatEnabledImages.length > 0) {
+            // Calculate weighted random selection based on randomSendChance
+            const totalWeight = chatEnabledImages.reduce((sum, img) => sum + (img.randomSendChance || 5), 0);
+            const randomValue = Math.random() * totalWeight;
+            
+            let cumulativeWeight = 0;
+            for (const image of chatEnabledImages) {
+              cumulativeWeight += (image.randomSendChance || 5);
+              if (randomValue <= cumulativeWeight) {
+                sentImageUrl = image.filePath;
+                console.log(`🖼️ AI sent image: ${image.fileName} (${image.randomSendChance}% chance)`);
+                break;
+              }
+            }
+          }
+        } catch (error) {
+          console.log('Could not load character images for chat sending:', error);
+        }
+      }
+
       // Save conversation to JSON file if userId and characterId provided
       if (userId && characterId) {
         try {
@@ -1391,6 +1422,7 @@ You are comfortable with adult conversations when appropriate and can become fli
       res.json({
         response,
         mood: detectedMood,
+        imageUrl: sentImageUrl,
         timestamp: new Date().toISOString()
       });
 

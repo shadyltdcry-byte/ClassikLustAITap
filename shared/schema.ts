@@ -71,6 +71,8 @@ export const mediaFiles = pgTable("media_files", {
   randomSendChance: integer("random_send_chance").notNull().default(5),
   requiredLevel: integer("required_level").notNull().default(1),
   category: text("category").default("Character"), // Character, Avatar, Misc, Event, Other
+  enabledForChat: boolean("enabled_for_chat").notNull().default(true), // Toggle for AI chat usage
+  autoOrganized: boolean("auto_organized").notNull().default(false), // Track if file is auto-organized
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 

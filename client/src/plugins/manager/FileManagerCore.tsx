@@ -672,6 +672,38 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 </div>
               </div>
 
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={editingFile.enabledForChat ?? true}
+                      onCheckedChange={(checked) => setEditingFile({...editingFile, enabledForChat: checked})}
+                      className="data-[state=checked]:bg-purple-600"
+                    />
+                    <Label className="text-white">Enable for AI Chat</Label>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400">Allow AI to send this image during conversations</p>
+                
+                <div>
+                  <Label className="text-white">Chat Send Chance (%)</Label>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={editingFile.randomSendChance || 5}
+                    onChange={(e) =>
+                      setEditingFile({
+                        ...editingFile,
+                        randomSendChance: parseInt(e.target.value) || 5
+                      })
+                    }
+                    className="bg-gray-700 border-gray-600 text-white mt-2"
+                  />
+                  <p className="text-xs text-gray-400 mt-1">Probability (0-100%) that AI will send this image in chat</p>
+                </div>
+              </div>
+
               <div className="flex justify-end space-x-2">
                 <Button
                   onClick={() => setEditingFile(null)}
