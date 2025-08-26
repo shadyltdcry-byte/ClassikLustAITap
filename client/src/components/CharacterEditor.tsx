@@ -76,7 +76,7 @@ export default function CharacterEditor({
       chatStyle: character?.chatStyle ?? "casual",
       likes: character?.likes ?? "",
       dislikes: character?.dislikes ?? "",
-      requiredLevel: character?.requiredLevel ?? 1,
+      levelRequirement: character?.levelRequirement ?? 1,
       isNsfw: character?.isNsfw ?? false,
       isVip: character?.isVip ?? false,
       responseTimeMin: character?.responseTimeMin ?? 1,
@@ -96,7 +96,7 @@ export default function CharacterEditor({
         chatStyle: character.chatStyle ?? "casual",
         likes: character.likes ?? "",
         dislikes: character.dislikes ?? "",
-        requiredLevel: character.requiredLevel ?? 1,
+        levelRequirement: character.levelRequirement ?? 1,
         isNsfw: character.isNsfw ?? false,
         isVip: character.isVip ?? false,
         responseTimeMin: character.responseTimeMin ?? 1,
@@ -313,7 +313,7 @@ export default function CharacterEditor({
                   />
                   <FormField
                     control={form.control}
-                    name="requiredLevel"
+                    name="levelRequirement"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel className="text-white">Required Level</FormLabel>
