@@ -12,6 +12,7 @@ interface CharacterDisplayProps {
   onTap: (event: React.MouseEvent) => void;
   onAvatarClick?: () => void; // New prop for avatar click
   isTapping: boolean;
+  lpPerTap?: number; // Add LP per tap for display
 }
 
 // Fallback when no character is selected
@@ -23,7 +24,6 @@ const defaultCharacter: Character = {
   description: null,
   backstory: "Please select a character to interact with!",
   mood: "neutral",
-  level: 1,
   isNsfw: false,
   isVip: false,
   levelRequirement: 1,
@@ -32,6 +32,12 @@ const defaultCharacter: Character = {
   avatarPath: "/uploads/placeholder-avatar.jpg",
   imageUrl: "/uploads/placeholder-avatar.jpg",
   avatarUrl: "/uploads/placeholder-avatar.jpg",
+  chatStyle: "casual",
+  responseTimeMin: 1,
+  responseTimeMax: 3,
+  likes: "",
+  dislikes: "",
+  requiredLevel: 1,
   createdAt: new Date(),
 };
 
@@ -41,6 +47,7 @@ export default function CharacterDisplay({
   onTap,
   onAvatarClick,
   isTapping,
+  lpPerTap,
 }: CharacterDisplayProps) {
   const [tapEffect, setTapEffect] = useState(false);
 
@@ -100,25 +107,47 @@ export default function CharacterDisplay({
               }`}
             />
 
-            {/* Floating Hearts */}
-            <div
-              className={`absolute top-4 right-4 transition-all duration-500 pointer-events-none ${
-                tapEffect ? 'opacity-100 animate-bounce' : 'opacity-0'
-              }`}
-            >
-              <img src="/media/floatinghearts.png" alt="hearts" className="w-8 h-8" />
-            </div>
-
+            {/* Floating Hearts with LP Display */}
             {tapEffect && (
               <div className="absolute inset-0 pointer-events-none">
-                <div className="absolute top-1/4 left-1/4 animate-float-up">
+                {/* Heart 1 - Top Left with Custom Image */}
+                <div className="absolute top-1/4 left-1/4 animate-float-up flex items-center gap-2">
                   <img src="/media/floatinghearts.png" alt="hearts" className="w-6 h-6" />
+                  <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out">
+                    +{lpPerTap || user.lpPerTap || 1}
+                  </span>
                 </div>
-                <div className="absolute top-1/3 right-1/3 animate-float-up" style={{ animationDelay: '0.2s' }}>
+                
+                {/* Heart 2 - Top Right with Emoji Heart */}
+                <div className="absolute top-1/3 right-1/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.2s' }}>
+                  <span className="text-red-400 text-xl">❤️</span>
+                  <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.2s' }}>
+                    +{lpPerTap || user.lpPerTap || 1}
+                  </span>
+                </div>
+                
+                {/* Heart 3 - Center with Different Emoji */}
+                <div className="absolute top-1/2 left-1/2 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.4s' }}>
+                  <span className="text-pink-400 text-xl">💕</span>
+                  <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.4s' }}>
+                    +{lpPerTap || user.lpPerTap || 1}
+                  </span>
+                </div>
+                
+                {/* Heart 4 - Bottom with Custom Image */}
+                <div className="absolute top-2/3 left-2/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.6s' }}>
                   <img src="/media/floatinghearts.png" alt="hearts" className="w-5 h-5" />
+                  <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.6s' }}>
+                    +{lpPerTap || user.lpPerTap || 1}
+                  </span>
                 </div>
-                <div className="absolute top-1/2 left-1/2 animate-float-up" style={{ animationDelay: '0.4s' }}>
-                  <img src="/media/floatinghearts.png" alt="hearts" className="w-7 h-7" />
+                
+                {/* Heart 5 - Another Emoji Heart */}
+                <div className="absolute top-3/4 left-1/4 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.8s' }}>
+                  <span className="text-red-500 text-xl">💖</span>
+                  <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.8s' }}>
+                    +{lpPerTap || user.lpPerTap || 1}
+                  </span>
                 </div>
               </div>
             )}

@@ -148,5 +148,20 @@
     "timestamp": "2025-08-26T13:25:32.445Z",
     "characterId": "550e8400-e29b-41d4-a716-446655440002",
     "mood": "neutral"
+  },
+  {
+    "id": "user-1756230198767",
+    "content": "Rawr",
+    "sender": "user",
+    "timestamp": "2025-08-26T17:43:18.767Z",
+    "characterId": "550e8400-e29b-41d4-a716-446655440002"
+  },
+  {
+    "id": "ai-1756230198768",
+    "content": "*giggles and purrs* Oh, someone's feeling feisty! *winks* I like it! *whispers* You wanna play rough, baby? *moans* Well, I can play rough too... *grinds slightly* But tell me, what exactly do you wanna do to me, huh? *bites lip* I'm all yours, baby. 😘🍑",
+    "sender": "character",
+    "timestamp": "2025-08-26T17:43:18.767Z",
+    "characterId": "550e8400-e29b-41d4-a716-446655440002",
+    "mood": "neutral"
   }
 ]

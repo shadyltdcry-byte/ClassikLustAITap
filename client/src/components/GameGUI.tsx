@@ -311,9 +311,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           <div className="max-w-sm w-full">
             <CharacterDisplay
               character={selectedCharacter} // Use selected character from game state
-              user={user || {
+              user={{
                 ...playerData,
-                id: playerData?.id || '',
+                id: playerData?.id || userId || '',
                 username: playerData?.name || 'Player',
                 password: '',
                 level: playerData?.level || 1,
@@ -326,7 +326,8 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 vipStatus: playerData?.isVip || false,
                 nsfwConsent: playerData?.nsfwEnabled || false,
                 lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
-                createdAt: new Date()
+                createdAt: new Date(),
+                ...(user || {}) // Override with user data if available
               } as any}
               onTap={handleTap}
               onAvatarClick={() => {
@@ -334,6 +335,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 updateGUIState({ showCharacterGallery: true });
               }}
               isTapping={actuallyTapping}
+              lpPerTap={playerData?.lpPerTap || 1}
             />
           </div>
         );
