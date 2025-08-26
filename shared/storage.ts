@@ -366,7 +366,21 @@ class DrizzleStorage implements IStorage {
   
   async updateMediaFile(id: string, updates: any) {
     try {
-      const result = await db.update(schema.mediaFiles).set(updates).where(eq(schema.mediaFiles.id, id)).returning();
+      // Clean up the updates object to ensure proper types
+      const cleanUpdates = { ...updates };
+      
+      // Convert string dates to Date objects if needed
+      if (cleanUpdates.createdAt && typeof cleanUpdates.createdAt === 'string') {
+        cleanUpdates.createdAt = new Date(cleanUpdates.createdAt);
+      }
+      if (cleanUpdates.updatedAt && typeof cleanUpdates.updatedAt === 'string') {
+        cleanUpdates.updatedAt = new Date(cleanUpdates.updatedAt);
+      }
+      
+      // Remove read-only fields that shouldn't be updated
+      delete cleanUpdates.id;
+      
+      const result = await db.update(schema.mediaFiles).set(cleanUpdates).where(eq(schema.mediaFiles.id, id)).returning();
       return result[0] || null;
     } catch (error) {
       console.error('Error updating media file:', error);

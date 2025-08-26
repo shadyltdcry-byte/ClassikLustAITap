@@ -568,33 +568,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Media endpoints
+  // Media endpoints - Auto-import filesystem files into database
   app.get("/api/media", async (req, res) => {
     try {
-      const mediaFiles = await storage.getAllMedia();
-      // Also scan public/uploads directory for compatibility
+      let mediaFiles = await storage.getAllMedia();
+      const existingFiles = new Set(mediaFiles.map(f => f.fileName));
+      
+      // Scan public/uploads directory and import missing files
       const uploadsPath = path.join(__dirname, '..', 'public', 'uploads');
-      const publicFiles = [];
       
       if (fs.existsSync(uploadsPath)) {
         const files = fs.readdirSync(uploadsPath);
+        console.log(`Found ${files.length} files in uploads directory`);
         for (const file of files) {
-          if (file.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
-            publicFiles.push({
-              id: `public_${file}`,
-              fileName: file,
-              filePath: `/uploads/${file}`,
-              url: `/uploads/${file}`,
-              fileType: 'image',
-              category: 'misc',
-              characterId: null,
-              createdAt: new Date().toISOString()
-            });
+          if (file.match(/\.(jpg|jpeg|png|gif|webp)$/i) && !existingFiles.has(file)) {
+            console.log(`Attempting to import: ${file}`);
+            // Import filesystem file into database
+            try {
+              const newMediaFile = {
+                fileName: file,
+                filePath: `/uploads/${file}`,
+                fileType: 'image',
+                category: 'misc',
+                characterId: null,
+                isNsfw: file.includes('nsfw'),
+                isVip: false,
+                mood: null,
+                pose: null,
+                animationSequence: null,
+                isEvent: false,
+                randomSendChance: 50,
+                requiredLevel: 1
+              };
+              
+              const savedFile = await storage.saveMediaFile(newMediaFile);
+              if (savedFile) {
+                mediaFiles.push(savedFile);
+                console.log(`Auto-imported filesystem file: ${file}`);
+              }
+            } catch (importError) {
+              console.error(`Failed to import ${file}:`, importError);
+            }
           }
         }
       }
       
-      res.json([...mediaFiles, ...publicFiles]);
+      res.json(mediaFiles);
     } catch (error) {
       console.error('Error fetching media files:', error);
       res.status(500).json({ error: 'Failed to fetch media files' });

@@ -28,5 +28,20 @@
     "timestamp": "2025-08-26T21:15:42.665Z",
     "characterId": "550e8400-e29b-41d4-a716-446655440002",
     "mood": "neutral"
+  },
+  {
+    "id": "user-1756243480110",
+    "content": "soo what you look like",
+    "sender": "user",
+    "timestamp": "2025-08-26T21:24:40.110Z",
+    "characterId": "550e8400-e29b-41d4-a716-446655440002"
+  },
+  {
+    "id": "ai-1756243480111",
+    "content": "Oh, darling, I'm glad you asked! *giggles* I'm a vision of curves and confidence, with long, wavy hair that cascades down my back like a waterfall. My eyes are a mesmerizing shade of green, and my lips are plump and begging to be kissed. I've got a body made for sin, with hips that sway and breasts that bounce. I'm a goddess of pleasure, and I'm ready to show you just how divine I can be. *winks* But enough about my looks, tell me, what's your idea of a perfect night? 😘",
+    "sender": "character",
+    "timestamp": "2025-08-26T21:24:40.110Z",
+    "characterId": "550e8400-e29b-41d4-a716-446655440002",
+    "mood": "neutral"
   }
 ]
