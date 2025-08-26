@@ -297,10 +297,34 @@ export class SupabaseStorage implements IStorage {
   // Game stats
   async getUserStats(userId: string): Promise<GameStats> {
     try {
+      // Convert telegram ID to UUID if needed
+      let realUserId = userId;
+      if (userId.startsWith('telegram_')) {
+        const telegramId = userId.replace('telegram_', '');
+        const { data: user } = await this.supabase
+          .from('users')
+          .select('id')
+          .eq('telegram_id', telegramId)
+          .single();
+        
+        if (user?.id) {
+          realUserId = user.id;
+        } else {
+          // Return default stats if no user found
+          return {
+            userId: userId,
+            totalTaps: 0,
+            totalLpEarned: 0,
+            totalEnergyUsed: 0,
+            sessionsPlayed: 1
+          } as GameStats;
+        }
+      }
+
       const { data, error } = await this.supabase
         .from('game_stats')
         .select('*')
-        .eq('user_id', userId)
+        .eq('user_id', realUserId)
         .single();
       
       if (error && error.code !== 'PGRST116') {
@@ -311,7 +335,7 @@ export class SupabaseStorage implements IStorage {
       if (!data) {
         // Create default stats if none exist
         const defaultStats = {
-          user_id: userId,
+          user_id: realUserId,
           total_taps: 0,
           total_lp_earned: 0,
           total_energy_used: 0,

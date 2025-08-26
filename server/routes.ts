@@ -877,11 +877,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      // Check if playerId is valid UUID or telegram format
+      // Check if we have a valid UUID now
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      const telegramRegex = /^telegram_\d+$/;
-      if (!uuidRegex.test(realUserId) && !telegramRegex.test(playerId)) {
-        console.log(`Invalid UUID playerId: ${playerId}, returning mock stats data`);
+      if (!uuidRegex.test(realUserId)) {
+        console.log(`Could not resolve ${playerId} to valid UUID, returning mock stats data`);
         return res.json({
           playerId,
           level: 1,
@@ -903,7 +902,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const user = await storage.getUser(playerId);
+      const user = await storage.getUser(realUserId);
 
       if (!user) {
         return res.status(404).json({ error: 'User not found' });

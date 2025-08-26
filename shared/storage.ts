@@ -158,14 +158,48 @@ class DrizzleStorage implements IStorage {
   
   async getUserStats(userId: string) {
     try {
-      const result = await db.select().from(schema.gameStats).where(eq(schema.gameStats.userId, userId)).limit(1);
+      // Convert telegram ID to UUID if needed
+      let realUserId = userId;
+      if (userId.startsWith('telegram_')) {
+        const telegramId = userId.replace('telegram_', '');
+        try {
+          const result = await db.select({id: schema.users.id}).from(schema.users).where(eq(schema.users.telegramId, telegramId));
+          if (result[0]?.id) {
+            realUserId = result[0].id;
+          } else {
+            // Return default stats if no user found
+            return {
+              id: `stats-${Date.now()}`,
+              userId: userId,
+              totalTaps: 0,
+              totalLpEarned: 0,
+              totalEnergyUsed: 0,
+              sessionsPlayed: 1,
+              lastUpdated: new Date()
+            };
+          }
+        } catch (dbError) {
+          console.error('Database lookup error in getUserStats:', dbError);
+          return {
+            id: `stats-${Date.now()}`,
+            userId: userId,
+            totalTaps: 0,
+            totalLpEarned: 0,
+            totalEnergyUsed: 0,
+            sessionsPlayed: 1,
+            lastUpdated: new Date()
+          };
+        }
+      }
+
+      const result = await db.select().from(schema.gameStats).where(eq(schema.gameStats.userId, realUserId)).limit(1);
       if (result[0]) {
         return result[0];
       }
       // Create default stats if none exist
       const defaultStats = {
-        id: `stats-${userId}-${Date.now()}`,
-        userId,
+        id: `stats-${realUserId}-${Date.now()}`,
+        userId: realUserId,
         totalTaps: 0,
         totalLpEarned: 0,
         totalEnergyUsed: 0,
@@ -178,7 +212,7 @@ class DrizzleStorage implements IStorage {
       console.error('Error getting user stats:', error);
       // Return default stats on error
       return {
-        id: `stats-${userId}-error`,
+        id: `stats-${Date.now()}-error`,
         userId,
         totalTaps: 0,
         totalLpEarned: 0,
@@ -191,7 +225,25 @@ class DrizzleStorage implements IStorage {
   
   async updateUserStats(userId: string, updates: any) {
     try {
-      await db.update(schema.gameStats).set(updates).where(eq(schema.gameStats.userId, userId));
+      // Convert telegram ID to UUID if needed
+      let realUserId = userId;
+      if (userId.startsWith('telegram_')) {
+        const telegramId = userId.replace('telegram_', '');
+        try {
+          const result = await db.select({id: schema.users.id}).from(schema.users).where(eq(schema.users.telegramId, telegramId));
+          if (result[0]?.id) {
+            realUserId = result[0].id;
+          } else {
+            console.log(`No user found for telegram ID ${telegramId} in updateUserStats`);
+            return;
+          }
+        } catch (dbError) {
+          console.error('Database lookup error in updateUserStats:', dbError);
+          return;
+        }
+      }
+
+      await db.update(schema.gameStats).set(updates).where(eq(schema.gameStats.userId, realUserId));
     } catch (error) {
       console.error('Error updating user stats:', error);
     }
