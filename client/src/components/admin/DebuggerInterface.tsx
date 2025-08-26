@@ -53,9 +53,7 @@ export default function DebuggerInterface() {
   // Initialize debugger
   const initMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/admin/debugger/init', {
-        method: 'POST',
-      });
+      return await apiRequest('/api/admin/debugger/init', 'POST');
     },
     onSuccess: () => {
       toast.success('Debugger system initialized');
@@ -69,9 +67,7 @@ export default function DebuggerInterface() {
   // Stop debugger
   const stopMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/admin/debugger/stop', {
-        method: 'POST',
-      });
+      return await apiRequest('/api/admin/debugger/stop', 'POST');
     },
     onSuccess: () => {
       toast.success('Debugger system stopped');
@@ -85,10 +81,7 @@ export default function DebuggerInterface() {
   // Run command
   const commandMutation = useMutation({
     mutationFn: async (payload: { command: string; data: any }) => {
-      return await apiRequest('/api/admin/debugger/command', {
-        method: 'POST',
-        body: JSON.stringify(payload),
-      });
+      return await apiRequest('/api/admin/debugger/command', 'POST', payload);
     },
     onSuccess: (result) => {
       toast.success('Command executed successfully');
@@ -303,7 +296,7 @@ export default function DebuggerInterface() {
       </div>
 
       {/* Command Logs */}
-      {status?.logs?.length > 0 && (
+      {status?.logs && status.logs.length > 0 && (
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
             <CardTitle className="text-white flex items-center gap-2">
@@ -314,7 +307,7 @@ export default function DebuggerInterface() {
           <CardContent>
             <ScrollArea className="h-48">
               <div className="space-y-2">
-                {status.logs.slice(-10).reverse().map((log, index) => (
+                {(status?.logs || []).slice(-10).reverse().map((log, index) => (
                   <div key={index} className="p-2 bg-gray-700/30 rounded text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-pink-400 font-mono">{log.command}</span>

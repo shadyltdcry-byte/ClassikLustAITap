@@ -153,7 +153,7 @@ const CharacterCard = ({ character, onEdit, onDelete, onToggleVip, onToggleNsfw,
         {character.personality || "No personality set"}
       </p>
       <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>Level {character.requiredLevel || character.levelRequirement || 1}+</span>
+        <span>Level {character.levelRequirement || 1}+</span>
         <span>ID: {character.id.slice(0, 8)}...</span>
       </div>
       <div className="flex gap-2 pt-2">
@@ -741,7 +741,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <Tasks isAdminMode={true} />
+            <Tasks />
           </div>
         </div>
       )}
