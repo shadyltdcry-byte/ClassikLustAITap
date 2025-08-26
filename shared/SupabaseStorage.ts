@@ -129,17 +129,42 @@ export class SupabaseStorage implements IStorage {
 
   // Character management
   async getCharacter(id: string): Promise<Character | undefined> {
-    const { data, error } = await this.supabase
-      .from('characters')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching character:', error);
+    // Load character from JSON file first
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const characterDataPath = path.join(process.cwd(), 'character-data');
+      
+      if (!fs.existsSync(characterDataPath)) {
+        return undefined;
+      }
+      
+      const files = fs.readdirSync(characterDataPath).filter(file => file.endsWith('.json'));
+      
+      for (const file of files) {
+        try {
+          const filePath = path.join(characterDataPath, file);
+          const fileContent = fs.readFileSync(filePath, 'utf8');
+          const character = JSON.parse(fileContent);
+          
+          if (character.id === id) {
+            return {
+              ...character,
+              createdAt: new Date(character.createdAt),
+              updatedAt: new Date(character.updatedAt || character.createdAt)
+            };
+          }
+        } catch (fileError) {
+          console.error(`Error loading character from ${file}:`, fileError);
+        }
+      }
+      
+      return undefined;
+    } catch (error) {
+      console.error('Error loading character from file:', error);
       return undefined;
     }
-    return data;
   }
 
   async getUserCharacters(userId: string): Promise<Character[]> {
@@ -158,15 +183,43 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getAllCharacters(): Promise<Character[]> {
-    const { data, error } = await this.supabase
-      .from('characters')
-      .select('*');
-    
-    if (error) {
-      console.error('Error fetching all characters:', error);
+    // Load characters from JSON files first (your real data)
+    try {
+      const fs = await import('fs');
+      const path = await import('path');
+      
+      const characterDataPath = path.join(process.cwd(), 'character-data');
+      
+      if (!fs.existsSync(characterDataPath)) {
+        console.log('No character-data directory found');
+        return [];
+      }
+      
+      const files = fs.readdirSync(characterDataPath).filter(file => file.endsWith('.json'));
+      const characters: Character[] = [];
+      
+      for (const file of files) {
+        try {
+          const filePath = path.join(characterDataPath, file);
+          const fileContent = fs.readFileSync(filePath, 'utf8');
+          const character = JSON.parse(fileContent);
+          characters.push({
+            ...character,
+            createdAt: new Date(character.createdAt),
+            updatedAt: new Date(character.updatedAt || character.createdAt)
+          });
+        } catch (fileError) {
+          console.error(`Error loading character from ${file}:`, fileError);
+        }
+      }
+      
+      console.log(`Loaded ${characters.length} characters from JSON files`);
+      return characters;
+      
+    } catch (error) {
+      console.error('Error loading characters from files:', error);
       return [];
     }
-    return data || [];
   }
 
   async getSelectedCharacter(userId: string): Promise<Character | undefined> {
