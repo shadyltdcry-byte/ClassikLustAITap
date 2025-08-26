@@ -120,7 +120,8 @@ export default function CharacterEditor({
       if (!response.ok) {
         let errorMessage = "Character operation failed";
         try {
-          const errorData = await response.json();
+          const text = await response.text();
+          const errorData = text ? JSON.parse(text) : {};
           errorMessage = errorData.error || errorMessage;
         } catch (e) {
           // If JSON parsing fails, use the status text
@@ -128,7 +129,14 @@ export default function CharacterEditor({
         }
         throw new Error(errorMessage);
       }
-      return await response.json();
+      
+      try {
+        const text = await response.text();
+        return text ? JSON.parse(text) : {};
+      } catch (e) {
+        // If response has no content, return empty object
+        return {};
+      }
     },
     onSuccess: () => {
       toast.success(
@@ -410,13 +418,13 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {(mediaFiles as any[]).filter((file: any) => file.filename && file.filename !== 'undefined').map((file: any, index: number) => (
+                                {(mediaFiles as any[]).filter((file: any) => file.fileName && file.fileName !== 'undefined').map((file: any, index: number) => (
                                   <SelectItem
                                     key={`main-image-${file.id || index}`}
-                                    value={file.url || file.path || (file.filename ? `/uploads/${file.filename}` : '')}
+                                    value={file.url || file.path || (file.fileName ? `/api/media/${file.id}` : '')}
                                     className="text-white"
                                   >
-                                    {file.originalName || file.filename || 'Unnamed file'}
+                                    {file.fileName || 'Unnamed file'}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -441,13 +449,13 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {(mediaFiles as any[]).filter((file: any) => file.filename && file.filename !== 'undefined').map((file: any, index: number) => (
+                                {(mediaFiles as any[]).filter((file: any) => file.fileName && file.fileName !== 'undefined').map((file: any, index: number) => (
                                   <SelectItem
                                     key={`avatar-image-${file.id || index}`}
-                                    value={file.url || file.path || (file.filename ? `/uploads/${file.filename}` : '')}
+                                    value={file.url || file.path || (file.fileName ? `/api/media/${file.id}` : '')}
                                     className="text-white"
                                   >
-                                    {file.originalName || file.filename || 'Unnamed file'}
+                                    {file.fileName || 'Unnamed file'}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
