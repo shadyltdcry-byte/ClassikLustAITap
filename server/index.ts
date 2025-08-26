@@ -15,11 +15,11 @@ import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import express from 'express';
 import { registerAdminApi } from '../debugger/modules/adminAPI'; // adjust import as needed
 import DebuggerCore from '../debugger/DebuggerCore';
 import DebuggerAssist from '../debugger/modules/CharactersPlugin';
 import AdminUIPlugin from '../debugger/modules/adminUI';
+import TelegramBot from 'node-telegram-bot-api';
 
 // Initialize database connection only if DATABASE_URL is provided
 let db: any = null;
@@ -51,6 +51,36 @@ function main() {
 }
 
 main();
+
+// Initialize Telegram Bot
+const token = process.env.TELEGRAM_BOT_TOKEN;
+if (token) {
+  console.log("[Telegram] Initializing Telegram bot...");
+  try {
+    const bot = new TelegramBot(token, { polling: true });
+
+    bot.on('message', (msg: any) => {
+      const chatId = msg.chat.id;
+      const messageText = msg.text;
+
+      if (messageText === '/start') {
+        bot.sendMessage(chatId, 'Welcome to your Replit Telegram Bot!');
+      } else if (messageText) {
+        bot.sendMessage(chatId, `You said: ${messageText}`);
+      }
+    });
+
+    bot.on('error', (error: any) => {
+      console.error('[Telegram] Bot error:', error);
+    });
+
+    console.log("[Telegram] Bot initialized successfully!");
+  } catch (error) {
+    console.error('[Telegram] Failed to initialize bot:', error);
+  }
+} else {
+  console.warn('[Telegram] TELEGRAM_BOT_TOKEN not found, bot disabled');
+}
 
 const app = express();
 
@@ -95,6 +125,8 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
+
+  
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -114,8 +146,7 @@ app.use((req, res, next) => {
     process.exit(1);
   });
 
-
-
+        
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
