@@ -112,7 +112,7 @@ export default function CharacterDisplay({
               <div className="absolute inset-0 pointer-events-none">
                 {/* Heart 1 - Top Left with Custom Image */}
                 <div className="absolute top-1/4 left-1/4 animate-float-up flex items-center gap-2">
-                  <img src="/media/floatinghearts.png" alt="hearts" className="w-6 h-6" />
+                  <img src="/uploads/floatinghearts.png" alt="hearts" className="w-6 h-6" />
                   <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out">
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>
@@ -136,7 +136,7 @@ export default function CharacterDisplay({
                 
                 {/* Heart 4 - Bottom with Custom Image */}
                 <div className="absolute top-2/3 left-2/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.6s' }}>
-                  <img src="/media/floatinghearts.png" alt="hearts" className="w-5 h-5" />
+                  <img src="/uploads/floatinghearts.png" alt="hearts" className="w-5 h-5" />
                   <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.6s' }}>
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>

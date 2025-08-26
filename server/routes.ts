@@ -305,6 +305,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/chat-history/:userId/:characterId", async (req, res) => {
     try {
       const { userId, characterId } = req.params;
+      
+      // If userId is not a valid UUID, return empty chat history for guest users
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      if (!uuidRegex.test(userId)) {
+        console.log(`Invalid UUID userId: ${userId}, returning empty chat history`);
+        return res.json([]);
+      }
       const playerFolder = path.join(__dirname, '..', 'player-data', userId);
       const conversationPath = path.join(playerFolder, `conversations_${characterId}.json`);
       
