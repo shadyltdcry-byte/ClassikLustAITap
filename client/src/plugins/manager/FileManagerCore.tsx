@@ -428,66 +428,58 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
               </div>
             </div>
 
-            {/* Toggle Options */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600">
-                <div>
-                  <Label className="text-white font-medium">VIP Content</Label>
-                  <p className="text-xs text-gray-400">Requires premium access</p>
+            {/* Toggle Options - VERY VISIBLE TEST */}
+            <div className="bg-red-500 p-4 border-4 border-yellow-400 rounded-lg">
+              <h3 className="text-white text-xl font-bold mb-4">TOGGLE SETTINGS</h3>
+              
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-blue-600 rounded border-2 border-white">
+                  <div>
+                    <span className="text-white text-lg font-bold">VIP Content</span>
+                    <p className="text-yellow-200">Requires premium access</p>
+                  </div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={uploadConfig.isVip}
+                      onChange={(e) => setUploadConfig(prev => ({ ...prev, isVip: e.target.checked }))}
+                      className="w-8 h-8 mr-2"
+                    />
+                    <span className="text-white text-lg">{uploadConfig.isVip ? '✅ ON' : '❌ OFF'}</span>
+                  </label>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setUploadConfig(prev => ({ ...prev, isVip: !prev.isVip }))}
-                  className={`w-12 h-6 rounded-full border-2 transition-colors ${
-                    uploadConfig.isVip 
-                      ? 'bg-purple-600 border-purple-400' 
-                      : 'bg-gray-500 border-gray-400'
-                  }`}
-                >
-                  <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                    uploadConfig.isVip ? 'translate-x-6' : 'translate-x-0'
-                  }`} />
-                </button>
-              </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600">
-                <div>
-                  <Label className="text-white font-medium">NSFW Content</Label>
-                  <p className="text-xs text-gray-400">18+ content</p>
+                <div className="flex items-center justify-between p-4 bg-green-600 rounded border-2 border-white">
+                  <div>
+                    <span className="text-white text-lg font-bold">NSFW Content</span>
+                    <p className="text-yellow-200">18+ content</p>
+                  </div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={uploadConfig.isNsfw}
+                      onChange={(e) => setUploadConfig(prev => ({ ...prev, isNsfw: e.target.checked }))}
+                      className="w-8 h-8 mr-2"
+                    />
+                    <span className="text-white text-lg">{uploadConfig.isNsfw ? '✅ ON' : '❌ OFF'}</span>
+                  </label>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setUploadConfig(prev => ({ ...prev, isNsfw: !prev.isNsfw }))}
-                  className={`w-12 h-6 rounded-full border-2 transition-colors ${
-                    uploadConfig.isNsfw 
-                      ? 'bg-red-600 border-red-400' 
-                      : 'bg-gray-500 border-gray-400'
-                  }`}
-                >
-                  <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                    uploadConfig.isNsfw ? 'translate-x-6' : 'translate-x-0'
-                  }`} />
-                </button>
-              </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600">
-                <div>
-                  <Label className="text-white font-medium">Chat Sending</Label>
-                  <p className="text-xs text-gray-400">Enable for chat</p>
+                <div className="flex items-center justify-between p-4 bg-purple-600 rounded border-2 border-white">
+                  <div>
+                    <span className="text-white text-lg font-bold">Chat Sending</span>
+                    <p className="text-yellow-200">Enable for chat</p>
+                  </div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={uploadConfig.enabledForChat}
+                      onChange={(e) => setUploadConfig(prev => ({ ...prev, enabledForChat: e.target.checked }))}
+                      className="w-8 h-8 mr-2"
+                    />
+                    <span className="text-white text-lg">{uploadConfig.enabledForChat ? '✅ ON' : '❌ OFF'}</span>
+                  </label>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setUploadConfig(prev => ({ ...prev, enabledForChat: !prev.enabledForChat }))}
-                  className={`w-12 h-6 rounded-full border-2 transition-colors ${
-                    uploadConfig.enabledForChat 
-                      ? 'bg-green-600 border-green-400' 
-                      : 'bg-gray-500 border-gray-400'
-                  }`}
-                >
-                  <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
-                    uploadConfig.enabledForChat ? 'translate-x-6' : 'translate-x-0'
-                  }`} />
-                </button>
               </div>
             </div>
 
