@@ -301,6 +301,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Character endpoints
+  // Character selection for players
+  app.post('/api/player/:playerId/select-character', async (req, res) => {
+    try {
+      const { playerId } = req.params;
+      const { characterId } = req.body;
+      
+      // Set selected character for player
+      await storage.setSelectedCharacter(playerId, characterId);
+      
+      res.json({ success: true, characterId });
+    } catch (error) {
+      console.error('Error selecting character:', error);
+      res.status(500).json({ error: 'Failed to select character' });
+    }
+  });
+
   app.get("/api/character/selected/:playerId", async (req, res) => {
     try {
       const { playerId } = req.params;

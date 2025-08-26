@@ -13,5 +13,35 @@
     "timestamp": "2025-08-26T08:47:34.585Z",
     "characterId": "seraphina",
     "mood": "normal"
+  },
+  {
+    "id": "user-1756198237730",
+    "content": "Heyy",
+    "sender": "user",
+    "timestamp": "2025-08-26T08:50:37.730Z",
+    "characterId": "seraphina"
+  },
+  {
+    "id": "ai-1756198237731",
+    "content": "Oh, hey there! 😘 What's up, gorgeous? You look like you're in a good mood. Spill the tea, what's been going on with you today?",
+    "sender": "character",
+    "timestamp": "2025-08-26T08:50:37.730Z",
+    "characterId": "seraphina",
+    "mood": "playful"
+  },
+  {
+    "id": "user-1756198282890",
+    "content": "Grr u",
+    "sender": "user",
+    "timestamp": "2025-08-26T08:51:22.890Z",
+    "characterId": "seraphina"
+  },
+  {
+    "id": "ai-1756198282891",
+    "content": "*giggles* Oh, someone's feeling a bit growly today! 🐻 What's got you all riled up, handsome? I'm here to cheer you up! 😘",
+    "sender": "character",
+    "timestamp": "2025-08-26T08:51:22.890Z",
+    "characterId": "seraphina",
+    "mood": "normal"
   }
 ]

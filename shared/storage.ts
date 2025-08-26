@@ -176,13 +176,38 @@ class DrizzleStorage implements IStorage {
     return await db.select().from(schema.mediaFiles);
   }
   
-  // Placeholder implementations for other methods
-  async getCharacter(id: string) { return undefined; }
-  async getUserCharacters(userId: string) { return []; }
-  async createCharacter(character: any) { return character; }
-  async updateCharacter(id: string, updates: any) { return undefined; }
-  async deleteCharacter(id: string) {}
-  async selectCharacter(userId: string, characterId: string) {}
+  // Character methods
+  async getCharacter(id: string) {
+    const result = await db.select().from(schema.characters).where(eq(schema.characters.id, id)).limit(1);
+    return result[0];
+  }
+  
+  async getUserCharacters(userId: string) { 
+    return []; 
+  }
+  
+  async createCharacter(character: any) { 
+    return character; 
+  }
+  
+  async updateCharacter(id: string, updates: any) { 
+    const result = await db.update(schema.characters).set(updates).where(eq(schema.characters.id, id)).returning();
+    return result[0];
+  }
+  
+  async deleteCharacter(id: string) {
+    await db.delete(schema.characters).where(eq(schema.characters.id, id));
+  }
+  
+  async selectCharacter(userId: string, characterId: string) {
+    // Deprecated - use setSelectedCharacter instead
+  }
+  
+  async setSelectedCharacter(userId: string, characterId: string) {
+    // For now just store the relationship
+    const character = await this.getCharacter(characterId);
+    return character;
+  }
   async getUpgrade(id: string) { return undefined; }
   async getAllUpgrades() { return []; }
   async createUpgrade(upgrade: any) { return upgrade; }

@@ -118,12 +118,13 @@ const AdminBackendDebugger = () => {
 };
 
 // Character Card Component
-const CharacterCard = ({ character, onEdit, onDelete, onToggleVip, onToggleNsfw, isUpdating }: {
+const CharacterCard = ({ character, onEdit, onDelete, onToggleVip, onToggleNsfw, onToggleEnabled, isUpdating }: {
   character: Character;
   onEdit: (char: Character) => void;
   onDelete: (id: string, name: string) => void;
   onToggleVip: (id: string, current: boolean) => void;
   onToggleNsfw: (id: string, current: boolean) => void;
+  onToggleEnabled: (id: string, current: boolean) => void;
   isUpdating: boolean;
 }) => (
   <Card className="bg-gray-800/80 border-gray-700 hover:border-blue-500/50 transition-all duration-300">
@@ -171,6 +172,17 @@ const CharacterCard = ({ character, onEdit, onDelete, onToggleVip, onToggleNsfw,
         >
           {character.isNsfw ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
           NSFW
+        </Button>
+      </div>
+      <div className="flex gap-2 pt-1">
+        <Button
+          size="sm"
+          variant={character.isEnabled ? "default" : "outline"}
+          onClick={() => onToggleEnabled(character.id, character.isEnabled || false)}
+          disabled={isUpdating}
+          className="flex-1 h-8"
+        >
+          {character.isEnabled ? "Enabled" : "Disabled"}
         </Button>
         <Button
           size="sm"
@@ -288,6 +300,10 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     toggleCharacterMutation.mutate({ characterId: id, field: "isNsfw", value: !current });
   }, [toggleCharacterMutation]);
 
+  const handleToggleEnabled = useCallback((id: string, current: boolean) => {
+    toggleCharacterMutation.mutate({ characterId: id, field: "isEnabled", value: !current });
+  }, [toggleCharacterMutation]);
+
   const handleCreateSuccess = useCallback(() => {
     setShowCreateCharacter(false);
     queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
@@ -397,6 +413,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           onDelete={handleDelete}
                           onToggleVip={handleToggleVip}
                           onToggleNsfw={handleToggleNsfw}
+                          onToggleEnabled={handleToggleEnabled}
                           isUpdating={toggleCharacterMutation.isPending || deleteCharacterMutation.isPending}
                         />
                       ))}

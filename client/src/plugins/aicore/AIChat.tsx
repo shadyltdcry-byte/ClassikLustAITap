@@ -67,7 +67,9 @@ const QUICK_RESPONSES = [
   "Want to play a game?",
 ];
 
-export default function AIChat({ userId = 'default-player', selectedCharacterId }: AIChatProps) {
+export default function AIChat({ userId: propUserId, selectedCharacterId }: AIChatProps) {
+  const { userId: authUserId } = useAuth();
+  const userId = authUserId || propUserId || 'default-player';
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [currentMood, setCurrentMood] = useState("normal");
@@ -101,12 +103,13 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
 
   const character = specificCharacter || selectedCharacter;
 
-  // Fetch chat messages
+  // Fetch chat messages from JSON files
   const { data: chatHistory = [], isLoading: messagesLoading } = useQuery({
-    queryKey: ["/api/chat", userId, character?.id],
+    queryKey: ["/api/chat-history", userId, character?.id],
     queryFn: async () => {
       if (!character?.id) return [];
-      const response = await apiRequest("GET", `/api/chat/${userId}/${character.id}`);
+      const response = await fetch(`/api/chat-history/${userId}/${character.id}`);
+      if (!response.ok) return [];
       const data = await response.json();
       return data;
     },
@@ -126,9 +129,9 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       if (chatHistory.length > 0) {
         const formattedMessages = chatHistory.map((msg: any) => ({
           id: msg.id || `msg-${Date.now()}-${Math.random()}`,
-          content: msg.message || msg.content || '',
-          sender: msg.isFromUser ? 'user' : 'character',
-          timestamp: new Date(msg.createdAt || Date.now()),
+          content: msg.content || '',
+          sender: msg.sender === 'user' ? 'user' : 'character',
+          timestamp: new Date(msg.timestamp || Date.now()),
           type: msg.type || 'text',
           mood: msg.mood || 'normal',
           reactionScore: msg.reactionScore,
