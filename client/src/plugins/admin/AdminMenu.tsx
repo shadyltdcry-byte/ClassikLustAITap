@@ -50,6 +50,7 @@ import AchievementManagement from "@/components/admin/AchievementManagement";
 import type { Character } from "@shared/schema";
 import { Textarea } from "@/components/ui/textarea";
 import MistralDebugger from "@/plugins/aicore/MistralDebugger";
+import DebuggerInterface from "@/components/admin/DebuggerInterface";
 
 interface AdminMenuProps {
   onClose?: () => void;
@@ -216,6 +217,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [showMistralDebugger, setShowMistralDebugger] = useState(false);
   const [showBackendDebugger, setShowBackendDebugger] = useState(false);
+  const [showDebuggerInterface, setShowDebuggerInterface] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [showUpgrades, setShowUpgrades] = useState(false);
   const [showTasks, setShowTasks] = useState(false);
@@ -547,6 +549,30 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     </Card>
 
                     {showBackendDebugger && <AdminBackendDebugger />}
+                    
+                    {/* Plugin Debugger Interface */}
+                    <Card className="bg-gray-800/50 border-gray-700">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-white text-sm flex items-center gap-2">
+                          <Bug className="w-4 h-4 text-pink-500" />
+                          Plugin Debugger System
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <p className="text-gray-400 text-xs mb-2">
+                          Control the plugin debugger system for characters, database, and gameplay modules
+                        </p>
+                        <Button
+                          onClick={() => setShowDebuggerInterface(true)}
+                          size="sm"
+                          className="w-full bg-pink-600 hover:bg-pink-700"
+                          data-testid="button-plugin-debugger"
+                        >
+                          <Terminal className="w-4 h-4 mr-2" />
+                          Open Plugin Debugger
+                        </Button>
+                      </CardContent>
+                    </Card>
                   </div>
                   
                   {/* Quick Admin Tools */}
@@ -792,6 +818,23 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
           isOpen={showMistralDebugger}
           onClose={() => setShowMistralDebugger(false)} 
         />
+      )}
+
+      {/* Plugin Debugger Interface Modal */}
+      {showDebuggerInterface && (
+        <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
+          <div className="bg-gray-900 rounded-lg w-[95vw] max-w-7xl h-[90vh] overflow-hidden relative">
+            <Button
+              onClick={() => setShowDebuggerInterface(false)}
+              className="absolute top-4 right-4 z-10 bg-gray-800 hover:bg-gray-700"
+              variant="ghost"
+              size="icon"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            <DebuggerInterface />
+          </div>
+        </div>
       )}
     </>
   );

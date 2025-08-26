@@ -1711,6 +1711,90 @@ You are comfortable with adult conversations when appropriate and can become fli
     res.json({ valid: isValid });
   });
 
+  // Debugger system routes
+  let debuggerCore: any = null;
+
+  // Initialize debugger system
+  app.post('/api/admin/debugger/init', async (req, res) => {
+    try {
+      if (debuggerCore) {
+        return res.json({ success: true, message: 'Debugger already initialized' });
+      }
+
+      // Dynamically import the debugger system
+      const DebuggerCore = require(path.resolve('./debugger/DebuggerCore.js'));
+      const CharactersPlugin = require(path.resolve('./debugger/modules/CharactersPlugin.js'));
+
+      debuggerCore = new DebuggerCore();
+      debuggerCore.register(new CharactersPlugin(storage));
+      
+      await debuggerCore.initAll();
+      
+      res.json({ success: true, message: 'Debugger system initialized' });
+    } catch (error) {
+      console.error('Debugger init error:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Run debugger command
+  app.post('/api/admin/debugger/command', async (req, res) => {
+    try {
+      if (!debuggerCore) {
+        return res.status(400).json({ success: false, error: 'Debugger not initialized' });
+      }
+
+      const { command, data } = req.body;
+      const result = await debuggerCore.runCommand(command, data);
+      
+      res.json({ success: true, result });
+    } catch (error) {
+      console.error('Debugger command error:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Get debugger status
+  app.get('/api/admin/debugger/status', async (req, res) => {
+    try {
+      if (!debuggerCore) {
+        return res.json({ 
+          initialized: false, 
+          plugins: [],
+          logs: []
+        });
+      }
+
+      const plugins = debuggerCore.plugins.map((p: any) => ({
+        name: p.name,
+        status: p.stats || 'ready'
+      }));
+
+      res.json({
+        initialized: debuggerCore.isInitialized || true,
+        plugins,
+        logs: []
+      });
+    } catch (error) {
+      console.error('Debugger status error:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // Stop debugger
+  app.post('/api/admin/debugger/stop', async (req, res) => {
+    try {
+      if (debuggerCore) {
+        await debuggerCore.stopAll();
+        debuggerCore = null;
+      }
+      res.json({ success: true, message: 'Debugger stopped' });
+    } catch (error) {
+      console.error('Debugger stop error:', error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // Serve static files in production
   if (process.env.NODE_ENV === "production") {
     const distPath = join(__dirname, "../dist/public");
