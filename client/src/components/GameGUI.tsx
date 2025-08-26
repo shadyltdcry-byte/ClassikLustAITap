@@ -704,11 +704,13 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         <CharacterGallery 
           isOpen={guiState.showCharacterGallery}
           onClose={() => updateGUIState({ showCharacterGallery: false })}
-          userId={userId || playerData?.id || 'guest-user'}
+          userId={userId || playerData?.id || ''}
           onCharacterSelected={(characterId) => {
-            // Invalidate queries to refresh character data
-            queryClient.invalidateQueries({ queryKey: ['/api/character/selected', userId] });
-            queryClient.invalidateQueries({ queryKey: ['/api/player', userId] });
+            console.log('Character selected:', characterId, 'for user:', userId);
+            // Invalidate all related queries to refresh character data
+            queryClient.invalidateQueries({ queryKey: ['/api/character/selected'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/player'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/characters'] });
             updateGUIState({ showCharacterGallery: false });
           }}
         />
