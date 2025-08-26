@@ -68,7 +68,12 @@ export default function CharacterDisplay({
         <div className="relative mx-auto max-w-xs mb-6">
           <div className="relative">
             <img
-              src={character?.avatarPath || character?.imageUrl || character?.avatarUrl || '/uploads/placeholder-avatar.jpg'}
+              src={
+                (character?.avatarPath && character.avatarPath !== 'null' && character.avatarPath !== '/uploads/undefined') ? character.avatarPath :
+                (character?.imageUrl && character.imageUrl !== 'null' && character.imageUrl !== '/uploads/undefined') ? character.imageUrl :
+                (character?.avatarUrl && character.avatarUrl !== 'null' && character.avatarUrl !== '/uploads/undefined') ? character.avatarUrl :
+                '/uploads/placeholder-avatar.jpg'
+              }
               alt={character?.name || "Player"}
               onClick={onAvatarClick || handleTap}
               onError={(e) => {

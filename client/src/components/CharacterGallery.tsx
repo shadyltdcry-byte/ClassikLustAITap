@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -177,6 +177,9 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
           <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             Character Gallery
           </DialogTitle>
+          <DialogDescription className="text-gray-300 text-center">
+            Select a character to interact with. Browse through available characters and choose your companion.
+          </DialogDescription>
         </DialogHeader>
 
         {charactersLoading ? (

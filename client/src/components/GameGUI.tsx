@@ -86,7 +86,6 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     showCharacterGallery: false,
   });
 
-  console.log("GameGUI rendering, activePlugin:", guiState.activePlugin);
 
   const [isTapping, setIsTapping] = useState(false);
   const [taskFilter, setTaskFilter] = useState("all");
@@ -314,9 +313,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 isEnabled: true,
                 levelRequirement: 1,
                 customTriggers: [],
-                avatarPath: null,
-                imageUrl: null,
-                avatarUrl: null,
+                avatarPath: '/uploads/placeholder-avatar.jpg',
+                imageUrl: '/uploads/placeholder-avatar.jpg',
+                avatarUrl: '/uploads/placeholder-avatar.jpg',
                 createdAt: new Date(),
               }}
               user={{
