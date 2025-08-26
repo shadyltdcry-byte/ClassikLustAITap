@@ -223,8 +223,8 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getSelectedCharacter(userId: string): Promise<Character | undefined> {
-    // For now, return the first character - implement proper selection logic later
-    const characters = await this.getUserCharacters(userId);
+    // Return the first character from JSON files for now
+    const characters = await this.getAllCharacters();
     return characters[0];
   }
 
@@ -264,16 +264,8 @@ export class SupabaseStorage implements IStorage {
   }
 
   async selectCharacter(userId: string, characterId: string): Promise<void> {
-    // Implement character selection logic - could be a user preference or separate table
-    // For now, ensure the user has access to this character
-    const { error } = await this.supabase
-      .from('user_characters')
-      .upsert({
-        user_id: userId,
-        character_id: characterId
-      });
-    
-    if (error) throw error;
+    // For now, just store in memory - implement proper selection logic later
+    console.log(`User ${userId} selected character ${characterId}`);
   }
 
   // Upgrade management
