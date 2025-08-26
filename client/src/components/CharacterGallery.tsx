@@ -181,7 +181,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-red-900/95 text-white border-purple-500/50 overflow-hidden">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-red-900/95 text-white border-purple-500/50 overflow-hidden">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             Character Gallery
