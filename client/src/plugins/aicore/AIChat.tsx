@@ -68,7 +68,7 @@ const QUICK_RESPONSES = [
 ];
 
 export default function AIChat({ userId: propUserId, selectedCharacterId }: AIChatProps) {
-  const userId = propUserId || 'default-player';
+  const userId = propUserId;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [currentMood, setCurrentMood] = useState("normal");
@@ -129,7 +129,7 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
         const formattedMessages = chatHistory.map((msg: any) => ({
           id: msg.id || `msg-${Date.now()}-${Math.random()}`,
           content: msg.content || '',
-          sender: msg.sender === 'user' ? 'user' : 'character',
+          sender: (msg.sender === 'user' ? 'user' : 'character') as 'user' | 'character',
           timestamp: new Date(msg.timestamp || Date.now()),
           type: msg.type || 'text',
           mood: msg.mood || 'normal',
@@ -309,7 +309,7 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
           characterPersonality: character?.personality || "playful and flirty",
           currentMood: characterMood,
           conversationHistory,
-          userId: userId || "default-player",
+          userId: userId,
           characterId: character?.id || "seraphina"
         });
         

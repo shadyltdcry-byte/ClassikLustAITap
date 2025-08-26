@@ -87,7 +87,7 @@ export const claimTaskReward = (taskId: string) => {
 };
 
 export default function Task({ onClaimPrize }: { onClaimPrize?: () => void }) {
-  // This component should only be called from GameGUI for rendering
-  // All GUI logic should be in GameGUI.tsx
+  
+  // All GUI  should be in GameGUI.tsx
   return null;
 }

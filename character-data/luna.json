@@ -9,10 +9,10 @@
   "level": 1,
   "isNsfw": false,
   "isVip": false,
-  "isEnabled": false,
+  "isEnabled": true,
   "levelRequirement": 5,
   "customTriggers": [],
   "avatarPath": "/uploads/default-character.jpg",
   "createdAt": "2025-08-26T10:00:00.000Z",
-  "updatedAt": "2025-08-26T09:38:29.895Z"
+  "updatedAt": "2025-08-26T10:47:09.941Z"
 }

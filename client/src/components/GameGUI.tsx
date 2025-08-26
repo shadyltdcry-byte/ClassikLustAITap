@@ -77,7 +77,7 @@ interface GUIState {
 
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   // Auth is handled at App level, use player data directly
-  const userId = playerData?.id || 'default-player';
+  const userId = playerData?.id || "";
   const isAuthenticated = true; // If we're here, we're authenticated
 
   const [guiState, setGUIState] = useState<GUIState>({
@@ -314,14 +314,14 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 isEnabled: true,
                 levelRequirement: 1,
                 customTriggers: [],
-                avatarPath: "/uploads/default-character.jpg",
-                imageUrl: "/uploads/default-character.jpg",
-                avatarUrl: "/uploads/default-character.jpg",
+                avatarPath: null,
+                imageUrl: null,
+                avatarUrl: null,
                 createdAt: new Date(),
               }}
               user={{
                 ...playerData,
-                id: playerData?.id || 'default-player',
+                id: playerData?.id,
                 username: playerData?.name || 'Player',
                 password: '',
                 level: playerData?.level || 1,
@@ -538,7 +538,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         return (
           <div className="w-full max-w-2xl h-full">
             {isAuthenticated ? (
-              <AIChat userId={userId || playerData?.id || 'default-player'} />
+              <AIChat userId={userId || playerData?.id} />
             ) : (
               <div className="flex items-center justify-center h-full">
                 <p className="text-white">Please log in to use chat</p>
@@ -569,12 +569,12 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               title="Click to open Character Gallery"
             >
               <img
-                src="/uploads/default-character.jpg"
+                src="/uploads/placeholder-avatar.jpg"
                 alt="Character Avatar"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  if (target.src !== window.location.origin + '/default-character.jpg') {
-                    target.src = '/default-character.jpg';
+                  if (target.src !== window.location.origin + '/uploads/placeholder-avatar.jpg') {
+                    target.src = '/uploads/placeholder-avatar.jpg';
                   }
                 }}
                 className="w-16 h-16 object-cover rounded-xl shadow-lg border-2 border-purple-500/50"

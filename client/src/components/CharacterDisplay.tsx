@@ -68,13 +68,13 @@ export default function CharacterDisplay({
         <div className="relative mx-auto max-w-xs mb-6">
           <div className="relative">
             <img
-              src={character?.avatarPath || character?.imageUrl || character?.avatarUrl || '/default-character.jpg'}
+              src={character?.avatarPath || character?.imageUrl || character?.avatarUrl || '/uploads/placeholder-avatar.jpg'}
               alt={character?.name || "Player"}
               onClick={handleTap}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                if (target.src !== window.location.origin + '/default-character.jpg') {
-                  target.src = '/default-character.jpg';
+                if (target.src !== window.location.origin + '/uploads/placeholder-avatar.jpg') {
+                  target.src = '/uploads/placeholder-avatar.jpg';
                 }
               }}
               className={`w-full h-auto aspect-[3/4] object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-transform duration-200 ${

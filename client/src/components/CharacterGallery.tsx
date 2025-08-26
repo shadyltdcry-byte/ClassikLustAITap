@@ -114,7 +114,7 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
   // Fixed image URL handling using correct MediaFile schema fields
   const getImageUrl = (media: MediaFile) => {
     if (media.filePath) return media.filePath.startsWith('/') ? media.filePath : `/uploads/${media.filePath}`;
-    return media.fileName ? `/uploads/${media.fileName}` : '/default-character.jpg';
+    return media.fileName ? `/uploads/${media.fileName}` : '/uploads/placeholder-character.jpg';
   };
 
   const getCurrentImage = () => {
@@ -281,7 +281,7 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                           alt={`${selectedCharacter.name} - Image ${currentImageIndex + 1}`}
                           className="w-full h-full object-contain"
                           onError={(e) => {
-                            (e.target as HTMLImageElement).src = '/default-character.jpg';
+                            (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg';
                           }}
                         />
 
@@ -313,11 +313,11 @@ export default function CharacterGallery({ isOpen, onClose, userId }: CharacterG
                         <div className="text-center text-gray-400">
                           <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center">
                             <img
-                              src={selectedCharacter.imageUrl?.startsWith('/') ? selectedCharacter.imageUrl : `/uploads/${selectedCharacter.imageUrl}` || '/default-character.jpg'}
+                              src={selectedCharacter.imageUrl?.startsWith('/') ? selectedCharacter.imageUrl : `/uploads/${selectedCharacter.imageUrl}` || '/uploads/placeholder-character.jpg'}
                               alt={selectedCharacter.name}
                               className="w-12 h-12 rounded-full object-cover"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = '/default-character.jpg';
+                                (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg';
                               }}
                             />
                           </div>
