@@ -78,7 +78,7 @@ interface GUIState {
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   // Auth is handled at App level, use player data directly
   const userId = playerData?.id;
-  const isAuthenticated = !!userId; // If we have a userId, we're authenticated
+  const isAuthenticated = !!(userId || playerData?.id); // If we have a userId or playerData, we're authenticated
 
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
@@ -336,7 +336,10 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 createdAt: new Date()
               } as any}
               onTap={handleTap}
-              onAvatarClick={() => updateGUIState({ showCharacterGallery: true })}
+              onAvatarClick={() => {
+                console.log('Avatar clicked, opening gallery');
+                updateGUIState({ showCharacterGallery: true });
+              }}
               isTapping={isTapping}
             />
           </div>
@@ -564,7 +567,10 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           <div className="flex items-center gap-2">
             <div 
               className="cursor-pointer hover:scale-105 transition-transform duration-200"
-              onClick={() => updateGUIState({ showCharacterGallery: true })}
+              onClick={() => {
+                console.log('Status bar avatar clicked, opening gallery');
+                updateGUIState({ showCharacterGallery: true });
+              }}
               title="Click to open Character Gallery"
             >
               <img

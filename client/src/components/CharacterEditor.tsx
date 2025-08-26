@@ -323,7 +323,7 @@ export default function CharacterEditor({
                             min="1"
                             max="100"
                             {...field}
-                            onChange={e => field.onChange(parseInt(e.target.value))}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                             className="bg-gray-700 border-gray-600 text-white"
                           />
                         </FormControl>
@@ -343,7 +343,7 @@ export default function CharacterEditor({
                             min="1"
                             max="60"
                             {...field}
-                            onChange={e => field.onChange(parseInt(e.target.value))}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                             className="bg-gray-700 border-gray-600 text-white"
                           />
                         </FormControl>
@@ -363,7 +363,7 @@ export default function CharacterEditor({
                             min="1"
                             max="60"
                             {...field}
-                            onChange={e => field.onChange(parseInt(e.target.value))}
+                            onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                             className="bg-gray-700 border-gray-600 text-white"
                           />
                         </FormControl>
