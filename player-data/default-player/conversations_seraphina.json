@@ -118,5 +118,20 @@
     "timestamp": "2025-08-26T09:45:50.987Z",
     "characterId": "seraphina",
     "mood": "flirty"
+  },
+  {
+    "id": "user-1756202834971",
+    "content": "You won't sissy",
+    "sender": "user",
+    "timestamp": "2025-08-26T10:07:14.971Z",
+    "characterId": "seraphina"
+  },
+  {
+    "id": "ai-1756202834972",
+    "content": "*giggles* Oh, I see someone's trying to be all tough and growly with me again! 😜 But you know what? I think it's kinda hot. *winks* But tell me, what's really on your mind, big guy? I'm all ears. 😘 And don't worry, I won't sissy out on you. I can handle whatever you throw my way. 😉",
+    "sender": "character",
+    "timestamp": "2025-08-26T10:07:14.971Z",
+    "characterId": "seraphina",
+    "mood": "normal"
   }
 ]

@@ -4,26 +4,26 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import GameGUI from "@/components/GameGUI";
-import AdminMenu from "@/plugins/admin/AdminMenu";
 import NotFound from "@/pages/not-found";
 import { GameProvider } from "@/context/GameProvider";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import LoginScreen from "@/components/LoginScreen";
-import { AdminUIToggler } from "@/plugins/admin/adminGUI";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={GameGUIPage} />
-      <Route path="/AdminMenu" component={() => <AdminMenu onClose={() => {}} />} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function GameGUIPage() {
-  return <GameGUI onPluginAction={() => {}} />;
+  return <GameGUI onPluginAction={(action) => {
+    console.log('Plugin action:', action);
+    // All plugin actions should be handled within GameGUI itself
+  }} />;
 }
 
 function AppContent() {

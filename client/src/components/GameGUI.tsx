@@ -100,11 +100,14 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     setIsTapping(true);
     
     try {
-      // Update player stats locally first for immediate feedback
-      await onPluginAction('tap');
+      // Call API directly instead of relying on onPluginAction
+      const response = await apiRequest(`/api/player/${userId}/tap`, {
+        method: 'POST'
+      });
       
       // Force refetch player data to see updated stats
       queryClient.invalidateQueries({ queryKey: ['/api/player'] });
+      
     } catch (error) {
       console.error('Tap error:', error);
     }

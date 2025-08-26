@@ -405,9 +405,9 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
-                      {characters.map((character) => (
+                      {characters.map((character, index) => (
                         <CharacterCard
-                          key={character.id}
+                          key={`admin-char-${character.id}-${index}`}
                           character={character}
                           onEdit={handleEdit}
                           onDelete={handleDelete}
