@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit3, Trash2, Target } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiRequest } from '@/lib/queryClient';
@@ -18,6 +19,13 @@ interface LevelRequirement {
   description?: string;
   unlockRewards?: any[];
   functions?: any[];
+  upgradeRequirements?: UpgradeRequirement[];
+}
+
+interface UpgradeRequirement {
+  upgradeId: string;
+  requiredLevel: number;
+  upgradeName?: string;
 }
 
 export default function LevelManagement() {
@@ -28,13 +36,18 @@ export default function LevelManagement() {
     lpRequired: 0,
     description: '',
     unlockRewards: [],
-    functions: []
+    functions: [],
+    upgradeRequirements: []
   });
 
   const queryClient = useQueryClient();
 
   const { data: levelRequirements = [], isLoading } = useQuery({
     queryKey: ['/api/admin/level-requirements'],
+  });
+
+  const { data: upgrades = [] } = useQuery({
+    queryKey: ['/api/admin/upgrades'],
   });
 
   const createMutation = useMutation({
@@ -88,9 +101,32 @@ export default function LevelManagement() {
       lpRequired: 0,
       description: '',
       unlockRewards: [],
-      functions: []
+      functions: [],
+      upgradeRequirements: []
     });
     setEditingLevel(null);
+  };
+
+  const addUpgradeRequirement = () => {
+    setFormData({
+      ...formData,
+      upgradeRequirements: [
+        ...(formData.upgradeRequirements || []),
+        { upgradeId: '', requiredLevel: 1 }
+      ]
+    });
+  };
+
+  const removeUpgradeRequirement = (index: number) => {
+    const newRequirements = [...(formData.upgradeRequirements || [])];
+    newRequirements.splice(index, 1);
+    setFormData({ ...formData, upgradeRequirements: newRequirements });
+  };
+
+  const updateUpgradeRequirement = (index: number, field: string, value: any) => {
+    const newRequirements = [...(formData.upgradeRequirements || [])];
+    newRequirements[index] = { ...newRequirements[index], [field]: value };
+    setFormData({ ...formData, upgradeRequirements: newRequirements });
   };
 
   const handleEdit = (level: LevelRequirement) => {
@@ -142,6 +178,16 @@ export default function LevelManagement() {
                     <div>
                       <h4 className="text-white font-medium">Level {level.level}</h4>
                       <p className="text-gray-300">LP Required: {level.lpRequired.toLocaleString()}</p>
+                      {level.upgradeRequirements && level.upgradeRequirements.length > 0 && (
+                        <div className="mt-2">
+                          <p className="text-gray-400 text-xs">Upgrade Requirements:</p>
+                          {level.upgradeRequirements.map((req: any, idx: number) => (
+                            <p key={idx} className="text-gray-400 text-xs">
+                              • {req.upgradeName || req.upgradeId}: Level {req.requiredLevel}
+                            </p>
+                          ))}
+                        </div>
+                      )}
                       {level.description && (
                         <p className="text-gray-400 text-sm mt-1">{level.description}</p>
                       )}
@@ -211,6 +257,62 @@ export default function LevelManagement() {
                   className="bg-gray-700 border-gray-600 text-white"
                   data-testid="textarea-description"
                 />
+              </div>
+              
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <Label>Upgrade Requirements</Label>
+                  <Button 
+                    type="button"
+                    size="sm"
+                    onClick={addUpgradeRequirement}
+                    className="bg-green-600 hover:bg-green-700"
+                    data-testid="button-add-upgrade-requirement"
+                  >
+                    <Plus className="w-3 h-3 mr-1" />
+                    Add
+                  </Button>
+                </div>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {formData.upgradeRequirements?.map((req, index) => (
+                    <div key={index} className="flex gap-2 items-center bg-gray-700 p-2 rounded">
+                      <Select 
+                        value={req.upgradeId} 
+                        onValueChange={(value) => updateUpgradeRequirement(index, 'upgradeId', value)}
+                      >
+                        <SelectTrigger className="bg-gray-600 border-gray-500 text-white flex-1">
+                          <SelectValue placeholder="Select upgrade" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-gray-600 border-gray-500">
+                          {upgrades.map((upgrade: any) => (
+                            <SelectItem key={upgrade.id} value={upgrade.id}>
+                              {upgrade.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Input
+                        type="number"
+                        min="1"
+                        placeholder="Level"
+                        value={req.requiredLevel}
+                        onChange={(e) => updateUpgradeRequirement(index, 'requiredLevel', parseInt(e.target.value))}
+                        className="bg-gray-600 border-gray-500 text-white w-20"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => removeUpgradeRequirement(index)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  ))}
+                  {(!formData.upgradeRequirements || formData.upgradeRequirements.length === 0) && (
+                    <p className="text-gray-400 text-sm text-center py-2">No upgrade requirements</p>
+                  )}
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button 

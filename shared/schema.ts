@@ -152,6 +152,7 @@ export const levelRequirements = pgTable("level_requirements", {
   description: text("description"),
   unlockRewards: jsonb("unlock_rewards").default(sql`'[]'::jsonb`), // Array of rewards {type, amount}
   functions: jsonb("functions").default(sql`'[]'::jsonb`), // Multiple functions for level
+  upgradeRequirements: jsonb("upgrade_requirements").default(sql`'[]'::jsonb`), // Array of {upgradeId, requiredLevel}
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 

@@ -255,7 +255,23 @@ class DrizzleStorage implements IStorage {
 
   // Level Requirements Management
   async getLevelRequirements() {
-    return await db.select().from(schema.levelRequirements).orderBy(schema.levelRequirements.level);
+    const requirements = await db.select().from(schema.levelRequirements).orderBy(schema.levelRequirements.level);
+    
+    // Enrich with upgrade names for display
+    for (const req of requirements) {
+      if (req.upgradeRequirements && Array.isArray(req.upgradeRequirements)) {
+        for (const upgradeReq of req.upgradeRequirements as any[]) {
+          if (upgradeReq.upgradeId) {
+            const upgrade = await db.select().from(schema.upgrades).where(eq(schema.upgrades.id, upgradeReq.upgradeId)).limit(1);
+            if (upgrade[0]) {
+              upgradeReq.upgradeName = upgrade[0].name;
+            }
+          }
+        }
+      }
+    }
+    
+    return requirements;
   }
 
   async createLevelRequirement(levelReq: any) {
