@@ -57,17 +57,34 @@ export class SupabaseStorage implements IStorage {
 
   // User management
   async getUser(id: string): Promise<User | undefined> {
-    const { data, error } = await this.supabase
-      .from('users')
-      .select('*')
-      .eq('id', id)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching user:', error);
-      return undefined;
+    // Handle telegram IDs differently from UUID IDs
+    if (id.startsWith('telegram_')) {
+      const telegramId = id.replace('telegram_', '');
+      const { data, error } = await this.supabase
+        .from('users')
+        .select('*')
+        .eq('telegram_id', telegramId)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching user by telegram ID:', error);
+        return undefined;
+      }
+      return data;
+    } else {
+      // Regular UUID lookup
+      const { data, error } = await this.supabase
+        .from('users')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching user by UUID:', error);
+        return undefined;
+      }
+      return data;
     }
-    return data;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
