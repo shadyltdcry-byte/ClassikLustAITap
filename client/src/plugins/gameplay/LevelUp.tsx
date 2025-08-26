@@ -637,45 +637,7 @@ export default function LevelUp() {
               })}
           </div>
         </TabsContent>
-
-        {/* Admin Panel */}
-        <TabsContent value="admin" className="space-y-4">
-          <Alert className="border-yellow-500/30 bg-yellow-900/20">
-            <AlertCircle className="h-4 w-4 text-yellow-500" />
-            <AlertDescription className="text-yellow-200">
-              Admin tools for managing level requirements and testing level progression.
-            </AlertDescription>
-          </Alert>
-
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              onClick={() => {
-                const testRewards = { lp: 1000, coins: 100 };
-                applyLevelUpRewards(testRewards, playerData.level);
-                toast.success('Test rewards applied!');
-              }}
-              variant="outline"
-              className="border-purple-500 text-purple-300"
-            >
-              Test Rewards
-            </Button>
-
-            <Button
-              onClick={() => {
-                setPlayerData({ 
-                  xp: playerData.xpToNext,
-                  lp: playerData.lp + 5000 
-                });
-                toast.success('XP maxed for testing!');
-              }}
-              variant="outline"
-              className="border-blue-500 text-blue-300"
-            >
-              Max Current XP
-            </Button>
-          </div>
-        </TabsContent>
-      </Tabs>
+   </Tabs>
     </div>
   );
 }

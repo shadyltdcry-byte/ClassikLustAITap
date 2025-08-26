@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   X,
   Users,
@@ -31,7 +32,8 @@ import {
   Eye,
   EyeOff,
   Code,
-  Terminal
+  Terminal,
+  Plus
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -146,14 +148,14 @@ const CharacterCard = ({ character, onEdit, onDelete, onToggleVip, onToggleNsfw,
         {character.personality || "No personality set"}
       </p>
       <div className="flex items-center justify-between text-xs text-gray-500">
-        <span>Level {character.levelRequirement}+</span>
+        <span>Level {character.requiredLevel || character.levelRequirement || 1}+</span>
         <span>ID: {character.id.slice(0, 8)}...</span>
       </div>
       <div className="flex gap-2 pt-2">
         <Button
           size="sm"
           variant={character.isVip ? "default" : "outline"}
-          onClick={() => onToggleVip(character.id, character.isVip)}
+          onClick={() => onToggleVip(character.id, character.isVip || false)}
           disabled={isUpdating}
           className="flex-1 h-8"
         >
@@ -163,7 +165,7 @@ const CharacterCard = ({ character, onEdit, onDelete, onToggleVip, onToggleNsfw,
         <Button
           size="sm"
           variant={character.isNsfw ? "destructive" : "outline"}
-          onClick={() => onToggleNsfw(character.id, character.isNsfw)}
+          onClick={() => onToggleNsfw(character.id, character.isNsfw || false)}
           disabled={isUpdating}
           className="flex-1 h-8"
         >
@@ -212,9 +214,9 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     isLoading: charactersLoading,
     error: charactersError,
   } = useQuery({
-    queryKey: ["/api/admin/characters"],
+    queryKey: ["/api/characters"],
     queryFn: async (): Promise<Character[]> => {
-      const response = await apiRequest("GET", "/api/admin/characters");
+      const response = await apiRequest("GET", "/api/characters");
       if (!response.ok) {
         throw new Error(`Failed to fetch characters: ${response.status}`);
       }
@@ -234,6 +236,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     },
     onSuccess: () => {
       toast.success("Character deleted successfully!");
+      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
     },
     onError: () => {
@@ -258,6 +261,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     },
     onSuccess: () => {
       toast.success("Character updated!");
+      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
     },
     onError: () => {
@@ -286,6 +290,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
   const handleCreateSuccess = useCallback(() => {
     setShowCreateCharacter(false);
+    queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
     queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
     toast.success("Character created!");
   }, [queryClient]);
@@ -293,6 +298,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   const handleEditSuccess = useCallback(() => {
     setShowEditCharacter(false);
     setSelectedCharacter(null);
+    queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
     queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
     toast.success("Character updated!");
   }, [queryClient]);
@@ -364,7 +370,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                       onClick={() => setShowCreateCharacter(true)}
                       className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
                     >
-                      <Users className="w-4 h-4 mr-2" />
+                      <Plus className="w-4 h-4 mr-2" />
                       Create Character
                     </Button>
                   </div>
@@ -376,6 +382,10 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                   ) : charactersError ? (
                     <div className="text-center text-red-400 py-8">
                       Failed to load characters
+                    </div>
+                  ) : characters.length === 0 ? (
+                    <div className="text-center text-gray-400 py-8">
+                      No characters found. Create your first character to get started.
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
@@ -410,7 +420,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           className="w-full bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700"
                         >
                           <TrendingUp className="w-4 h-4 mr-2" />
-                          Level Manager
+                          Admin Level Manager
                         </Button>
                       </CardContent>
                     </Card>
@@ -577,7 +587,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
         </div>
       </div>
 
-      {/* Plugin Modals */}
+      {/* Plugin Modals - Fixed LevelUp to show admin interface */}
       {showLevelUp && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
           <div className="bg-gray-900 rounded-lg w-[90vw] max-w-4xl h-[80vh] overflow-auto relative">
@@ -589,7 +599,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <LevelUp />
+            <LevelUp isAdminMode={true} />
           </div>
         </div>
       )}
@@ -605,7 +615,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <Upgrades />
+            <Upgrades isAdminMode={true} />
           </div>
         </div>
       )}
@@ -621,7 +631,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <Tasks />
+            <Tasks isAdminMode={true} />
           </div>
         </div>
       )}
@@ -637,7 +647,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <Achievements />
+            <Achievements isAdminMode={true} />
           </div>
         </div>
       )}
@@ -682,6 +692,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             </DialogHeader>
             <CharacterEditor 
               character={selectedCharacter}
+              isEditing={true}
               onSuccess={handleEditSuccess}
               onCancel={() => setShowEditCharacter(false)}
             />

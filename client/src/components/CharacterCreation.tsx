@@ -1,9 +1,7 @@
 /**
  * CharacterCreation.tsx
- * Last Edited: 2025-08-19 by Le Chat
- *
- * Added preview for main and avatar images.
- * Improved form handling and UI consistency.
+ * PURE CHARACTER CREATION LOGIC ONLY - NO ADMIN UI
+ * Last Cleaned: 2025-08-25
  */
 
 import { useState } from "react";
@@ -23,7 +21,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -39,165 +36,60 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "react-hot-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-// Extended character creation schema that matches the backend expectations
-const characterCreationSchema = insertCharacterSchema.extend({
-  level: z.number().min(1).max(100).default(1),
-  moodDistribution: z
-    .object({
-      normal: z.number().min(0).max(100).default(70),
-      happy: z.number().min(0).max(100).default(20),
-      flirty: z.number().min(0).max(100).default(10),
-      playful: z.number().min(0).max(100).default(0),
-      mysterious: z.number().min(0).max(100).default(0),
-      shy: z.number().min(0).max(100).default(0),
-    })
-    .default({
-      normal: 70,
-      happy: 20,
-      flirty: 10,
-      playful: 0,
-      mysterious: 0,
-      shy: 0,
-    }),
-  customTriggerWords: z
-    .array(
-      z.union([
-        z.string(),
-        z.object({
-          word: z.string(),
-          response: z.string(),
-        })
-      ])
-    )
-    .default([]),
-  customGreetings: z.array(z.string()).default([]),
-  customResponses: z.array(z.string()).default([]),
-  interests: z.string().optional(),
-  quirks: z.string().optional(),
-  backstory: z.string().optional(),
-  pictureSendChance: z.number().min(0).max(100).default(5),
-});
+type CharacterCreationForm = z.infer<typeof insertCharacterSchema>;
 
-type CharacterCreationForm = z.infer<typeof characterCreationSchema>;
-
-interface MediaFile {
-  id: string;
-  url?: string;
-  path?: string;
-  filename?: string;
-  originalName?: string;
-  type: 'image' | 'video' | 'gif';
-}
-
-// Mock onSuccess and onCancel for the example
 interface CharacterCreationProps {
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export default function CharacterCreation({ onSuccess, onCancel }: CharacterCreationProps) {
+export default function CharacterCreation({
+  onSuccess,
+  onCancel,
+}: CharacterCreationProps) {
   const [activeTab, setActiveTab] = useState("basic");
-  const [customGreeting, setCustomGreeting] = useState("");
-  const [customResponse, setCustomResponse] = useState("");
-  const [triggerWord, setTriggerWord] = useState("");
-  const [triggerResponse, setTriggerResponse] = useState("");
-
   const queryClient = useQueryClient();
-  // Inside CharacterCreation component, before return statement
-const uniqueMediaFiles = Array.isArray(mediaFiles)
-  ? Array.from(new Map(mediaFiles
-      .filter(file => file.id != null) // Filter out undefined/null ids
-      .map(file => [file.id, file]))
-    .values())
-  : [];
-  
 
   // Fetch media files for avatars
-  const { data: mediaFiles = [], isError: mediaError } = useQuery({
+  const { data: mediaFiles = [] } = useQuery({
     queryKey: ["/api/media"],
     queryFn: async () => {
-      try {
-        const response = await apiRequest("GET", "/api/media");
-        const data = await response.json();
-        return Array.isArray(data) ? data : [];
-      } catch (error) {
-        console.error("Failed to fetch media files:", error);
-        return [];
-      }
+      const response = await apiRequest("GET", "/api/media");
+      if (!response.ok) throw new Error("Failed to fetch media files");
+      return response.json();
     },
   });
 
   const form = useForm<CharacterCreationForm>({
-    resolver: zodResolver(characterCreationSchema),
+    resolver: zodResolver(insertCharacterSchema),
     defaultValues: {
       name: "",
       bio: "",
-      backstory: "",
-      interests: "",
-      quirks: "",
       description: "",
       imageUrl: "",
       avatarUrl: "",
       personality: "friendly",
-      personalityStyle: "Sweet & Caring",
       chatStyle: "casual",
       likes: "",
       dislikes: "",
       requiredLevel: 1,
-      level: 1,
-      responseTimeMin: 1,
-      responseTimeMax: 3,
-      responseTimeMs: 2000,
-      pictureSendChance: 5,
       isNsfw: false,
       isVip: false,
-      isEvent: false,
-      isWheelReward: false,
-      randomPictureSending: false,
-      moodDistribution: {
-        normal: 70,
-        happy: 20,
-        flirty: 10,
-        playful: 0,
-        mysterious: 0,
-        shy: 0,
-      },
-      customTriggerWords: [],
-      customGreetings: [],
-      customResponses: [],
+      responseTimeMin: 1,
+      responseTimeMax: 3,
     },
   });
 
-  const createCharacterMutation = useMutation({
+  const mutation = useMutation({
     mutationFn: async (data: CharacterCreationForm) => {
-      try {
-        // Validate mood distribution doesn't exceed 100%
-        const totalMoodPercentage = Object.values(data.moodDistribution || {}).reduce(
-          (sum, value) => sum + value, 0
-        );
-
-        if (totalMoodPercentage > 100) {
-          throw new Error("Total mood distribution cannot exceed 100%");
-        }
-
-        const response = await apiRequest("POST", "/api/characters", data);
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => null);
-          throw new Error(errorData?.message || `HTTP ${response.status}: ${response.statusText}`);
-        }
-
-        return await response.json();
-      } catch (error) {
-        console.error("Character creation error:", error);
-        throw error;
-      }
+      const response = await apiRequest("POST", "/api/characters", data);
+      if (!response.ok) throw new Error("Character creation failed");
+      return await response.json();
     },
     onSuccess: () => {
       toast.success("Character created successfully!");
@@ -205,241 +97,63 @@ const uniqueMediaFiles = Array.isArray(mediaFiles)
       queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
       if (onSuccess) onSuccess();
       form.reset();
-      // Reset local state
-      setCustomGreeting("");
-      setCustomResponse("");
-      setTriggerWord("");
-      setTriggerResponse("");
     },
-    onError: (error: any) => {
-      toast.error(
-        "Failed to create character: " + (error.message || "Unknown error")
-      );
+    onError: (error) => {
       console.error("Character creation error:", error);
+      toast.error("Failed to create character");
     },
   });
 
   const onSubmit = (data: CharacterCreationForm) => {
-    // Final validation before submission
-    if (!data.name?.trim()) {
-      toast.error("Character name is required");
-      return;
-    }
-
-    createCharacterMutation.mutate(data);
+    mutation.mutate(data);
   };
-
-  const addCustomGreeting = () => {
-    const greeting = customGreeting.trim();
-    if (!greeting) {
-      toast.error("Please enter a greeting");
-      return;
-    }
-
-    const currentGreetings = form.getValues("customGreetings") || [];
-    if (currentGreetings.includes(greeting)) {
-      toast.error("This greeting already exists");
-      return;
-    }
-
-    form.setValue("customGreetings", [...currentGreetings, greeting]);
-    setCustomGreeting("");
-    toast.success("Greeting added");
-  };
-
-  const addCustomResponse = () => {
-    const response = customResponse.trim();
-    if (!response) {
-      toast.error("Please enter a response");
-      return;
-    }
-
-    const currentResponses = form.getValues("customResponses") || [];
-    if (currentResponses.includes(response)) {
-      toast.error("This response already exists");
-      return;
-    }
-
-    form.setValue("customResponses", [...currentResponses, response]);
-    setCustomResponse("");
-    toast.success("Response added");
-  };
-
-  const addTriggerWord = () => {
-    const word = triggerWord.trim();
-    const response = triggerResponse.trim();
-
-    if (!word) {
-      toast.error("Please enter a trigger word");
-      return;
-    }
-
-    const currentTriggers = form.getValues("customTriggerWords") || [];
-
-    // Check for duplicate trigger words
-    const wordExists = currentTriggers.some(trigger =>
-      typeof trigger === 'string'
-        ? trigger === word
-        : trigger.word === word
-    );
-
-    if (wordExists) {
-      toast.error("This trigger word already exists");
-      return;
-    }
-
-    const newTrigger = response
-      ? { word, response }
-      : word;
-
-    form.setValue("customTriggerWords", [...currentTriggers, newTrigger]);
-    setTriggerWord("");
-    setTriggerResponse("");
-    toast.success("Trigger word added");
-  };
-
-  const removeArrayItem = (
-    fieldName: 'customGreetings' | 'customResponses' | 'customTriggerWords',
-    index: number
-  ) => {
-    const currentArray = form.getValues(fieldName) || [];
-    const newArray = currentArray.filter((_, i) => i !== index);
-    form.setValue(fieldName, newArray);
-    toast.success("Item removed");
-  };
-
-  const handleMoodChange = (mood: string, value: number) => {
-    const currentDistribution = form.getValues("moodDistribution") || {};
-    const newDistribution = { ...currentDistribution, [mood]: value };
-
-    // Calculate total to warn user if approaching 100%
-    const total = Object.values(newDistribution).reduce((sum, val) => sum + val, 0);
-
-    if (total > 100) {
-      toast.error("Total mood distribution cannot exceed 100%");
-      return;
-    }
-
-    form.setValue("moodDistribution", newDistribution);
-
-    if (total > 90) {
-      toast.warning("Mood distribution is approaching 100%");
-    }
-  };
-
-  // Show error message if media files failed to load
-  if (mediaError) {
-    console.warn("Failed to load media files for character creation");
-  }
 
   return (
-    <div className="w-full space-y-6">
+    <div className="max-w-3xl mx-auto p-6 space-y-6">
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">
-          Create New Character
-        </h1>
-        <p className="text-gray-400">
-          Design your perfect AI companion with detailed personality traits
-        </p>
+        <h1 className="text-3xl font-bold text-white mb-2">Create New Character</h1>
+        <p className="text-gray-400">Design a new AI companion for your game.</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-4 bg-gray-800/50">
-              <TabsTrigger
-                value="basic"
-                className="text-white data-[state=active]:bg-purple-600"
-                data-testid="tab-basic"
-              >
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4 grid grid-cols-2 bg-gray-800/50">
+              <TabsTrigger value="basic" className="text-white data-[state=active]:bg-purple-600">
                 Basic Info
               </TabsTrigger>
-              <TabsTrigger
-                value="personality"
-                className="text-white data-[state=active]:bg-purple-600"
-                data-testid="tab-personality"
-              >
-                Personality
-              </TabsTrigger>
-              <TabsTrigger
-                value="advanced"
-                className="text-white data-[state=active]:bg-purple-600"
-                data-testid="tab-advanced"
-              >
-                Advanced
-              </TabsTrigger>
-              <TabsTrigger
-                value="custom"
-                className="text-white data-[state=active]:bg-purple-600"
-                data-testid="tab-custom"
-              >
-                Custom AI
+              <TabsTrigger value="details" className="text-white data-[state=active]:bg-purple-600">
+                More Details
               </TabsTrigger>
             </TabsList>
 
             {/* Basic Information Tab */}
-            <TabsContent value="basic" className="space-y-4 max-h-[60vh] overflow-y-auto">
+            <TabsContent value="basic" className="space-y-4">
               <Card className="bg-gray-800/50 border-gray-600">
                 <CardHeader>
-                  <CardTitle className="text-white">
-                    Basic Character Information
-                  </CardTitle>
+                  <CardTitle className="text-white">Basic Info</CardTitle>
                   <CardDescription className="text-gray-400">
-                    Essential details about your character
+                    Essential character information
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">Character Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              placeholder="Enter character name"
-                              className="bg-gray-700 border-gray-600 text-white"
-                              data-testid="input-character-name"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="requiredLevel"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">Required Level</FormLabel>
-                          <FormControl>
-                            <Input
-                              {...field}
-                              type="number"
-                              min="1"
-                              max="100"
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value) || 1)
-                              }
-                              className="bg-gray-700 border-gray-600 text-white"
-                              data-testid="input-required-level"
-                            />
-                          </FormControl>
-                          <FormDescription className="text-gray-400">
-                            Player level required to unlock this character
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-white">Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter character name"
+                            {...field}
+                            className="bg-gray-700 border-gray-600 text-white"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
                   <FormField
                     control={form.control}
@@ -449,11 +163,10 @@ const uniqueMediaFiles = Array.isArray(mediaFiles)
                         <FormLabel className="text-white">Bio</FormLabel>
                         <FormControl>
                           <Textarea
+                            placeholder="Short character biography"
+                            className="bg-gray-700 border-gray-600 text-white resize-none"
+                            rows={3}
                             {...field}
-                            value={field.value || ""}
-                            placeholder="Brief description of the character"
-                            className="bg-gray-700 border-gray-600 text-white"
-                            data-testid="textarea-bio"
                           />
                         </FormControl>
                         <FormMessage />
@@ -466,284 +179,55 @@ const uniqueMediaFiles = Array.isArray(mediaFiles)
                     name="description"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-white">Detailed Description</FormLabel>
+                        <FormLabel className="text-white">Description</FormLabel>
                         <FormControl>
                           <Textarea
-                            {...field}
-                            value={field.value || ""}
-                            placeholder="Detailed character description for AI context"
-                            className="bg-gray-700 border-gray-600 text-white"
+                            placeholder="Detailed character description"
+                            className="bg-gray-700 border-gray-600 text-white resize-none"
                             rows={4}
-                            data-testid="textarea-description"
-                          />
-                        </FormControl>
-                        <FormDescription className="text-gray-400">
-                          This helps the AI understand how to portray the character
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="backstory"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white">Backstory</FormLabel>
-                        <FormControl>
-                          <Textarea
                             {...field}
-                            value={field.value || ""}
-                            placeholder="Character's background and history"
-                            className="bg-gray-700 border-gray-600 text-white"
-                            rows={3}
-                            data-testid="textarea-backstory"
                           />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <FormField
-                      control={form.control}
-                      name="interests"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">Interests & Hobbies</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              value={field.value || ""}
-                              placeholder="What the character enjoys doing"
-                              className="bg-gray-700 border-gray-600 text-white"
-                              rows={3}
-                              data-testid="textarea-interests"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="quirks"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">Quirks & Habits</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              {...field}
-                              value={field.value || ""}
-                              placeholder="Unique traits and mannerisms"
-                              className="bg-gray-700 border-gray-600 text-white"
-                              rows={3}
-                              data-testid="textarea-quirks"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={form.control}
-                    name="pictureSendChance"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-white">Picture Send Chance (%)</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="number"
-                            min="0"
-                            max="100"
-                            onChange={(e) =>
-                              field.onChange(parseInt(e.target.value) || 5)
-                            }
-                            className="bg-gray-700 border-gray-600 text-white"
-                            data-testid="input-picture-send-chance"
-                          />
-                        </FormControl>
-                        <FormDescription className="text-gray-400">
-                          Chance (0-100%) that character will randomly send pictures during chat
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                    <FormField
-                      control={form.control}
-                      name="imageUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">Main Image</FormLabel>
-                          <Select
-                            value={field.value || ""}
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger
-                                className="bg-gray-700 border-gray-600 text-white"
-                                data-testid="select-main-image"
-                              >
-                                <SelectValue placeholder="Select main image" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-gray-700 border-gray-600">
-                              <SelectItem value="" className="text-white">
-                                No image selected
-                              </SelectItem>
-                              {uniqueMediaFiles.map((file: MediaFile) => (
-                                <SelectItem
-                                  key={file.id}
-                                  value={file.url || file.path || `/uploads/${file.filename}`}
-                                  className="text-white"
-                                >
-                                  {file.originalName || file.filename || `File ${file.id.slice(0, 8)}`}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="avatarUrl"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-white">Avatar Image</FormLabel>
-                          <Select
-                            value={field.value || ""}
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger
-                                className="bg-gray-700 border-gray-600 text-white"
-                                data-testid="select-avatar"
-                              >
-                                <SelectValue placeholder="Select avatar" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-gray-700 border-gray-600">
-                              <SelectItem value="" className="text-white">
-                                No avatar selected
-                              </SelectItem>
-                              {uniqueMediaFiles.map((file: MediaFile) => (
-                                <SelectItem
-                                  key={file.id}
-                                  value={file.url || file.path || `/uploads/${file.filename}`}
-                                  className="text-white"
-                                >
-                                  {file.originalName || file.filename || `File ${file.id.slice(0, 8)}`}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  
-
-                  {/* Preview Section */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div className="space-y-2">
-                      <Label className="text-white">Main Image Preview</Label>
-                      {form.watch("imageUrl") && (
-                        <div className="border border-gray-600 rounded-lg p-2 bg-gray-700/50">
-                          <img
-                            src={form.watch("imageUrl")}
-                            alt="Main Preview"
-                            className="w-full h-40 object-contain rounded"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/default-character.jpg";
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label className="text-white">Avatar Preview</Label>
-                      {form.watch("avatarUrl") && (
-                        <div className="border border-gray-600 rounded-lg p-2 bg-gray-700/50">
-                          <img
-                            src={form.watch("avatarUrl")}
-                            alt="Avatar Preview"
-                            className="w-20 h-20 object-cover rounded-full mx-auto"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = "/default-avatar.jpg";
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
-            {/* Personality Tab */}
-            <TabsContent value="personality" className="space-y-4 max-h-[60vh] overflow-y-auto">
+            {/* Details Tab */}
+            <TabsContent value="details" className="space-y-4">
               <Card className="bg-gray-800/50 border-gray-600">
                 <CardHeader>
-                  <CardTitle className="text-white">
-                    Personality Configuration
-                  </CardTitle>
+                  <CardTitle className="text-white">Personality & Behavior</CardTitle>
                   <CardDescription className="text-gray-400">
-                    Define mood distribution and personality traits
+                    Configure character traits and responses
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <FormField
                       control={form.control}
-                      name="personalityStyle"
+                      name="personality"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-white">Personality Style</FormLabel>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger
-                                className="bg-gray-700 border-gray-600 text-white"
-                                data-testid="select-personality-style"
-                              >
-                                <SelectValue />
+                          <FormLabel className="text-white">Personality</FormLabel>
+                          <FormControl>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                                <SelectValue placeholder="Select personality" />
                               </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-gray-700 border-gray-600">
-                              <SelectItem value="Sweet & Caring" className="text-white">
-                                Sweet & Caring
-                              </SelectItem>
-                              <SelectItem value="Mysterious" className="text-white">
-                                Mysterious
-                              </SelectItem>
-                              <SelectItem value="Playful" className="text-white">
-                                Playful
-                              </SelectItem>
-                              <SelectItem value="Confident" className="text-white">
-                                Confident
-                              </SelectItem>
-                              <SelectItem value="Shy" className="text-white">
-                                Shy
-                              </SelectItem>
-                              <SelectItem value="Flirtatious" className="text-white">
-                                Flirtatious
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                              <SelectContent className="bg-gray-700 border-gray-600">
+                                <SelectItem value="friendly" className="text-white">Friendly</SelectItem>
+                                <SelectItem value="shy" className="text-white">Shy</SelectItem>
+                                <SelectItem value="confident" className="text-white">Confident</SelectItem>
+                                <SelectItem value="playful" className="text-white">Playful</SelectItem>
+                                <SelectItem value="mysterious" className="text-white">Mysterious</SelectItem>
+                                <SelectItem value="caring" className="text-white">Caring</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -755,362 +239,246 @@ const uniqueMediaFiles = Array.isArray(mediaFiles)
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel className="text-white">Chat Style</FormLabel>
-                          <Select
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <FormControl>
-                              <SelectTrigger
-                                className="bg-gray-700 border-gray-600 text-white"
-                                data-testid="select-chat-style"
-                              >
-                                <SelectValue/>
+                          <FormControl>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                                <SelectValue placeholder="Select chat style" />
                               </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="bg-gray-700 border-gray-600">
-                              <SelectItem value="casual" className="text-white">
-                                Casual
-                              </SelectItem>
-                              <SelectItem value="formal" className="text-white">
-                                Formal
-                              </SelectItem>
-                              <SelectItem value="flirty" className="text-white">
-                                Flirty
-                              </SelectItem>
-                              <SelectItem value="mysterious" className="text-white">
-                                Mysterious
-                              </SelectItem>
-                              <SelectItem value="playful" className="text-white">
-                                Playful
-                              </SelectItem>
-                              <SelectItem value="intellectual" className="text-white">
-                                Intellectual
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                              <SelectContent className="bg-gray-700 border-gray-600">
+                                <SelectItem value="casual" className="text-white">Casual</SelectItem>
+                                <SelectItem value="formal" className="text-white">Formal</SelectItem>
+                                <SelectItem value="flirty" className="text-white">Flirty</SelectItem>
+                                <SelectItem value="intellectual" className="text-white">Intellectual</SelectItem>
+                                <SelectItem value="cute" className="text-white">Cute</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold text-white">Mood Distribution</h3>
-                      <span className="text-sm text-gray-400">
-                        Total: {Object.values(form.watch("moodDistribution") || {}).reduce((sum, val) => sum + val, 0)}%
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-400">
-                      Configure how often the character displays different moods (total should not exceed 100%)
-                    </p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="likes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Likes</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Things the character likes"
+                              className="bg-gray-700 border-gray-600 text-white resize-none"
+                              rows={3}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                    {Object.entries(form.watch("moodDistribution") || {}).map(
-                      ([mood, value]) => (
-                        <FormField
-                          key={mood}
-                          control={form.control}
-                          name={`moodDistribution.${mood}` as any}
-                          render={({ field }) => (
-                            <FormItem>
-                              <div className="flex items-center justify-between mb-2">
-                                <FormLabel className="capitalize text-white">{mood}</FormLabel>
-                                <span className="text-sm text-gray-400">{value}%</span>
-                              </div>
-                              <FormControl>
-                                <Slider
-                                  min={0}
-                                  max={100}
-                                  step={1}
-                                  value={[field.value]}
-                                  onValueChange={(values) => {
-                                    const newValue = values[0];
-                                    field.onChange(newValue);
-                                    handleMoodChange(mood, newValue);
-                                  }}
-                                  className="w-full"
-                                  data-testid={`slider-mood-${mood}`}
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      )
-                    )}
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <FormField
-                        control={form.control}
-                        name="likes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-white">Likes</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...field}
-                                value={field.value || ""}
-                                placeholder="Things the character likes"
-                                className="bg-gray-700 border-gray-600 text-white"
-                                rows={3}
-                                data-testid="textarea-likes"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form.control}
-                        name="dislikes"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-white">Dislikes</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...field}
-                                value={field.value || ""}
-                                placeholder="Things the character dislikes"
-                                className="bg-gray-700 border-gray-600 text-white"
-                                rows={3}
-                                data-testid="textarea-dislikes"
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="dislikes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Dislikes</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Things the character dislikes"
+                              className="bg-gray-700 border-gray-600 text-white resize-none"
+                              rows={3}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            {/* Advanced Tab */}
-            <TabsContent value="advanced" className="space-y-4 max-h-[60vh] overflow-y-auto">
-              <Card className="bg-gray-800/50 border-gray-600">
-                <CardHeader>
-                  <CardTitle className="text-white">
-                    Advanced Settings
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Configure special character attributes and restrictions
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                       control={form.control}
-                      name="isVip"
+                      name="requiredLevel"
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-gray-600 p-4 bg-gray-700/50">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base text-white">
-                              VIP Character
-                            </FormLabel>
-                            <FormDescription className="text-gray-400">
-                              Requires premium access
-                            </FormDescription>
-                          </div>
+                        <FormItem>
+                          <FormLabel className="text-white">Required Level</FormLabel>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                            <Input
+                              type="number"
+                              min="1"
+                              max="100"
+                              {...field}
+                              onChange={e => field.onChange(parseInt(e.target.value) || 1)}
+                              className="bg-gray-700 border-gray-600 text-white"
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
 
                     <FormField
                       control={form.control}
-                      name="isNsfw"
+                      name="responseTimeMin"
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-gray-600 p-4 bg-gray-700/50">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base text-white">
-                              NSFW Content
-                            </FormLabel>
-                            <FormDescription className="text-gray-400">
-                              18+ content allowed
-                            </FormDescription>
-                          </div>
+                        <FormItem>
+                          <FormLabel className="text-white">Min Response Time (s)</FormLabel>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                            <Input
+                              type="number"
+                              min="1"
+                              max="60"
+                              {...field}
+                              onChange={e => field.onChange(parseInt(e.target.value) || 1)}
+                              className="bg-gray-700 border-gray-600 text-white"
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
 
                     <FormField
                       control={form.control}
-                      name="isWheelReward"
+                      name="responseTimeMax"
                       render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-lg border border-gray-600 p-4 bg-gray-700/50">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-base text-white">
-                              Wheel Reward
-                            </FormLabel>
-                            <FormDescription className="text-gray-400">
-                              Available as wheel prize
-                            </FormDescription>
-                          </div>
+                        <FormItem>
+                          <FormLabel className="text-white">Max Response Time (s)</FormLabel>
                           <FormControl>
-                            <Switch
-                              checked={field.value}
-                              onCheckedChange={field.onChange}
+                            <Input
+                              type="number"
+                              min="1"
+                              max="60"
+                              {...field}
+                              onChange={e => field.onChange(parseInt(e.target.value) || 1)}
+                              className="bg-gray-700 border-gray-600 text-white"
                             />
                           </FormControl>
+                          <FormMessage />
                         </FormItem>
                       )}
                     />
                   </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
 
-            {/* Custom AI Tab */}
-            <TabsContent value="custom" className="space-y-4 max-h-[60vh] overflow-y-auto">
-              <Card className="bg-gray-800/50 border-gray-600">
-                <CardHeader>
-                  <CardTitle className="text-white">
-                    Custom AI Responses
-                  </CardTitle>
-                  <CardDescription className="text-gray-400">
-                    Add custom greetings, responses, and trigger words
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex gap-2">
-                      <Input
-                        value={customGreeting}
-                        onChange={(e) => setCustomGreeting(e.target.value)}
-                        placeholder="Add a custom greeting"
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                      <Button
-                        type="button"
-                        onClick={addCustomGreeting}
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
-                      >
-                        Add Greeting
-                      </Button>
-                    </div>
+                  {/* Media Selection */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="imageUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Main Image</FormLabel>
+                          <FormControl>
+                            <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                                <SelectValue placeholder="Select main image" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-700 border-gray-600">
+                                <SelectItem value="" className="text-white">No image</SelectItem>
+                                {(mediaFiles as any[]).map((file: any) => (
+                                  <SelectItem
+                                    key={file.id}
+                                    value={file.filePath || `/uploads/${file.fileName}`}
+                                    className="text-white"
+                                  >
+                                    {file.fileName || `File ${file.id.slice(0, 8)}`}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {form.watch("customGreetings").map((greeting, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
-                        >
-                          <span className="text-white">{greeting}</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeArrayItem("customGreetings", index)}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
+                    <FormField
+                      control={form.control}
+                      name="avatarUrl"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-white">Avatar Image</FormLabel>
+                          <FormControl>
+                            <Select onValueChange={field.onChange} value={field.value ?? ""}>
+                              <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                                <SelectValue placeholder="Select avatar image" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-gray-700 border-gray-600">
+                                <SelectItem value="" className="text-white">No avatar</SelectItem>
+                                {(mediaFiles as any[]).map((file: any) => (
+                                  <SelectItem
+                                    key={file.id}
+                                    value={file.filePath || `/uploads/${file.fileName}`}
+                                    className="text-white"
+                                  >
+                                    {file.fileName || `File ${file.id.slice(0, 8)}`}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
 
-                  <div className="space-y-4">
-                    <div className="flex gap-2">
-                      <Input
-                        value={customResponse}
-                        onChange={(e) => setCustomResponse(e.target.value)}
-                        placeholder="Add a custom response"
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                      <Button
-                        type="button"
-                        onClick={addCustomResponse}
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
-                      >
-                        Add Response
-                      </Button>
-                    </div>
-
+                  {/* Image Previews */}
+                  {(form.watch("imageUrl") || form.watch("avatarUrl")) && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {form.watch("customResponses").map((response, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
-                        >
-                          <span className="text-white">{response}</span>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeArrayItem("customResponses", index)}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="flex gap-2">
-                      <Input
-                        value={triggerWord}
-                        onChange={(e) => setTriggerWord(e.target.value)}
-                        placeholder="Trigger word"
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                      <Input
-                        value={triggerResponse}
-                        onChange={(e) => setTriggerResponse(e.target.value)}
-                        placeholder="Response (optional)"
-                        className="bg-gray-700 border-gray-600 text-white"
-                      />
-                      <Button
-                        type="button"
-                        onClick={addTriggerWord}
-                        className="bg-purple-600 hover:bg-purple-700 text-white"
-                      >
-                        Add Trigger
-                      </Button>
-                    </div>
-
-                    <div className="grid grid-cols-1 gap-4">
-                      {form.watch("customTriggerWords").map((trigger, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg"
-                        >
-                          <div>
-                            <p className="text-white font-medium">
-                              {typeof trigger === 'string' ? trigger : trigger.word}
-                            </p>
-                            {typeof trigger !== 'string' && trigger.response && (
-                              <p className="text-gray-400 text-sm">
-                                Response: {trigger.response}
-                              </p>
-                            )}
+                      {form.watch("imageUrl") && (
+                        <div className="space-y-2">
+                          <Label className="text-white">Main Image Preview</Label>
+                          <div className="border border-gray-600 rounded-lg p-2 bg-gray-700/50">
+                            <img
+                              src={form.watch("imageUrl")}
+                              alt="Main Preview"
+                              className="w-full h-40 object-contain rounded"
+                              onError={e => {
+                                (e.target as HTMLImageElement).src = "/default-character.jpg";
+                              }}
+                            />
                           </div>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => removeArrayItem("customTriggerWords", index)}
-                            className="text-red-400 hover:text-red-300"
-                          >
-                            Remove
-                          </Button>
                         </div>
-                      ))}
+                      )}
+
+                      {form.watch("avatarUrl") && (
+                        <div className="space-y-2">
+                          <Label className="text-white">Avatar Preview</Label>
+                          <div className="border border-gray-600 rounded-lg p-2 bg-gray-700/50">
+                            <img
+                              src={form.watch("avatarUrl")}
+                              alt="Avatar Preview"
+                              className="w-20 h-20 object-cover rounded-full mx-auto"
+                              onError={e => {
+                                (e.target as HTMLImageElement).src = "/default-avatar.jpg";
+                              }}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Switches */}
+                  <div className="flex items-center gap-8">
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={form.watch("isVip")}
+                        onCheckedChange={v => form.setValue("isVip", v)}
+                      />
+                      <Label className="text-white">VIP Character</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={form.watch("isNsfw")}
+                        onCheckedChange={v => form.setValue("isNsfw", v)}
+                      />
+                      <Label className="text-white">NSFW Content</Label>
                     </div>
                   </div>
                 </CardContent>
@@ -1118,20 +486,24 @@ const uniqueMediaFiles = Array.isArray(mediaFiles)
             </TabsContent>
           </Tabs>
 
-          <div className="flex justify-end gap-4">
-            <Button
-              type="button"
-              variant="outline"
-              className="bg-gray-700 text-white hover:bg-gray-600"
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-4 pt-4">
+            {onCancel && (
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={onCancel}
+                className="bg-gray-700 text-white hover:bg-gray-600 border-gray-600"
+              >
+                Cancel
+              </Button>
+            )}
+            <Button 
+              type="submit" 
+              disabled={mutation.isPending}
               className="bg-purple-600 hover:bg-purple-700 text-white"
             >
-              Create Character
+              {mutation.isPending ? "Creating..." : "Create Character"}
             </Button>
           </div>
         </form>

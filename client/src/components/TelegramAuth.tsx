@@ -8,9 +8,7 @@ interface TelegramAuthProps {
 
 declare global {
   interface Window {
-    TelegramLoginWidget: {
-      dataOnauth: (user: any) => void;
-    };
+    onTelegramAuth: (user: any) => void;
   }
 }
 

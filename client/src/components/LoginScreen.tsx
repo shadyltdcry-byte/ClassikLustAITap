@@ -4,26 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import TelegramAuth from './TelegramAuth';
 
 interface LoginScreenProps {
-  onLogin: (userData: any) => void;
+  onLogin: (userId: string, userData?: any) => void;
+  onGuestLogin: () => void;
 }
 
-export default function LoginScreen({ onLogin }: LoginScreenProps) {
-  const handleGuestLogin = () => {
-    // Create a guest user with a random ID
-    const guestUser = {
-      id: `guest_${Math.random().toString(36).substr(2, 9)}`,
-      username: `Guest_${Math.floor(Math.random() * 10000)}`,
-      level: 1,
-      lp: 5000,
-      energy: 1000,
-      maxEnergy: 1000,
-      charisma: 150,
-      lpPerHour: 125,
-      lpPerTap: 1.5,
-      isGuest: true
-    };
-    onLogin(guestUser);
-  };
+export default function LoginScreen({ onLogin, onGuestLogin }: LoginScreenProps) {
 
   const handleTelegramAuth = (telegramData: any) => {
     console.log('Telegram auth data received:', telegramData);
@@ -38,7 +23,8 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
     .then(data => {
       if (data.success) {
         console.log('Telegram auth successful:', data);
-        onLogin(data.user);
+        const userId = `telegram_${telegramData.id}`;
+        onLogin(userId, { token: data.token, user: data.user });
       } else {
         console.error('Telegram auth failed:', data.error);
         alert('Telegram authentication failed. Please try again.');
@@ -81,7 +67,7 @@ export default function LoginScreen({ onLogin }: LoginScreenProps) {
 
           {/* Guest Login Button */}
           <Button 
-            onClick={handleGuestLogin}
+            onClick={onGuestLogin}
             variant="outline"
             className="w-full border-gray-600 text-gray-300 hover:bg-gray-800"
           >

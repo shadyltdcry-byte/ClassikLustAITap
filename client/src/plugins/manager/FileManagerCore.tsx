@@ -75,11 +75,19 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   });
 
   // Upload mutation
-  const uploadMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
-      const response = await apiRequest('POST', '/api/media/upload', formData);
-      return await response.json();
-    },
+    const uploadMutation = useMutation({
+      mutationFn: async (formData: FormData) => {
+        const response = await fetch('/api/media/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.status}`);
+        }
+
+        return await response.json();
+      },
     onSuccess: (uploadedFiles) => {
       queryClient.invalidateQueries({ queryKey: ['/api/media'] });
       toast.success(`Successfully uploaded ${Array.isArray(uploadedFiles) ? uploadedFiles.length : 1} file(s)`);

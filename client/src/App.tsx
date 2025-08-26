@@ -7,86 +7,47 @@ import GameGUI from "@/components/GameGUI";
 import AdminMenu from "@/plugins/admin/AdminMenu";
 import NotFound from "@/pages/not-found";
 import { GameProvider } from "@/context/GameProvider";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { LoginScreen } from "@/components/LoginScreen";
-import { useEffect, useState } from "react";
+import LoginScreen from "@/components/LoginScreen";
 import { AdminUIToggler } from "@/plugins/admin/adminGUI";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={GameGUI} />
-      <Route path="/AdminMenu" component={AdminMenu} />
+      <Route path="/" component={() => <GameGUI onPluginAction={() => {}} />} />
+      <Route path="/AdminMenu" component={() => <AdminMenu onClose={() => {}} />} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
-function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        // Check for existing authentication
-        const token = localStorage.getItem('telegram_auth_token');
-        const storedUserId = localStorage.getItem('telegram_user_id');
-
-        if (token && storedUserId) {
-          setUserId(storedUserId);
-          setIsAuthenticated(true);
-        } else {
-          // Try guest mode by default
-          const guestId = localStorage.getItem('guest_user_id') || `guest_${Date.now()}`;
-          localStorage.setItem('guest_user_id', guestId);
-          setUserId(guestId);
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error('App initialization error:', error);
-        // Fall back to guest mode
-        const guestId = `guest_${Date.now()}`;
-        localStorage.setItem('guest_user_id', guestId);
-        setUserId(guestId);
-        setIsAuthenticated(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    const timer = setTimeout(initializeApp, 1000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  const handleLogin = (userIdFromAuth: string, userData?: any) => {
-    localStorage.setItem('telegram_user_id', userIdFromAuth);
-    if (userData?.token) {
-      localStorage.setItem('telegram_auth_token', userData.token);
-    }
-    setUserId(userIdFromAuth);
-    setIsAuthenticated(true);
-  };
-
-  const handleGuestLogin = () => {
-    const guestId = `guest_${Date.now()}`;
-    localStorage.setItem('guest_user_id', guestId);
-    setUserId(guestId);
-    setIsAuthenticated(true);
-  };
+function AppContent() {
+  const { isLoading, isAuthenticated, login, loginAsGuest } = useAuth();
 
   if (isLoading) {
     return <LoadingScreen />;
   }
 
+  if (!isAuthenticated) {
+    return <LoginScreen onLogin={login} onGuestLogin={loginAsGuest} />;
+  }
+
+  return (
+    <GameProvider>
+      <Router />
+      <Toaster />
+    </GameProvider>
+  );
+}
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <GameProvider>
-          <Router />
-          <Toaster />
-        </GameProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );

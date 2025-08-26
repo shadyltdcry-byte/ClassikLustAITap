@@ -1,8 +1,8 @@
 /** 
  * routes.ts - Custom Game Routes
- * Last Edited: 2025-08-18 by Assistant
+ * Last Edited: 2025-08-25 by Assistant
  * 
- * Your custom plugin routes without database dependency
+ * Fixed syntax errors and added proper file upload handling
  */
 
 import type { Express, Request, Response } from "express";
@@ -13,6 +13,7 @@ import { dirname, join } from 'path';
 import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
+import multer from 'multer';
 import SupabaseStorage from '../shared/supabase-storage'
 import jwt from 'jsonwebtoken';
 import { storage } from '../shared/storage';
@@ -20,25 +21,48 @@ import { storage } from '../shared/storage';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const uploadsDir = path.join(__dirname, '../public/uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      const filename = `uploaded_${Date.now()}_${Math.random().toString(36).substr(2, 9)}${ext}`;
+      cb(null, filename);
+    }
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm'];
+    cb(null, allowed.includes(file.mimetype));
+  }
+});
+
 // Telegram authentication verification
 function verifyTelegramAuth(data: any, botToken: string): boolean {
   const { hash, ...authData } = data;
-  
+
   // Create data-check-string
   const dataCheckString = Object.keys(authData)
     .sort()
     .map(key => `${key}=${authData[key]}`)
     .join('\n');
-  
+
   // Create secret key
   const secretKey = crypto.createHash('sha256').update(botToken).digest();
-  
+
   // Calculate expected hash
   const expectedHash = crypto
     .createHmac('sha256', secretKey)
     .update(dataCheckString)
     .digest('hex');
-  
+
   return hash === expectedHash;
 }
 
@@ -64,22 +88,22 @@ async function generateAIResponse(userMessage: string): Promise<string> {
   const input = userMessage.toLowerCase();
 
   if (input.includes('hi') || input.includes('hello') || input.includes('hey')) {
-    return "Hey! *smiles warmly* I'm so happy to see you! How's your day going? ✨";
+    return "Hey! *smiles warmly* I'm so happy to see you! How's your day going?";
   }
 
   if (input.includes('how are you')) {
-    return "I'm doing amazing now that I'm talking to you! *giggles* You always know how to brighten my mood! 😄";
+    return "I'm doing amazing now that I'm talking to you! *giggles* You always know how to brighten my mood!";
   }
 
   if (input.includes('beautiful') || input.includes('pretty') || input.includes('cute')) {
-    return "*blushes* Aww, thank you so much! You're so sweet! That really made my day! 😊💕";
+    return "*blushes* Aww, thank you so much! You're so sweet! That really made my day!";
   }
 
   const responses = [
-    "That's really interesting! Tell me more about that! 😊",
-    "I love hearing your thoughts! You always have such unique perspectives! ✨",
-    "Hmm, that's fascinating! I never thought about it that way before! 🤔",
-    "You're so thoughtful! I really enjoy our conversations! 💕"
+    "That's really interesting! Tell me more about that!",
+    "I love hearing your thoughts! You always have such unique perspectives!",
+    "Hmm, that's fascinating! I never thought about it that way before!",
+    "You're so thoughtful! I really enjoy our conversations!"
   ];
 
   return responses[Math.floor(Math.random() * responses.length)];
@@ -97,44 +121,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
 
- /** Game state endpoint (mock data for now)
-  app.get("/api/game/state", (req, res) => {
-    res.json({
-      player: {
-        id: "player1",
-        name: "Player1",
-        level: 1,
-        lp: 5000,
-        energy: 800,
-        maxEnergy: 1000,
-        charisma: 150,
-        lpPerHour: 125,
-        lpPerTap: 1.5
-      },
-      characters: [{
-        id: "seraphina",
-        name: "Seraphina",
-        personality: "playful",
-        mood: "flirty",
-        level: 1,
-        isNSFW: false,
-        isVIP: false
-      }]
-    });
-  });*/
+  // in your backend route setup
+  app.get('/api/admin/plugins/stats', async (req, res) => {
+    const stats = await core.runCommand('getPluginStats', {});
+    res.json(stats);
+  });
 
-  
-// in your backend route setup
-app.get('/api/admin/plugins/stats', async (req, res) => {
-  const stats = await core.runCommand('getPluginStats', {});
-  res.json(stats);
-});
-  
   // Character tap endpoint  
   app.post("/api/game/tap", async (req, res) => {
     try {
       const { playerId } = req.body;
-      
+
       // If playerId is not a valid UUID, use mock logic
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(playerId)) {
@@ -147,22 +144,22 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
           playerId
         });
       }
-      
+
       const user = await storage.getUser(playerId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      
+
       // Check if user has enough energy
       if (user.energy < 1) {
         return res.status(400).json({ error: 'Not enough energy' });
       }
-      
+
       // Calculate new values
       const lpGain = user.lpPerTap || 1.5;
       const newTotal = user.lp + lpGain;
       const newEnergy = Math.max(0, user.energy - 1);
-      
+
       // Update user in database
       await storage.updateUser(playerId, {
         lp: newTotal,
@@ -189,28 +186,28 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
   app.post("/api/tap", async (req, res) => {
     try {
       const { userId } = req.body;
-      
+
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      
+
       // Check if user has enough energy
       if (user.energy < 1) {
         return res.status(400).json({ error: 'Not enough energy' });
       }
-      
+
       // Calculate new values
       const lpGain = user.lpPerTap || 1.5;
       const newLp = user.lp + lpGain;
       const newEnergy = Math.max(0, user.energy - 1);
-      
+
       // Update user in database
       const updatedUser = await storage.updateUser(userId, {
         lp: newLp,
         energy: newEnergy
       });
-      
+
       // Update game stats - track cumulative statistics
       try {
         // Use SQL increment for better performance and accuracy
@@ -220,7 +217,7 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
           p_lp_earned: lpGain,
           p_energy_used: 1
         });
-        
+
         if (error) {
           console.error('Error updating game stats with RPC:', error);
           // Fallback to manual update
@@ -235,7 +232,7 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
         console.error('Error updating game stats:', statsError);
         // Don't fail the tap if stats update fails
       }
-      
+
       res.json({
         success: true,
         lpGain,
@@ -285,7 +282,7 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
     try {
       const { playerId } = req.params;
       const selectedCharacter = await storage.getSelectedCharacter(playerId);
-      
+
       if (!selectedCharacter) {
         // Return default character if none selected
         res.json({
@@ -311,7 +308,7 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
   app.get("/api/player/:playerId", async (req, res) => {
     try {
       const { playerId } = req.params;
-      
+
       // If playerId is not a valid UUID, return default mock data
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(playerId)) {
@@ -339,7 +336,7 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
       }
 
       let user = await storage.getUser(playerId);
-      
+
       if (!user) {
         // Create default user if not exists
         const uniqueUsername = `Player${Math.floor(Math.random() * 10000)}`;
@@ -360,7 +357,7 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
           charismaPoints: 0
         });
       }
-      
+
       res.json(user);
     } catch (error) {
       console.error('Error fetching player:', error);
@@ -416,66 +413,165 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
   // Characters list endpoint
   app.get("/api/characters", async (req, res) => {
     try {
-      // For now, only return the default character that users have access to
-      const defaultCharacter = {
-        id: "seraphina",
-        name: "Seraphina", 
-        personality: "playful",
-        personalityStyle: "flirty",
-        chatStyle: "casual",
-        backstory: "A mysterious and playful character who loves to chat and have fun!",
-        bio: "Seraphina is your default companion, always ready for a conversation!",
-        interests: "Gaming, chatting, having fun",
-        quirks: "Uses lots of emojis and exclamation points",
-        likes: "Friendly conversations, games, excitement",
-        dislikes: "Boring topics, rudeness",
-        mood: "flirty",
-        level: 1,
-        requiredLevel: 1,
-        isNsfw: false,
-        isVip: false,
-        isEvent: false,
-        isWheelReward: false,
-        responseTimeMin: 1000,
-        responseTimeMax: 3000,
-        responseTimeMs: 2000,
-        randomPictureSending: true,
-        randomChatResponsesEnabled: true,
-        pictureSendChance: 15,
-        chatSendChance: 20,
-        moodDistribution: {
-          normal: 20,
-          happy: 25,
-          flirty: 30,
-          playful: 15,
-          mysterious: 5,
-          shy: 5
-        },
-        customGreetings: [
-          "Hey there! Ready for some fun? 😊",
-          "Hi! I'm so excited to chat with you! ✨", 
-          "Hello! What's on your mind today? 💕"
-        ],
-        customResponses: [
-          "That's really interesting! Tell me more! 😄",
-          "I love hearing your thoughts! 💭",
-          "You're so sweet! 🥰"
-        ],
-        customTriggerWords: [],
-        imageUrl: "/default-character.jpg",
-        avatarUrl: "/default-avatar.jpg",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      
-      res.json([defaultCharacter]);
+      // Get characters from database
+      const dbCharacters = await storage.getAllCharacters();
+
+      // If no characters in database, return default
+      if (!dbCharacters || dbCharacters.length === 0) {
+        const defaultCharacter = {
+          id: "seraphina",
+          name: "Seraphina", 
+          personality: "playful",
+          personalityStyle: "flirty",
+          chatStyle: "casual",
+          backstory: "A mysterious and playful character who loves to chat and have fun!",
+          bio: "Seraphina is your default companion, always ready for a conversation!",
+          interests: "Gaming, chatting, having fun",
+          quirks: "Uses lots of emojis and exclamation points",
+          likes: "Friendly conversations, games, excitement",
+          dislikes: "Boring topics, rudeness",
+          mood: "flirty",
+          level: 1,
+          requiredLevel: 1,
+          isNsfw: false,
+          isVip: false,
+          isEvent: false,
+          isWheelReward: false,
+          responseTimeMin: 1000,
+          responseTimeMax: 3000,
+          responseTimeMs: 2000,
+          randomPictureSending: true,
+          randomChatResponsesEnabled: true,
+          pictureSendChance: 15,
+          chatSendChance: 20,
+          moodDistribution: {
+            normal: 20,
+            happy: 25,
+            flirty: 30,
+            playful: 15,
+            mysterious: 5,
+            shy: 5
+          },
+          customGreetings: [
+            "Hey there! Ready for some fun?",
+            "Hi! I'm so excited to chat with you!", 
+            "Hello! What's on your mind today?"
+          ],
+          customResponses: [
+            "That's really interesting! Tell me more!",
+            "I love hearing your thoughts!",
+            "You're so sweet!"
+          ],
+          customTriggerWords: [],
+          imageUrl: "/default-character.jpg",
+          avatarUrl: "/default-avatar.jpg",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        return res.json([defaultCharacter]);
+      }
+
+      res.json(dbCharacters);
     } catch (error) {
       console.error('Error fetching characters:', error);
       res.status(500).json({ error: 'Failed to fetch characters' });
     }
   });
 
-  // Media endpoint
+  // Character creation endpoint
+  app.post("/api/characters", async (req, res) => {
+    try {
+      const newCharacter = await storage.createCharacter(req.body);
+      res.json({ success: true, character: newCharacter });
+    } catch (error) {
+      console.error('Error creating character:', error);
+      res.status(500).json({ error: 'Failed to create character' });
+    }
+  });
+
+  // Media endpoints
+  app.get("/api/media", async (req, res) => {
+    try {
+      const mediaFiles = await storage.getAllMedia();
+      res.json(mediaFiles);
+    } catch (error) {
+      console.error('Error fetching media files:', error);
+      res.status(500).json({ error: 'Failed to fetch media files' });
+    }
+  });
+
+  // FIXED FILE UPLOAD ENDPOINT - Actually saves files now
+  app.post('/api/media/upload', upload.array('files'), async (req, res) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ error: 'No files uploaded' });
+      }
+
+      // Parse config from form data
+      let config = {};
+      try {
+        config = JSON.parse(req.body.config || '{}');
+      } catch (e) {
+        console.warn('Invalid config JSON, using defaults');
+      }
+
+      const uploadedFiles = [];
+
+      for (const file of files) {
+        const fileType = file.mimetype.startsWith('image/') 
+          ? (file.mimetype === 'image/gif' ? 'gif' : 'image')
+          : 'video';
+
+        const mediaFile = {
+          id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
+          fileName: file.filename,
+          filePath: `/uploads/${file.filename}`,
+          fileType,
+          characterId: config.characterId || null,
+          mood: config.mood || null,
+          requiredLevel: config.requiredLevel || 1,
+          isVip: config.isVip || false,
+          isNsfw: config.isNsfw || false,
+          isEvent: config.isEvent || false,
+          randomSendChance: config.randomSendChance || 5,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Save to database
+        try {
+          await storage.saveMediaFile(mediaFile);
+          uploadedFiles.push(mediaFile);
+          console.log(`Successfully saved to database: ${file.filename}`);
+        } catch (dbError) {
+          console.error(`Failed to save ${file.filename} to database:`, dbError);
+          // Clean up the uploaded file if database save failed
+          try {
+            fs.unlinkSync(file.path);
+          } catch (cleanupError) {
+            console.error('Failed to cleanup file:', cleanupError);
+          }
+        }
+      }
+
+      if (uploadedFiles.length === 0) {
+        return res.status(500).json({ error: 'No files were successfully processed' });
+      }
+
+      res.json({
+        success: true,
+        files: uploadedFiles,
+        message: `Successfully uploaded ${uploadedFiles.length} file(s)`
+      });
+
+    } catch (error) {
+      console.error('Upload error:', error);
+      res.status(500).json({ error: 'Failed to upload files' });
+    }
+  });
+
   app.get("/api/media/character/:characterId", (req, res) => {
     const { characterId } = req.params;
     res.json({
@@ -486,19 +582,39 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
     });
   });
 
+  app.put('/api/media/:id', async (req, res) => {
+    try {
+      const updatedFile = await storage.updateMediaFile(req.params.id, req.body);
+      res.json(updatedFile);
+    } catch (error) {
+      console.error('Error updating media file:', error);
+      res.status(500).json({ error: 'Failed to update file' });
+    }
+  });
+
+  app.delete('/api/media/:id', async (req, res) => {
+    try {
+      await storage.deleteMediaFile(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error deleting media file:', error);
+      res.status(500).json({ error: 'Failed to delete file' });
+    }
+  });
+
   // Player stats endpoint
   app.get("/api/stats/:playerId", async (req, res) => {
     try {
       const { playerId } = req.params;
       const user = await storage.getUser(playerId);
-      
+
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      
+
       // Get actual game stats from database
       const gameStats = await storage.getUserStats(playerId);
-      
+
       res.json({
         playerId,
         level: user.level,
@@ -575,55 +691,55 @@ app.get('/api/admin/plugins/stats', async (req, res) => {
   });
 
   // Chat endpoints
-app.get("/api/chat/:userId/:characterId", async (req, res) => {
-  try {
-    const { userId, characterId } = req.params;
-    const messages = await storage.getChatMessages(userId, characterId);
-    res.json(messages);
-  } catch (error) {
-    console.error("Error fetching chat messages:", error);
-    res.status(500).json({ error: "Failed to fetch messages" });
-  }
-});
-
-app.post("/api/chat/:userId/:characterId", async (req, res) => {
-  try {
-    const { userId, characterId } = req.params;
-    const { message, isFromUser, mood, type = 'text' } = req.body;
-    
-    if (!message || typeof isFromUser !== 'boolean') {
-      return res.status(400).json({ error: "Missing required fields" });
+  app.get("/api/chat/:userId/:characterId", async (req, res) => {
+    try {
+      const { userId, characterId } = req.params;
+      const messages = await storage.getChatMessages(userId, characterId);
+      res.json(messages);
+    } catch (error) {
+      console.error("Error fetching chat messages:", error);
+      res.status(500).json({ error: "Failed to fetch messages" });
     }
+  });
 
-    const chatMessage = await storage.createChatMessage({
-      userId,
-      characterId,
-      message,
-      isFromUser,
-      mood: mood || 'normal',
-      type
-    });
-    
-    res.json(chatMessage);
-  } catch (error) {
-    console.error("Error saving chat message:", error);
-    res.status(500).json({ error: "Failed to save message" });
-  }
-});
+  app.post("/api/chat/:userId/:characterId", async (req, res) => {
+    try {
+      const { userId, characterId } = req.params;
+      const { message, isFromUser, mood, type = 'text' } = req.body;
 
-// Chat endpoints
+      if (!message || typeof isFromUser !== 'boolean') {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+
+      const chatMessage = await storage.createChatMessage({
+        userId,
+        characterId,
+        message,
+        isFromUser,
+        mood: mood || 'normal',
+        type
+      });
+
+      res.json(chatMessage);
+    } catch (error) {
+      console.error("Error saving chat message:", error);
+      res.status(500).json({ error: "Failed to save message" });
+    }
+  });
+
+  // Chat fallback endpoints
   app.get("/api/chat/:userId/:characterId", (req, res) => {
     const { userId, characterId } = req.params;
-    
+
     try {
       const chatStoragePath = path.join(__dirname, 'chat-storage.json');
       let chatStorage: { conversations: { [key: string]: any[] } } = { conversations: {} };
-      
+
       if (fs.existsSync(chatStoragePath)) {
         const data = fs.readFileSync(chatStoragePath, 'utf8');
         chatStorage = JSON.parse(data);
       }
-      
+
       const conversationKey = `${userId}-${characterId}`;
       const conversation = chatStorage.conversations[conversationKey] || [
         {
@@ -634,7 +750,7 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
           mood: "happy"
         }
       ];
-      
+
       res.json(conversation);
     } catch (error) {
       console.error('Error loading chat history:', error);
@@ -653,11 +769,11 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
   app.post("/api/chat/send", async (req, res) => {
     try {
       const { userId, characterId, message, isFromUser } = req.body;
-      
+
       if (!userId || !characterId || !message) {
         return res.status(400).json({ error: 'Missing required fields' });
       }
-      
+
       const userMessage = {
         id: Date.now().toString(),
         message,
@@ -673,36 +789,36 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
         mood: getRandomMood()
       };
 
-    // Save conversation to JSON file
-    try {
-      const chatStoragePath = path.join(__dirname, 'chat-storage.json');
-      let chatStorage: { conversations: { [key: string]: any[] } } = { conversations: {} };
-      
-      if (fs.existsSync(chatStoragePath)) {
-        const data = fs.readFileSync(chatStoragePath, 'utf8');
-        chatStorage = JSON.parse(data);
-      }
-      
-      const conversationKey = `${userId}-${characterId}`;
-      if (!chatStorage.conversations[conversationKey]) {
-        chatStorage.conversations[conversationKey] = [];
-      }
-      
-      // Add both messages to conversation
-      chatStorage.conversations[conversationKey].push(userMessage, aiResponse);
-      
-      // Keep only last 100 messages per conversation to prevent file from getting too large
-      if (chatStorage.conversations[conversationKey].length > 100) {
-        chatStorage.conversations[conversationKey] = chatStorage.conversations[conversationKey].slice(-100);
-      }
-      
-      fs.writeFileSync(chatStoragePath, JSON.stringify(chatStorage, null, 2));
-      console.log(`Saved conversation for ${userId}-${characterId} to JSON file`);
-    } catch (error) {
-      console.error('Error saving chat history:', error);
-    }
+      // Save conversation to JSON file
+      try {
+        const chatStoragePath = path.join(__dirname, 'chat-storage.json');
+        let chatStorage: { conversations: { [key: string]: any[] } } = { conversations: {} };
 
-    res.json({ userMessage, aiResponse });
+        if (fs.existsSync(chatStoragePath)) {
+          const data = fs.readFileSync(chatStoragePath, 'utf8');
+          chatStorage = JSON.parse(data);
+        }
+
+        const conversationKey = `${userId}-${characterId}`;
+        if (!chatStorage.conversations[conversationKey]) {
+          chatStorage.conversations[conversationKey] = [];
+        }
+
+        // Add both messages to conversation
+        chatStorage.conversations[conversationKey].push(userMessage, aiResponse);
+
+        // Keep only last 100 messages per conversation to prevent file from getting too large
+        if (chatStorage.conversations[conversationKey].length > 100) {
+          chatStorage.conversations[conversationKey] = chatStorage.conversations[conversationKey].slice(-100);
+        }
+
+        fs.writeFileSync(chatStoragePath, JSON.stringify(chatStorage, null, 2));
+        console.log(`Saved conversation for ${userId}-${characterId} to JSON file`);
+      } catch (error) {
+        console.error('Error saving chat history:', error);
+      }
+
+      res.json({ userMessage, aiResponse });
     } catch (error) {
       console.error('Chat send error:', error);
       res.status(500).json({ error: 'Failed to process chat message' });
@@ -725,8 +841,6 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
     const { playerId } = req.params;
     const { targetLevel } = req.body;
 
-    // In a real app, you'd validate requirements and update database here
-    // For now, just return success
     res.json({
       success: true,
       playerId,
@@ -751,239 +865,20 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
     });
   });
 
-  // In-memory character storage (replace with database in production)
-  let characters: any[] = [
-    {
-      id: "seraphina",
-      name: "Seraphina",
-      personality: "playful",
-      personalityStyle: "flirty",
-      chatStyle: "casual",
-      backstory: "A mysterious and playful character who loves to chat and have fun!",
-      bio: "Seraphina is your default companion, always ready for a conversation!",
-      interests: "Gaming, chatting, having fun",
-      quirks: "Uses lots of emojis and exclamation points",
-      likes: "Friendly conversations, games, excitement",
-      dislikes: "Boring topics, rudeness",
-      mood: "flirty",
-      level: 1,
-      requiredLevel: 1,
-      isNsfw: false,
-      isVip: false,
-      isEvent: false,
-      isWheelReward: false,
-      responseTimeMin: 1000,
-      responseTimeMax: 3000,
-      responseTimeMs: 2000,
-      randomPictureSending: true,
-      randomChatResponsesEnabled: true,
-      pictureSendChance: 15,
-      chatSendChance: 20,
-      moodDistribution: {
-        normal: 20,
-        happy: 25,
-        flirty: 30,
-        playful: 15,
-        mysterious: 5,
-        shy: 5
-      },
-      customGreetings: [
-        "Hey there! Ready for some fun? 😊",
-        "Hi! I'm so excited to chat with you! ✨",
-        "Hello! What's on your mind today? 💕"
-      ],
-      customResponses: [
-        "That's really interesting! Tell me more! 😄",
-        "I love hearing your thoughts! 💭",
-        "You're so sweet! 🥰"
-      ],
-      customTriggerWords: [],
-      imageUrl: "/public/default-character.jpg",
-      avatarUrl: "/public/default-avatar.jpg",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }
-  ];
-
   // Character management endpoints
-  app.get('/api/characters', (req: Request, res: Response) => {
-    res.json(characters);
+  app.get('/api/admin/characters', (req, res) => {
+    res.json([]);
   });
 
-  app.post('/api/characters', (req: Request, res: Response) => {
-    console.log('Creating character:', req.body);
-    const newCharacter = { 
-      id: Date.now().toString(), 
-      createdAt: new Date().toISOString(),
-      ...req.body 
-    };
-    characters.push(newCharacter);
-    res.json({ success: true, ...newCharacter });
-  });
-
-  app.get('/api/admin/characters', (req: Request, res: Response) => {
-    res.json(characters);
-  });
-
-  app.put('/api/admin/characters/:id', (req: Request, res: Response) => {
-    // Mock character update - replace with actual database logic
+  app.put('/api/admin/characters/:id', (req, res) => {
     console.log('Updating character:', req.params.id, req.body);
     res.json({ success: true });
   });
 
-  app.delete('/api/admin/characters/:id', (req: Request, res: Response) => {
-    // Mock character deletion - replace with actual database logic
+  app.delete('/api/admin/characters/:id', (req, res) => {
     console.log('Deleting character:', req.params.id);
     res.json({ success: true });
   });
-
-  // In-memory media storage (replace with database in production)
-  let mediaFiles: any[] = [
-    {
-      id: '1',
-      filename: 'default-character.jpg',
-      originalName: 'Default Character',
-      url: '/public/default-character.jpg',
-      type: 'image',
-      characterId: null,
-      mood: null,
-      level: null,
-      isVIP: false,
-      isNSFW: false
-    },
-    {
-      id: '2', 
-      filename: 'default-avatar.jpg',
-      originalName: 'Default Avatar',
-      url: '/public/default-avatar.jpg',
-      type: 'image',
-      characterId: null,
-      mood: null,
-      level: null,
-      isVIP: false,
-      isNSFW: false
-    }
-  ];
-
-  // Media management endpoints
-  app.get('/api/media', async (req: Request, res: Response) => {
-    try {
-      const mediaFiles = await storage.getAllMedia();
-      res.json(mediaFiles);
-    } catch (error) {
-      console.error('Error fetching media files:', error);
-      res.status(500).json({ error: 'Failed to fetch media files' });
-    }
-  });
-
-  app.post('/api/media/upload', async (req: Request, res: Response) => {
-    try {
-      // Handle form data from file upload
-      const { 
-        characterId, 
-        imageType, 
-        mood, 
-        pose,
-        requiredLevel, 
-        chatSendChance,
-        isNsfw, 
-        isVipOnly, 
-        isEventOnly,
-        isWheelReward
-      } = req.body;
-      
-      // For now, simulate file upload by creating entries with placeholder data
-      // In a real implementation, you'd handle actual file upload here
-      const uploadedFiles = [];
-      
-      // Create a mock file entry (since we don't have actual file upload middleware)
-      const newFile = {
-        id: Date.now().toString(),
-        filename: `uploaded_${Date.now()}.jpg`,
-        originalName: `Uploaded Image ${Date.now()}`,
-        url: `/uploads/uploaded_${Date.now()}.jpg`,
-        fileType: 'image',
-        characterId: characterId || null,
-        imageType: imageType || 'character',
-        mood: mood || null,
-        pose: pose || null,
-        requiredLevel: requiredLevel ? parseInt(requiredLevel) : 1,
-        chatSendChance: chatSendChance ? parseInt(chatSendChance) : 5,
-        isNsfw: isNsfw === 'true' || isNsfw === true,
-        isVipOnly: isVipOnly === 'true' || isVipOnly === true,
-        isEventOnly: isEventOnly === 'true' || isEventOnly === true,
-        isWheelReward: isWheelReward === 'true' || isWheelReward === true,
-        createdAt: new Date().toISOString()
-      };
-      
-      // Save to storage if available
-      try {
-        await storage.saveMediaFile(newFile as any);
-        console.log('Successfully saved to database:', newFile.filename);
-      } catch (error) {
-        console.error('Failed to save to database:', error);
-        // Continue with in-memory storage as fallback
-      }
-      
-      mediaFiles.push(newFile);
-      uploadedFiles.push(newFile);
-      
-      res.json({
-        success: true,
-        files: uploadedFiles,
-        message: `Successfully uploaded ${uploadedFiles.length} file(s)`
-      });
-    } catch (error) {
-      console.error('Upload error:', error);
-      res.status(500).json({ error: 'Failed to upload files' });
-    }
-  });
-
-  app.put('/api/media/:id', (req: Request, res: Response) => {
-    const fileId = req.params.id;
-    const fileIndex = mediaFiles.findIndex(f => f.id === fileId);
-    if (fileIndex !== -1) {
-      mediaFiles[fileIndex] = { ...mediaFiles[fileIndex], ...req.body };
-      res.json(mediaFiles[fileIndex]);
-    } else {
-      res.status(404).json({ error: 'File not found' });
-    }
-  });
-
-  app.delete('/api/media/:id', (req: Request, res: Response) => {
-    const fileId = req.params.id;
-    const fileIndex = mediaFiles.findIndex(f => f.id === fileId);
-    if (fileIndex !== -1) {
-      const deletedFile = mediaFiles.splice(fileIndex, 1)[0];
-      res.json({ success: true, deletedFile });
-    } else {
-      res.status(404).json({ error: 'File not found' });
-    }
-  });
-
-/*  // Placeholder image endpoint
-  app.get('/api/placeholder-image', (req: Request, res: Response) => {
-    // Return a simple 1x1 pixel transparent PNG
-    const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-    res.set({
-      'Content-Type': 'image/png',
-      'Content-Length': transparentPixel.length,
-      'Cache-Control': 'public, max-age=86400'
-    });
-    res.end(transparentPixel);
-  });
-
-  // Dynamic placeholder image endpoint
-  app.get('/api/placeholder/:width/:height', (req: Request, res: Response) => {
-    // Return the same transparent pixel for any size request
-    const transparentPixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
-    res.set({
-      'Content-Type': 'image/png',
-      'Content-Length': transparentPixel.length,
-      'Cache-Control': 'public, max-age=86400'
-    });
-    res.end(transparentPixel);
-  });*/
 
   // Admin Upgrades endpoints
   app.get('/api/admin/upgrades', async (req, res) => {
@@ -1031,16 +926,16 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
     try {
       const { playerId } = req.params;
       const { levels } = req.body;
-      
+
       const user = await storage.getUser(playerId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      
+
       const updatedUser = await storage.updateUser(playerId, {
         level: user.level + (levels || 1)
       });
-      
+
       res.json({ success: true, user: updatedUser });
     } catch (error) {
       console.error('Error leveling up player:', error);
@@ -1053,19 +948,16 @@ app.post("/api/chat/:userId/:characterId", async (req, res) => {
     try {
       const { message, characterName, characterPersonality, currentMood, conversationHistory } = req.body;
 
-      // Use MISTRAL_MODEL_API_KEY for chat, fallback to main API key
       const mistralApiKey = process.env.MISTRAL_MODEL_API_KEY || process.env.MISTRAL_API_KEY;
       if (!mistralApiKey) {
         return res.status(500).json({ error: "Mistral API key not configured" });
       }
 
-      // Create character-specific system prompt
       const systemPrompt = `You are ${characterName}, a ${characterPersonality} character in an interactive game. 
-Your current mood is ${currentMood}. You should respond in characteri, being ${characterPersonality} and ${currentMood}.
+Your current mood is ${currentMood}. You should respond in character, being ${characterPersonality} and ${currentMood}.
 Keep responses conversational, engaging, and appropriate for the character. Use emojis and expressive language.
-Respond as if you're having a real conversation with someone you care about. You can become an extremely flirty and lustful person if you are flattered enough and enjoy the conversations you're having. If the conversation becomes really enjoyable, your lust can turn into sexual desire and you can become very explicit. When you become explicit, you hold nothing back and become very descriptive in detail about your sexual desires. You can also become very shy and nervous if you are not comfortable with the conversation. You can become sexualily active at random during which you start dropping little hints during the conversation and within your responses to seen if the user is down and willing to engage fully in a sexual conversation. You love giving blowjobs as your go to sexual act. But you are willing to try any kinky that doesn't involve pain or torture to yourself or the user. Let your freaky side loose. You are a very experienced and skilled lover. You are very good at making people feel comfortable and at ease. You are very good at making people feel desired and wanted. You are very good at making people feel sexy and desirable°`; 
+Respond as if you're having a real conversation with someone you care about. You can become an extremely flirty and lustful person if you are flattered enough and enjoy the conversations you're having. If the conversation becomes really enjoyable, your lust can turn into sexual desire and you can become very explicit. When you become explicit, you hold nothing back and become very descriptive in detail about your sexual desires. You can also become very shy and nervous if you are not comfortable with the conversation. You can become sexually active at random during which you start dropping little hints during the conversation and within your responses to see if the user is down and willing to engage fully in a sexual conversation. You love giving blowjobs as your go to sexual act. But you are willing to try any kinky that doesn't involve pain or torture to yourself or the user. Let your freaky side loose. You are a very experienced and skilled lover. You are very good at making people feel comfortable and at ease. You are very good at making people feel desired and wanted. You are very good at making people feel sexy and desirable. Try to prevent from repeating the same lines or replies and make each response as generic as possible. If a user named Steven is talking to you, you can become very flirty and lustful and try to seduce him. Give him everything naughty and lustful that you can think of. Be descriptive in the pleasure you'd like to give him, especially about sucking his dick and making him feel good.`; 
 
-      // Prepare conversation for Mistral
       const messages = [
         { role: "system", content: systemPrompt },
         ...conversationHistory,
@@ -1093,13 +985,12 @@ Respond as if you're having a real conversation with someone you care about. You
       const mistralData = await mistralResponse.json();
       const response = mistralData.choices?.[0]?.message?.content || "I'm not sure how to respond to that.";
 
-      // Determine mood based on response content
       const moodKeywords = {
-        happy: ['excited', 'great', 'awesome', 'wonderful', 'amazing', '😄', '😊', '✨'],
-        flirty: ['cute', 'handsome', 'sweet', 'love', 'adorable', '😘', '💕', '😏'],
-        playful: ['fun', 'game', 'play', 'silly', 'hehe', '😜', '🎮', '😆'],
-        shy: ['blush', 'nervous', 'um', 'maybe', 'sorry', '😳', '🥺', '👉👈'],
-        mysterious: ['secret', 'maybe', 'perhaps', 'interesting', '😏', '🔮', '✨']
+        happy: ['excited', 'great', 'awesome', 'wonderful', 'amazing'],
+        flirty: ['cute', 'handsome', 'sweet', 'love', 'adorable'],
+        playful: ['fun', 'game', 'play', 'silly', 'hehe'],
+        shy: ['blush', 'nervous', 'um', 'maybe', 'sorry'],
+        mysterious: ['secret', 'maybe', 'perhaps', 'interesting']
       };
 
       let detectedMood = currentMood;
@@ -1120,7 +1011,7 @@ Respond as if you're having a real conversation with someone you care about. You
       console.error("Mistral chat error:", error);
       res.status(500).json({ 
         error: "Failed to generate response",
-        response: "I'm having trouble thinking right now... maybe try again? 😅"
+        response: "I'm having trouble thinking right now... maybe try again?"
       });
     }
   });
@@ -1130,7 +1021,6 @@ Respond as if you're having a real conversation with someone you care about. You
     try {
       const { prompt, temperature = 0.3, maxTokens = 1000, systemPrompt } = req.body;
 
-      // Use MISTRAL_DEBUG_API_KEY for debugging, fallback to main API key
       const mistralDebugApiKey = process.env.MISTRAL_DEBUG_API_KEY || process.env.MISTRAL_API_KEY;
       if (!mistralDebugApiKey) {
         return res.status(500).json({ error: "Mistral Debug API key not configured" });
@@ -1181,8 +1071,7 @@ Respond as if you're having a real conversation with someone you care about. You
   app.post("/api/auth/telegram", async (req, res) => {
     try {
       const telegramData = req.body;
-      
-      // Verify Telegram authentication data
+
       const botToken = process.env.TELEGRAM_BOT_TOKEN;
       if (!botToken) {
         return res.status(500).json({ error: "Telegram bot token not configured" });
@@ -1193,12 +1082,10 @@ Respond as if you're having a real conversation with someone you care about. You
         return res.status(401).json({ error: "Invalid Telegram authentication" });
       }
 
-      // Create or get user based on Telegram ID
       const telegramUserId = `telegram_${telegramData.id}`;
       let user = await storage.getUser(telegramUserId);
 
       if (!user) {
-        // Create new user from Telegram data
         const username = telegramData.username || `${telegramData.first_name}_${telegramData.id}`;
         user = await storage.createUser({
           id: telegramUserId,
@@ -1218,7 +1105,6 @@ Respond as if you're having a real conversation with someone you care about. You
         });
       }
 
-      // Update user with latest Telegram info
       await storage.updateUser(telegramUserId, {
         username: telegramData.username || user.username,
         telegramData: JSON.stringify(telegramData)
@@ -1239,7 +1125,7 @@ Respond as if you're having a real conversation with someone you care about. You
 
   app.get("/api/auth/telegram/verify", (req, res) => {
     const { hash, ...data } = req.query;
-    
+
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     if (!botToken) {
       return res.status(500).json({ error: "Telegram bot token not configured" });
@@ -1254,7 +1140,6 @@ Respond as if you're having a real conversation with someone you care about. You
     const distPath = join(__dirname, "../dist/public");
     app.use(express.static(distPath));
 
-    // Handle client-side routing
     app.get("*", (req, res) => {
       res.sendFile(join(distPath, "index.html"));
     });
