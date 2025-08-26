@@ -37,6 +37,12 @@ export const characters = pgTable("characters", {
   avatarPath: text("avatar_path"),
   imageUrl: text("image_url"),
   avatarUrl: text("avatar_url"),
+  chatStyle: text("chat_style").default("casual"),
+  likes: text("likes"),
+  dislikes: text("dislikes"),
+  requiredLevel: integer("required_level").default(1),
+  responseTimeMin: integer("response_time_min").default(1),
+  responseTimeMax: integer("response_time_max").default(3),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 

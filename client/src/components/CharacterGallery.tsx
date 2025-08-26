@@ -181,7 +181,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] bg-gradient-to-br from-purple-900/95 via-pink-900/95 to-red-900/95 text-white border-purple-500/50 overflow-hidden">
+      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] bg-black/95 backdrop-blur-lg text-white border-pink-500/50 overflow-hidden shadow-2xl shadow-pink-500/20">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             Character Gallery
@@ -203,10 +203,10 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
             {/* Character List */}
             <div className="w-80 space-y-4">
               <Tabs value={filter} onValueChange={(v: any) => setFilter(v)}>
-                <TabsList className="grid grid-cols-3 w-full bg-black/30">
-                  <TabsTrigger value="all">All</TabsTrigger>
-                  <TabsTrigger value="unlocked">Unlocked</TabsTrigger>
-                  <TabsTrigger value="locked">Locked</TabsTrigger>
+                <TabsList className="grid grid-cols-3 w-full bg-black/80 border border-pink-500/30">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white">All</TabsTrigger>
+                  <TabsTrigger value="unlocked" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white">Unlocked</TabsTrigger>
+                  <TabsTrigger value="locked" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white">Locked</TabsTrigger>
                 </TabsList>
                 <div className="flex gap-1 mt-2">
                   <Button 
@@ -240,8 +240,8 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                       key={char.id}
                       className={`cursor-pointer transition-all hover:scale-105 ${
                         selectedCharacter?.id === char.id 
-                          ? 'ring-2 ring-purple-400 bg-purple-900/50' 
-                          : 'bg-black/30 hover:bg-black/50'
+                          ? 'ring-2 ring-pink-400 bg-pink-900/50 border-pink-400/50' 
+                          : 'bg-black/60 hover:bg-black/80 border-gray-600/30'
                       }`}
                       onClick={() => setSelectedCharacter(char)}
                     >
@@ -292,7 +292,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
               {selectedCharacter ? (
                 <>
                   {/* Character Info */}
-                  <div className="bg-black/30 rounded-lg p-4">
+                  <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-pink-500/30">
                     <div className="flex items-center justify-between mb-2">
                       <h2 className="text-xl font-bold flex items-center gap-2">
                         {selectedCharacter.name}
@@ -339,7 +339,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                   </div>
 
                   {/* Image Display */}
-                  <div className="relative bg-black/30 rounded-lg overflow-hidden" style={{ height: '400px' }}>
+                  <div className="relative bg-black/80 backdrop-blur-sm rounded-lg overflow-hidden border border-pink-500/30" style={{ height: '400px' }}>
                     {imagesLoading ? (
                       <div className="flex items-center justify-center h-full">
                         <div className="animate-spin w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full"></div>
