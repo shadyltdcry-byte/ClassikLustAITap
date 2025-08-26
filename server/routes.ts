@@ -700,19 +700,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/media/character/:characterId", (req, res) => {
-    const { characterId } = req.params;
-    res.json({
-      characterId,
-      images: [],
-      videos: [],
-      audio: []
-    });
+  app.get("/api/media/character/:characterId", async (req, res) => {
+    try {
+      const { characterId } = req.params;
+      const mediaFiles = await storage.getMediaFiles(characterId);
+      res.json(mediaFiles);
+    } catch (error) {
+      console.error('Error fetching character media:', error);
+      res.status(500).json({ error: 'Failed to fetch character media' });
+    }
   });
 
   app.put('/api/media/:id', async (req, res) => {
     try {
       const updatedFile = await storage.updateMediaFile(req.params.id, req.body);
+      if (!updatedFile) {
+        return res.status(404).json({ error: 'Media file not found' });
+      }
       res.json(updatedFile);
     } catch (error) {
       console.error('Error updating media file:', error);

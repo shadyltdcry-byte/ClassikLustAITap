@@ -326,12 +326,63 @@ class DrizzleStorage implements IStorage {
   async updateGameSettings(settings: any) {}
   async getSystemStats() { return {}; }
   async exportAllData() { return {}; }
-  async getMediaFiles(characterId?: string) { return []; }
-  async getMediaFile(id: string) { return undefined; }
-  async saveMediaFile(file: any) { return file; }
-  async uploadMedia(file: any) { return file; }
-  async updateMediaFile(id: string, updates: any) { return undefined; }
-  async deleteMediaFile(id: string) {}
+  async getMediaFiles(characterId?: string) {
+    try {
+      let query = db.select().from(schema.mediaFiles);
+      if (characterId) {
+        query = query.where(eq(schema.mediaFiles.characterId, characterId));
+      }
+      const result = await query;
+      return result || [];
+    } catch (error) {
+      console.error('Error fetching media files:', error);
+      return [];
+    }
+  }
+  
+  async getMediaFile(id: string) {
+    try {
+      const result = await db.select().from(schema.mediaFiles).where(eq(schema.mediaFiles.id, id)).limit(1);
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error fetching media file:', error);
+      return null;
+    }
+  }
+  
+  async saveMediaFile(file: any) {
+    try {
+      const result = await db.insert(schema.mediaFiles).values(file).returning();
+      return result[0];
+    } catch (error) {
+      console.error('Error saving media file:', error);
+      return null;
+    }
+  }
+  
+  async uploadMedia(file: any) { 
+    return await this.saveMediaFile(file);
+  }
+  
+  async updateMediaFile(id: string, updates: any) {
+    try {
+      const result = await db.update(schema.mediaFiles).set(updates).where(eq(schema.mediaFiles.id, id)).returning();
+      return result[0] || null;
+    } catch (error) {
+      console.error('Error updating media file:', error);
+      return null;
+    }
+  }
+  
+  async deleteMediaFile(id: string) {
+    try {
+      await db.delete(schema.mediaFiles).where(eq(schema.mediaFiles.id, id));
+      return true;
+    } catch (error) {
+      console.error('Error deleting media file:', error);
+      return false;
+    }
+  }
 }
 
 // Character data loading and saving utilities
