@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/context/AuthContext";
 // Auth is handled at App level
 import { 
   Zap, 
@@ -76,9 +77,10 @@ interface GUIState {
 }
 
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
-  // Auth is handled at App level, use player data directly
-  const userId = playerData?.id;
-  const isAuthenticated = !!(userId || playerData?.id); // If we have a userId or playerData, we're authenticated
+  // Use auth context for consistent authentication
+  const { userId: authUserId } = useAuth();
+  const userId = authUserId || playerData?.id;
+  const isAuthenticated = !!userId;
 
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",

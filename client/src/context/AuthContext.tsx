@@ -68,9 +68,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const loginAsGuest = () => {
-    const guestId = `guest_${Date.now()}`;
-    console.log('AuthContext: Creating guest user:', guestId);
-    localStorage.setItem('guest_user_id', guestId);
+    // Check if guest user already exists
+    let guestId = localStorage.getItem('guest_user_id');
+    if (!guestId) {
+      guestId = `guest_${Date.now()}`;
+      localStorage.setItem('guest_user_id', guestId);
+      console.log('AuthContext: Creating new guest user:', guestId);
+    } else {
+      console.log('AuthContext: Using existing guest user:', guestId);
+    }
     setUserId(guestId);
     setIsAuthenticated(true);
   };

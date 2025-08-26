@@ -8,65 +8,65 @@ import AdminMenu from "@/plugins/admin/AdminMenu";
 import NotFound from "@/pages/not-found";
 import { GameProvider } from "@/context/GameProvider";
 import { LoadingScreen } from "@/components/LoadingScreen";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { AdminUIToggler } from "@/plugins/admin/adminGUI";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+
+// Wrapper component for GameGUI to handle routing
+function GameGUIPage() {
+  const handlePluginAction = (action: string, data?: any) => {
+    console.log('Plugin action:', action, data);
+  };
+
+  return <GameGUI onPluginAction={handlePluginAction} />;
+}
+
+// Wrapper component for AdminMenu to handle routing  
+function AdminMenuPage() {
+  return <AdminMenu onClose={() => window.history.back()} />;
+}
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={GameGUI} />
-      <Route path="/AdminMenu" component={AdminMenu} />
+      <Route path="/" component={GameGUIPage} />
+      <Route path="/AdminMenu" component={AdminMenuPage} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+}
+
+function AppContent() {
+  const { isLoading, isAuthenticated, loginAsGuest } = useAuth();
 
   useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        const token = localStorage.getItem('telegram_auth_token');
-        const storedUserId = localStorage.getItem('telegram_user_id');
-        if (token && storedUserId) {
-          setUserId(storedUserId);
-          setIsAuthenticated(true);
-        } else {
-          const guestId = localStorage.getItem('guest_user_id') || `guest_${Date.now()}`;
-          localStorage.setItem('guest_user_id', guestId);
-          setUserId(guestId);
-          setIsAuthenticated(true);
-        }
-      } catch (error) {
-        console.error('App initialization error:', error);
-        const guestId = `guest_${Date.now()}`;
-        localStorage.setItem('guest_user_id', guestId);
-        setUserId(guestId);
-        setIsAuthenticated(true);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    const timer = setTimeout(initializeApp, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    // Auto-login as guest if not authenticated
+    if (!isLoading && !isAuthenticated) {
+      loginAsGuest();
+    }
+  }, [isLoading, isAuthenticated, loginAsGuest]);
 
   if (isLoading) {
     return <LoadingScreen />;
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <GameProvider>
-          <Router />
-                  <Toaster />
-        </GameProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <GameProvider>
+      <Router />
+      <Toaster />
+    </GameProvider>
   );
 }
 
