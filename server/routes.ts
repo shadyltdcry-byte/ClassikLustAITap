@@ -213,22 +213,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.body;
 
-      // Check if userId is valid UUID or telegram format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      const telegramRegex = /^telegram_\d+$/;
-      if (!uuidRegex.test(userId) && !telegramRegex.test(userId)) {
-        console.log(`Invalid UUID userId: ${userId}, returning mock tap data`);
-        const lpGain = 1.5;
-        return res.json({
-          success: true,
-          lpGain,
-          newTotal: 5000 + lpGain, // Mock calculation
-          energyUsed: 1,
-          userId
-        });
+      // Get real user ID if telegram format
+      let realUserId = userId;
+      if (userId.startsWith('telegram_')) {
+        const telegramId = userId.replace('telegram_', '');
+        try {
+          const result = await db.select({id: users.id}).from(users).where(eq(users.telegramId, telegramId));
+          if (result[0]?.id) {
+            realUserId = result[0].id;
+          } else {
+            console.log(`No database user found for ${userId}, returning mock tap data`);
+            const lpGain = 1.5;
+            return res.json({
+              success: true,
+              lpGain,
+              newTotal: 5000 + lpGain, // Mock calculation
+              energyUsed: 1,
+              userId
+            });
+          }
+        } catch (dbError) {
+          console.error('Database lookup error:', dbError);
+          const lpGain = 1.5;
+          return res.json({
+            success: true,
+            lpGain,
+            newTotal: 5000 + lpGain, // Mock calculation
+            energyUsed: 1,
+            userId
+          });
+        }
       }
 
-      const user = await storage.getUser(userId);
+      const user = await storage.getUser(realUserId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
@@ -240,11 +257,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Calculate new values
       const lpGain = user.lpPerTap || 1.5;
-      const newLp = user.lp + lpGain;
+      const newLp = Math.round(user.lp + lpGain); // Round to integer for database
       const newEnergy = Math.max(0, user.energy - 1);
 
       // Update user in database
-      const updatedUser = await storage.updateUser(userId, {
+      const updatedUser = await storage.updateUser(realUserId, {
         lp: newLp,
         energy: newEnergy
       });
@@ -253,8 +270,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       try {
         // Use SQL increment for better performance and accuracy
         // Use direct database update instead of supabase RPC
-        await storage.updateUserStats(userId, {
-          p_user_id: userId,
+        await storage.updateUserStats(realUserId, {
+          p_user_id: realUserId,
           p_taps: 1,
           p_lp_earned: lpGain,
           p_energy_used: 1
@@ -718,29 +735,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { userId } = req.params;
       
-      // If userId is not a valid UUID, return mock user data for guest users
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      if (!uuidRegex.test(userId)) {
-        console.log(`Invalid UUID userId: ${userId}, returning mock user data`);
-        return res.json({
-          id: userId,
-          username: "Player",
-          password: "",
-          level: 1,
-          lp: 5000,
-          lpPerHour: 250,
-          lpPerTap: 1.5,
-          energy: 1000,
-          maxEnergy: 1000,
-          charisma: 0,
-          vipStatus: false,
-          nsfwConsent: false,
-          lastTick: new Date(),
-          createdAt: new Date()
-        });
+      // Get real user ID if telegram format
+      let realUserId = userId;
+      if (userId.startsWith('telegram_')) {
+        const telegramId = userId.replace('telegram_', '');
+        try {
+          const result = await db.select({id: users.id}).from(users).where(eq(users.telegramId, telegramId));
+          if (result[0]?.id) {
+            realUserId = result[0].id;
+          } else {
+            console.log(`No database user found for ${userId}, returning mock user data`);
+            return res.json({
+              id: userId,
+              username: "Player",
+              password: "",
+              level: 1,
+              lp: 5000,
+              lpPerHour: 250,
+              lpPerTap: 1.5,
+              energy: 1000,
+              maxEnergy: 1000,
+              charisma: 0,
+              vipStatus: false,
+              nsfwConsent: false,
+              lastTick: new Date(),
+              createdAt: new Date()
+            });
+          }
+        } catch (dbError) {
+          console.error('Database lookup error:', dbError);
+          return res.json({
+            id: userId,
+            username: "Player",
+            password: "",
+            level: 1,
+            lp: 5000,
+            lpPerHour: 250,
+            lpPerTap: 1.5,
+            energy: 1000,
+            maxEnergy: 1000,
+            charisma: 0,
+            vipStatus: false,
+            nsfwConsent: false,
+            lastTick: new Date(),
+            createdAt: new Date()
+          });
+        }
       }
 
-      const user = await storage.getUser(userId);
+      const user = await storage.getUser(realUserId);
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
