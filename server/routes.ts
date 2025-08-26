@@ -1280,82 +1280,32 @@ Respond as if you're having a real conversation with someone you care about. You
     }
   });
 
-  // Telegram Authentication endpoints
-  app.post("/api/auth/telegram", async (req, res) => {
-    try {
-      const telegramData = req.body;
-
-      const botToken = process.env.TELEGRAM_BOT_TOKEN;
-      if (!botToken) {
-        return res.status(500).json({ error: "Telegram bot token not configured" });
-      }
-
-      const isValid = verifyTelegramAuth(telegramData, botToken);
-      if (!isValid) {
-        return res.status(401).json({ error: "Invalid Telegram authentication" });
-      }
-
-      const telegramUserId = `telegram_${telegramData.id}`;
-      let user = await storage.getUser(telegramUserId);
-
-      if (!user) {
-        const username = telegramData.username || `${telegramData.first_name}_${telegramData.id}`;
-        user = await storage.createUser({
-          id: telegramUserId,
-          username: username,
-          level: 1,
-          lp: 5000,
-          lpPerHour: 250,
-          lpPerTap: 1.5,
-          energy: 1000,
-          maxEnergy: 1000,
-          coins: 0,
-          xp: 0,
-          xpToNext: 100,
-          isVip: false,
-          nsfwEnabled: false,
-          charismaPoints: 0
-        });
-      }
-
-      await storage.updateUser(telegramUserId, {
-        username: telegramData.username || user.username,
-        telegramData: JSON.stringify(telegramData)
-      });
-
-      res.json({
-        success: true,
-        user: user,
-        token: generateJWT(telegramUserId),
-        message: "Telegram authentication successful"
-      });
-
-    } catch (error) {
-      console.error("Telegram auth error:", error);
-      res.status(500).json({ error: "Failed to authenticate with Telegram" });
-    }
-  });
+  // Removed duplicate Telegram auth endpoint - using token validation endpoint below
 
   // Telegram authentication endpoint with token validation
   app.post('/api/auth/telegram', async (req, res) => {
     try {
       const { telegram_id, username, token } = req.body;
       
+      console.log(`[DEBUG] Received auth request:`, { telegram_id, username, token });
+      
       if (!telegram_id || !token) {
+        console.log(`[DEBUG] Missing required fields: telegram_id=${telegram_id}, token=${token}`);
         return res.status(400).json({ error: 'telegram_id and token are required' });
       }
       
-      // Import token validation from server/index.ts scope
-      // For now, we'll implement basic validation here
-      console.log(`Telegram auth attempt for user: ${telegram_id} (${username}) with token: ${token}`);
+      console.log(`[DEBUG] Telegram auth attempt for user: ${telegram_id} (${username}) with token: ${token}`);
+      console.log(`[DEBUG] Global validateAuthToken function available:`, !!global.validateAuthToken);
       
       // Validate token using global function if available
       const isValidToken = global.validateAuthToken ? 
         global.validateAuthToken(token, telegram_id) : 
         false;
       
+      console.log(`[DEBUG] Token validation result:`, isValidToken);
+      
       if (isValidToken) {
-        res.json({ 
+        const responseData = { 
           success: true, 
           message: "You're logged in!",
           user: {
@@ -1364,12 +1314,15 @@ Respond as if you're having a real conversation with someone you care about. You
             username: username || `User${telegram_id}`,
             name: username || `User${telegram_id}`
           }
-        });
+        };
+        console.log(`[DEBUG] Sending success response:`, responseData);
+        res.json(responseData);
       } else {
+        console.log(`[DEBUG] Token validation failed, sending 401`);
         res.status(401).json({ error: 'Invalid or expired token' });
       }
     } catch (error) {
-      console.error('Telegram auth error:', error);
+      console.error('[DEBUG] Telegram auth error:', error);
       res.status(500).json({ error: 'Authentication failed' });
     }
   });
