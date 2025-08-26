@@ -282,19 +282,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       setMessages(prev => [...prev, userMessage]);
       setNewMessage("");
 
-      // Save user message to database (non-blocking)
-      if (character?.id) {
-        try {
-          await saveMessageMutation.mutateAsync({
-            content: message,
-            isFromUser: true,
-            mood: currentMood
-          });
-        } catch (error) {
-          console.error("Failed to save user message:", error);
-          // Continue with AI response even if save fails
-        }
-      }
+      // Skip saving user message to reduce packet issues - AI will save both messages
 
       // Show typing indicator
       setTypingIndicator(true);
@@ -315,7 +303,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
         const response = await apiRequest("POST", "/api/mistral/chat", {
           message,
           characterName: character?.name || "Seraphina",
-          characterPersonality: character?.personality || "playful",
+          characterPersonality: character?.personality || "playful and flirty",
           currentMood: characterMood,
           conversationHistory
         });
@@ -363,19 +351,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
       setMessages(prev => [...prev, aiMessage]);
       setCharacterMood(aiMessage.mood || 'normal');
       
-      // Save AI response to database (non-blocking)
-      if (character?.id) {
-        try {
-          await saveMessageMutation.mutateAsync({
-            content: aiResponse,
-            isFromUser: false,
-            mood: aiMood
-          });
-        } catch (error) {
-          console.error("Failed to save AI message:", error);
-          // Don't block UI for save failures
-        }
-      }
+      // Skip saving AI message here to reduce packet issues - server handles saving
     },
     onError: (error: any) => {
       console.error("AI Chat error:", error);
@@ -401,14 +377,7 @@ export default function AIChat({ userId = 'default-player', selectedCharacterId 
     setMessages(prev => [...prev, userMessage]);
     setNewMessage("");
 
-    // Save user message to database (don't wait for it)
-    if (character?.id) {
-      saveMessageMutation.mutate({
-        content: originalMessage,
-        isFromUser: true,
-        mood: currentMood
-      });
-    }
+    // Skip saving to reduce database calls
 
     // Add 3-5 second delay for typing
     const delay = Math.random() * 2000 + 3000; // 3-5 seconds

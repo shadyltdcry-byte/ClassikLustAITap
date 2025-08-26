@@ -89,8 +89,11 @@ class DrizzleStorage implements IStorage {
   }
   
   async createUser(userData: any) {
+    // Generate a truly unique username with timestamp to avoid duplicates
+    const uniqueUsername = userData.username || `Player_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`;
+    
     const result = await db.insert(schema.users).values({
-      username: userData.username || userData.id,
+      username: uniqueUsername,
       password: "temp_password", // Required field
       level: userData.level || 1,
       lp: userData.lp || 5000,
@@ -125,6 +128,48 @@ class DrizzleStorage implements IStorage {
   
   async getUserUpgrades(userId: string) {
     return []; // Return empty for now
+  }
+  
+  async getUserStats(userId: string) {
+    try {
+      const result = await db.select().from(schema.gameStats).where(eq(schema.gameStats.userId, userId)).limit(1);
+      if (result[0]) {
+        return result[0];
+      }
+      // Create default stats if none exist
+      const defaultStats = {
+        userId,
+        totalTaps: 0,
+        totalLpEarned: 0,
+        totalEnergyUsed: 0,
+        sessionsPlayed: 1
+      };
+      const created = await db.insert(schema.gameStats).values(defaultStats).returning();
+      return created[0];
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      // Return default stats on error
+      return {
+        userId,
+        totalTaps: 0,
+        totalLpEarned: 0,
+        totalEnergyUsed: 0,
+        sessionsPlayed: 1
+      };
+    }
+  }
+  
+  async updateUserStats(userId: string, updates: any) {
+    try {
+      await db.update(schema.gameStats).set(updates).where(eq(schema.gameStats.userId, userId));
+    } catch (error) {
+      console.error('Error updating user stats:', error);
+    }
+  }
+  
+  async getUserByUsername(username: string) {
+    const result = await db.select().from(schema.users).where(eq(schema.users.username, username)).limit(1);
+    return result[0];
   }
   
   async getAllMedia() {
