@@ -21,6 +21,11 @@ import { storage } from '../shared/storage';
 // Create a global variable to store token validation function reference
 declare global {
   var validateAuthToken: ((token: string, telegramId: string) => boolean) | undefined;
+  var recentTelegramAuth: Map<string, {
+    user: any,
+    token: string,
+    timestamp: number
+  }> | undefined;
 }
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1280,7 +1285,30 @@ Respond as if you're having a real conversation with someone you care about. You
     }
   });
 
-  // Removed duplicate Telegram auth endpoint - using token validation endpoint below
+  // Frontend polling endpoint to check bot authentication status
+  app.get('/api/auth/telegram/status/:telegram_id', async (req, res) => {
+    try {
+      const { telegram_id } = req.params;
+      
+      // Check if user has been authenticated via bot recently
+      const recentAuthWindow = 5 * 60 * 1000; // 5 minutes
+      const authData = global.recentTelegramAuth?.get(telegram_id);
+      
+      if (authData && (Date.now() - authData.timestamp) < recentAuthWindow) {
+        console.log(`[DEBUG] Found recent auth for ${telegram_id}`);
+        res.json({
+          authenticated: true,
+          user: authData.user,
+          token: authData.token
+        });
+      } else {
+        res.json({ authenticated: false });
+      }
+    } catch (error) {
+      console.error('[DEBUG] Auth status check error:', error);
+      res.status(500).json({ error: 'Failed to check auth status' });
+    }
+  });
 
   // Telegram authentication endpoint with token validation
   app.post('/api/auth/telegram', async (req, res) => {
@@ -1305,6 +1333,17 @@ Respond as if you're having a real conversation with someone you care about. You
       console.log(`[DEBUG] Token validation result:`, isValidToken);
       
       if (isValidToken) {
+        // Generate JWT token for frontend
+        const authToken = jwt.sign(
+          { 
+            telegram_id, 
+            username,
+            type: 'telegram_bot'
+          }, 
+          'your-secret-key', // In production, use environment variable
+          { expiresIn: '7d' }
+        );
+
         const responseData = { 
           success: true, 
           message: "You're logged in!",
@@ -1313,8 +1352,19 @@ Respond as if you're having a real conversation with someone you care about. You
             telegram_id,
             username: username || `User${telegram_id}`,
             name: username || `User${telegram_id}`
-          }
+          },
+          token: authToken
         };
+        
+        // Store for frontend polling
+        if (global.recentTelegramAuth) {
+          global.recentTelegramAuth.set(telegram_id, {
+            user: responseData.user,
+            token: authToken,
+            timestamp: Date.now()
+          });
+        }
+        
         console.log(`[DEBUG] Sending success response:`, responseData);
         res.json(responseData);
       } else {

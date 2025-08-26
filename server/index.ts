@@ -122,6 +122,13 @@ export function validateAuthToken(token: string, telegramId: string): boolean {
 // Set global reference for routes to access
 global.validateAuthToken = validateAuthToken;
 
+// Store recent successful authentications for frontend polling
+global.recentTelegramAuth = new Map<string, {
+  user: any,
+  token: string,
+  timestamp: number
+}>();
+
 // Initialize Telegram Bot
 const token = process.env.TELEGRAM_BOT_TOKEN;
 if (token) {
@@ -166,9 +173,10 @@ if (token) {
         console.log(`[${timestamp}] Backend response for ${telegram_id}: ${authResponse.status} - ${JSON.stringify(responseData)}`);
 
         if (authResponse.ok) {
-          // 4. Send success confirmation message
-          bot.sendMessage(chatId, "You're logged in!");
-          console.log(`[${timestamp}] Success message sent to ${telegram_id}`);
+          // 4. Send success confirmation message with game link
+          const gameUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}?telegram_id=${telegram_id}`;
+          bot.sendMessage(chatId, `You're logged in! 🎮\n\nClick here to play: ${gameUrl}`);
+          console.log(`[${timestamp}] Success message sent to ${telegram_id} with game link: ${gameUrl}`);
         } else {
           // 5. Send failure message
           bot.sendMessage(chatId, 'Authentication failed. Please try again.');

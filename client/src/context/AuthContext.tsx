@@ -53,8 +53,40 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    const timer = setTimeout(initializeAuth, 3000);
-    return () => clearTimeout(timer);
+    // Check for bot authentication via URL params (from Telegram bot)
+    const checkBotAuth = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const telegramId = urlParams.get('telegram_id');
+      
+      if (telegramId) {
+        console.log(`[DEBUG] Found telegram_id in URL: ${telegramId}, checking bot auth status`);
+        try {
+          const response = await fetch(`/api/auth/telegram/status/${telegramId}`);
+          const data = await response.json();
+          
+          if (data.authenticated) {
+            console.log(`[DEBUG] Bot authentication found for ${telegramId}`, data);
+            localStorage.setItem('telegram_auth_token', data.token);
+            localStorage.setItem('telegram_user_id', data.user.id);
+            setUserId(data.user.id);
+            setIsAuthenticated(true);
+            setIsLoading(false);
+            
+            // Clean up URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            return;
+          }
+        } catch (error) {
+          console.error('Bot auth check error:', error);
+        }
+      }
+      
+      // Fall back to normal auth check
+      const timer = setTimeout(initializeAuth, 3000);
+      return () => clearTimeout(timer);
+    };
+
+    checkBotAuth();
   }, []);
 
   const login = (userIdFromAuth: string, userData?: any) => {
