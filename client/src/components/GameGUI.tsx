@@ -314,7 +314,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               user={{
                 ...playerData,
                 id: playerData?.id || userId || '',
-                username: playerData?.name || 'Player',
+                username: playerData?.username || playerData?.name || 'Player',
                 password: '',
                 level: playerData?.level || 1,
                 lp: playerData?.lp || 1000,
@@ -581,7 +581,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               />
             </div>
             <div>
-              <p className="font-medium text-sm">{playerData?.name || "Player"}</p>
+              <p className="font-medium text-sm">{playerData?.username || playerData?.name || "Player"}</p>
               <div className="flex items-center gap-2 text-xs text-gray-400">
                 <span>Lv. {playerData?.level || 1}</span>
                 <Progress value={(playerData?.xp || 0) / (playerData?.xpToNext || 100) * 100} className="h-1 w-20" />

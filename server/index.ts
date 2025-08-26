@@ -80,11 +80,12 @@ if (token) {
 
         if (authResponse.ok) {
           const authData = await authResponse.json();
+          console.log(`Telegram user authenticated: ${username} (${telegram_id})`);
           
           if (messageText === '/start') {
-            bot.sendMessage(chatId, 'Welcome to your Replit Telegram Bot!\nYou\'re logged in!');
+            bot.sendMessage(chatId, `Welcome ${username || `User${telegram_id}`}!\nYou're logged in!`);
           } else if (messageText) {
-            bot.sendMessage(chatId, `You said: ${messageText}\nYou're logged in!`);
+            bot.sendMessage(chatId, `${username || `User${telegram_id}`} said: ${messageText}\nYou're logged in!`);
           }
         } else {
           bot.sendMessage(chatId, 'Authentication failed. Please try again.');

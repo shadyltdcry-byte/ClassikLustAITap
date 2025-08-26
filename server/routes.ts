@@ -1347,8 +1347,10 @@ Respond as if you're having a real conversation with someone you care about. You
         success: true, 
         message: "You're logged in!",
         user: {
+          id: `telegram_${telegram_id}`,
           telegram_id,
-          username
+          username: username || `User${telegram_id}`,
+          name: username || `User${telegram_id}`
         }
       });
     } catch (error) {
