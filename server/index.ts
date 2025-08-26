@@ -134,10 +134,19 @@ if (token) {
       const messageText = msg.text;
       const telegram_id = msg.from.id.toString();
       const username = msg.from.username;
+      const timestamp = new Date().toISOString();
+
+      // Only respond to /start or /login commands
+      if (messageText !== '/start' && messageText !== '/login') {
+        return;
+      }
 
       try {
+        console.log(`[${timestamp}] Telegram auth initiated for user: ${telegram_id} (${username}) with command: ${messageText}`);
+        
         // 1. Generate temporary authentication token
         const token = storeAuthToken(telegram_id, username);
+        console.log(`[${timestamp}] Generated token: ${token} for telegram_id: ${telegram_id}`);
         
         // 2. POST to game backend auth endpoint with token
         const authResponse = await fetch('http://localhost:5000/api/auth/telegram', {
@@ -152,23 +161,21 @@ if (token) {
           })
         });
 
-        // 3. Wait for backend validation
+        // 3. Wait for backend response and log it
+        const responseData = await authResponse.json();
+        console.log(`[${timestamp}] Backend response for ${telegram_id}: ${authResponse.status} - ${JSON.stringify(responseData)}`);
+
         if (authResponse.ok) {
-          const authData = await authResponse.json();
-          console.log(`Telegram user authenticated: ${username} (${telegram_id})`);
-          
-          // 4. Send confirmation message
-          if (messageText === '/start') {
-            bot.sendMessage(chatId, `Welcome ${username || `User${telegram_id}`}!\nYou're logged in!`);
-          } else if (messageText) {
-            bot.sendMessage(chatId, `${username || `User${telegram_id}`} said: ${messageText}\nYou're logged in!`);
-          }
+          // 4. Send success confirmation message
+          bot.sendMessage(chatId, "You're logged in!");
+          console.log(`[${timestamp}] Success message sent to ${telegram_id}`);
         } else {
-          // 5. If validation fails, ask to try again
+          // 5. Send failure message
           bot.sendMessage(chatId, 'Authentication failed. Please try again.');
+          console.log(`[${timestamp}] Failure message sent to ${telegram_id}`);
         }
       } catch (error) {
-        console.error('Bot auth error:', error);
+        console.error(`[${timestamp}] Bot auth error for ${telegram_id}:`, error);
         bot.sendMessage(chatId, 'Service temporarily unavailable.');
       }
     });
