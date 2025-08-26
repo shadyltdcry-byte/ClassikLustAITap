@@ -9,12 +9,12 @@
   "level": 1,
   "isNsfw": true,
   "isVip": false,
-  "isEnabled": false,
+  "isEnabled": true,
   "levelRequirement": 3,
   "customTriggers": [],
   "avatarPath": "/uploads/placeholder-character.jpg",
   "imageUrl": "/uploads/placeholder-character.jpg",
   "avatarUrl": "/uploads/placeholder-character.jpg",
   "createdAt": "2025-08-26T10:00:00.000Z",
-  "updatedAt": "2025-08-26T19:02:02.416Z"
+  "updatedAt": "2025-08-26T20:43:21.451Z"
 }
