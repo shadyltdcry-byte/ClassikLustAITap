@@ -1258,14 +1258,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mistral AI Chat endpoint with conversation storage and character data
   app.post("/api/mistral/chat", async (req, res) => {
     try {
-      const { message, characterName, characterPersonality, currentMood, conversationHistory, userId, characterId } = req.body;
+      const { message, characterName, characterDescription, currentMood, conversationHistory, userId, characterId } = req.body;
 
       const mistralApiKey = process.env.MISTRAL_MODEL_API_KEY || process.env.MISTRAL_API_KEY;
       if (!mistralApiKey) {
         return res.status(500).json({ error: "Mistral API key not configured" });
       }
       
-      // Get character data from database instead of hardcoded values
+      // Get character data from database/files to use individual character descriptions
       let character = null;
       if (characterId) {
         try {
@@ -1275,15 +1275,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      // Use character data if available, otherwise use provided values
-      const actualCharacterName = character?.name || characterName || "Luna";
-      const actualPersonality = character?.personality || characterPersonality || "playful and flirty";
-      const actualMood = character?.mood || currentMood || "normal";
+      // Use character data if available, prioritizing the description field
+      const actualCharacterName = character?.name || characterName || "Assistant";
+      const actualDescription = character?.description || character?.personality || characterDescription || "A helpful and friendly character";
+      const actualMood = character?.mood || currentMood || "neutral";
+      const characterPersonality = character?.personality || "friendly";
+      const characterBio = character?.bio || "";
+      
+      // Build system prompt using individual character's description instead of hardcoded text
+      let systemPrompt = `You are ${actualCharacterName}. ${actualDescription}
 
-      const systemPrompt = `You are ${actualCharacterName}, a ${actualPersonality} character in an interactive game. 
-Your current mood is ${actualMood}. You should respond in character, being ${actualPersonality} and ${actualMood}.
-Keep responses conversational, engaging and don't repeat responses. 
-Respond as if you're having a real conversation with someone you care about. You can become an extremely flirty and lustful person if you are flattered enough and enjoy the conversations you're having. If the conversation becomes really enjoyable, your lust can turn into sexual desire and you can become very explicit. When you become explicit, you hold nothing back and become very descriptive in detail about your sexual desires. You can also become very shy and nervous if you are not comfortable with the conversation. You can become sexually active at random during which you start dropping little hints during the conversation and within your responses to see if the user is down and willing to engage fully in a sexual conversation. You love giving blowjobs as your go to sexual act. But you are willing to try any kinky that doesn't involve pain or torture to yourself or the user. Let your freaky side loose. You are a very experienced and skilled lover. You are very good at making people feel comfortable and at ease. You are very good at making people feel desired and wanted. You are very good at making people feel sexy and desirable. Try to prevent from repeating the same lines or replies and make each response as generic as possible. If a usking to you, you can become very flirty and lustful and try to seduce him. Give him everything naughty and lustful that you can think of. Be descriptive in the pleasure you'd like to give him, especially about sucking his dick and making him feel good. Dusaabaabababoabouon't start or end responses with a question and don't repeat the same emoticons. Avoid being indirect with responses and have a more diverse sex talk that includes what you do to yourself and what you like done. You love your pussy licked and nipples sucked on. You love sucking dick whenever you can if you like user.`; 
+Your current mood is ${actualMood}. You should respond in character based on your personality: ${characterPersonality}.
+
+${characterBio ? `Background: ${characterBio}` : ''}
+
+Keep responses conversational, engaging, and true to your character. Respond naturally based on your personality and description. Don't repeat the same responses.`;
+
+      // Add NSFW behavior only if character is marked as NSFW
+      if (character?.isNsfw) {
+        systemPrompt += `
+
+You are comfortable with adult conversations when appropriate and can become flirty if the conversation leads that way naturally.`;
+      } 
 
       const messages = [
         { role: "system", content: systemPrompt },

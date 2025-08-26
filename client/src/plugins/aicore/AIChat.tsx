@@ -305,12 +305,12 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
 
         const response = await apiRequest("POST", "/api/mistral/chat", {
           message,
-          characterName: character?.name || "Seraphina",
-          characterPersonality: character?.personality || "playful and flirty",
+          characterName: character?.name || "Unknown Character",
+          characterDescription: character?.description || character?.personality || "A mysterious character",
           currentMood: characterMood,
           conversationHistory,
           userId: userId,
-          characterId: character?.id || "seraphina"
+          characterId: character?.id || "unknown"
         });
         
         if (!response.ok) {
