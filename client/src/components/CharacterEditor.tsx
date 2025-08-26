@@ -384,13 +384,16 @@ export default function CharacterEditor({
                                 <SelectValue placeholder="Select main image" />
                               </SelectTrigger>
                               <SelectContent className="bg-gray-700 border-gray-600">
-                                {(mediaFiles as any[]).map((file: any) => (
+                                <SelectItem value="" className="text-white">
+                                  No image selected
+                                </SelectItem>
+                                {(mediaFiles as any[]).filter((file: any) => file.filename && file.filename !== 'undefined').map((file: any, index: number) => (
                                   <SelectItem
-                                    key={file.id}
-                                    value={file.url || file.path || `/uploads/${file.filename}`}
+                                    key={`main-image-${file.id || index}`}
+                                    value={file.url || file.path || (file.filename ? `/uploads/${file.filename}` : '')}
                                     className="text-white"
                                   >
-                                    {file.originalName || file.filename}
+                                    {file.originalName || file.filename || 'Unnamed file'}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -412,13 +415,16 @@ export default function CharacterEditor({
                                 <SelectValue placeholder="Select avatar image" />
                               </SelectTrigger>
                               <SelectContent className="bg-gray-700 border-gray-600">
-                                {(mediaFiles as any[]).map((file: any) => (
+                                <SelectItem value="" className="text-white">
+                                  No image selected
+                                </SelectItem>
+                                {(mediaFiles as any[]).filter((file: any) => file.filename && file.filename !== 'undefined').map((file: any, index: number) => (
                                   <SelectItem
-                                    key={file.id}
-                                    value={file.url || file.path || `/uploads/${file.filename}`}
+                                    key={`avatar-image-${file.id || index}`}
+                                    value={file.url || file.path || (file.filename ? `/uploads/${file.filename}` : '')}
                                     className="text-white"
                                   >
-                                    {file.originalName || file.filename}
+                                    {file.originalName || file.filename || 'Unnamed file'}
                                   </SelectItem>
                                 ))}
                               </SelectContent>
