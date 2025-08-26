@@ -103,33 +103,39 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
             <div className="space-y-3">
               <Button
                 onClick={() => window.open("https://t.me/ClassikLoyalty_Bot", "_blank")}
-                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700"
+                className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-lg py-3"
                 disabled={isLoading}
               >
-                <ExternalLink className="w-4 h-4 mr-2" />
-                Open Telegram Bot
+                <ExternalLink className="w-5 h-5 mr-2" />
+                🚀 Start with Telegram Bot
               </Button>
 
-              <Button
-                onClick={handleManualLogin}
-                variant="outline"
-                className="w-full border-pink-600 text-pink-300 hover:bg-pink-900/20 hover:border-pink-500"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Authenticating...
-                  </>
-                ) : (
-                  "🎮 Continue as Guest"
-                )}
-              </Button>
+              <div className="text-center">
+                <div className="text-xs text-white/40 mb-2">OR</div>
+                <Button
+                  onClick={handleManualLogin}
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-white/50 hover:text-white/70 hover:bg-gray-800/30"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                      Loading...
+                    </>
+                  ) : (
+                    "Continue as Guest (limited features)"
+                  )}
+                </Button>
+              </div>
             </div>
-          </div>
 
-          <div className="text-center text-xs text-white/50">
-            <p>v2.0.0 - Secure Telegram Authentication</p>
+            <div className="text-center py-3 border-t border-gray-700/50 mt-4">
+              <p className="text-xs text-white/30">
+                v2.0.0 - Secure Telegram Authentication
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
