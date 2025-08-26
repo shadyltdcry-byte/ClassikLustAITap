@@ -10,12 +10,13 @@ interface CharacterDisplayProps {
   user: User;
   stats?: GameStats;
   onTap: (event: React.MouseEvent) => void;
+  onAvatarClick?: () => void; // New prop for avatar click
   isTapping: boolean;
 }
 
 // Fallback default character
 const defaultCharacter: Character = {
-  id: "seraphina",
+  id: "550e8400-e29b-41d4-a716-446655440001", // Valid UUID format
   name: "Seraphina",
   personality: "playful",
   backstory: "A mysterious and playful character who loves to chat and have fun!",
@@ -24,6 +25,7 @@ const defaultCharacter: Character = {
   isNsfw: false,
   isVip: false,
   levelRequirement: 1,
+  isEnabled: true,
   customTriggers: [],
   createdAt: new Date(),
 };
@@ -32,6 +34,7 @@ export default function CharacterDisplay({
   character = defaultCharacter,
   user,
   onTap,
+  onAvatarClick,
   isTapping,
 }: CharacterDisplayProps) {
   const [tapEffect, setTapEffect] = useState(false);
@@ -50,17 +53,38 @@ export default function CharacterDisplay({
   return (
     <div className="px-4 pb-6">
       <div className="relative bg-black/20 backdrop-blur-sm rounded-3xl p-6 border border-purple-500/30">
-        {/* Character Info */}
-        <div className="text-center mb-4">
-          <h2 className="text-2xl font-bold gradient-text">{character?.name || "Unnamed"}</h2>
-          <p className="text-gray-400 text-sm">{character?.backstory || "Tap to interact!"}</p>
+        {/* Character Info with Avatar */}
+        <div className="flex items-center gap-4 mb-4">
+          {/* Bigger Avatar with Square Round Edges - Clickable for Gallery */}
+          <div 
+            className="relative w-20 h-20 cursor-pointer hover:scale-105 transition-transform duration-200"
+            onClick={onAvatarClick}
+            title="Click to open Character Gallery"
+          >
+            <img
+              src={character?.avatarPath || character?.imageUrl || character?.avatarUrl || '/default-character.jpg'}
+              alt={character?.name || "Player"}
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (target.src !== window.location.origin + '/default-character.jpg') {
+                  target.src = '/default-character.jpg';
+                }
+              }}
+              className="w-20 h-20 object-cover rounded-xl shadow-lg border-2 border-purple-500/50"
+            />
+          </div>
+          
+          <div className="flex-1 text-left">
+            <h2 className="text-2xl font-bold gradient-text">{character?.name || "Unnamed"}</h2>
+            <p className="text-gray-400 text-sm">{character?.backstory || "Tap to interact!"}</p>
+          </div>
         </div>
 
-        {/* Character Image Container */}
+        {/* Character Main Image Container */}
         <div className="relative mx-auto max-w-xs mb-6">
           <div className="relative">
             <img
-              src={character?.imageUrl || character?.avatarUrl || '/default-character.jpg'}
+              src={character?.avatarPath || character?.imageUrl || character?.avatarUrl || '/default-character.jpg'}
               alt={character?.name || "Player"}
               onClick={handleTap}
               onError={(e) => {

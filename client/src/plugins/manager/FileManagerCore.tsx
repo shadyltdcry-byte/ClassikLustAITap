@@ -191,9 +191,9 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       return;
     }
 
-    // Validate file types
+    // Validate file types - support all common image and video formats
     const validFiles = selectedFiles.filter(file => {
-      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/webm'];
+      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm', 'video/mov', 'video/avi'];
       return validTypes.includes(file.type);
     });
 

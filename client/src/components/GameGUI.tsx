@@ -20,6 +20,7 @@ import {
   Activity
 } from "lucide-react";
 import CharacterDisplay from "@/components/CharacterDisplay";
+import CharacterGallery from "@/components/CharacterGallery";
 import AdminMenu from "@/plugins/admin/AdminMenu";
 import AIChat from "@/plugins/aicore/AIChat";
 import LevelUp from "@/plugins/gameplay/LevelUp";
@@ -70,6 +71,7 @@ interface GameGUIProps {
 interface GUIState {
   activePlugin: string;
   showAdminMenu: boolean;
+  showCharacterGallery: boolean;
 }
 
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
@@ -80,6 +82,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
     showAdminMenu: false,
+    showCharacterGallery: false,
   });
 
   console.log("GameGUI rendering, activePlugin:", guiState.activePlugin);
@@ -286,7 +289,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           <div className="max-w-sm w-full">
             <CharacterDisplay
               character={{
-                id: "seraphina",
+                id: "550e8400-e29b-41d4-a716-446655440001",
                 name: "Seraphina",
                 personality: "playful",
                 backstory: "Tap to interact with Seraphina!",
@@ -317,6 +320,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 createdAt: new Date()
               } as any}
               onTap={handleTap}
+              onAvatarClick={() => updateGUIState({ showCharacterGallery: true })}
               isTapping={isTapping}
             />
           </div>
@@ -658,6 +662,15 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       {/* Admin Menu Modal */}
       {guiState.showAdminMenu && (
         <AdminMenu onClose={() => updateGUIState({ showAdminMenu: false })} />
+      )}
+
+      {/* Character Gallery Modal */}
+      {guiState.showCharacterGallery && (
+        <CharacterGallery 
+          isOpen={guiState.showCharacterGallery}
+          onClose={() => updateGUIState({ showCharacterGallery: false })}
+          userId={userId}
+        />
       )}
     </div>
   );
