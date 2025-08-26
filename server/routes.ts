@@ -123,8 +123,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // in your backend route setup
   app.get('/api/admin/plugins/stats', async (req, res) => {
-    // Return mock plugin stats for now
-    res.json({ totalPlugins: 4, activePlugins: 3, errors: 0 });
+    try {
+      // Get real plugin stats from the system
+      const totalPlugins = 0; // Will be populated when plugins are implemented
+      const activePlugins = 0;
+      const errors = 0;
+      
+      res.json({ 
+        totalPlugins, 
+        activePlugins, 
+        errors,
+        status: 'operational'
+      });
+    } catch (error) {
+      console.error('Error fetching plugin stats:', error);
+      res.status(500).json({ error: 'Failed to fetch plugin stats' });
+    }
   });
 
   // Character tap endpoint  

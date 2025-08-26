@@ -236,11 +236,11 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                       <CardContent className="p-3 flex items-center gap-3">
                         <div className="relative">
                           <img
-                            src={char.avatarUrl?.startsWith('/') ? char.avatarUrl : `/uploads/${char.avatarUrl}` || char.imageUrl || '/default-avatar.jpg'}
+                            src={char.avatarUrl?.startsWith('/') ? char.avatarUrl : `/uploads/${char.avatarUrl}` || char.imageUrl || '/uploads/placeholder-avatar.jpg'}
                             alt={char.name}
                             className="w-12 h-12 rounded-full object-cover"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/default-avatar.jpg';
+                              (e.target as HTMLImageElement).src = '/uploads/placeholder-avatar.jpg';
                             }}
                           />
                           {!char.isEnabled && (
@@ -404,7 +404,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                             alt={`Thumbnail ${index + 1}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/default-avatar.jpg';
+                              (e.target as HTMLImageElement).src = '/uploads/placeholder-avatar.jpg';
                             }}
                           />
                         </button>

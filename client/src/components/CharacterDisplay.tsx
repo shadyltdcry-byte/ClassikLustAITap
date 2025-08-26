@@ -70,7 +70,7 @@ export default function CharacterDisplay({
             <img
               src={character?.avatarPath || character?.imageUrl || character?.avatarUrl || '/uploads/placeholder-avatar.jpg'}
               alt={character?.name || "Player"}
-              onClick={handleTap}
+              onClick={onAvatarClick || handleTap}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 if (target.src !== window.location.origin + '/uploads/placeholder-avatar.jpg') {
