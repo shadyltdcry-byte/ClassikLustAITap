@@ -430,36 +430,39 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
             {/* Toggle Options */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600">
                 <div>
-                  <Label className="text-white">VIP Content</Label>
+                  <Label className="text-white font-medium">VIP Content</Label>
                   <p className="text-xs text-gray-400">Requires premium access</p>
                 </div>
                 <Switch
                   checked={uploadConfig.isVip}
                   onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, isVip: checked }))}
+                  className="data-[state=checked]:bg-purple-600 data-[state=unchecked]:bg-gray-500 border-2 border-gray-400"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600">
                 <div>
-                  <Label className="text-white">NSFW Content</Label>
+                  <Label className="text-white font-medium">NSFW Content</Label>
                   <p className="text-xs text-gray-400">18+ content</p>
                 </div>
                 <Switch
                   checked={uploadConfig.isNsfw}
                   onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, isNsfw: checked }))}
+                  className="data-[state=checked]:bg-red-600 data-[state=unchecked]:bg-gray-500 border-2 border-gray-400"
                 />
               </div>
 
-              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg">
+              <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600">
                 <div>
-                  <Label className="text-white">Chat Sending</Label>
+                  <Label className="text-white font-medium">Chat Sending</Label>
                   <p className="text-xs text-gray-400">Enable for chat</p>
                 </div>
                 <Switch
                   checked={uploadConfig.enabledForChat}
                   onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, enabledForChat: checked }))}
+                  className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-500 border-2 border-gray-400"
                 />
               </div>
             </div>
