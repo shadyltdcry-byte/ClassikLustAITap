@@ -40,7 +40,7 @@ export class SupabaseStorage implements IStorage {
   public get supabase() { return this.supabaseClient; }
 
   constructor() {
-    const supabaseUrl = process.env.VITE_SUPABASE_URL;
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
     const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
@@ -142,7 +142,7 @@ export class SupabaseStorage implements IStorage {
 
   async getAllCharacters(): Promise<Character[]> {
     const { data, error } = await this.supabase
-      .from('characters')
+      .from('players')
       .select('*');
     
     if (error) {
@@ -639,5 +639,134 @@ export class SupabaseStorage implements IStorage {
       .eq('id', id);
     
     if (error) throw error;
+  }
+
+  // Missing admin methods for level requirements
+  async getLevelRequirements(): Promise<any[]> {
+    const { data, error } = await this.supabase
+      .from('level_requirements')
+      .select('*')
+      .order('level');
+    
+    if (error) {
+      console.error('Error fetching level requirements:', error);
+      return [];
+    }
+    return data || [];
+  }
+
+  async createLevelRequirement(levelReq: any): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('level_requirements')
+      .insert(levelReq)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating level requirement:', error);
+      throw new Error(`Failed to create level requirement: ${error.message}`);
+    }
+    return data;
+  }
+
+  async updateLevelRequirement(id: string, updates: any): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('level_requirements')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating level requirement:', error);
+      throw new Error(`Failed to update level requirement: ${error.message}`);
+    }
+    return data;
+  }
+
+  async deleteLevelRequirement(id: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('level_requirements')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting level requirement:', error);
+      throw new Error(`Failed to delete level requirement: ${error.message}`);
+    }
+  }
+
+  // Missing methods for upgrades management
+  async getUpgrades(): Promise<any[]> {
+    const { data, error } = await this.supabase
+      .from('upgrades')
+      .select('*')
+      .order('category, name');
+    
+    if (error) {
+      console.error('Error fetching upgrades:', error);
+      return [];
+    }
+    return data || [];
+  }
+
+  // Missing methods for achievements management  
+  async getAchievements(): Promise<any[]> {
+    const { data, error } = await this.supabase
+      .from('achievements')
+      .select('*')
+      .order('category, sort_order');
+    
+    if (error) {
+      console.error('Error fetching achievements:', error);
+      return [];
+    }
+    return data || [];
+  }
+
+  async createAchievement(achievement: any): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('achievements')
+      .insert(achievement)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error creating achievement:', error);
+      throw new Error(`Failed to create achievement: ${error.message}`);
+    }
+    return data;
+  }
+
+  async updateAchievement(id: string, updates: any): Promise<any> {
+    const { data, error } = await this.supabase
+      .from('achievements')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error updating achievement:', error);
+      throw new Error(`Failed to update achievement: ${error.message}`);
+    }
+    return data;
+  }
+
+  async deleteAchievement(id: string): Promise<void> {
+    const { error } = await this.supabase
+      .from('achievements')
+      .delete()
+      .eq('id', id);
+    
+    if (error) {
+      console.error('Error deleting achievement:', error);
+      throw new Error(`Failed to delete achievement: ${error.message}`);
+    }
+  }
+
+  // Missing method for character selection
+  async setSelectedCharacter(userId: string, characterId: string): Promise<void> {
+    await this.selectCharacter(userId, characterId);
   }
 }

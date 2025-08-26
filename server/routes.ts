@@ -14,11 +14,12 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import multer from 'multer';
-// Using Drizzle storage instead of Supabase
+// Using Supabase storage
 import jwt from 'jsonwebtoken';
-import { storage, db } from '../shared/storage';
-import { eq } from 'drizzle-orm';
-import { users } from '../shared/schema';
+import { SupabaseStorage } from '../shared/SupabaseStorage';
+
+// Create Supabase storage instance
+const storage = new SupabaseStorage();
 
 // Create a global variable to store token validation function reference
 declare global {
@@ -341,9 +342,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (userId.startsWith('telegram_')) {
         const telegramId = userId.replace('telegram_', '');
         try {
-          const result = await db.select({id: users.id}).from(users).where(eq(users.telegramId, telegramId));
-          if (result[0]?.id) {
-            realUserId = result[0].id;
+          const user = await storage.getUser(`telegram_${telegramId}`);
+          if (user?.id) {
+            realUserId = user.id;
           } else {
             console.log(`No database user found for ${userId}, returning mock tap data`);
             const lpGain = 1.5;
@@ -537,9 +538,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (playerId.startsWith('telegram_')) {
         const telegramId = playerId.replace('telegram_', '');
         try {
-          const result = await db.select({id: users.id}).from(users).where(eq(users.telegramId, telegramId));
-          if (result[0]?.id) {
-            realUserId = result[0].id;
+          const user = await storage.getUser(`telegram_${telegramId}`);
+          if (user?.id) {
+            realUserId = user.id;
           } else {
             console.log(`No database user found for ${playerId}, returning mock data`);
             return res.json({
@@ -886,9 +887,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (userId.startsWith('telegram_')) {
         const telegramId = userId.replace('telegram_', '');
         try {
-          const result = await db.select({id: users.id}).from(users).where(eq(users.telegramId, telegramId));
-          if (result[0]?.id) {
-            realUserId = result[0].id;
+          const user = await storage.getUser(`telegram_${telegramId}`);
+          if (user?.id) {
+            realUserId = user.id;
           } else {
             console.log(`No database user found for ${userId}, returning mock user data`);
             return res.json({
@@ -951,9 +952,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (playerId.startsWith('telegram_')) {
         const telegramId = playerId.replace('telegram_', '');
         try {
-          const result = await db.select({id: users.id}).from(users).where(eq(users.telegramId, telegramId));
-          if (result[0]?.id) {
-            realUserId = result[0].id;
+          const user = await storage.getUser(`telegram_${telegramId}`);
+          if (user?.id) {
+            realUserId = user.id;
           } else {
             console.log(`No database user found for ${playerId}, returning mock stats data`);
             return res.json({
