@@ -435,11 +435,19 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                   <Label className="text-white font-medium">VIP Content</Label>
                   <p className="text-xs text-gray-400">Requires premium access</p>
                 </div>
-                <Switch
-                  checked={uploadConfig.isVip}
-                  onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, isVip: checked }))}
-                  className="data-[state=checked]:bg-purple-600 data-[state=unchecked]:bg-gray-500 border-2 border-gray-400"
-                />
+                <button
+                  type="button"
+                  onClick={() => setUploadConfig(prev => ({ ...prev, isVip: !prev.isVip }))}
+                  className={`w-12 h-6 rounded-full border-2 transition-colors ${
+                    uploadConfig.isVip 
+                      ? 'bg-purple-600 border-purple-400' 
+                      : 'bg-gray-500 border-gray-400'
+                  }`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                    uploadConfig.isVip ? 'translate-x-6' : 'translate-x-0'
+                  }`} />
+                </button>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600">
@@ -447,11 +455,19 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                   <Label className="text-white font-medium">NSFW Content</Label>
                   <p className="text-xs text-gray-400">18+ content</p>
                 </div>
-                <Switch
-                  checked={uploadConfig.isNsfw}
-                  onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, isNsfw: checked }))}
-                  className="data-[state=checked]:bg-red-600 data-[state=unchecked]:bg-gray-500 border-2 border-gray-400"
-                />
+                <button
+                  type="button"
+                  onClick={() => setUploadConfig(prev => ({ ...prev, isNsfw: !prev.isNsfw }))}
+                  className={`w-12 h-6 rounded-full border-2 transition-colors ${
+                    uploadConfig.isNsfw 
+                      ? 'bg-red-600 border-red-400' 
+                      : 'bg-gray-500 border-gray-400'
+                  }`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                    uploadConfig.isNsfw ? 'translate-x-6' : 'translate-x-0'
+                  }`} />
+                </button>
               </div>
 
               <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600">
@@ -459,11 +475,19 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                   <Label className="text-white font-medium">Chat Sending</Label>
                   <p className="text-xs text-gray-400">Enable for chat</p>
                 </div>
-                <Switch
-                  checked={uploadConfig.enabledForChat}
-                  onCheckedChange={(checked) => setUploadConfig(prev => ({ ...prev, enabledForChat: checked }))}
-                  className="data-[state=checked]:bg-green-600 data-[state=unchecked]:bg-gray-500 border-2 border-gray-400"
-                />
+                <button
+                  type="button"
+                  onClick={() => setUploadConfig(prev => ({ ...prev, enabledForChat: !prev.enabledForChat }))}
+                  className={`w-12 h-6 rounded-full border-2 transition-colors ${
+                    uploadConfig.enabledForChat 
+                      ? 'bg-green-600 border-green-400' 
+                      : 'bg-gray-500 border-gray-400'
+                  }`}
+                >
+                  <div className={`w-4 h-4 bg-white rounded-full transition-transform ${
+                    uploadConfig.enabledForChat ? 'translate-x-6' : 'translate-x-0'
+                  }`} />
+                </button>
               </div>
             </div>
 
