@@ -49,7 +49,6 @@ export default function ImageManager({
 
   // Form fields state
   const [formFields, setFormFields] = useState({
-    mood: "",
     pose: "",
     levelRequirement: 1,
     chatSendChance: 5,
@@ -96,7 +95,6 @@ export default function ImageManager({
       // Add metadata
       formData.append('characterId', selectedCharacter);
       formData.append('imageType', imageType);
-      formData.append('mood', formFields.mood);
       formData.append('pose', formFields.pose);
       formData.append('levelRequirement', formFields.levelRequirement.toString());
       formData.append('chatSendChance', formFields.chatSendChance.toString());
@@ -134,7 +132,6 @@ export default function ImageManager({
       setSelectedCharacter("");
       setImageType("character");
       setFormFields({
-        mood: "",
         pose: "",
         levelRequirement: 1,
         chatSendChance: 5,
@@ -277,26 +274,6 @@ export default function ImageManager({
               </Select>
             </div>
 
-            {/* Mood */}
-            <div>
-              <Label className="text-white">Mood (Optional)</Label>
-              <Select value={formFields.mood} onValueChange={(value) => setFormFields(prev => ({ ...prev, mood: value }))}>
-                <SelectTrigger className="bg-black/30 border-white/20 text-white">
-                  <SelectValue placeholder="Select mood" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">No specific mood</SelectItem>
-                  <SelectItem value="normal">Normal</SelectItem>
-                  <SelectItem value="happy">Happy</SelectItem>
-                  <SelectItem value="flirty">Flirty</SelectItem>
-                  <SelectItem value="playful">Playful</SelectItem>
-                  <SelectItem value="mysterious">Mysterious</SelectItem>
-                  <SelectItem value="shy">Shy</SelectItem>
-                  <SelectItem value="excited">Excited</SelectItem>
-                  <SelectItem value="sad">Sad</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

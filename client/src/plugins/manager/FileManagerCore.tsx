@@ -616,7 +616,6 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     ? characters.find((c: Character) => c.id === selectedFile.characterId)?.name || 'Unknown'
                     : 'Unassigned'
                 }</div>
-                <div>Mood: {selectedFile.mood || 'None'}</div>
                 <div>VIP: {selectedFile.isVip ? 'Yes' : 'No'}</div>
                 <div>NSFW: {selectedFile.isNsfw ? 'Yes' : 'No'}</div>
               </div>
@@ -653,26 +652,6 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 </Select>
               </div>
 
-              <div>
-                <Label className="text-white">Mood</Label>
-                <Select
-                  value={editingFile.mood || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, mood: value || null})} // Ensure it's null if empty for backend
-                >
-                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
-                    <SelectValue placeholder="Select mood" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-gray-700 border-gray-600">
-                    <SelectItem value="">No mood</SelectItem>
-                    <SelectItem value="normal" className="text-white">Normal</SelectItem>
-                    <SelectItem value="happy" className="text-white">Happy</SelectItem>
-                    <SelectItem value="flirty" className="text-white">Flirty</SelectItem>
-                    <SelectItem value="playful" className="text-white">Playful</SelectItem>
-                    <SelectItem value="mysterious" className="text-white">Mysterious</SelectItem>
-                    <SelectItem value="shy" className="text-white">Shy</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
 
 
 
