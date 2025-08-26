@@ -55,6 +55,9 @@ export default function CharacterDisplay({
     }, 200);
   };
 
+  // If this is the default "Select Character" state, should open gallery, not tap
+  const shouldOpenGallery = character?.id === "no-character-selected";
+
   return (
     <div className="px-4 pb-6">
       <div className="relative bg-black/20 backdrop-blur-sm rounded-3xl p-6 border border-purple-500/30">
@@ -75,7 +78,7 @@ export default function CharacterDisplay({
                 '/uploads/placeholder-avatar.jpg'
               }
               alt={character?.name || "Player"}
-              onClick={onAvatarClick || handleTap}
+              onClick={shouldOpenGallery ? onAvatarClick : handleTap}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 if (target.src !== window.location.origin + '/uploads/placeholder-avatar.jpg') {
@@ -103,19 +106,19 @@ export default function CharacterDisplay({
                 tapEffect ? 'opacity-100 animate-bounce' : 'opacity-0'
               }`}
             >
-              <div className="text-red-400 text-2xl">❤️</div>
+              <img src="/media/floatinghearts.png" alt="hearts" className="w-8 h-8" />
             </div>
 
             {tapEffect && (
               <div className="absolute inset-0 pointer-events-none">
                 <div className="absolute top-1/4 left-1/4 animate-float-up">
-                  <span className="text-pink-400 text-lg">💕</span>
+                  <img src="/media/floatinghearts.png" alt="hearts" className="w-6 h-6" />
                 </div>
                 <div className="absolute top-1/3 right-1/3 animate-float-up" style={{ animationDelay: '0.2s' }}>
-                  <span className="text-red-400 text-lg">❤️</span>
+                  <img src="/media/floatinghearts.png" alt="hearts" className="w-5 h-5" />
                 </div>
                 <div className="absolute top-1/2 left-1/2 animate-float-up" style={{ animationDelay: '0.4s' }}>
-                  <span className="text-pink-500 text-lg">💖</span>
+                  <img src="/media/floatinghearts.png" alt="hearts" className="w-7 h-7" />
                 </div>
               </div>
             )}

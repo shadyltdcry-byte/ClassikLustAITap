@@ -26,6 +26,7 @@ import AdminMenu from "@/plugins/admin/AdminMenu";
 import AIChat from "@/plugins/aicore/AIChat";
 import LevelUp from "@/plugins/gameplay/LevelUp";
 import Upgrades from "@/plugins/gameplay/Upgrades";
+import { useGameState } from "@/hooks/use-game-state";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 //import { AdminUIToggler } from './debugger/modules/adminUI';
 
@@ -81,6 +82,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   const { userId: authUserId } = useAuth();
   const userId = authUserId || playerData?.id;
   const isAuthenticated = !!userId;
+  
+  // Use game state hook to get selected character
+  const { user, character: selectedCharacter, stats, isLoading, tap, isTapping: gameStateTapping } = useGameState();
 
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
@@ -90,6 +94,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
 
 
   const [isTapping, setIsTapping] = useState(false);
+  
+  // Use game state tapping if available, otherwise use local state
+  const actuallyTapping = gameStateTapping || isTapping;
   const [taskFilter, setTaskFilter] = useState("all");
   const [achievementFilter, setAchievementFilter] = useState("all");
 
@@ -98,16 +105,18 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   };
 
   const handleTap = async () => {
-    if (!playerData || playerData.energy <= 0 || isTapping) return;
+    if (!user || user.energy <= 0 || actuallyTapping) return;
     setIsTapping(true);
     
     try {
-      // Call API directly instead of relying on onPluginAction
-      const response = await apiRequest('POST', `/api/player/${userId}/tap`);
-      
-      // Force refetch player data to see updated stats
-      queryClient.invalidateQueries({ queryKey: ['/api/player'] });
-      
+      // Use game state tap function if available, otherwise use API directly
+      if (tap) {
+        tap();
+      } else {
+        const response = await apiRequest('POST', `/api/player/${userId}/tap`);
+        // Force refetch player data to see updated stats
+        queryClient.invalidateQueries({ queryKey: ['/api/player'] });
+      }
     } catch (error) {
       console.error('Tap error:', error);
     }
@@ -301,27 +310,10 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         return (
           <div className="max-w-sm w-full">
             <CharacterDisplay
-              character={{
-                id: "game-gui-character",
-                name: "Select Character",
-                personality: "neutral",
-                bio: "Please select a character to interact with!",
-                description: "Default game character placeholder.",
-                backstory: "Tap to start your adventure!",
-                mood: "neutral",
-                isNsfw: false,
-                isVip: false,
-                isEnabled: true,
-                levelRequirement: 1,
-                customTriggers: [],
-                avatarPath: '/uploads/placeholder-avatar.jpg',
-                imageUrl: '/uploads/placeholder-avatar.jpg',
-                avatarUrl: '/uploads/placeholder-avatar.jpg',
-                createdAt: new Date(),
-              }}
-              user={{
+              character={selectedCharacter} // Use selected character from game state
+              user={user || {
                 ...playerData,
-                id: playerData?.id,
+                id: playerData?.id || '',
                 username: playerData?.name || 'Player',
                 password: '',
                 level: playerData?.level || 1,
@@ -341,7 +333,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 console.log('Avatar clicked, opening gallery');
                 updateGUIState({ showCharacterGallery: true });
               }}
-              isTapping={isTapping}
+              isTapping={actuallyTapping}
             />
           </div>
         );

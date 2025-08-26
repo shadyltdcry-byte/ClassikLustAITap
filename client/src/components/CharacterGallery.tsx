@@ -201,7 +201,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
         ) : (
           <div className="flex gap-4 h-[70vh]">
             {/* Character List */}
-            <div className="w-80 space-y-4">
+            <div className="w-64 space-y-4">
               <Tabs value={filter} onValueChange={(v: any) => setFilter(v)}>
                 <TabsList className="grid grid-cols-3 w-full bg-black/80 border border-pink-500/30">
                   <TabsTrigger value="all" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white">All</TabsTrigger>
