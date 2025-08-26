@@ -62,6 +62,11 @@ export default function CharacterEditor({
   // Fetch media files for avatars
   const { data: mediaFiles = [] } = useQuery({
     queryKey: ["/api/media"],
+    queryFn: async () => {
+      const response = await fetch("/api/media");
+      if (!response.ok) throw new Error("Failed to fetch media files");
+      return response.json();
+    },
   });
 
   const form = useForm<CharacterEditForm>({
@@ -112,7 +117,17 @@ export default function CharacterEditor({
         ? `/api/admin/characters/${character?.id}`
         : "/api/admin/characters";
       const response = await apiRequest(method, endpoint, data);
-      if (!response.ok) throw new Error("Character operation failed");
+      if (!response.ok) {
+        let errorMessage = "Character operation failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          // If JSON parsing fails, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
       return await response.json();
     },
     onSuccess: () => {
@@ -125,8 +140,9 @@ export default function CharacterEditor({
       if (onSuccess) onSuccess();
       if (!isEditing) form.reset();
     },
-    onError: () => {
-      toast.error(isEditing ? "Failed to update character" : "Failed to create character");
+    onError: (error: any) => {
+      console.error("Update failed:", error);
+      toast.error(error?.message || (isEditing ? "Failed to update character" : "Failed to create character"));
     },
   });
 
