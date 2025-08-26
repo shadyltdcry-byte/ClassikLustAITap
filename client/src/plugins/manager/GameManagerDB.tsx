@@ -42,7 +42,7 @@ export const createPlayerFolder = (playerId: string): void => {
   }
 };
 
-// Mock player functions for now
+// Player management functions
 export const getPlayer = async (playerId: string): Promise<Player> => {
   createPlayerFolder(playerId);
   const playerPath = path.join(PLAYER_DATA_DIR, playerId, 'player.json');

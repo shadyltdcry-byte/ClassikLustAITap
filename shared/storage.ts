@@ -86,6 +86,7 @@ export const db = drizzle(client, { schema });
 
 // Create a simple Drizzle-based storage implementation
 class DrizzleStorage implements IStorage {
+  private selectedCharacters = new Map<string, string>();
   async getUser(id: string) {
     const result = await db.select().from(schema.users).where(eq(schema.users.id, id)).limit(1);
     return result[0];
@@ -144,7 +145,10 @@ class DrizzleStorage implements IStorage {
   }
   
   async getSelectedCharacter(userId: string) {
-    // For now, return undefined - can implement selection logic later
+    const selectedCharacterId = this.selectedCharacters.get(userId);
+    if (selectedCharacterId) {
+      return await this.getCharacter(selectedCharacterId);
+    }
     return undefined;
   }
   
@@ -160,11 +164,13 @@ class DrizzleStorage implements IStorage {
       }
       // Create default stats if none exist
       const defaultStats = {
+        id: `stats-${userId}-${Date.now()}`,
         userId,
         totalTaps: 0,
         totalLpEarned: 0,
         totalEnergyUsed: 0,
-        sessionsPlayed: 1
+        sessionsPlayed: 1,
+        lastUpdated: new Date()
       };
       const created = await db.insert(schema.gameStats).values(defaultStats).returning();
       return created[0];
@@ -172,11 +178,13 @@ class DrizzleStorage implements IStorage {
       console.error('Error getting user stats:', error);
       // Return default stats on error
       return {
+        id: `stats-${userId}-error`,
         userId,
         totalTaps: 0,
         totalLpEarned: 0,
         totalEnergyUsed: 0,
-        sessionsPlayed: 1
+        sessionsPlayed: 1,
+        lastUpdated: new Date()
       };
     }
   }
@@ -260,20 +268,33 @@ class DrizzleStorage implements IStorage {
   }
   
   async selectCharacter(userId: string, characterId: string) {
-    // Deprecated - use setSelectedCharacter instead
+    // Store character selection in memory
+    this.selectedCharacters.set(userId, characterId);
   }
   
   async setSelectedCharacter(userId: string, characterId: string) {
-    // For now just store the relationship
-    const character = await this.getCharacter(characterId);
-    return character;
+    // Alias for selectCharacter for backwards compatibility
+    await this.selectCharacter(userId, characterId);
   }
   async getUpgrade(id: string) { return undefined; }
   async getAllUpgrades() { return []; }
   async createUpgrade(upgrade: any) { return upgrade; }
   async updateUpgrade(id: string, updates: any) { return undefined; }
   async purchaseUpgrade(userId: string, upgradeId: string) { return { id: 'upgrade1', name: 'Test' }; }
-  async upgradeUserUpgrade(userId: string, upgradeId: string) { return { id: 'upgrade1', name: 'Test' }; }
+  async upgradeUserUpgrade(userId: string, upgradeId: string) {
+    return {
+      id: upgradeId,
+      name: 'Test Upgrade',
+      description: 'Test upgrade description',
+      baseCost: 100,
+      maxLevel: 10,
+      levelRequirement: 1,
+      category: 'test',
+      baseEffect: 1.0,
+      costMultiplier: 1.5,
+      effectMultiplier: 1.2
+    };
+  }
   async deleteUpgrade(id: string) {}
   async getChatMessages(userId: string, characterId?: string) { return []; }
   async createChatMessage(message: any) { return message; }

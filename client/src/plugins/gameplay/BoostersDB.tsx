@@ -16,7 +16,7 @@
 
 import type { Upgrade } from "@shared/schema";
 
-// --- MOCK DATABASE AND DATA TYPES ---
+// --- BOOSTER DATA TYPES ---
 
 export type BoosterData = {
   id: string;
@@ -31,8 +31,7 @@ export type BoosterData = {
   level: number;
 };
 
-// In a real application, this data would be fetched from a backend API.
-// We're mocking it here for the standalone component.
+// Static booster definitions - in production these would come from backend
 let mockBoosters: BoosterData[] = [
   {
     id: "special-talent",

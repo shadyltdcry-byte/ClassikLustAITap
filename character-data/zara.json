@@ -12,7 +12,9 @@
   "isEnabled": false,
   "levelRequirement": 3,
   "customTriggers": [],
-  "avatarPath": "/uploads/default-character.jpg",
+  "avatarPath": "/uploads/zara-confident.jpg",
+  "imageUrl": "/uploads/zara-confident.jpg",
+  "avatarUrl": "/uploads/zara-confident.jpg",
   "createdAt": "2025-08-26T10:00:00.000Z",
   "updatedAt": "2025-08-26T10:00:00.000Z"
 }

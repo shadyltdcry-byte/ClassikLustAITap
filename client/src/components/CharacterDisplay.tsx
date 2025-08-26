@@ -14,9 +14,9 @@ interface CharacterDisplayProps {
   isTapping: boolean;
 }
 
-// Fallback default character
+// Fallback when no character is selected
 const defaultCharacter: Character = {
-  id: "default-character-display", // Unique default ID
+  id: "no-character-selected",
   name: "Select Character",
   personality: "neutral",
   bio: null,
@@ -29,9 +29,9 @@ const defaultCharacter: Character = {
   levelRequirement: 1,
   isEnabled: true,
   customTriggers: [],
-  avatarPath: null,
-  imageUrl: null,
-  avatarUrl: null,
+  avatarPath: "/uploads/placeholder-avatar.jpg",
+  imageUrl: "/uploads/placeholder-avatar.jpg",
+  avatarUrl: "/uploads/placeholder-avatar.jpg",
   createdAt: new Date(),
 };
 

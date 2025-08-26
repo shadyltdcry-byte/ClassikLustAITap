@@ -219,16 +219,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           p_energy_used: 1
         });
 
-        if (error) {
-          console.error('Error updating game stats with RPC:', error);
-          // Fallback to manual update
-          const currentStats = await storage.getUserStats(userId);
-          await storage.updateUserStats(userId, {
-            totalTaps: (currentStats.totalTaps || 0) + 1,
-            totalLpEarned: (currentStats.totalLpEarned || 0) + lpGain,
-            totalEnergyUsed: (currentStats.totalEnergyUsed || 0) + 1
-          });
-        }
+        // Stats updated successfully
       } catch (statsError) {
         console.error('Error updating game stats:', statsError);
         // Don't fail the tap if stats update fails
@@ -249,22 +240,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // User initialization endpoint
-  app.post("/api/user/init", (req, res) => {
-    res.json({
-      success: true,
-      user: {
-        id: "default-player",
-        name: "Player1",
-        level: 1,
-        lp: 5000,
-        energy: 800,
-        maxEnergy: 1000,
-        charisma: 150,
-        lpPerHour: 125,
-        lpPerTap: 1.5,
-        createdAt: new Date().toISOString()
+  app.post("/api/user/init", async (req, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID required' });
       }
-    });
+      
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      res.json({
+        success: true,
+        user
+      });
+    } catch (error) {
+      console.error('Error initializing user:', error);
+      res.status(500).json({ error: 'Failed to initialize user' });
+    }
   });
 
   // Settings endpoint
@@ -321,14 +316,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/character/selected/:playerId", async (req, res) => {
     try {
       const { playerId } = req.params;
-      const selectedCharacter = await storage.getSelectedCharacter(playerId);
+      let selectedCharacter = await storage.getSelectedCharacter(playerId);
 
+      // If no character is selected, automatically select the first enabled character
       if (!selectedCharacter) {
-        // No character selected, return null to let frontend handle it
-        res.json(null);
-      } else {
-        res.json(selectedCharacter);
+        const allCharacters = await storage.getAllCharacters();
+        const enabledCharacters = allCharacters.filter(char => char.isEnabled);
+        
+        if (enabledCharacters.length > 0) {
+          const firstCharacter = enabledCharacters[0];
+          await storage.selectCharacter(playerId, firstCharacter.id);
+          selectedCharacter = firstCharacter;
+        }
       }
+
+      res.json(selectedCharacter);
     } catch (error) {
       console.error('Error fetching selected character:', error);
       res.status(500).json({ error: 'Failed to fetch selected character' });
