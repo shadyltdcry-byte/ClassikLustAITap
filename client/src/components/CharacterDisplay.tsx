@@ -53,31 +53,10 @@ export default function CharacterDisplay({
   return (
     <div className="px-4 pb-6">
       <div className="relative bg-black/20 backdrop-blur-sm rounded-3xl p-6 border border-purple-500/30">
-        {/* Character Info with Avatar */}
-        <div className="flex items-center gap-4 mb-4">
-          {/* Bigger Avatar with Square Round Edges - Clickable for Gallery */}
-          <div 
-            className="relative w-20 h-20 cursor-pointer hover:scale-105 transition-transform duration-200"
-            onClick={onAvatarClick}
-            title="Click to open Character Gallery"
-          >
-            <img
-              src={character?.avatarPath || character?.imageUrl || character?.avatarUrl || '/default-character.jpg'}
-              alt={character?.name || "Player"}
-              onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                if (target.src !== window.location.origin + '/default-character.jpg') {
-                  target.src = '/default-character.jpg';
-                }
-              }}
-              className="w-20 h-20 object-cover rounded-xl shadow-lg border-2 border-purple-500/50"
-            />
-          </div>
-          
-          <div className="flex-1 text-left">
-            <h2 className="text-2xl font-bold gradient-text">{character?.name || "Unnamed"}</h2>
-            <p className="text-gray-400 text-sm">{character?.backstory || "Tap to interact!"}</p>
-          </div>
+        {/* Character Info */}
+        <div className="text-center mb-4">
+          <h2 className="text-2xl font-bold gradient-text">{character?.name || "Unnamed"}</h2>
+          <p className="text-gray-400 text-sm">{character?.backstory || "Tap to interact!"}</p>
         </div>
 
         {/* Character Main Image Container */}

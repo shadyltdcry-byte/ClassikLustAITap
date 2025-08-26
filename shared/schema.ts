@@ -35,6 +35,9 @@ export const characters = pgTable("characters", {
   levelRequirement: integer("level_requirement").notNull().default(1),
   isEnabled: boolean("is_enabled").notNull().default(true),
   customTriggers: jsonb("custom_triggers").default(sql`'[]'::jsonb`),
+  avatarPath: text("avatar_path"),
+  imageUrl: text("image_url"),
+  avatarUrl: text("avatar_url"),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 

@@ -98,7 +98,17 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   const handleTap = async () => {
     if (!playerData || playerData.energy <= 0 || isTapping) return;
     setIsTapping(true);
-    onPluginAction('tap');
+    
+    try {
+      // Update player stats locally first for immediate feedback
+      await onPluginAction('tap');
+      
+      // Force refetch player data to see updated stats
+      queryClient.invalidateQueries({ queryKey: ['/api/player'] });
+    } catch (error) {
+      console.error('Tap error:', error);
+    }
+    
     setTimeout(() => setIsTapping(false), 200);
   };
 
@@ -292,6 +302,8 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 id: "550e8400-e29b-41d4-a716-446655440001",
                 name: "Seraphina",
                 personality: "playful",
+                bio: "A cheerful AI companion who loves to chat and play games.",
+                description: "You are a playful and flirty character named Seraphina.",
                 backstory: "Tap to interact with Seraphina!",
                 mood: "flirty",
                 level: 1,
@@ -300,6 +312,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 isEnabled: true,
                 levelRequirement: 1,
                 customTriggers: [],
+                avatarPath: "/uploads/default-character.jpg",
+                imageUrl: "/uploads/default-character.jpg",
+                avatarUrl: "/uploads/default-character.jpg",
                 createdAt: new Date(),
               }}
               user={{
@@ -546,9 +561,23 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       <div className="flex justify-between items-center p-3 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
-            <Avatar className="w-9 h-9">
-              <AvatarFallback className="text-xs">{playerData?.name?.charAt(0) || "P"}</AvatarFallback>
-            </Avatar>
+            <div 
+              className="cursor-pointer hover:scale-105 transition-transform duration-200"
+              onClick={() => updateGUIState({ showCharacterGallery: true })}
+              title="Click to open Character Gallery"
+            >
+              <img
+                src="/uploads/default-character.jpg"
+                alt="Character Avatar"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  if (target.src !== window.location.origin + '/default-character.jpg') {
+                    target.src = '/default-character.jpg';
+                  }
+                }}
+                className="w-16 h-16 object-cover rounded-xl shadow-lg border-2 border-purple-500/50"
+              />
+            </div>
             <div>
               <p className="font-medium text-sm">{playerData?.name || "Player"}</p>
               <div className="flex items-center gap-2 text-xs text-gray-400">
