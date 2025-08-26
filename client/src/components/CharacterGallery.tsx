@@ -103,6 +103,15 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
   });
 
   const handleSelectCharacter = (characterId: string) => {
+    if (!userId || userId === 'undefined') {
+      toast({
+        title: "Authentication Required",
+        description: "Please log in to select a character.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     const character = characters.find((c: Character) => c.id === characterId);
     if (!character?.isEnabled) {
       toast({
@@ -155,7 +164,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   const getCharacterIcon = (char: Character) => {
     if (char.isVip) return <Crown className="w-3 h-3 text-yellow-400" />;
-    if (char.level && char.level > 5) return <Star className="w-3 h-3 text-blue-400" />;
+    if (char.levelRequirement && char.levelRequirement > 5) return <Star className="w-3 h-3 text-blue-400" />;
     return <Heart className="w-3 h-3 text-pink-400" />;
   };
 
@@ -259,7 +268,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                             {getCharacterIcon(char)}
                           </div>
                           <div className="flex items-center gap-2 text-xs text-gray-300">
-                            <span>Level {char.level || 1}</span>
+                            <span>Req Level {char.levelRequirement || 1}</span>
                             {char.isEnabled ? (
                               <Badge variant="secondary" className="bg-green-600/20 text-green-400">
                                 <Unlock className="w-2 h-2 mr-1" /> Unlocked

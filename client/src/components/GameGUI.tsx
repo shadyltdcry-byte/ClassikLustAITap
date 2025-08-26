@@ -307,7 +307,6 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 description: "Default game character placeholder.",
                 backstory: "Tap to start your adventure!",
                 mood: "neutral",
-                level: 1,
                 isNsfw: false,
                 isVip: false,
                 isEnabled: true,
@@ -705,7 +704,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         <CharacterGallery 
           isOpen={guiState.showCharacterGallery}
           onClose={() => updateGUIState({ showCharacterGallery: false })}
-          userId={userId || playerData?.id}
+          userId={userId || playerData?.id || 'guest-user'}
           onCharacterSelected={(characterId) => {
             // Invalidate queries to refresh character data
             queryClient.invalidateQueries({ queryKey: ['/api/character/selected', userId] });
