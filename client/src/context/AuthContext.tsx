@@ -68,6 +68,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             console.log(`[DEBUG] Bot authentication found for ${telegramId}`, data);
             localStorage.setItem('telegram_auth_token', data.token);
             localStorage.setItem('telegram_user_id', data.user.id);
+            localStorage.setItem('telegram_id', telegramId); // Store for future auto-login
             setUserId(data.user.id);
             setIsAuthenticated(true);
             setIsLoading(false);
@@ -79,6 +80,28 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         } catch (error) {
           console.error('Bot auth check error:', error);
         }
+      } else {
+        // No URL param, but check if we have a stored telegram_id from previous login
+        const storedTelegramId = localStorage.getItem('telegram_id');
+        if (storedTelegramId) {
+          console.log(`[DEBUG] No URL param but found stored telegram_id: ${storedTelegramId}, checking auth`);
+          try {
+            const response = await fetch(`/api/auth/telegram/status/${storedTelegramId}`);
+            const data = await response.json();
+            
+            if (data.authenticated) {
+              console.log(`[DEBUG] Auto-login successful for stored telegram_id: ${storedTelegramId}`);
+              localStorage.setItem('telegram_auth_token', data.token);
+              localStorage.setItem('telegram_user_id', data.user.id);
+              setUserId(data.user.id);
+              setIsAuthenticated(true);
+              setIsLoading(false);
+              return;
+            }
+          } catch (error) {
+            console.error('Auto-login check error:', error);
+          }
+        }
       }
       
       // Fall back to normal auth check
@@ -89,12 +112,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkBotAuth();
   }, []);
 
+  // Auto-refresh mechanism to maintain login state
+  useEffect(() => {
+    if (!isAuthenticated || isLoading) return;
+
+    const autoRefresh = () => {
+      const token = localStorage.getItem('telegram_auth_token');
+      const storedUserId = localStorage.getItem('telegram_user_id');
+      
+      if (token && storedUserId) {
+        // Keep the session alive by refreshing state
+        console.log('[DEBUG] Auto-refreshing session for:', storedUserId);
+        setUserId(storedUserId);
+        setIsAuthenticated(true);
+      } else {
+        // Token was cleared, log out
+        console.log('[DEBUG] Token cleared, logging out');
+        setIsAuthenticated(false);
+        setUserId(null);
+      }
+    };
+
+    // Check every 30 seconds to maintain session
+    const refreshInterval = setInterval(autoRefresh, 30000);
+    
+    return () => clearInterval(refreshInterval);
+  }, [isAuthenticated, isLoading]);
+
   const login = (userIdFromAuth: string, userData?: any) => {
     console.log('AuthContext: Logging in user:', userIdFromAuth);
     localStorage.setItem('telegram_user_id', userIdFromAuth);
     if (userData?.token) {
       localStorage.setItem('telegram_auth_token', userData.token);
     }
+    
+    // Store additional user data for auto-refresh
+    if (userData) {
+      localStorage.setItem('user_data', JSON.stringify(userData));
+    }
+    
     setUserId(userIdFromAuth);
     setIsAuthenticated(true);
   };

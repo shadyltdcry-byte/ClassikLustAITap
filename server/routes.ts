@@ -1290,11 +1290,10 @@ Respond as if you're having a real conversation with someone you care about. You
     try {
       const { telegram_id } = req.params;
       
-      // Check if user has been authenticated via bot recently
-      const recentAuthWindow = 5 * 60 * 1000; // 5 minutes
+      // Check if user has been authenticated via bot (no time limit - persistent)
       const authData = global.recentTelegramAuth?.get(telegram_id);
       
-      if (authData && (Date.now() - authData.timestamp) < recentAuthWindow) {
+      if (authData) {
         console.log(`[DEBUG] Found recent auth for ${telegram_id}`);
         res.json({
           authenticated: true,
@@ -1333,15 +1332,15 @@ Respond as if you're having a real conversation with someone you care about. You
       console.log(`[DEBUG] Token validation result:`, isValidToken);
       
       if (isValidToken) {
-        // Generate JWT token for frontend
+        // Generate persistent JWT token for frontend (no expiration)
         const authToken = jwt.sign(
           { 
             telegram_id, 
             username,
             type: 'telegram_bot'
           }, 
-          'your-secret-key', // In production, use environment variable
-          { expiresIn: '7d' }
+          'your-secret-key' // In production, use environment variable
+          // No expiration - token is persistent
         );
 
         const responseData = { 

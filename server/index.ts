@@ -72,11 +72,10 @@ function generateAuthToken(): string {
   return token;
 }
 
-// Store token with expiration (5-10 minutes)
+// Store persistent token (no expiration)
 function storeAuthToken(telegramId: string, username: string): string {
   const token = generateAuthToken();
-  const expirationMinutes = Math.floor(Math.random() * 6) + 5; // 5-10 minutes
-  const expiresAt = new Date(Date.now() + expirationMinutes * 60 * 1000);
+  const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year (essentially permanent)
   
   telegramTokens.set(token, {
     telegramId,
@@ -85,7 +84,7 @@ function storeAuthToken(telegramId: string, username: string): string {
     used: false
   });
   
-  console.log(`Generated token ${token} for Telegram user ${telegramId} (${username}), expires at ${expiresAt}`);
+  console.log(`Generated persistent token ${token} for Telegram user ${telegramId} (${username})`);
   return token;
 }
 
