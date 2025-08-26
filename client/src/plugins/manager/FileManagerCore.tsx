@@ -237,6 +237,9 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       borderRadius: '8px',
     };
 
+    // Handle both old and new file data formats
+    const fileName = file.fileName || (file as any).filename || '';
+    
     // Handle both old and new file path formats
     const filePath = file.filePath || (file as any).filepath || (file as any).url;
     const fileUrl = filePath?.startsWith('/') 
@@ -246,9 +249,6 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
         : fileName 
           ? `/uploads/${fileName}` 
           : '/uploads/placeholder-character.jpg';
-
-    // Handle both old and new file data formats
-    const fileName = file.fileName || (file as any).filename || '';
     const fileExt = fileName.toLowerCase().split('.').pop() || '';
     
     // Better file type detection - check fileType field and filename extension
@@ -637,7 +637,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 <Label className="text-white">Assign to Character</Label>
                 <Select
                   value={editingFile.characterId || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, characterId: value || undefined})} // Ensure it's undefined if empty for backend
+                  onValueChange={(value) => setEditingFile({...editingFile, characterId: value || null})} // Ensure it's null if empty for backend
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character" />
@@ -657,7 +657,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 <Label className="text-white">Mood</Label>
                 <Select
                   value={editingFile.mood || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, mood: value || undefined})} // Ensure it's undefined if empty for backend
+                  onValueChange={(value) => setEditingFile({...editingFile, mood: value || null})} // Ensure it's null if empty for backend
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select mood" />
