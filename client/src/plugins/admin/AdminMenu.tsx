@@ -51,6 +51,7 @@ import type { Character } from "@shared/schema";
 import { Textarea } from "@/components/ui/textarea";
 import MistralDebugger from "@/plugins/aicore/MistralDebugger";
 import DebuggerInterface from "@/components/admin/DebuggerInterface";
+import WheelPrizeManager from "@/components/wheel/WheelPrizeManager";
 
 interface AdminMenuProps {
   onClose?: () => void;
@@ -222,6 +223,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   const [showUpgrades, setShowUpgrades] = useState(false);
   const [showTasks, setShowTasks] = useState(false);
   const [showAchievements, setShowAchievements] = useState(false);
+  const [showWheelPrizeManager, setShowWheelPrizeManager] = useState(false);
   const [showFileManager, setShowFileManager] = useState(false);
   const queryClient = useQueryClient();
 
@@ -522,6 +524,25 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                         </Button>
                       </CardContent>
                     </Card>
+
+                    <Card className="bg-slate-800/40 backdrop-blur border-slate-600/30">
+                      <CardHeader>
+                        <CardTitle className="text-white flex items-center gap-2">
+                          <Target className="w-5 h-5 text-purple-400" />
+                          Wheel Management
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-gray-400 text-sm mb-4">Configure wheel prizes and probabilities</p>
+                        <Button 
+                          onClick={() => setShowWheelPrizeManager(true)}
+                          className="w-full bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700"
+                        >
+                          <Target className="w-4 h-4 mr-2" />
+                          Wheel Prizes
+                        </Button>
+                      </CardContent>
+                    </Card>
                   </div>
                 </TabsContent>
 
@@ -778,6 +799,14 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             <FileManagerCore />
           </div>
         </div>
+      )}
+
+      {/* Wheel Prize Manager Modal */}
+      {showWheelPrizeManager && (
+        <WheelPrizeManager 
+          isOpen={showWheelPrizeManager}
+          onClose={() => setShowWheelPrizeManager(false)}
+        />
       )}
 
       {/* Character Creation Dialog */}

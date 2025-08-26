@@ -18,7 +18,9 @@ import {
   MessageCircle,
   Trophy,
   Target,
-  Activity
+  Activity,
+  RotateCcw,
+  Crown
 } from "lucide-react";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import CharacterGallery from "@/components/CharacterGallery";
@@ -26,6 +28,8 @@ import AdminMenu from "@/plugins/admin/AdminMenu";
 import AIChat from "@/plugins/aicore/AIChat";
 import LevelUp from "@/plugins/gameplay/LevelUp";
 import Upgrades from "@/plugins/gameplay/Upgrades";
+import WheelGame from "@/components/wheel/WheelGame";
+import VIP from "@/components/vip/VIP";
 import { useGameState } from "@/hooks/use-game-state";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 //import { AdminUIToggler } from './debugger/modules/adminUI';
@@ -75,6 +79,8 @@ interface GUIState {
   activePlugin: string;
   showAdminMenu: boolean;
   showCharacterGallery: boolean;
+  showWheelGame: boolean;
+  showVIP: boolean;
 }
 
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
@@ -90,6 +96,8 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     activePlugin: "main",
     showAdminMenu: false,
     showCharacterGallery: false,
+    showWheelGame: false,
+    showVIP: false,
   });
 
 
@@ -683,16 +691,54 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       </div>
 
       {/* Floating Admin Button */}
+      {/* Admin Button */}
       <Button
         className="fixed top-4 right-4 z-50 w-10 h-10 rounded-full bg-gray-800/80 hover:bg-gray-700/80 backdrop-blur-sm border border-gray-600/50"
         onClick={() => updateGUIState({ showAdminMenu: true })}
+        data-testid="button-admin-menu"
       >
         <Settings className="w-4 h-4" />
+      </Button>
+
+      {/* Wheel Game Button - Right Middle */}
+      <Button
+        className="fixed top-1/2 right-4 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 transform -translate-y-1/2 shadow-lg border-2 border-yellow-400/50 hover:border-yellow-400"
+        onClick={() => updateGUIState({ showWheelGame: true })}
+        data-testid="button-wheel-game"
+      >
+        <RotateCcw className="w-8 h-8 text-yellow-400" />
+      </Button>
+
+      {/* VIP Button - Right Middle Below Wheel */}
+      <Button
+        className="fixed top-1/2 right-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 transform translate-y-10 shadow-lg border-2 border-yellow-300/50 hover:border-yellow-300"
+        onClick={() => updateGUIState({ showVIP: true })}
+        data-testid="button-vip"
+      >
+        <Crown className="w-6 h-6 text-yellow-100" />
       </Button>
 
       {/* Admin Menu Modal */}
       {guiState.showAdminMenu && (
         <AdminMenu onClose={() => updateGUIState({ showAdminMenu: false })} />
+      )}
+
+      {/* Wheel Game Modal */}
+      {guiState.showWheelGame && userId && (
+        <WheelGame 
+          isOpen={guiState.showWheelGame}
+          onClose={() => updateGUIState({ showWheelGame: false })}
+          userId={userId}
+        />
+      )}
+
+      {/* VIP Modal */}
+      {guiState.showVIP && userId && (
+        <VIP 
+          isOpen={guiState.showVIP}
+          onClose={() => updateGUIState({ showVIP: false })}
+          userId={userId}
+        />
       )}
 
       {/* Character Gallery Modal */}
