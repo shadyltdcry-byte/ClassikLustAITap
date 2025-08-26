@@ -223,8 +223,29 @@ class DrizzleStorage implements IStorage {
     return []; 
   }
   
-  async createCharacter(character: any) { 
-    return character; 
+  async createCharacter(character: any) {
+    try {
+      // Generate ID if not provided
+      if (!character.id) {
+        character.id = `char_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      }
+      
+      // Save to database
+      const result = await db.insert(schema.characters).values(character).returning();
+      const savedCharacter = result[0];
+      
+      // Also save to file for backup
+      try {
+        CharacterFileManager.saveCharacterToFile(savedCharacter);
+      } catch (fileError) {
+        console.error('File save failed, but database saved:', fileError);
+      }
+      
+      return savedCharacter;
+    } catch (error) {
+      console.error('Error creating character:', error);
+      throw error;
+    }
   }
   
   async updateCharacter(id: string, updates: any) {

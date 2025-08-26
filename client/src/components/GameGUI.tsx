@@ -701,7 +701,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       )}
 
       {/* Character Gallery Modal */}
-      {guiState.showCharacterGallery && (userId || playerData?.id) && (
+      {guiState.showCharacterGallery && (
         <CharacterGallery 
           isOpen={guiState.showCharacterGallery}
           onClose={() => updateGUIState({ showCharacterGallery: false })}

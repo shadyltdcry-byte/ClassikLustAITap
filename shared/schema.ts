@@ -29,7 +29,6 @@ export const characters = pgTable("characters", {
   description: text("description"), // For AI system prompts with variables like {characterName}, {mood}
   backstory: text("backstory"),
   mood: text("mood").notNull().default("neutral"),
-  level: integer("level").notNull().default(1),
   isNsfw: boolean("is_nsfw").notNull().default(false),
   isVip: boolean("is_vip").notNull().default(false),
   levelRequirement: integer("level_requirement").notNull().default(1),
