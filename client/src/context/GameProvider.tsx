@@ -412,14 +412,14 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     }
   }, [state.playerData, state.isLoading]);
 
-  // Periodic tick system for offline calculations
-  useEffect(() => {
-    const tickInterval = setInterval(() => {
-      dispatch({ type: 'UPDATE_TICK' });
-    }, 5000); // Update every 5 seconds
+  // Periodic tick system for offline calculations - DISABLED to prevent spam
+  // useEffect(() => {
+  //   const tickInterval = setInterval(() => {
+  //     dispatch({ type: 'UPDATE_TICK' });
+  //   }, 5000); // Update every 5 seconds
 
-    return () => clearInterval(tickInterval);
-  }, []);
+  //   return () => clearInterval(tickInterval);
+  // }, []);
 
   // Clean up expired boosters
   useEffect(() => {

@@ -47,7 +47,7 @@ export default function DebuggerInterface() {
   // Get debugger status
   const { data: status, isLoading } = useQuery<DebuggerStatus>({
     queryKey: ['/api/admin/debugger/status'],
-    refetchInterval: autoRefresh ? 2000 : false,
+    refetchInterval: false, // DISABLED - Was causing API spam every 2 seconds
   });
 
   // Initialize debugger
