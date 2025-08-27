@@ -54,8 +54,8 @@ export function useGameState() {
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/user", userId] });
-      queryClient.invalidateQueries({ queryKey: ["/api/stats", userId] });
+      // REMOVED - These were causing API cascade spam after every tap
+      // The server already returns updated user data in the tap response
     },
   });
 

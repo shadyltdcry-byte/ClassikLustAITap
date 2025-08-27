@@ -122,8 +122,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         tap();
       } else {
         const response = await apiRequest('POST', `/api/player/${userId}/tap`);
-        // Force refetch player data to see updated stats
-        queryClient.invalidateQueries({ queryKey: ['/api/player'] });
+        // REMOVED - Was causing API cascade spam after every tap
       }
     } catch (error) {
       console.error('Tap error:', error);
