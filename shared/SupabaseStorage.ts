@@ -36,6 +36,7 @@ interface GameSettings {
 }
 
 export class SupabaseStorage implements IStorage {
+  private static instance: SupabaseStorage;
   private supabaseClient;
   public get supabase() { return this.supabaseClient; }
 
@@ -53,6 +54,18 @@ export class SupabaseStorage implements IStorage {
         persistSession: false
       }
     });
+
+    // Store singleton instance
+    SupabaseStorage.instance = this;
+    console.log('[SupabaseStorage] Singleton instance created');
+  }
+
+  // Singleton getter method
+  static getInstance(): SupabaseStorage {
+    if (!SupabaseStorage.instance) {
+      SupabaseStorage.instance = new SupabaseStorage();
+    }
+    return SupabaseStorage.instance;
   }
 
   // User management

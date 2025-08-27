@@ -48,7 +48,9 @@ export const config = {
   },
 };
 
-const supabase = new SupabaseStorage();
+// Import shared storage instance instead of creating duplicate
+import { SupabaseStorage } from '../../../shared/SupabaseStorage';
+const supabase = new SupabaseStorage(); // TODO: Replace with singleton
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {

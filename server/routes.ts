@@ -18,8 +18,8 @@ import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
 
-// Create Supabase storage instance  
-const storage = new SupabaseStorage();
+// Create SINGLETON Supabase storage instance to avoid 4x duplicates
+const storage = SupabaseStorage.getInstance();
 
 // Force Supabase schema refresh on startup
 (async () => {

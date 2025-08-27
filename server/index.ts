@@ -298,4 +298,4 @@ app.use((req, res, next) => {
 })();
 
 // Initialize storage for server operations
-const storage = new SupabaseStorage();
+// Using shared storage from routes.ts - no duplicate instance needed
