@@ -21,6 +21,12 @@ export function useGameState() {
   const characterQuery = useQuery<Character>({
     queryKey: ["/api/character/selected", userId],
     enabled,
+    queryFn: async () => {
+      if (!userId) throw new Error('No user ID');
+      const response = await fetch(`/api/character/selected/${userId}`);
+      if (!response.ok) throw new Error('Failed to fetch selected character');
+      return response.json();
+    }
   });
 
   // Fetch user stats

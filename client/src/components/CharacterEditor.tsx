@@ -477,7 +477,7 @@ export default function CharacterEditor({
                             alt="Main Preview"
                             className="w-full h-40 object-contain rounded"
                             onError={e => {
-                              (e.target as HTMLImageElement).src = "/uploads/placeholder-character.jpg";
+                              (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤";
                             }}
                           />
                         </div>
@@ -492,7 +492,7 @@ export default function CharacterEditor({
                             alt="Avatar Preview"
                             className="w-20 h-20 object-cover rounded-full mx-auto"
                             onError={e => {
-                              (e.target as HTMLImageElement).src = "/uploads/placeholder-avatar.jpg";
+                              (e.target as HTMLImageElement).src = "https://via.placeholder.com/80x80/1a1a1a/ff1493?text=👤";
                             }}
                           />
                         </div>
