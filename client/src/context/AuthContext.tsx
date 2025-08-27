@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { deDupeFetch } from '@/lib/queryClient';
 
 interface AuthContextType {
   userId: string | null;
@@ -61,7 +62,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (telegramId) {
         console.log(`[DEBUG] Found telegram_id in URL: ${telegramId}, checking bot auth status`);
         try {
-          const response = await fetch(`/api/auth/telegram/status/${telegramId}`);
+          const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`);
           const data = await response.json();
           
           if (data.authenticated) {
@@ -86,7 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         if (storedTelegramId) {
           console.log(`[DEBUG] No URL param but found stored telegram_id: ${storedTelegramId}, checking auth`);
           try {
-            const response = await fetch(`/api/auth/telegram/status/${storedTelegramId}`);
+            const response = await deDupeFetch(`/api/auth/telegram/status/${storedTelegramId}`);
             const data = await response.json();
             
             if (data.authenticated) {

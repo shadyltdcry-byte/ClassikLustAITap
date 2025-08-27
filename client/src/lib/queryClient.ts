@@ -1,5 +1,27 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
+// Request deduplication cache to prevent API spam
+const requestCache = new Map<string, Promise<any>>();
+
+// Deduplicated fetch function
+export async function deDupeFetch(url: string, options?: RequestInit): Promise<Response> {
+  const cacheKey = `${url}-${JSON.stringify(options || {})}`;
+  
+  // Return existing promise if request is already in flight
+  if (requestCache.has(cacheKey)) {
+    return requestCache.get(cacheKey)!;
+  }
+  
+  // Create new request and cache the promise
+  const requestPromise = fetch(url, options).finally(() => {
+    // Remove from cache when request completes
+    requestCache.delete(cacheKey);
+  });
+  
+  requestCache.set(cacheKey, requestPromise);
+  return requestPromise;
+}
+
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
     const text = (await res.text()) || res.statusText;
