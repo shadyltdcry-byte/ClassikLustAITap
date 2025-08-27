@@ -567,7 +567,8 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       {/* Status Bar */}
       <div className="flex justify-between items-center p-3 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col items-center gap-1">
+            <p className="font-medium text-sm text-center">{playerData?.username?.replace('Player', '') || playerData?.name || "ShadyLTDx"}</p>
             <div 
               className="cursor-pointer hover:scale-105 transition-transform duration-200"
               onClick={() => {
@@ -588,12 +589,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 className="w-16 h-16 object-cover rounded-xl shadow-lg border-2 border-purple-500/50 cursor-pointer hover:border-purple-400/70 transition-colors"
               />
             </div>
-            <div>
-              <p className="font-medium text-sm">{playerData?.username || playerData?.name || "Player"}</p>
-              <div className="flex items-center gap-2 text-xs text-gray-400">
-                <span>Lv. {playerData?.level || 1}</span>
-                <Progress value={(playerData?.xp || 0) / (playerData?.xpToNext || 100) * 100} className="h-1 w-20" />
-              </div>
+            <div className="flex items-center gap-2 text-xs text-gray-400">
+              <span>Lv. {playerData?.level || 1}</span>
+              <Progress value={(playerData?.xp || 0) / (playerData?.xpToNext || 100) * 100} className="h-1 w-20" />
             </div>
           </div>
 

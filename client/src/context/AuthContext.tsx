@@ -133,8 +133,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Check every 30 seconds to maintain session
-    const refreshInterval = setInterval(autoRefresh, 30000);
+    // Check every 5 minutes to maintain session
+    const refreshInterval = setInterval(autoRefresh, 300000);
     
     return () => clearInterval(refreshInterval);
   }, [isAuthenticated, isLoading]);
