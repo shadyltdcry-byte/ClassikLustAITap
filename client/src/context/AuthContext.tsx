@@ -112,32 +112,32 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkBotAuth();
   }, []);
 
-  // Auto-refresh mechanism to maintain login state
-  useEffect(() => {
-    if (!isAuthenticated || isLoading) return;
+  // Auto-refresh mechanism to maintain login state - DISABLED TO STOP API SPAM
+  // useEffect(() => {
+  //   if (!isAuthenticated || isLoading) return;
 
-    const autoRefresh = () => {
-      const token = localStorage.getItem('telegram_auth_token');
-      const storedUserId = localStorage.getItem('telegram_user_id');
+  //   const autoRefresh = () => {
+  //     const token = localStorage.getItem('telegram_auth_token');
+  //     const storedUserId = localStorage.getItem('telegram_user_id');
       
-      if (token && storedUserId) {
-        // Keep the session alive by refreshing state
-        console.log('[DEBUG] Auto-refreshing session for:', storedUserId);
-        setUserId(storedUserId);
-        setIsAuthenticated(true);
-      } else {
-        // Token was cleared, log out
-        console.log('[DEBUG] Token cleared, logging out');
-        setIsAuthenticated(false);
-        setUserId(null);
-      }
-    };
+  //     if (token && storedUserId) {
+  //       // Keep the session alive by refreshing state
+  //       console.log('[DEBUG] Auto-refreshing session for:', storedUserId);
+  //       setUserId(storedUserId);
+  //       setIsAuthenticated(true);
+  //     } else {
+  //       // Token was cleared, log out
+  //       console.log('[DEBUG] Token cleared, logging out');
+  //       setIsAuthenticated(false);
+  //       setUserId(null);
+  //     }
+  //   };
 
-    // Check every 5 minutes to maintain session
-    const refreshInterval = setInterval(autoRefresh, 300000);
+  //   // Check every 5 minutes to maintain session
+  //   const refreshInterval = setInterval(autoRefresh, 300000);
     
-    return () => clearInterval(refreshInterval);
-  }, [isAuthenticated, isLoading]);
+  //   return () => clearInterval(refreshInterval);
+  // }, [isAuthenticated, isLoading]);
 
   const login = (userIdFromAuth: string, userData?: any) => {
     console.log('AuthContext: Logging in user:', userIdFromAuth);
