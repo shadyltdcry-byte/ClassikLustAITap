@@ -131,6 +131,154 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     setGUIState(prev => ({ ...prev, ...updates }));
   };
 
+  // Calculate progress percentages
+  const calculateTasksProgress = () => {
+    const completedTasks = mockTasks.filter(task => task.status === 'completed').length;
+    return Math.round((completedTasks / mockTasks.length) * 100);
+  };
+
+  const calculateAchievementsProgress = () => {
+    const completedAchievements = mockAchievements.filter(achievement => achievement.status === 'completed').length;
+    return Math.round((completedAchievements / mockAchievements.length) * 100);
+  };
+
+  // Milestone rewards
+  const milestones = [
+    { percent: 25, icon: "🎁", reward: "Bronze Chest", unlocked: false },
+    { percent: 50, icon: "💎", reward: "Silver Chest", unlocked: false },
+    { percent: 75, icon: "👑", reward: "Gold Chest", unlocked: false },
+    { percent: 100, icon: "🏆", reward: "Master Chest", unlocked: false },
+  ];
+
+  // Progress Panel Component
+  const ProgressPanel = ({ type, progress }: { type: 'tasks' | 'achievements', progress: number }) => {
+    const isTask = type === 'tasks';
+    const updatedMilestones = milestones.map(milestone => ({
+      ...milestone,
+      unlocked: progress >= milestone.percent
+    }));
+
+    // Use proper conditional classes instead of template literals
+    const headerClasses = isTask 
+      ? "relative p-4 bg-gradient-to-br from-purple-900/60 to-purple-800/40 border-2 border-purple-500/30 rounded-t-xl shadow-xl"
+      : "relative p-4 bg-gradient-to-br from-yellow-900/60 to-yellow-800/40 border-2 border-yellow-500/30 rounded-t-xl shadow-xl";
+    
+    const titleClasses = isTask 
+      ? "text-2xl font-bold text-purple-200 mb-1"
+      : "text-2xl font-bold text-yellow-200 mb-1";
+    
+    const progressBarBorderClasses = isTask
+      ? "mt-3 bg-black/40 rounded-full p-1 border border-purple-500/20"
+      : "mt-3 bg-black/40 rounded-full p-1 border border-yellow-500/20";
+      
+    const progressBarClasses = isTask
+      ? "h-2 bg-gradient-to-r from-purple-600 to-purple-400 rounded-full transition-all duration-700 shadow-lg"
+      : "h-2 bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full transition-all duration-700 shadow-lg";
+      
+    const contentClasses = isTask
+      ? "flex-1 p-4 bg-gradient-to-b from-black/20 to-black/40 border-2 border-t-0 border-purple-500/30 rounded-b-xl shadow-xl backdrop-blur-sm"
+      : "flex-1 p-4 bg-gradient-to-b from-black/20 to-black/40 border-2 border-t-0 border-yellow-500/30 rounded-b-xl shadow-xl backdrop-blur-sm";
+      
+    const sectionTitleClasses = isTask
+      ? "text-sm font-semibold text-purple-300 mb-1"
+      : "text-sm font-semibold text-yellow-300 mb-1";
+      
+    const nextMilestoneClasses = isTask
+      ? "text-sm font-semibold text-purple-300"
+      : "text-sm font-semibold text-yellow-300";
+
+    return (
+      <div className="w-72 h-full flex flex-col">
+        {/* Decorative Frame Header */}
+        <div className={headerClasses}>
+          <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-4 bg-gradient-to-b from-amber-600 to-amber-800 rounded-b-lg shadow-md"></div>
+          <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-amber-400 rounded-full"></div>
+          
+          <div className="text-center">
+            <div className={titleClasses}>
+              {progress}%
+            </div>
+            <div className="text-xs text-gray-300 uppercase tracking-wide">
+              {type === 'tasks' ? 'Tasks Complete' : 'Achievements Unlocked'}
+            </div>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className={progressBarBorderClasses}>
+            <div 
+              className={progressBarClasses}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        {/* Milestone Chests */}
+        <div className={contentClasses}>
+          <div className="text-center mb-4">
+            <div className={sectionTitleClasses}>Milestone Rewards</div>
+            <div className="text-xs text-gray-400">Unlock chests as you progress</div>
+          </div>
+          
+          <div className="space-y-3">
+            {updatedMilestones.map((milestone, index) => {
+              const itemClasses = milestone.unlocked 
+                ? (isTask 
+                  ? "flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 bg-gradient-to-r from-purple-900/40 to-purple-800/20 border-purple-400/50 shadow-lg"
+                  : "flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 bg-gradient-to-r from-yellow-900/40 to-yellow-800/20 border-yellow-400/50 shadow-lg")
+                : 'flex items-center gap-3 p-3 rounded-lg border transition-all duration-300 bg-gray-900/30 border-gray-700/30';
+                
+              const rewardTextClasses = milestone.unlocked 
+                ? (isTask ? "text-sm font-semibold text-purple-200" : "text-sm font-semibold text-yellow-200")
+                : 'text-sm font-semibold text-gray-500';
+                
+              const indicatorClasses = isTask
+                ? "w-6 h-6 rounded-full bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center shadow-lg"
+                : "w-6 h-6 rounded-full bg-gradient-to-r from-yellow-500 to-yellow-600 flex items-center justify-center shadow-lg";
+                
+              return (
+                <div key={index} className={itemClasses}>
+                  <div className={`text-2xl transition-all duration-300 ${
+                    milestone.unlocked ? 'animate-pulse' : 'grayscale opacity-50'
+                  }`}>
+                    {milestone.icon}
+                  </div>
+                  
+                  <div className="flex-1">
+                    <div className={rewardTextClasses}>
+                      {milestone.reward}
+                    </div>
+                    <div className="text-xs text-gray-400">
+                      {milestone.percent}% Complete
+                    </div>
+                  </div>
+                  
+                  {milestone.unlocked && (
+                    <div className={indicatorClasses}>
+                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Next Milestone */}
+          {progress < 100 && (
+            <div className="mt-4 p-3 bg-black/30 rounded-lg border border-gray-600/30">
+              <div className="text-center">
+                <div className="text-xs text-gray-400 mb-1">Next Milestone</div>
+                <div className={nextMilestoneClasses}>
+                  {updatedMilestones.find(m => !m.unlocked)?.percent || 100}% 
+                  ({(updatedMilestones.find(m => !m.unlocked)?.percent || 100) - progress}% to go)
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const handleTap = async () => {
     if (!user || user.energy <= 0 || actuallyTapping) return;
     setIsTapping(true);
@@ -428,180 +576,192 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         );
 
       case "tasks":
+        const tasksProgress = calculateTasksProgress();
+        const achievementsProgress = calculateAchievementsProgress();
+        
         return (
-          <div className="w-full max-w-2xl h-full flex flex-col">
-            {/* Combined Header */}
-            <div className="p-4 bg-black/30 border-b border-purple-500/30 rounded-t-lg">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
-                  <Activity className="w-6 h-6 text-white" />
+          <div className="w-full h-full flex gap-6 p-4">
+            {/* Main Content */}
+            <div className="flex-1 h-full flex flex-col max-w-2xl">
+              {/* Combined Header */}
+              <div className="p-4 bg-black/30 border-b border-purple-500/30 rounded-t-lg">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
+                    <Activity className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-semibold text-white">Tasks & Achievements</h3>
+                    <p className="text-sm text-gray-400">Complete tasks and unlock achievements</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">Tasks & Achievements</h3>
-                  <p className="text-sm text-gray-400">Complete tasks and unlock achievements</p>
+
+                {/* Tab Switcher */}
+                <div className="flex gap-2 mb-4">
+                  <Button
+                    size="sm"
+                    variant={taskFilter === "tasks" ? "default" : "outline"}
+                    onClick={() => setTaskFilter("tasks")}
+                    className={`${
+                      taskFilter === "tasks"
+                        ? "bg-purple-600 hover:bg-purple-700 text-white"
+                        : "bg-transparent border-purple-500/50 text-purple-400 hover:bg-purple-600/20"
+                    }`}
+                  >
+                    <Target className="w-4 h-4 mr-1" />
+                    Tasks
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant={taskFilter === "achievements" ? "default" : "outline"}
+                    onClick={() => setTaskFilter("achievements")}
+                    className={`${
+                      taskFilter === "achievements"
+                        ? "bg-yellow-600 hover:bg-yellow-700 text-white"
+                        : "bg-transparent border-yellow-500/50 text-yellow-400 hover:bg-yellow-600/20"
+                    }`}
+                  >
+                    <Trophy className="w-4 h-4 mr-1" />
+                    Achievements
+                  </Button>
                 </div>
+
+                {/* Sub-filters */}
+                {taskFilter === "tasks" && (
+                  <div className="flex gap-2 flex-wrap">
+                    {["all", "basic", "energy", "progression"].map((filter) => (
+                      <Button
+                        key={filter}
+                        size="sm"
+                        variant={achievementFilter === filter ? "default" : "ghost"}
+                        onClick={() => setAchievementFilter(filter)}
+                        className={`text-xs ${
+                          achievementFilter === filter
+                            ? "bg-purple-500 text-white"
+                            : "text-purple-300 hover:bg-purple-600/20"
+                        }`}
+                      >
+                        {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+
+                {taskFilter === "achievements" && (
+                  <div className="flex gap-2 flex-wrap">
+                    {["all", "beginner", "interaction", "progression", "collection"].map((filter) => (
+                      <Button
+                        key={filter}
+                        size="sm"
+                        variant={achievementFilter === filter ? "default" : "ghost"}
+                        onClick={() => setAchievementFilter(filter)}
+                        className={`text-xs ${
+                          achievementFilter === filter
+                            ? "bg-yellow-500 text-white"
+                            : "text-yellow-300 hover:bg-yellow-600/20"
+                        }`}
+                      >
+                        {filter.charAt(0).toUpperCase() + filter.slice(1)}
+                      </Button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Tab Switcher */}
-              <div className="flex gap-2 mb-4">
-                <Button
-                  size="sm"
-                  variant={taskFilter === "tasks" ? "default" : "outline"}
-                  onClick={() => setTaskFilter("tasks")}
-                  className={`${
-                    taskFilter === "tasks"
-                      ? "bg-purple-600 hover:bg-purple-700 text-white"
-                      : "bg-transparent border-purple-500/50 text-purple-400 hover:bg-purple-600/20"
-                  }`}
-                >
-                  <Target className="w-4 h-4 mr-1" />
-                  Tasks
-                </Button>
-                <Button
-                  size="sm"
-                  variant={taskFilter === "achievements" ? "default" : "outline"}
-                  onClick={() => setTaskFilter("achievements")}
-                  className={`${
-                    taskFilter === "achievements"
-                      ? "bg-yellow-600 hover:bg-yellow-700 text-white"
-                      : "bg-transparent border-yellow-500/50 text-yellow-400 hover:bg-yellow-600/20"
-                  }`}
-                >
-                  <Trophy className="w-4 h-4 mr-1" />
-                  Achievements
-                </Button>
+              {/* Content */}
+              <div className="flex-1 overflow-hidden">
+                <ScrollArea className="h-full">
+                  <div className="space-y-3 p-4">
+                    {taskFilter === "tasks" ? (
+                      // Tasks
+                      (achievementFilter === "all" ? mockTasks : mockTasks.filter(task => task.category === achievementFilter)).map((task) => (
+                        <Card key={task.id} className="bg-gray-800/50 border-gray-600/50 hover:border-purple-500/50 transition-all">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl">{task.icon}</span>
+                                <div>
+                                  <h3 className="font-semibold text-white text-sm">{task.title}</h3>
+                                  <p className="text-xs text-gray-400">{task.description}</p>
+                                </div>
+                              </div>
+                              <Badge variant={task.status === 'completed' ? 'default' : 'secondary'}>
+                                {task.status}
+                              </Badge>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-xs">
+                                <span>Progress</span>
+                                <span>{task.progress}/{task.maxProgress}</span>
+                              </div>
+                              <Progress value={(task.progress / task.maxProgress) * 100} className="h-2" />
+                            </div>
+
+                            <div className="flex items-center justify-between mt-3">
+                              <span className="text-xs text-green-400">Reward: {task.reward}</span>
+                              <Button
+                                size="sm"
+                                disabled={task.status !== 'completed' || claimingRewards.has(task.id)}
+                                onClick={() => claimReward(task.id, 'task')}
+                                className="bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1"
+                              >
+                                {claimingRewards.has(task.id) ? 'Claiming...' : task.status === 'completed' ? 'Claim' : 'In Progress'}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    ) : (
+                      // Achievements
+                      (achievementFilter === "all" ? mockAchievements : mockAchievements.filter(achievement => achievement.category === achievementFilter)).map((achievement) => (
+                        <Card key={achievement.id} className="bg-gray-800/50 border-gray-600/50 hover:border-yellow-500/50 transition-all">
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="flex items-center gap-3">
+                                <span className="text-2xl">{achievement.icon}</span>
+                                <div>
+                                  <h3 className="font-semibold text-white text-sm">{achievement.title}</h3>
+                                  <p className="text-xs text-gray-400">{achievement.description}</p>
+                                </div>
+                              </div>
+                              <Badge variant={achievement.status === 'completed' ? 'default' : achievement.status === 'in_progress' ? 'secondary' : 'outline'}>
+                                {achievement.status.replace('_', ' ')}
+                              </Badge>
+                            </div>
+
+                            <div className="space-y-2">
+                              <div className="flex justify-between text-xs">
+                                <span>Progress</span>
+                                <span>{achievement.progress}/{achievement.maxProgress}</span>
+                              </div>
+                              <Progress value={(achievement.progress / achievement.maxProgress) * 100} className="h-2" />
+                            </div>
+
+                            <div className="flex items-center justify-between mt-3">
+                              <span className="text-xs text-green-400">Reward: {achievement.reward}</span>
+                              <Button
+                                size="sm"
+                                disabled={achievement.status !== 'completed' || claimingRewards.has(achievement.id)}
+                                onClick={() => claimReward(achievement.id, 'achievement')}
+                                className="bg-yellow-600 hover:bg-yellow-700 text-xs px-3 py-1"
+                              >
+                                {claimingRewards.has(achievement.id) ? 'Claiming...' : achievement.status === 'completed' ? 'Claim' : achievement.status === 'in_progress' ? 'In Progress' : 'Locked'}
+                              </Button>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
-
-              {/* Sub-filters */}
-              {taskFilter === "tasks" && (
-                <div className="flex gap-2 flex-wrap">
-                  {["all", "basic", "energy", "progression"].map((filter) => (
-                    <Button
-                      key={filter}
-                      size="sm"
-                      variant={achievementFilter === filter ? "default" : "ghost"}
-                      onClick={() => setAchievementFilter(filter)}
-                      className={`text-xs ${
-                        achievementFilter === filter
-                          ? "bg-purple-500 text-white"
-                          : "text-purple-300 hover:bg-purple-600/20"
-                      }`}
-                    >
-                      {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                    </Button>
-                  ))}
-                </div>
-              )}
-
-              {taskFilter === "achievements" && (
-                <div className="flex gap-2 flex-wrap">
-                  {["all", "beginner", "interaction", "progression", "collection"].map((filter) => (
-                    <Button
-                      key={filter}
-                      size="sm"
-                      variant={achievementFilter === filter ? "default" : "ghost"}
-                      onClick={() => setAchievementFilter(filter)}
-                      className={`text-xs ${
-                        achievementFilter === filter
-                          ? "bg-yellow-500 text-white"
-                          : "text-yellow-300 hover:bg-yellow-600/20"
-                      }`}
-                    >
-                      {filter.charAt(0).toUpperCase() + filter.slice(1)}
-                    </Button>
-                  ))}
-                </div>
-              )}
             </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-hidden">
-              <ScrollArea className="h-full">
-                <div className="space-y-3 p-4">
-                  {taskFilter === "tasks" ? (
-                    // Tasks
-                    (achievementFilter === "all" ? mockTasks : mockTasks.filter(task => task.category === achievementFilter)).map((task) => (
-                      <Card key={task.id} className="bg-gray-800/50 border-gray-600/50 hover:border-purple-500/50 transition-all">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">{task.icon}</span>
-                              <div>
-                                <h3 className="font-semibold text-white text-sm">{task.title}</h3>
-                                <p className="text-xs text-gray-400">{task.description}</p>
-                              </div>
-                            </div>
-                            <Badge variant={task.status === 'completed' ? 'default' : 'secondary'}>
-                              {task.status}
-                            </Badge>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-xs">
-                              <span>Progress</span>
-                              <span>{task.progress}/{task.maxProgress}</span>
-                            </div>
-                            <Progress value={(task.progress / task.maxProgress) * 100} className="h-2" />
-                          </div>
-
-                          <div className="flex items-center justify-between mt-3">
-                            <span className="text-xs text-green-400">Reward: {task.reward}</span>
-                            <Button
-                              size="sm"
-                              disabled={task.status !== 'completed'}
-                              onClick={() => claimReward(task.id, 'task')}
-                              className="bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1"
-                            >
-                              {task.status === 'completed' ? 'Claim' : 'In Progress'}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  ) : (
-                    // Achievements
-                    (achievementFilter === "all" ? mockAchievements : mockAchievements.filter(achievement => achievement.category === achievementFilter)).map((achievement) => (
-                      <Card key={achievement.id} className="bg-gray-800/50 border-gray-600/50 hover:border-yellow-500/50 transition-all">
-                        <CardContent className="p-4">
-                          <div className="flex items-center justify-between mb-3">
-                            <div className="flex items-center gap-3">
-                              <span className="text-2xl">{achievement.icon}</span>
-                              <div>
-                                <h3 className="font-semibold text-white text-sm">{achievement.title}</h3>
-                                <p className="text-xs text-gray-400">{achievement.description}</p>
-                              </div>
-                            </div>
-                            <Badge variant={achievement.status === 'completed' ? 'default' : achievement.status === 'in_progress' ? 'secondary' : 'outline'}>
-                              {achievement.status.replace('_', ' ')}
-                            </Badge>
-                          </div>
-
-                          <div className="space-y-2">
-                            <div className="flex justify-between text-xs">
-                              <span>Progress</span>
-                              <span>{achievement.progress}/{achievement.maxProgress}</span>
-                            </div>
-                            <Progress value={(achievement.progress / achievement.maxProgress) * 100} className="h-2" />
-                          </div>
-
-                          <div className="flex items-center justify-between mt-3">
-                            <span className="text-xs text-green-400">Reward: {achievement.reward}</span>
-                            <Button
-                              size="sm"
-                              disabled={achievement.status !== 'completed'}
-                              onClick={() => claimReward(achievement.id, 'achievement')}
-                              className="bg-yellow-600 hover:bg-yellow-700 text-xs px-3 py-1"
-                            >
-                              {achievement.status === 'completed' ? 'Claim' : achievement.status === 'in_progress' ? 'In Progress' : 'Locked'}
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))
-                  )}
-                </div>
-              </ScrollArea>
-            </div>
+            {/* Progress Panel */}
+            <ProgressPanel 
+              type={taskFilter as 'tasks' | 'achievements'} 
+              progress={taskFilter === 'tasks' ? tasksProgress : achievementsProgress}
+            />
           </div>
         );
 
