@@ -421,7 +421,7 @@ export default function CharacterEditor({
                                 {(mediaFiles as any[]).filter((file: any) => file.fileName && file.fileName !== 'undefined').map((file: any, index: number) => (
                                   <SelectItem
                                     key={`main-image-${file.id || index}`}
-                                    value={file.url || file.path || (file.fileName ? `/api/media/${file.id}` : '')}
+                                    value={file.filePath || `/uploads/${file.fileName}`}
                                     className="text-white"
                                   >
                                     {file.fileName || 'Unnamed file'}
@@ -452,7 +452,7 @@ export default function CharacterEditor({
                                 {(mediaFiles as any[]).filter((file: any) => file.fileName && file.fileName !== 'undefined').map((file: any, index: number) => (
                                   <SelectItem
                                     key={`avatar-image-${file.id || index}`}
-                                    value={file.url || file.path || (file.fileName ? `/api/media/${file.id}` : '')}
+                                    value={file.filePath || `/uploads/${file.fileName}`}
                                     className="text-white"
                                   >
                                     {file.fileName || 'Unnamed file'}

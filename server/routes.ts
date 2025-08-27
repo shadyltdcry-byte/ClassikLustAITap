@@ -590,11 +590,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               lp: 5000,
               lpPerHour: 250,
               lpPerTap: 1.5,
-              energy: 1000,
-              maxEnergy: 1000,
-              coins: 0,
-              xp: 0,
-              xpToNext: 100,
               isVip: false,
               nsfwEnabled: false
             });
@@ -936,8 +931,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               lp: 5000,
               lpPerHour: 250,
               lpPerTap: 1.5,
-              energy: 1000,
-              maxEnergy: 1000,
               vipStatus: false,
               nsfwConsent: false
             });
@@ -997,12 +990,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
               totalLp: 5000,
               totalTaps: 50,
               totalLpEarned: 1000,
-              totalEnergy: 1000,
-              totalEnergyUsed: 100,
-              maxEnergy: 1000,
               lpPerHour: 250,
               lpPerTap: 1.5,
-              charisma: 0,
               sessionsPlayed: 5,
               upgrades: {
                 intellect: 1,
@@ -1019,12 +1008,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             totalLp: 5000,
             totalTaps: 50,
             totalLpEarned: 1000,
-            totalEnergy: 1000,
-            totalEnergyUsed: 100,
-            maxEnergy: 1000,
             lpPerHour: 250,
             lpPerTap: 1.5,
-            charisma: 0,
             sessionsPlayed: 5,
             upgrades: {
               intellect: 1,
@@ -1045,12 +1030,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           totalLp: 5000,
           totalTaps: 50,
           totalLpEarned: 1000,
-          totalEnergy: 1000,
-          totalEnergyUsed: 100,
-          maxEnergy: 1000,
           lpPerHour: 250,
           lpPerTap: 1.5,
-          charisma: 0,
           sessionsPlayed: 5,
           upgrades: {
             intellect: 1,
