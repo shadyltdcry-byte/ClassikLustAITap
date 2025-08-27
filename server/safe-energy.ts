@@ -1,4 +1,5 @@
-import { storage } from "./storage";
+import { SupabaseStorage } from '../shared/SupabaseStorage';
+const storage = SupabaseStorage.getInstance();
 
 const ENERGY_REGEN_INTERVAL = 60 * 1000; // 1 min
 let energyInterval: NodeJS.Timeout | null = null;
