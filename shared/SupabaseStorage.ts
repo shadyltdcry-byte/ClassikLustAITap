@@ -472,9 +472,9 @@ export class SupabaseStorage implements IStorage {
     }
     
     const { error } = await this.supabase
-      .from('users')
+      .from('user_stats')
       .update(incrementedUpdates)
-      .eq('id', userId);
+      .eq('user_id', userId);
     
     if (error) throw error;
   }

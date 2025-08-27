@@ -10,7 +10,7 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   level: integer("level").notNull().default(1),
-  lp: integer("lp").notNull().default(0),
+  lp: real("lp").notNull().default(0), // Changed to real to support decimals like 1.5
   energy: integer("energy").notNull().default(1000),
   maxEnergy: integer("max_energy").notNull().default(1000),
   charisma: integer("charisma").notNull().default(0),

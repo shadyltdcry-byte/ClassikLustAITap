@@ -1341,6 +1341,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
 
+  // 🔍 Debug Schema endpoint - Check actual Supabase table structure
+  app.get('/api/debug/supabase-schema', async (req, res) => {
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+      const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+      
+      const supabase = createClient(supabaseUrl!, supabaseKey!);
+      
+      // Get users table schema
+      const { data: usersSchema, error: usersError } = await supabase
+        .from('users')
+        .select()
+        .limit(1);
+      
+      // Get user_stats table schema  
+      const { data: statsSchema, error: statsError } = await supabase
+        .from('user_stats')
+        .select()
+        .limit(1);
+      
+      res.json({
+        users: {
+          error: usersError,
+          columns: usersSchema?.[0] ? Object.keys(usersSchema[0]) : [],
+          sample: usersSchema?.[0]
+        },
+        user_stats: {
+          error: statsError,
+          columns: statsSchema?.[0] ? Object.keys(statsSchema[0]) : [],
+          sample: statsSchema?.[0]
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // 🔧 Fix LP Column Type - Convert TEXT to NUMERIC  
+  app.post('/api/debug/fix-lp-column', async (req, res) => {
+    try {
+      const { createClient } = await import('@supabase/supabase-js');
+      const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+      const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+      
+      const supabase = createClient(supabaseUrl!, supabaseKey!);
+      
+      console.log('🔧 Starting LP column type fix...');
+      
+      res.json({
+        success: true,
+        message: 'Manual SQL fix required in Supabase SQL Editor',
+        sqlCommands: [
+          '-- Fix LP column type from TEXT to REAL (supports 1.5 LP)',
+          'ALTER TABLE users ALTER COLUMN lp TYPE REAL USING lp::real;',
+          '',
+          '-- Remove ghost columns',
+          'ALTER TABLE users DROP COLUMN IF EXISTS strengthpoints;',
+          'ALTER TABLE users DROP COLUMN IF EXISTS xp;'
+        ]
+      });
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Admin Upgrades endpoints (removed duplicate - was conflicting with earlier routes)
 
   // 🎮 TAP ENDPOINT - The missing piece!
@@ -1361,12 +1427,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: 'No energy left' });
       }
 
-      // Calculate LP per tap (base 1 + upgrades)
-      const lpPerTap = 1; // TODO: Add upgrade calculations
+      // Calculate LP per tap (use user's lpPerTap stat)
+      const lpPerTap = user.lpPerTap || 1.5; // Use user's actual lpPerTap stat
       
-      // Update user stats
-      const newLp = user.lp + lpPerTap;
+      // Update user stats - PARSE LP AS NUMBER to prevent string concatenation!
+      const currentLp = parseInt(String(user.lp)) || 0;
+      const newLp = currentLp + lpPerTap;
       const newEnergy = Math.max(0, user.energy - 1);
+      
+      console.log(`💥 TAP: ${currentLp} + ${lpPerTap} = ${newLp}`);
 
       // Direct database update to bypass cache issues
       if (userId.startsWith('telegram_')) {
