@@ -584,14 +584,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Create real database user for authenticated Telegram user
             console.log(`Creating database user for authenticated Telegram user: ${playerId}`);
             const newUser = await storage.createUser({
-              id: playerId,
+              telegramId: telegramId,
               username: `Player${telegramId}`,
+              password: 'telegram_auth',
               level: 1,
               lp: 5000,
               lpPerHour: 250,
               lpPerTap: 1.5,
-              isVip: false,
-              nsfwEnabled: false
+              energy: 1000,
+              maxEnergy: 1000,
+              charisma: 0,
+              vipStatus: false,
+              nsfwConsent: false
             });
             return res.json(newUser);
           }
@@ -925,12 +929,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
             // Create real database user for authenticated Telegram user
             console.log(`Creating database user for authenticated Telegram user: ${userId}`);
             const newUser = await storage.createUser({
-              id: userId,
+              telegramId: telegramId,
               username: `Player${telegramId}`,
+              password: 'telegram_auth',
               level: 1,
               lp: 5000,
               lpPerHour: 250,
               lpPerTap: 1.5,
+              energy: 1000,
+              maxEnergy: 1000,
+              charisma: 0,
               vipStatus: false,
               nsfwConsent: false
             });
