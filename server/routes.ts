@@ -17,6 +17,7 @@ import multer from 'multer';
 // Using Supabase storage
 import jwt from 'jsonwebtoken';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
+import gameConfig from './game-config.json';
 
 // Create SINGLETON Supabase storage instance to avoid 4x duplicates
 const storage = SupabaseStorage.getInstance();
@@ -1090,11 +1091,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lpPerTap: user.lpPerTap,
         charisma: user.charisma || 0,
         sessionsPlayed: gameStats.sessionsPlayed || 0,
-        upgrades: {
-          charm: 1,
-          appeal: 1,
-          magnetism: 1
-        }
+        upgrades: gameConfig.defaultUpgrades
       });
     } catch (error) {
       console.error('Error fetching player stats:', error);
@@ -1116,11 +1113,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Plugin endpoints for your custom plugins
   app.get("/api/plugins/upgrades", (req, res) => {
-    res.json([
-      { id: "charm", name: "Increase Charm", category: "lpPerHour", level: 1, cost: 1500, effect: 150 },
-      { id: "appeal", name: "Physical Appeal", category: "lpPerTap", level: 1, cost: 2500, effect: 1 },
-      { id: "magnetism", name: "Personal Magnetism", category: "energy", level: 1, cost: 1500, effect: 100 }
-    ]);
+    res.json(gameConfig.upgrades);
   });
 
   app.get("/api/plugins/boosters", (req, res) => {
@@ -1136,11 +1129,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Missing API endpoints
   app.get("/api/upgrades", (req, res) => {
-    res.json([
-      { id: "charm", name: "Increase Charm", category: "lpPerHour", level: 1, cost: 1500, effect: 150 },
-      { id: "appeal", name: "Physical Appeal", category: "lpPerTap", level: 1, cost: 2500, effect: 1 },
-      { id: "magnetism", name: "Personal Magnetism", category: "energy", level: 1, cost: 1500, effect: 100 }
-    ]);
+    res.json(gameConfig.upgrades);
   });
 
   app.get("/api/gamestats", (req, res) => {
