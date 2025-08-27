@@ -1454,6 +1454,114 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Reward claiming endpoint
+  app.post('/api/rewards/claim', async (req, res) => {
+    try {
+      const { rewardId, rewardType, userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID required' });
+      }
+
+      // Mock reward values for now
+      const rewards = {
+        'task': { 
+          't1': '10 Coins', 
+          't2': '5 Gems', 
+          't3': '20 Coins', 
+          't4': '5 Coins' 
+        },
+        'achievement': { 
+          'a1': '5 Coins', 
+          'a2': '10 Coins', 
+          'a3': '50 Coins', 
+          'a4': '1 Gem Package' 
+        }
+      };
+
+      const reward = rewards[rewardType]?.[rewardId];
+      if (!reward) {
+        return res.status(404).json({ error: 'Reward not found' });
+      }
+
+      // Add reward to user (mock for now)
+      console.log(`🎁 ${userId} claimed ${rewardType} reward: ${reward}`);
+      
+      res.json({ 
+        success: true, 
+        reward: reward,
+        message: `Successfully claimed ${reward}!` 
+      });
+    } catch (error) {
+      console.error('Reward claiming error:', error);
+      res.status(500).json({ error: 'Failed to claim reward' });
+    }
+  });
+
+  // Get level requirements endpoint  
+  app.get('/api/level-requirements', async (req, res) => {
+    try {
+      const levelRequirements = [
+        {
+          level: 2,
+          requirements: [
+            { upgradeType: 'lpPerHour', requiredLevel: 2 }
+          ],
+          rewards: {
+            lp: 100,
+            maxEnergy: 10,
+            unlocks: ['Basic character creation']
+          }
+        },
+        {
+          level: 3,
+          requirements: [
+            { upgradeType: 'lpPerHour', requiredLevel: 3 }
+          ],
+          rewards: {
+            lp: 250,
+            maxEnergy: 15,
+            lpPerHour: 5,
+            unlocks: ['Wheel of Fortune']
+          }
+        },
+        {
+          level: 4,
+          requirements: [
+            { upgradeType: 'lpPerHour', requiredLevel: 4 }
+          ],
+          rewards: {
+            lp: 500,
+            coins: 50,
+            maxEnergy: 20,
+            unlocks: ['Boosters system']
+          }
+        },
+        {
+          level: 5,
+          requirements: [
+            { upgradeType: 'lpPerHour', requiredLevel: 5 },
+            { upgradeType: 'energy', upgradeName: 'MaxEnergy', requiredLevel: 3 },
+            { upgradeType: 'lpPerTap', requiredLevel: 2 }
+          ],
+          rewards: {
+            lp: 1000,
+            coins: 100,
+            maxEnergy: 25,
+            lpPerHour: 10,
+            lpPerTap: 1,
+            unlocks: ['Advanced character creation', 'AI Chat system']
+          }
+        }
+      ];
+      
+      res.json(levelRequirements);
+    } catch (error) {
+      console.error('Error fetching level requirements:', error);
+      res.status(500).json({ error: 'Failed to fetch level requirements' });
+    }
+  });
+
   // Level up player endpoint
   app.post('/api/admin/player/:playerId/level-up', async (req, res) => {
     try {

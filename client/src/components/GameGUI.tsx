@@ -132,9 +132,30 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     setTimeout(() => setIsTapping(false), 200);
   };
 
-  const claimReward = (id: string, type: 'task' | 'achievement') => {
-    console.log(`Claiming ${type} reward:`, id);
-    // Handle reward claiming logic
+  const claimReward = async (id: string, type: 'task' | 'achievement') => {
+    try {
+      console.log(`Claiming ${type} reward:`, id);
+      
+      const response = await apiRequest('POST', `/api/rewards/claim`, {
+        rewardId: id,
+        rewardType: type,
+        userId: userId || playerData?.id
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        toast.success(`Claimed ${result.reward} successfully!`);
+        
+        // Invalidate relevant queries to refresh data
+        queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+      } else {
+        throw new Error('Failed to claim reward');
+      }
+    } catch (error) {
+      console.error(`Error claiming ${type} reward:`, error);
+      toast.error(`Failed to claim ${type} reward`);
+    }
   };
 
   // Tasks Component (No nested tabs)
@@ -745,7 +766,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
 
       {/* Wheel Game Button - Right Middle */}
       <Button
-        className="fixed top-1/2 right-4 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 transform -translate-y-1/2 shadow-lg border-2 border-yellow-400/50 hover:border-yellow-400"
+        className="fixed top-1/2 right-4 z-50 w-16 h-16 rounded-full bg-gradient-to-br from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 transform -translate-y-1/2 shadow-lg border-2 border-yellow-400/50 hover:border-yellow-400 mb-20"
         onClick={() => updateGUIState({ showWheelGame: true })}
         data-testid="button-wheel-game"
       >
@@ -754,7 +775,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
 
       {/* VIP Button - Right Middle Below Wheel */}
       <Button
-        className="fixed top-1/2 right-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 transform translate-y-10 shadow-lg border-2 border-yellow-300/50 hover:border-yellow-300"
+        className="fixed top-1/2 right-4 z-50 w-12 h-12 rounded-full bg-gradient-to-br from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 transform translate-y-20 shadow-lg border-2 border-yellow-300/50 hover:border-yellow-300"
         onClick={() => updateGUIState({ showVIP: true })}
         data-testid="button-vip"
       >

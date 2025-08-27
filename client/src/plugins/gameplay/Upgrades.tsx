@@ -34,7 +34,7 @@ interface UpgradesProps {
 }
 
 export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps) {
-  const [activeTab, setActiveTab] = useState("lp");
+  const [activeTab, setActiveTab] = useState("all");
   const queryClient = useQueryClient();
 
   // Fetch upgrades
