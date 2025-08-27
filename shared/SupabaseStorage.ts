@@ -397,7 +397,7 @@ export class SupabaseStorage implements IStorage {
       }
 
       const { data, error } = await this.supabase
-        .from('game_stats')
+        .from('user_stats')
         .select('*')
         .eq('user_id', realUserId)
         .single();
@@ -418,7 +418,7 @@ export class SupabaseStorage implements IStorage {
         };
         
         const { data: newData, error: createError } = await this.supabase
-          .from('game_stats')
+          .from('user_stats')
           .insert(defaultStats)
           .select()
           .single();
@@ -472,7 +472,7 @@ export class SupabaseStorage implements IStorage {
     }
     
     const { error } = await this.supabase
-      .from('game_stats')
+      .from('user_stats')
       .update(incrementedUpdates)
       .eq('user_id', userId);
     
