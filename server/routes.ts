@@ -1404,6 +1404,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const newLp = user.lp + lpPerTap;
       const newEnergy = Math.max(0, user.energy - 1);
 
+      // Direct database update to bypass cache issues
+      if (userId.startsWith('telegram_')) {
+        const telegramId = userId.replace('telegram_', '');
+        try {
+          // Update using raw SQL to bypass Supabase cache issues
+          const { createClient } = await import('@supabase/supabase-js');
+          const supabase = createClient(
+            process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+            process.env.VITE_SUPABASE_SERVICE_ROLE_KEY
+          );
+          
+          const { error } = await supabase.rpc('update_user_stats', {
+            telegram_user_id: telegramId,
+            new_lp: newLp,
+            new_energy: newEnergy
+          });
+          
+          if (error) {
+            console.log('RPC failed, trying direct update...');
+            // Fallback to direct update
+            await supabase
+              .from('users')
+              .update({ lp: newLp, energy: newEnergy })
+              .eq('telegram_id', telegramId);
+          }
+        } catch (dbError) {
+          console.log('Direct update failed, using storage fallback');
+        }
+      }
+      
       const updatedUser = await storage.updateUser(userId, {
         lp: newLp,
         energy: newEnergy
