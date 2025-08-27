@@ -588,7 +588,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       <div className="flex justify-between items-center p-4 pr-6 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30 flex-shrink-0">
         
         {/* Left Section: Avatar + Username + Level */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <div className="flex flex-col items-center gap-1">
             <p className="font-medium text-sm text-center">{playerData?.username?.replace('Player', '') || playerData?.name || "ShadyLTDx"}</p>
             <div 
@@ -608,7 +608,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                     target.src = "https://via.placeholder.com/64x64/1a1a1a/ff1493?text=👤";
                   }
                 }}
-                className="w-16 h-16 object-cover rounded-xl shadow-lg border-2 border-purple-500/50 cursor-pointer hover:border-purple-400/70 transition-colors"
+                className="w-[74px] h-[74px] object-cover rounded-xl shadow-lg border-2 border-purple-500/50 cursor-pointer hover:border-purple-400/70 transition-colors"
               />
             </div>
             <div className="flex flex-col items-center gap-1">

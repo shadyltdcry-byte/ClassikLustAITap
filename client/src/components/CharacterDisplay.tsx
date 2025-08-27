@@ -74,7 +74,7 @@ export default function CharacterDisplay({
         </div>
 
         {/* Character Main Image Container */}
-        <div className="relative mx-auto max-w-xs mb-6">
+        <div className="relative mx-auto max-w-[416px] mb-6">
           <div className="relative">
             <img
               src={
