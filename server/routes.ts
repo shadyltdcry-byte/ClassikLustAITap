@@ -1350,46 +1350,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json({ success: true });
   });
 
-  // Admin Upgrades endpoints
-  app.get('/api/admin/upgrades', async (req, res) => {
-    try {
-      const upgrades = await storage.getAllUpgrades();
-      res.json(upgrades);
-    } catch (error) {
-      console.error('Error fetching upgrades:', error);
-      res.status(500).json({ error: 'Failed to fetch upgrades' });
-    }
-  });
-
-  app.post('/api/admin/upgrades', async (req, res) => {
-    try {
-      const upgrade = await storage.createUpgrade(req.body);
-      res.json(upgrade);
-    } catch (error) {
-      console.error('Error creating upgrade:', error);
-      res.status(500).json({ error: 'Failed to create upgrade' });
-    }
-  });
-
-  app.put('/api/admin/upgrades/:id', async (req, res) => {
-    try {
-      const upgrade = await storage.updateUpgrade(req.params.id, req.body);
-      res.json(upgrade);
-    } catch (error) {
-      console.error('Error updating upgrade:', error);
-      res.status(500).json({ error: 'Failed to update upgrade' });
-    }
-  });
-
-  app.delete('/api/admin/upgrades/:id', async (req, res) => {
-    try {
-      await storage.deleteUpgrade(req.params.id);
-      res.json({ success: true });
-    } catch (error) {
-      console.error('Error deleting upgrade:', error);
-      res.status(500).json({ error: 'Failed to delete upgrade' });
-    }
-  });
+  // Admin Upgrades endpoints (removed duplicate - was conflicting with earlier routes)
 
   // 🎮 TAP ENDPOINT - The missing piece!
   app.post('/api/tap', async (req, res) => {
