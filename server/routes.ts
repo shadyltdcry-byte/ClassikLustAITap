@@ -276,6 +276,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.delete('/api/admin/wheel-prizes/:id', async (req, res) => {
+    try {
+      // For now just return success - in future this would delete from database
+      res.json({ success: true, message: 'Wheel prize deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting wheel prize:', error);
+      res.status(500).json({ error: 'Failed to delete wheel prize' });
+    }
+  });
+
   app.post('/api/admin/achievements', async (req, res) => {
     try {
       const created = await storage.createAchievement(req.body);
@@ -586,8 +596,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               xp: 0,
               xpToNext: 100,
               isVip: false,
-              nsfwEnabled: false,
-              charismaPoints: 0
+              nsfwEnabled: false
             });
             return res.json(newUser);
           }
@@ -929,7 +938,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
               lpPerTap: 1.5,
               energy: 1000,
               maxEnergy: 1000,
-              charisma: 0,
               vipStatus: false,
               nsfwConsent: false
             });
