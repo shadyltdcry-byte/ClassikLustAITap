@@ -641,15 +641,17 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           </div>
         </div>
 
-        {/* Center Section: LP per Hour (More spaced out) */}
-        <div className="relative px-4 py-2 mx-6 bg-gradient-to-r from-yellow-600/20 to-orange-500/20 border border-yellow-400/30 rounded-xl shadow-xl backdrop-blur-sm hover:shadow-yellow-500/30 hover:shadow-2xl transition-all duration-300">
+        {/* Center Section: LP per Hour (Vertical layout) */}
+        <div className="relative px-4 py-3 mx-6 bg-gradient-to-r from-yellow-600/20 to-orange-500/20 border border-yellow-400/30 rounded-xl shadow-xl backdrop-blur-sm hover:shadow-yellow-500/30 hover:shadow-2xl transition-all duration-300">
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 to-orange-500/10 rounded-xl blur-sm"></div>
-          <div className="relative flex items-center gap-2">
-            <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
-            <span className="text-yellow-200 text-sm font-bold">LP per Hour:</span>
-            <span className="text-yellow-100 font-bold text-sm">{user?.lpPerHour || playerData?.lpPerHour || 250}/hr</span>
-            <span className="text-sm font-bold text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">∞</span>
-            <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+          <div className="relative flex flex-col items-center gap-1 text-center">
+            <span className="text-yellow-200 text-sm font-bold">LP per Hour</span>
+            <div className="flex items-center gap-2">
+              <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+              <span className="text-lg font-bold text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">∞</span>
+              <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+            </div>
+            <span className="text-yellow-100 font-bold text-sm">{user?.lpPerHour || playerData?.lpPerHour || 250}</span>
           </div>
         </div>
 
