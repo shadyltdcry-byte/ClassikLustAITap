@@ -722,6 +722,85 @@ export class SupabaseStorage implements IStorage {
     if (error) throw error;
   }
 
+  // Bulk cleanup methods for ghost files
+  async bulkDeleteMediaFiles(ids: string[]): Promise<{ deletedCount: number; errors: string[] }> {
+    const results = { deletedCount: 0, errors: [] as string[] };
+    
+    for (const id of ids) {
+      try {
+        await this.deleteMediaFile(id);
+        results.deletedCount++;
+      } catch (error) {
+        results.errors.push(`Failed to delete ${id}: ${error}`);
+      }
+    }
+    
+    return results;
+  }
+
+  async getOrphanedMediaFiles(): Promise<MediaFile[]> {
+    // Find media files with missing or invalid data
+    const { data, error } = await this.supabase
+      .from('media_files')
+      .select('*')
+      .or('file_name.is.null,file_path.is.null,character_id.is.null');
+    
+    if (error) {
+      console.error('Error finding orphaned media files:', error);
+      return [];
+    }
+    return data || [];
+  }
+
+  async getDuplicateMediaFiles(): Promise<{ duplicates: MediaFile[]; groups: { [key: string]: MediaFile[] } }> {
+    // Get all media files and group by fileName to find duplicates
+    const allFiles = await this.getAllMedia();
+    const fileNameGroups: { [key: string]: MediaFile[] } = {};
+    const duplicates: MediaFile[] = [];
+
+    // Group files by fileName
+    allFiles.forEach(file => {
+      if (file.fileName) {
+        if (!fileNameGroups[file.fileName]) {
+          fileNameGroups[file.fileName] = [];
+        }
+        fileNameGroups[file.fileName].push(file);
+      }
+    });
+
+    // Find groups with more than one file (duplicates)
+    Object.keys(fileNameGroups).forEach(fileName => {
+      if (fileNameGroups[fileName].length > 1) {
+        duplicates.push(...fileNameGroups[fileName]);
+      }
+    });
+
+    return { duplicates, groups: fileNameGroups };
+  }
+
+  async getMediaFileStats(): Promise<{
+    total: number;
+    orphaned: number;
+    duplicates: number;
+    withoutCharacter: number;
+    withoutFileName: number;
+  }> {
+    const allFiles = await this.getAllMedia();
+    const orphanedFiles = await this.getOrphanedMediaFiles();
+    const { duplicates } = await this.getDuplicateMediaFiles();
+    
+    const withoutCharacter = allFiles.filter(f => !f.characterId).length;
+    const withoutFileName = allFiles.filter(f => !f.fileName).length;
+
+    return {
+      total: allFiles.length,
+      orphaned: orphanedFiles.length,
+      duplicates: duplicates.length,
+      withoutCharacter,
+      withoutFileName
+    };
+  }
+
   // Missing admin methods for level requirements
   async getLevelRequirements(): Promise<any[]> {
     const { data, error } = await this.supabase

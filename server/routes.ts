@@ -949,6 +949,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoints for managing ghost/duplicate files
+  app.get('/api/admin/media/stats', async (req, res) => {
+    try {
+      const stats = await storage.getMediaFileStats();
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching media stats:', error);
+      res.status(500).json({ error: 'Failed to fetch media statistics' });
+    }
+  });
+
+  app.get('/api/admin/media/orphaned', async (req, res) => {
+    try {
+      const orphanedFiles = await storage.getOrphanedMediaFiles();
+      res.json(orphanedFiles);
+    } catch (error) {
+      console.error('Error fetching orphaned files:', error);
+      res.status(500).json({ error: 'Failed to fetch orphaned files' });
+    }
+  });
+
+  app.get('/api/admin/media/duplicates', async (req, res) => {
+    try {
+      const result = await storage.getDuplicateMediaFiles();
+      res.json(result);
+    } catch (error) {
+      console.error('Error fetching duplicate files:', error);
+      res.status(500).json({ error: 'Failed to fetch duplicate files' });
+    }
+  });
+
+  app.delete('/api/admin/media/bulk-delete', async (req, res) => {
+    try {
+      const { ids } = req.body;
+      if (!ids || !Array.isArray(ids)) {
+        return res.status(400).json({ error: 'Invalid request: ids array required' });
+      }
+      
+      const result = await storage.bulkDeleteMediaFiles(ids);
+      res.json(result);
+    } catch (error) {
+      console.error('Error bulk deleting files:', error);
+      res.status(500).json({ error: 'Failed to bulk delete files' });
+    }
+  });
+
   // User endpoint for useGameState hook
   app.get("/api/user/:userId", async (req, res) => {
     try {

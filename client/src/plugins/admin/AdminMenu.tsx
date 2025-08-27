@@ -52,6 +52,7 @@ import { Textarea } from "@/components/ui/textarea";
 import MistralDebugger from "@/plugins/aicore/MistralDebugger";
 import DebuggerInterface from "@/components/admin/DebuggerInterface";
 import WheelPrizeManager from "@/components/wheel/WheelPrizeManager";
+import MediaFileCleanup from "@/components/admin/MediaFileCleanup";
 
 interface AdminMenuProps {
   onClose?: () => void;
@@ -225,6 +226,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   const [showAchievements, setShowAchievements] = useState(false);
   const [showWheelPrizeManager, setShowWheelPrizeManager] = useState(false);
   const [showFileManager, setShowFileManager] = useState(false);
+  const [showMediaFileCleanup, setShowMediaFileCleanup] = useState(false);
   const queryClient = useQueryClient();
 
   // Fetch characters
@@ -704,6 +706,15 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
                           <Code className="w-4 h-4 mr-2" />
                           View Logs
                         </Button>
+                        <Button 
+                          onClick={() => setShowMediaFileCleanup(true)}
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full justify-start text-red-400 hover:text-red-300 hover:border-red-500"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Clean Ghost Files
+                        </Button>
                       </CardContent>
                     </Card>
                   </div>
@@ -713,6 +724,23 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
           </div>
         </div>
       </div>
+
+      {/* Media File Cleanup Dialog */}
+      {showMediaFileCleanup && (
+        <Dialog open={showMediaFileCleanup} onOpenChange={setShowMediaFileCleanup}>
+          <DialogContent className="max-w-6xl h-[90vh] bg-gray-900 border-gray-700">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <Trash2 className="w-5 h-5 text-red-500" />
+                Media File Cleanup
+              </DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 overflow-hidden">
+              <MediaFileCleanup />
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Plugin Modals - Fixed LevelUp to show admin interface */}
       {showLevelUp && (
