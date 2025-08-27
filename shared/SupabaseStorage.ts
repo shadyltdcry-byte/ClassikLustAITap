@@ -63,7 +63,7 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .select('*')
-        .eq('telegramId', telegramId)
+        .eq('telegram_id', telegramId)
         .single();
       
       if (error) {
@@ -366,7 +366,7 @@ export class SupabaseStorage implements IStorage {
         const { data: user } = await this.supabase
           .from('users')
           .select('id')
-          .eq('telegramId', telegramId)
+          .eq('telegram_id', telegramId)
           .single();
         
         if (user?.id) {
