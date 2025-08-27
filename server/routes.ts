@@ -594,22 +594,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
             realUserId = user.id;
           } else {
             // Create real database user for authenticated Telegram user
-            console.log(`Creating database user for authenticated Telegram user: ${playerId}`);
-            const newUser = await storage.createUser({
-              telegramId: telegramId,
-              username: `Player${telegramId}`,
-              password: 'telegram_auth',
-              level: 1,
-              lp: 5000,
-              lpPerHour: 250,
-              lpPerTap: 1.5,
-              energy: 1000,
-              maxEnergy: 1000,
-              charisma: 0,
-              vipStatus: false,
-              nsfwConsent: false
-            });
-            return res.json(newUser);
+            // Check if user already exists first to prevent duplicates
+            const existingCheck = await storage.getUser(`telegram_${telegramId}`);
+            if (!existingCheck) {
+              console.log(`Creating database user for authenticated Telegram user: ${playerId}`);
+              const newUser = await storage.createUser({
+                telegramId: telegramId,
+                username: `Player${telegramId}`,
+                password: 'telegram_auth',
+                level: 1,
+                lp: 5000,
+                lpPerHour: 250,
+                lpPerTap: 1.5,
+                energy: 1000,
+                maxEnergy: 1000,
+                charisma: 0,
+                vipStatus: false,
+                nsfwConsent: false
+              });
+              return res.json(newUser);
+            }
           }
         } catch (dbError) {
           console.error('Database lookup error:', dbError);
@@ -939,8 +943,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             realUserId = user.id;
           } else {
             // Create real database user for authenticated Telegram user
-            console.log(`Creating database user for authenticated Telegram user: ${userId}`);
-            const newUser = await storage.createUser({
+            // Prevent duplicate creation
+            const existingCheck = await storage.getUser(`telegram_${telegramId}`);
+            if (!existingCheck) {
+              console.log(`Creating database user for authenticated Telegram user: ${userId}`);
+              const newUser = await storage.createUser({
               telegramId: telegramId,
               username: `Player${telegramId}`,
               password: 'telegram_auth',
@@ -955,6 +962,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               nsfwConsent: false
             });
             return res.json(newUser);
+            }
           }
         } catch (dbError) {
           console.error('Database lookup error:', dbError);
