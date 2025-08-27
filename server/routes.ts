@@ -2053,6 +2053,100 @@ You are comfortable with adult conversations when appropriate and can become fli
     await setupViteDevServer(app);
   }
 
+  // Wheel Spin API
+  app.post('/api/wheel/spin', async (req, res) => {
+    try {
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ message: 'User ID is required' });
+      }
+
+      // Get user data to check last wheel spin
+      const user = await storage.getUser(userId);
+      
+      // Check if user can spin (daily reset at midnight)
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Today at 00:00:00
+      
+      let canSpin = true;
+      if (user?.lastWheelSpin) {
+        const lastSpinDate = new Date(user.lastWheelSpin);
+        const lastSpinDay = new Date(lastSpinDate.getFullYear(), lastSpinDate.getMonth(), lastSpinDate.getDate());
+        
+        // If the last spin was today, can't spin again
+        if (lastSpinDay.getTime() >= today.getTime()) {
+          canSpin = false;
+        }
+      }
+      
+      if (!canSpin) {
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const hoursLeft = Math.ceil((tomorrow.getTime() - now.getTime()) / (1000 * 60 * 60));
+        
+        return res.status(400).json({ 
+          message: `Wheel cooldown active! Next spin available in ${hoursLeft} hours.` 
+        });
+      }
+
+      // Default prizes for wheel spinning
+      const prizes = [
+        { id: '1', name: '100 LP', type: 'lp', value: 100, probability: 0.30 },
+        { id: '2', name: '50 LP', type: 'lp', value: 50, probability: 0.25 },
+        { id: '3', name: '25 Energy', type: 'energy', value: 25, probability: 0.20 },
+        { id: '4', name: '5 Gems', type: 'gems', value: 5, probability: 0.15 },
+        { id: '5', name: 'Character Unlock', type: 'character', value: 1, probability: 0.08 },
+        { id: '6', name: 'Jackpot!', type: 'special', value: 1000, probability: 0.02 }
+      ];
+
+      // Select random prize
+      const random = Math.random();
+      let cumulativeProbability = 0;
+      let wonPrize = prizes[0];
+      
+      for (const prize of prizes) {
+        cumulativeProbability += prize.probability;
+        if (random <= cumulativeProbability) {
+          wonPrize = prize;
+          break;
+        }
+      }
+      
+      // Award the prize to user (reuse existing user variable)
+      if (user) {
+        if (wonPrize.type === 'lp') {
+          await storage.updateUser(userId, { 
+            lp: (user.lp || 0) + wonPrize.value 
+          });
+        } else if (wonPrize.type === 'energy') {
+          await storage.updateUser(userId, { 
+            energy: Math.min(user.maxEnergy || 100, (user.energy || 0) + wonPrize.value)
+          });
+        }
+      }
+      
+      // Update user with wheel spin time
+      await storage.updateUser(userId, { 
+        lastWheelSpin: now 
+      });
+      
+      return res.status(200).json({
+        success: true,
+        prizeId: wonPrize.id,
+        prize: wonPrize,
+        message: `Congratulations! You won ${wonPrize.name}!`
+      });
+      
+    } catch (error) {
+      console.error('Wheel spin error:', error);
+      return res.status(500).json({ 
+        message: 'Failed to spin wheel',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   const server = createServer(app);
   return server;
 }

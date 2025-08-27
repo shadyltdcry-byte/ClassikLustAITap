@@ -19,6 +19,7 @@ export const users = pgTable("users", {
   vipStatus: boolean("vip_status").notNull().default(false),
   nsfwConsent: boolean("nsfw_consent").notNull().default(false),
   lastTick: timestamp("last_tick").notNull().default(sql`now()`),
+  lastWheelSpin: timestamp("last_wheel_spin"),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 

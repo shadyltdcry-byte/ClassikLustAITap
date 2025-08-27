@@ -97,42 +97,49 @@ export default function WheelGame({ isOpen, onClose, userId }: WheelGameProps) {
   const [activeTab, setActiveTab] = useState("spin");
   const [rotation, setRotation] = useState(0);
 
-  // Get user stats to check wheel availability
-  const { data: stats } = useQuery({
-    queryKey: [`/api/stats/${userId}`],
+  // Get user data to check wheel availability
+  const { data: user } = useQuery({
+    queryKey: [`/api/user/${userId}`],
     enabled: isOpen,
   });
 
-  // Calculate time until next spin
+  // Calculate time until next spin (daily reset at midnight)
   useEffect(() => {
-    if (!stats?.lastWheelSpin) {
-      setTimeLeft("");
-      return;
-    }
-
     const updateTimer = () => {
-      const lastSpin = new Date(stats.lastWheelSpin);
-      const nextSpin = new Date(lastSpin.getTime() + 24 * 60 * 60 * 1000);
       const now = new Date();
-      const diff = nextSpin.getTime() - now.getTime();
+      
+      // Check if user can spin (daily reset at midnight)
+      if (user?.lastWheelSpin) {
+        const lastSpinDate = new Date(user.lastWheelSpin);
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Today at 00:00:00
+        const lastSpinDay = new Date(lastSpinDate.getFullYear(), lastSpinDate.getMonth(), lastSpinDate.getDate());
+        
+        // If the last spin was today, show countdown to next midnight
+        if (lastSpinDay.getTime() >= today.getTime()) {
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          const diff = tomorrow.getTime() - now.getTime();
 
-      if (diff <= 0) {
-        setTimeLeft("");
-        return;
+          if (diff > 0) {
+            const hours = Math.floor(diff / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+            setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+            return;
+          }
+        }
       }
-
-      const hours = Math.floor(diff / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-      setTimeLeft(`${hours}h ${minutes}m ${seconds}s`);
+      
+      // Can spin now
+      setTimeLeft("");
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
-  }, [stats]);
+  }, [user]);
 
-  const canSpin = !stats?.lastWheelSpin || timeLeft === "";
+  const canSpin = !user?.lastWheelSpin || timeLeft === "";
 
   const spinMutation = useMutation({
     mutationFn: async () => {
@@ -302,7 +309,7 @@ export default function WheelGame({ isOpen, onClose, userId }: WheelGameProps) {
                       Spinning...
                     </div>
                   ) : !canSpin ? (
-                    "Wheel on Cooldown"
+                    <>🕒 Next spin: {timeLeft}</>
                   ) : (
                     "🎯 SPIN THE WHEEL!"
                   )}
