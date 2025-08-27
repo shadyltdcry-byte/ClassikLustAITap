@@ -81,14 +81,14 @@ export default function CharacterDisplay({
                 (character?.avatarPath && character.avatarPath !== 'null' && character.avatarPath !== '/uploads/undefined') ? character.avatarPath :
                 (character?.imageUrl && character.imageUrl !== 'null' && character.imageUrl !== '/uploads/undefined') ? character.imageUrl :
                 (character?.avatarUrl && character.avatarUrl !== 'null' && character.avatarUrl !== '/uploads/undefined') ? character.avatarUrl :
-                '/uploads/placeholder-avatar.jpg'
+                'https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤'
               }
               alt={character?.name || "Player"}
               onClick={shouldOpenGallery ? onAvatarClick : handleTap}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
-                if (target.src !== window.location.origin + '/uploads/placeholder-avatar.jpg') {
-                  target.src = '/uploads/placeholder-avatar.jpg';
+                if (target.src !== 'https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤') {
+                  target.src = 'https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤';
                 }
               }}
               className={`w-full h-auto aspect-[3/4] object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-transform duration-200 ${

@@ -577,15 +577,15 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               title="Click to open Character Gallery"
             >
               <img
-                src="/uploads/placeholder-avatar.jpg"
+                src={selectedCharacter?.avatarPath || selectedCharacter?.imageUrl || selectedCharacter?.avatarUrl || "https://via.placeholder.com/64x64/1a1a1a/ff1493?text=👤"}
                 alt="Character Avatar"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  if (target.src !== window.location.origin + '/uploads/placeholder-avatar.jpg') {
-                    target.src = '/uploads/placeholder-avatar.jpg';
+                  if (target.src !== "https://via.placeholder.com/64x64/1a1a1a/ff1493?text=👤") {
+                    target.src = "https://via.placeholder.com/64x64/1a1a1a/ff1493?text=👤";
                   }
                 }}
-                className="w-16 h-16 object-cover rounded-xl shadow-lg border-2 border-purple-500/50"
+                className="w-16 h-16 object-cover rounded-xl shadow-lg border-2 border-purple-500/50 cursor-pointer hover:border-purple-400/70 transition-colors"
               />
             </div>
             <div>

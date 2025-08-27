@@ -113,7 +113,7 @@ export default function VIP({ isOpen, onClose, userId }: VIPProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="bg-gradient-to-br from-gray-900 via-purple-900 to-gray-900 text-white border-none max-w-md p-0 rounded-3xl overflow-hidden h-[700px] flex flex-col">
-        <DialogHeader className="relative p-6">
+        <DialogHeader className="p-6">
           <DialogTitle className="text-2xl font-bold text-white flex items-center justify-center">
             <Star className="w-6 h-6 text-yellow-400 mr-2" />
             VIP Membership
@@ -121,13 +121,6 @@ export default function VIP({ isOpen, onClose, userId }: VIPProps) {
           <DialogDescription className="text-white/70 text-center">
             Unlock exclusive features and premium benefits.
           </DialogDescription>
-          <Button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-8 h-8 p-0 bg-gray-800 hover:bg-gray-700"
-            variant="ghost"
-          >
-            <X className="w-4 h-4" />
-          </Button>
         </DialogHeader>
 
         {/* Current VIP Status */}
