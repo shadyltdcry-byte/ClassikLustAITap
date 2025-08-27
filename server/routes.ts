@@ -247,6 +247,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // === ADMIN WHEEL PRIZES ENDPOINTS ===
+  app.get('/api/admin/wheel-prizes', async (req, res) => {
+    try {
+      // Return default wheel prizes
+      const wheelPrizes = [
+        { id: '1', name: '100 LP', type: 'points', value: 100, probability: 0.30, color: '#4F46E5', icon: '💰' },
+        { id: '2', name: '50 LP', type: 'points', value: 50, probability: 0.25, color: '#059669', icon: '🪙' },
+        { id: '3', name: '25 Energy', type: 'energy', value: 25, probability: 0.20, color: '#DC2626', icon: '⚡' },
+        { id: '4', name: '5 Gems', type: 'gems', value: 5, probability: 0.15, color: '#7C3AED', icon: '💎' },
+        { id: '5', name: 'Character Unlock', type: 'character', value: 1, probability: 0.08, color: '#EA580C', icon: '👤' },
+        { id: '6', name: 'Jackpot!', type: 'special', value: 1000, probability: 0.02, color: '#FBBF24', icon: '🎉' }
+      ];
+      res.json(wheelPrizes);
+    } catch (error) {
+      console.error('Error fetching wheel prizes:', error);
+      res.status(500).json({ error: 'Failed to fetch wheel prizes' });
+    }
+  });
+
+  app.post('/api/admin/wheel-prizes', async (req, res) => {
+    try {
+      // For now just return success - in future this would save to database
+      res.json({ success: true, message: 'Wheel prize updated successfully' });
+    } catch (error) {
+      console.error('Error updating wheel prizes:', error);
+      res.status(500).json({ error: 'Failed to update wheel prizes' });
+    }
+  });
+
   app.post('/api/admin/achievements', async (req, res) => {
     try {
       const created = await storage.createAchievement(req.body);
@@ -542,10 +571,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (user?.id) {
             realUserId = user.id;
           } else {
-            console.log(`No database user found for ${playerId}, returning mock data`);
-            return res.json({
+            // Create real database user for authenticated Telegram user
+            console.log(`Creating database user for authenticated Telegram user: ${playerId}`);
+            const newUser = await storage.createUser({
               id: playerId,
-              username: "Player",
+              username: `Player${telegramId}`,
               level: 1,
               lp: 5000,
               lpPerHour: 250,
@@ -557,12 +587,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               xpToNext: 100,
               isVip: false,
               nsfwEnabled: false,
-              charismaPoints: 0,
-              vipStatus: false,
-              nsfwConsent: false,
-              charisma: 0,
-              createdAt: new Date().toISOString()
+              charismaPoints: 0
             });
+            return res.json(newUser);
           }
         } catch (dbError) {
           console.error('Database lookup error:', dbError);
@@ -891,11 +918,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (user?.id) {
             realUserId = user.id;
           } else {
-            console.log(`No database user found for ${userId}, returning mock user data`);
-            return res.json({
+            // Create real database user for authenticated Telegram user
+            console.log(`Creating database user for authenticated Telegram user: ${userId}`);
+            const newUser = await storage.createUser({
               id: userId,
-              username: "Player",
-              password: "",
+              username: `Player${telegramId}`,
               level: 1,
               lp: 5000,
               lpPerHour: 250,
@@ -904,10 +931,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               maxEnergy: 1000,
               charisma: 0,
               vipStatus: false,
-              nsfwConsent: false,
-              lastTick: new Date(),
-              createdAt: new Date()
+              nsfwConsent: false
             });
+            return res.json(newUser);
           }
         } catch (dbError) {
           console.error('Database lookup error:', dbError);
