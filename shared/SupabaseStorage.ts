@@ -397,9 +397,9 @@ export class SupabaseStorage implements IStorage {
       }
 
       const { data, error } = await this.supabase
-        .from('user_stats')
+        .from('users')
         .select('*')
-        .eq('user_id', realUserId)
+        .eq('id', realUserId)
         .single();
       
       if (error && error.code !== 'PGRST116') {
@@ -418,7 +418,7 @@ export class SupabaseStorage implements IStorage {
         };
         
         const { data: newData, error: createError } = await this.supabase
-          .from('user_stats')
+          .from('users')
           .insert(defaultStats)
           .select()
           .single();
@@ -472,9 +472,9 @@ export class SupabaseStorage implements IStorage {
     }
     
     const { error } = await this.supabase
-      .from('user_stats')
+      .from('users')
       .update(incrementedUpdates)
-      .eq('user_id', userId);
+      .eq('id', userId);
     
     if (error) throw error;
   }
