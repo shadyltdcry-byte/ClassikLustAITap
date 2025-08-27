@@ -568,7 +568,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       <div className="flex justify-between items-center p-4 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30 flex-shrink-0">
         
         {/* Left Section: Avatar + Username + Level */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <div className="flex flex-col items-center gap-1">
             <p className="font-medium text-sm text-center">{playerData?.username?.replace('Player', '') || playerData?.name || "ShadyLTDx"}</p>
             <div 
@@ -591,19 +591,19 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 className="w-16 h-16 object-cover rounded-xl shadow-lg border-2 border-purple-500/50 cursor-pointer hover:border-purple-400/70 transition-colors"
               />
             </div>
-            <div className="flex items-center gap-2 text-xs text-gray-400">
-              <span>Lv. {playerData?.level || 1}</span>
-              <Progress value={(playerData?.xp || 0) / (playerData?.xpToNext || 100) * 100} className="h-1 w-20" />
+            <div className="flex flex-col items-center gap-1">
+              <span className="text-white text-lg font-bold text-center drop-shadow-[2px_2px_4px_rgba(0,0,0,0.8)]">Level: {playerData?.level || 1}</span>
+              <Progress value={(playerData?.xp || 0) / (playerData?.xpToNext || 100) * 100} className="h-2 w-20" />
             </div>
           </div>
 
-          {/* Left Column: LustPoints and Lust Gems Stacked */}
-          <div className="flex flex-col gap-2">
+          {/* Left Column: LustPoints and Lust Gems Stacked (Snugged closer) */}
+          <div className="flex flex-col gap-2 ml-1">
             {/* LustPoints Frame */}
             <div className="relative px-3 py-2 bg-gradient-to-r from-pink-600/20 to-pink-500/20 border border-pink-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-pink-500/20 hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-transparent rounded-lg blur-sm"></div>
               <div className="relative flex items-center gap-2">
-                <Heart className="w-4 h-4 text-pink-400" />
+                <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
                 <span className="text-pink-200 text-sm font-bold">LustPoints:</span>
                 <span className="text-pink-100 font-bold text-sm">{playerData?.lp || 0}</span>
               </div>
@@ -613,7 +613,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             <div className="relative px-3 py-2 bg-gradient-to-r from-purple-600/20 to-purple-500/20 border border-purple-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-purple-500/20 hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent rounded-lg blur-sm"></div>
               <div className="relative flex items-center gap-2">
-                <Gem className="w-4 h-4 text-purple-400" />
+                <img src="/media/lustgems.png" alt="Gems" className="w-4 h-4" />
                 <span className="text-purple-200 text-sm font-bold">Lust Gems:</span>
                 <span className="text-purple-100 font-bold text-sm">{playerData?.lustGems || 0}</span>
               </div>
@@ -626,14 +626,14 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 to-orange-500/10 rounded-xl blur-sm"></div>
           <div className="relative flex flex-col items-center gap-1">
             <div className="flex items-center gap-2">
-              <Heart className="w-4 h-4 text-yellow-400" />
+              <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
               <span className="text-yellow-200 text-sm font-bold">LP per Hour</span>
-              <Heart className="w-4 h-4 text-yellow-400" />
+              <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
             </div>
             <div className="flex items-center justify-center">
-              <span className="text-4xl font-bold text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">∞</span>
+              <span className="text-lg font-bold text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">∞</span>
             </div>
-            <div className="text-yellow-100 font-bold text-lg">{playerData?.lpPerHour || 0}/hr</div>
+            <div className="text-yellow-100 font-bold text-2xl">{playerData?.lpPerHour || 0}/hr</div>
           </div>
         </div>
 
@@ -654,8 +654,8 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           {/* Boosters Frame (Taller) */}
           <div className="relative px-3 py-3 bg-gradient-to-r from-green-600/20 to-emerald-500/20 border border-green-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-green-500/20 hover:shadow-xl transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent rounded-lg blur-sm"></div>
-            <div className="relative">
-              <div className="flex items-center gap-2 mb-1">
+            <div className="relative text-center">
+              <div className="flex items-center justify-center gap-2 mb-1">
                 <span className="text-green-200 text-sm font-bold">Boosters</span>
               </div>
               <div className="text-green-100 text-xs">
