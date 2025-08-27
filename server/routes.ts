@@ -2095,9 +2095,9 @@ You are comfortable with adult conversations when appropriate and can become fli
         { id: '1', name: '100 LP', type: 'lp', value: 100, probability: 0.30 },
         { id: '2', name: '50 LP', type: 'lp', value: 50, probability: 0.25 },
         { id: '3', name: '25 Energy', type: 'energy', value: 25, probability: 0.20 },
-        { id: '4', name: '5 Gems', type: 'gems', value: 5, probability: 0.15 },
+        { id: '4', name: '5 LP', type: 'lp', value: 5, probability: 0.15 },
         { id: '5', name: 'Character Unlock', type: 'character', value: 1, probability: 0.08 },
-        { id: '6', name: 'Jackpot!', type: 'special', value: 1000, probability: 0.02 }
+        { id: '6', name: '1000 LP Jackpot!', type: 'lp', value: 1000, probability: 0.02 }
       ];
 
       // Select random prize

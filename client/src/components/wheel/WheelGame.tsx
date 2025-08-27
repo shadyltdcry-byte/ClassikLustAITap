@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Coins, Gift, Heart, Star, Trophy, Zap, X } from "lucide-react";
+import type { User } from '@shared/schema';
 
 interface WheelPrize {
   id: string;
@@ -98,7 +99,7 @@ export default function WheelGame({ isOpen, onClose, userId }: WheelGameProps) {
   const [rotation, setRotation] = useState(0);
 
   // Get user data to check wheel availability
-  const { data: user } = useQuery({
+  const { data: user } = useQuery<User>({
     queryKey: [`/api/user/${userId}`],
     enabled: isOpen,
   });
@@ -289,7 +290,7 @@ export default function WheelGame({ isOpen, onClose, userId }: WheelGameProps) {
                 </div>
               )}
               
-              {!timeLeft && stats?.lastWheelSpin && (
+              {!timeLeft && user?.lastWheelSpin && (
                 <div className="text-center bg-gray-600/20 border border-gray-500 rounded-lg p-4">
                   <div className="text-gray-300">Next spin available in: {timeLeft}</div>
                 </div>
