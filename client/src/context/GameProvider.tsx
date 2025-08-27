@@ -195,6 +195,11 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const timeDiff = now - state.playerData.lastTickTimestamp;
       const hoursPassed = timeDiff / (1000 * 60 * 60);
 
+      // Calculate energy regeneration (example: 1 energy per 3 seconds)
+      const energyRegenRate = 1 / 3; // per second
+      const energyToAdd = Math.floor((timeDiff / 1000) * energyRegenRate);
+      const newEnergy = Math.min(state.playerData.maxEnergy, state.playerData.energy + energyToAdd);
+
       // Only calculate offline LP if more than 5 minutes passed
       const minOfflineMinutes = 5;
       const minutesPassed = timeDiff / (1000 * 60);
@@ -215,11 +220,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const maxOfflineHours = 3;
       const effectiveHours = Math.min(hoursPassed, maxOfflineHours);
       const offlineLP = Math.floor(state.playerData.lpPerHour * effectiveHours * state.playerData.offlineMultiplier);
-
-      // Calculate energy regeneration (example: 1 energy per 3 seconds)
-      const energyRegenRate = 1 / 3; // per second
-      const energyToAdd = Math.floor((timeDiff / 1000) * energyRegenRate);
-      const newEnergy = Math.min(state.playerData.maxEnergy, state.playerData.energy + energyToAdd);
 
       return {
         ...state,
