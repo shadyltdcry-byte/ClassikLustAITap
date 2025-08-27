@@ -18,8 +18,20 @@ interface Achievement {
   name: string;
   description?: string;
   category: string;
-  requirement: any;
-  reward: any;
+  baseRequirement: {
+    type: string;
+    baseTarget: number;
+    multiplier: number;
+  };
+  levels: {
+    level: number;
+    target: number;
+    reward: {
+      type: string;
+      amount: number;
+    };
+  }[];
+  maxLevel: number;
   icon?: string;
   isHidden: boolean;
   isEnabled: boolean;
@@ -54,8 +66,13 @@ export default function AchievementManagement() {
     name: '',
     description: '',
     category: 'tapping',
-    requirement: { type: 'total_taps', target: 100 },
-    reward: { type: 'lp', amount: 500 },
+    baseRequirement: { type: 'total_taps', baseTarget: 10, multiplier: 2 },
+    levels: [
+      { level: 1, target: 10, reward: { type: 'lp', amount: 100 } },
+      { level: 2, target: 20, reward: { type: 'lp', amount: 200 } },
+      { level: 3, target: 40, reward: { type: 'lp', amount: 400 } }
+    ],
+    maxLevel: 10,
     icon: '',
     isHidden: false,
     isEnabled: true,

@@ -162,8 +162,9 @@ export const achievements = pgTable("achievements", {
   name: text("name").notNull(),
   description: text("description"),
   category: text("category").notNull(), // tapping, chatting, progression, special
-  requirement: jsonb("requirement").notNull(), // {type: "total_taps", target: 1000}
-  reward: jsonb("reward").notNull(), // {type: "lp", amount: 500}
+  baseRequirement: jsonb("base_requirement").notNull(), // {type: "total_taps", baseTarget: 10, multiplier: 2}
+  levels: jsonb("levels").notNull().default(sql`'[]'::jsonb`), // [{level: 1, target: 10, reward: {type: "lp", amount: 100}}, {level: 2, target: 20, reward: {type: "lp", amount: 200}}]
+  maxLevel: integer("max_level").notNull().default(30),
   icon: text("icon"),
   isHidden: boolean("is_hidden").notNull().default(false),
   isEnabled: boolean("is_enabled").notNull().default(true),
@@ -175,10 +176,12 @@ export const userAchievements = pgTable("user_achievements", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   achievementId: uuid("achievement_id").notNull().references(() => achievements.id, { onDelete: "cascade" }),
+  currentLevel: integer("current_level").notNull().default(1),
   progress: integer("progress").notNull().default(0),
-  completed: boolean("completed").notNull().default(false),
+  completed: boolean("completed").notNull().default(false), // True when max level reached
+  lastClaimedLevel: integer("last_claimed_level").notNull().default(0),
   completedAt: timestamp("completed_at"),
-  claimedAt: timestamp("claimed_at"),
+  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
 });
 
 // Relations

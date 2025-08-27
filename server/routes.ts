@@ -329,6 +329,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Add seed achievements endpoint for development
+  app.post('/api/admin/seed-achievements', async (req, res) => {
+    try {
+      const { DEFAULT_ACHIEVEMENTS } = await import('./achievements/defaultAchievements.js');
+      
+      for (const defaultAchievement of DEFAULT_ACHIEVEMENTS) {
+        try {
+          await storage.createAchievement(defaultAchievement);
+          console.log(`✅ Seeded achievement: ${defaultAchievement.name}`);
+        } catch (error) {
+          console.log(`⚠️ Achievement ${defaultAchievement.name} might already exist, skipping...`);
+        }
+      }
+      
+      res.json({ 
+        message: `Seeded ${DEFAULT_ACHIEVEMENTS.length} default achievements`,
+        achievements: DEFAULT_ACHIEVEMENTS.map(a => a.name)
+      });
+    } catch (error) {
+      console.error('Error seeding achievements:', error);
+      res.status(500).json({ error: 'Failed to seed achievements' });
+    }
+  });
+
   // Character tap endpoint  
   app.post("/api/game/tap", async (req, res) => {
     try {
