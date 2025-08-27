@@ -56,9 +56,10 @@ export default function CharacterDisplay({
     setTapEffect(true);
     onTap(event);
 
+    // Much faster reset for fluid rapid tapping
     setTimeout(() => {
       setTapEffect(false);
-    }, 200);
+    }, 80);
   };
 
   // If this is the default "Select Character" state, should open gallery, not tap
