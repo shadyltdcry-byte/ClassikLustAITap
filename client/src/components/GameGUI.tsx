@@ -589,7 +589,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       <div className="flex justify-between items-center p-4 pr-6 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30 flex-shrink-0">
         
         {/* Left Section: Avatar + Username + Level */}
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-3">
           <div className="flex flex-col items-center gap-1">
             <p className="font-medium text-sm text-center">{playerData?.username?.replace('Player', '') || playerData?.name || "ShadyLTDx"}</p>
             <div 
@@ -619,7 +619,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           </div>
 
           {/* Left Column: LustPoints and Lust Gems Stacked (More compact) */}
-          <div className="flex flex-col gap-1 ml-2">
+          <div className="flex flex-col gap-1 ml-3">
             {/* LustPoints Frame */}
             <div className="relative px-2 py-1 bg-gradient-to-r from-pink-600/20 to-pink-500/20 border border-pink-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-pink-500/20 hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-transparent rounded-lg blur-sm"></div>
@@ -643,7 +643,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         </div>
 
         {/* Center Section: LP per Hour (More spaced out) */}
-        <div className="relative px-4 py-2 mx-4 bg-gradient-to-r from-yellow-600/20 to-orange-500/20 border border-yellow-400/30 rounded-xl shadow-xl backdrop-blur-sm hover:shadow-yellow-500/30 hover:shadow-2xl transition-all duration-300 flex-shrink-0">
+        <div className="relative px-4 py-2 mx-6 bg-gradient-to-r from-yellow-600/20 to-orange-500/20 border border-yellow-400/30 rounded-xl shadow-xl backdrop-blur-sm hover:shadow-yellow-500/30 hover:shadow-2xl transition-all duration-300">
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 to-orange-500/10 rounded-xl blur-sm"></div>
           <div className="relative flex items-center gap-2">
             <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
@@ -655,7 +655,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         </div>
 
         {/* Right Section: Energy and Boosters Stacked (More spaced out) */}
-        <div className="flex flex-col gap-1 flex-shrink-0">
+        <div className="flex flex-col gap-1">
           {/* Energy Frame */}
           <div className="relative px-2 py-1 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-blue-500/20 hover:shadow-xl transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent rounded-lg blur-sm"></div>
