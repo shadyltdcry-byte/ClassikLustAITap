@@ -14,8 +14,8 @@ export function useGameState() {
   const userQuery = useQuery<User>({
     queryKey: ["/api/user", userId],
     enabled,
-    refetchInterval: 120000, // Refresh every 2 minutes (less noise)
-    retry: 1, // Only retry once on failure
+    refetchInterval: false, // DISABLED - Stop auto-polling to prevent spam
+    retry: false, // DISABLED - Stop retries during network issues
   });
 
   // Fetch selected character
