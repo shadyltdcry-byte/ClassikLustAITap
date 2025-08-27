@@ -645,26 +645,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!user) {
         // Create default user if not exists - using timestamp-based username to avoid duplicates
         user = await storage.createUser({
-          id: playerId,
-          // username will be auto-generated in storage.createUser
+          username: `Player${Date.now()}`,
+          password: 'telegram_auth',
           level: 1,
           lp: 5000,
           lpPerHour: 250,
           lpPerTap: 1.5,
           energy: 1000,
           maxEnergy: 1000,
-          coins: 0,
-          xp: 0,
-          xpToNext: 100,
-          isVip: false,
-          nsfwEnabled: false,
-          charismaPoints: 0
+          charisma: 0,
+          vipStatus: false,
+          nsfwConsent: false
         });
       }
 
       res.json(user);
     } catch (error) {
-      console.error('Error fetching player:', error);
+      console.error('Error fetching player:', error as Error);
       res.status(500).json({ error: 'Failed to fetch player data' });
     }
   });
@@ -1148,7 +1145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const messages = await storage.getChatMessages(userId, characterId);
       res.json(messages);
     } catch (error) {
-      console.error("Error fetching chat messages:", error);
+      console.error("Error fetching chat messages:", error as Error);
       res.status(500).json({ error: "Failed to fetch messages" });
     }
   });
@@ -1166,14 +1163,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         characterId,
         message,
-        isFromUser,
-        mood: mood || 'normal',
-        type
+        response: isFromUser ? null : message
       });
 
       res.json(chatMessage);
     } catch (error) {
-      console.error("Error saving chat message:", error);
+      console.error("Error saving chat message:", error as Error);
       res.status(500).json({ error: "Failed to save message" });
     }
   });
@@ -1379,10 +1374,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         try {
           // Update using raw SQL to bypass Supabase cache issues
           const { createClient } = await import('@supabase/supabase-js');
-          const supabase = createClient(
-            process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-            process.env.VITE_SUPABASE_SERVICE_ROLE_KEY
-          );
+          const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+          const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+          
+          if (!supabaseUrl || !supabaseKey) {
+            throw new Error('Missing Supabase credentials');
+          }
+          
+          const supabase = createClient(supabaseUrl, supabaseKey);
           
           const { error } = await supabase.rpc('update_user_stats', {
             telegram_user_id: telegramId,
@@ -1908,8 +1907,8 @@ You are comfortable with adult conversations when appropriate and can become fli
       
       res.json({ success: true, message: 'Debugger system initialized' });
     } catch (error) {
-      console.error('Debugger init error:', error);
-      res.status(500).json({ success: false, error: error.message });
+      console.error('Debugger init error:', error as Error);
+      res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
 
@@ -1925,8 +1924,8 @@ You are comfortable with adult conversations when appropriate and can become fli
       
       res.json({ success: true, result });
     } catch (error) {
-      console.error('Debugger command error:', error);
-      res.status(500).json({ success: false, error: error.message });
+      console.error('Debugger command error:', error as Error);
+      res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
 
@@ -1953,7 +1952,7 @@ You are comfortable with adult conversations when appropriate and can become fli
       });
     } catch (error) {
       console.error('Debugger status error:', error);
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
 
@@ -1967,7 +1966,7 @@ You are comfortable with adult conversations when appropriate and can become fli
       res.json({ success: true, message: 'Debugger stopped' });
     } catch (error) {
       console.error('Debugger stop error:', error);
-      res.status(500).json({ success: false, error: error.message });
+      res.status(500).json({ success: false, error: (error as Error).message });
     }
   });
 

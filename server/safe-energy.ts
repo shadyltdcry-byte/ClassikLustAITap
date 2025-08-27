@@ -6,14 +6,9 @@ let energyInterval: NodeJS.Timeout | null = null;
 
 async function regenerateEnergy() {
   try {
-    const users = await storage.getAllUsers();
-    for (const user of users) {
-      if (user.energy < user.maxEnergy) {
-        const newEnergy = Math.min(user.maxEnergy, user.energy + 5);
-        await storage.updateUser(user.id, { energy: newEnergy });
-      }
-    }
-    console.log(`[Energy Regen] Updated ${users.length} users`);
+    // SupabaseStorage doesn't have getAllUsers method yet, disable energy regen for now
+    console.log('[Energy Regen] Skipping - getAllUsers not implemented in SupabaseStorage');
+    return;
   } catch (err) {
     console.error("[Energy Regen] Error:", err);
   }
