@@ -35,6 +35,8 @@ interface PlayerData {
   avatar?: string;
   lastTickTimestamp: number;
   offlineMultiplier: number;
+  pendingOfflineLP?: number;
+  offlineDuration?: number;
   isVip: boolean;
   nsfwEnabled: boolean;
   charismaPoints: number;
@@ -92,6 +94,7 @@ type GameAction =
   | { type: 'ADD_CHARACTER'; payload: any }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SYNC_WITH_SERVER'; payload: Partial<PlayerData> }
+  | { type: 'CLAIM_OFFLINE_LP' }
   | { type: 'RESET_GAME' };
 
 // Generate a proper UUID for the player
@@ -192,8 +195,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const timeDiff = now - state.playerData.lastTickTimestamp;
       const hoursPassed = timeDiff / (1000 * 60 * 60);
 
-      // Calculate offline LP (capped at 2 hours as per README)
-      const maxOfflineHours = 2;
+      // Only calculate offline LP if more than 5 minutes passed
+      const minOfflineMinutes = 5;
+      const minutesPassed = timeDiff / (1000 * 60);
+      
+      if (minutesPassed < minOfflineMinutes) {
+        // Not enough time for offline income
+        return {
+          ...state,
+          playerData: {
+            ...state.playerData,
+            energy: newEnergy,
+            lastTickTimestamp: now,
+          },
+        };
+      }
+
+      // Calculate offline LP (capped at 3 hours)
+      const maxOfflineHours = 3;
       const effectiveHours = Math.min(hoursPassed, maxOfflineHours);
       const offlineLP = Math.floor(state.playerData.lpPerHour * effectiveHours * state.playerData.offlineMultiplier);
 
@@ -206,7 +225,9 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         playerData: {
           ...state.playerData,
-          lp: state.playerData.lp + offlineLP,
+          // Don't auto-add offline LP - store for claiming
+          pendingOfflineLP: offlineLP,
+          offlineDuration: timeDiff,
           energy: newEnergy,
           lastTickTimestamp: now,
         },
@@ -330,6 +351,18 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         lastSaveTime: Date.now(),
       };
 
+    case 'CLAIM_OFFLINE_LP':
+      const pendingLP = state.playerData.pendingOfflineLP || 0;
+      return {
+        ...state,
+        playerData: {
+          ...state.playerData,
+          lp: state.playerData.lp + pendingLP,
+          pendingOfflineLP: undefined,
+          offlineDuration: undefined,
+        },
+      };
+
     case 'RESET_GAME':
       return {
         ...initialState,
@@ -356,6 +389,7 @@ interface GameContextType {
   selectCharacter: (character: any) => void;
   addCharacter: (character: any) => void;
   completeTask: (task: any) => void;
+  claimOfflineIncome: () => void;
   saveGame: () => Promise<void>;
   loadGame: () => Promise<void>;
   resetGame: () => void;
@@ -472,9 +506,15 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         if (response.ok) {
           const serverData = await response.json();
           dispatch({ type: 'SYNC_WITH_SERVER', payload: serverData });
+          
+          // Calculate offline income after syncing server data
+          dispatch({ type: 'UPDATE_TICK' });
         }
       } catch (serverError) {
         console.warn('Failed to sync with server, using local data:', serverError);
+        
+        // Still calculate offline income even if server sync failed
+        dispatch({ type: 'UPDATE_TICK' });
       }
     } catch (error) {
       console.error('Failed to load game:', error);
@@ -526,6 +566,20 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
     completeTask: (task: any) =>
       dispatch({ type: 'COMPLETE_TASK', payload: task }),
+
+    claimOfflineIncome: async () => {
+      dispatch({ type: 'CLAIM_OFFLINE_LP' });
+      
+      // Sync with server to update lastTick timestamp
+      try {
+        await apiRequest('PUT', `/api/player/${state.playerData.id}`, {
+          ...state.playerData,
+          lastTick: new Date()
+        });
+      } catch (error) {
+        console.warn('Failed to sync offline claim with server:', error);
+      }
+    },
 
     resetGame: () =>
       dispatch({ type: 'RESET_GAME' }),

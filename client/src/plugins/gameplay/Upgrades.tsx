@@ -198,8 +198,8 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
                       {/* Cost & Purchase */}
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Coins className="w-4 h-4 text-yellow-400" />
-                          <span className={`font-bold ${canAffordUpgrade(upgrade.cost) ? "text-yellow-400" : "text-red-400"}`}>
+                          <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+                          <span className={`font-bold ${canAffordUpgrade(upgrade.cost) ? "text-pink-400" : "text-red-400"}`}>
                             {upgrade.cost} LP
                           </span>
                         </div>

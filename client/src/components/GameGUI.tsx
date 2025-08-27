@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import CharacterGallery from "@/components/CharacterGallery";
+import OfflineIncomeDialog from "@/components/OfflineIncomeDialog";
 import AdminMenu from "@/plugins/admin/AdminMenu";
 import AIChat from "@/plugins/aicore/AIChat";
 import LevelUp from "@/plugins/gameplay/LevelUp";
@@ -31,6 +32,7 @@ import Upgrades from "@/plugins/gameplay/Upgrades";
 import WheelGame from "@/components/wheel/WheelGame";
 import VIP from "@/components/vip/VIP";
 import { useGameState } from "@/hooks/use-game-state";
+import { useGame } from "@/context/GameProvider";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 //import { AdminUIToggler } from './debugger/modules/adminUI';
 
@@ -91,6 +93,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   
   // Use game state hook to get selected character
   const { user, character: selectedCharacter, stats, isLoading, tap, isTapping: gameStateTapping } = useGameState();
+  
+  // Use game provider for offline income
+  const { playerData: gamePlayerData, claimOfflineIncome } = useGame();
 
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
@@ -99,6 +104,16 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     showWheelGame: false,
     showVIP: false,
   });
+
+  // Offline income dialog state
+  const [showOfflineDialog, setShowOfflineDialog] = useState(false);
+  
+  // Watch for offline income to become available
+  React.useEffect(() => {
+    if ((gamePlayerData?.pendingOfflineLP || 0) > 0 && !showOfflineDialog) {
+      setShowOfflineDialog(true);
+    }
+  }, [gamePlayerData?.pendingOfflineLP, showOfflineDialog]);
 
 
   const [isTapping, setIsTapping] = useState(false);
@@ -581,8 +596,23 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     }
   };
 
+  // Handle offline income claim
+  const handleClaimOfflineIncome = () => {
+    claimOfflineIncome();
+    setShowOfflineDialog(false);
+  };
+
   return (
     <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white overflow-hidden">
+      
+      {/* Offline Income Dialog */}
+      <OfflineIncomeDialog
+        isOpen={showOfflineDialog}
+        onClaim={handleClaimOfflineIncome}
+        onClose={() => setShowOfflineDialog(false)}
+        offlineLP={gamePlayerData?.pendingOfflineLP || 0}
+        offlineDuration={gamePlayerData?.offlineDuration || 0}
+      />
 
       {/* Status Bar */}
       <div className="flex justify-between items-center p-4 pr-6 bg-gradient-to-r from-pink-900/30 to-red-900/30 border-b border-pink-500/30 flex-shrink-0">
