@@ -1021,9 +1021,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
               lpPerTap: 1.5,
               sessionsPlayed: 5,
               upgrades: {
-                intellect: 1,
-                dexterity: 1,
-                booksmarts: 1
+                charm: 1,
+                appeal: 1,
+                magnetism: 1
               }
             });
           }
@@ -1039,9 +1039,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             lpPerTap: 1.5,
             sessionsPlayed: 5,
             upgrades: {
-              intellect: 1,
-              dexterity: 1,
-              booksmarts: 1
+              charm: 1,
+              appeal: 1,
+              magnetism: 1
             }
           });
         }
@@ -1061,9 +1061,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lpPerTap: 1.5,
           sessionsPlayed: 5,
           upgrades: {
-            intellect: 1,
-            dexterity: 1,
-            booksmarts: 1
+            charm: 1,
+            appeal: 1,
+            magnetism: 1
           }
         });
       }
