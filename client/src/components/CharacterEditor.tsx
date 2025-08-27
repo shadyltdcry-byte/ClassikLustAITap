@@ -418,15 +418,23 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {(mediaFiles as any[]).filter((file: any) => file.fileName && file.fileName !== 'undefined').map((file: any, index: number) => (
-                                  <SelectItem
-                                    key={`main-image-${file.id || index}`}
-                                    value={file.filePath || `/uploads/${file.fileName}`}
-                                    className="text-white"
-                                  >
-                                    {file.fileName || 'Unnamed file'}
-                                  </SelectItem>
-                                ))}
+                                {(mediaFiles as any[]).filter((file: any) => 
+                                  (file.fileName && file.fileName !== 'undefined' && file.fileName !== '') || 
+                                  (file.filePath && file.filePath !== '' && !file.filePath.includes('undefined'))
+                                ).map((file: any, index: number) => {
+                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `File ${index + 1}`;
+                                  const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                  
+                                  return (
+                                    <SelectItem
+                                      key={`main-image-${file.id || index}`}
+                                      value={filePath}
+                                      className="text-white"
+                                    >
+                                      {displayName}
+                                    </SelectItem>
+                                  );
+                                })}
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -449,15 +457,23 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {(mediaFiles as any[]).filter((file: any) => file.fileName && file.fileName !== 'undefined').map((file: any, index: number) => (
-                                  <SelectItem
-                                    key={`avatar-image-${file.id || index}`}
-                                    value={file.filePath || `/uploads/${file.fileName}`}
-                                    className="text-white"
-                                  >
-                                    {file.fileName || 'Unnamed file'}
-                                  </SelectItem>
-                                ))}
+                                {(mediaFiles as any[]).filter((file: any) => 
+                                  (file.fileName && file.fileName !== 'undefined' && file.fileName !== '') || 
+                                  (file.filePath && file.filePath !== '' && !file.filePath.includes('undefined'))
+                                ).map((file: any, index: number) => {
+                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `File ${index + 1}`;
+                                  const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                  
+                                  return (
+                                    <SelectItem
+                                      key={`avatar-image-${file.id || index}`}
+                                      value={filePath}
+                                      className="text-white"
+                                    >
+                                      {displayName}
+                                    </SelectItem>
+                                  );
+                                })}
                               </SelectContent>
                             </Select>
                           </FormControl>
