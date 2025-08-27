@@ -1091,9 +1091,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         charisma: user.charisma || 0,
         sessionsPlayed: gameStats.sessionsPlayed || 0,
         upgrades: {
-          intellect: 1,
-          dexterity: 1,
-          booksmarts: 1
+          charm: 1,
+          appeal: 1,
+          magnetism: 1
         }
       });
     } catch (error) {
@@ -1117,9 +1117,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Plugin endpoints for your custom plugins
   app.get("/api/plugins/upgrades", (req, res) => {
     res.json([
-      { id: "intellect", name: "Increase Intellect", category: "lpPerHour", level: 1, cost: 1500, effect: 150 },
-      { id: "dexterity", name: "Dexterity", category: "lpPerTap", level: 1, cost: 2500, effect: 1 },
-      { id: "booksmarts", name: "Book Smarts", category: "energy", level: 1, cost: 1500, effect: 100 }
+      { id: "charm", name: "Increase Charm", category: "lpPerHour", level: 1, cost: 1500, effect: 150 },
+      { id: "appeal", name: "Physical Appeal", category: "lpPerTap", level: 1, cost: 2500, effect: 1 },
+      { id: "magnetism", name: "Personal Magnetism", category: "energy", level: 1, cost: 1500, effect: 100 }
     ]);
   });
 
@@ -1137,9 +1137,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Missing API endpoints
   app.get("/api/upgrades", (req, res) => {
     res.json([
-      { id: "intellect", name: "Increase Intellect", category: "lpPerHour", level: 1, cost: 1500, effect: 150 },
-      { id: "dexterity", name: "Dexterity", category: "lpPerTap", level: 1, cost: 2500, effect: 1 },
-      { id: "booksmarts", name: "Book Smarts", category: "energy", level: 1, cost: 1500, effect: 100 }
+      { id: "charm", name: "Increase Charm", category: "lpPerHour", level: 1, cost: 1500, effect: 150 },
+      { id: "appeal", name: "Physical Appeal", category: "lpPerTap", level: 1, cost: 2500, effect: 1 },
+      { id: "magnetism", name: "Personal Magnetism", category: "energy", level: 1, cost: 1500, effect: 100 }
     ]);
   });
 
