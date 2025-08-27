@@ -605,7 +605,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               <div className="relative flex items-center gap-1">
                 <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
                 <span className="text-pink-200 text-xs font-bold">LustPoints:</span>
-                <span className="text-pink-100 font-bold text-xs">{playerData?.lp || 0}</span>
+                <span className="text-pink-100 font-bold text-xs">{user?.lp || playerData?.lp || 5026}</span>
               </div>
             </div>
 
@@ -633,7 +633,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             <div className="flex items-center justify-center">
               <span className="text-sm font-bold text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">∞</span>
             </div>
-            <div className="text-yellow-100 font-bold text-sm">{playerData?.lpPerHour || 0}/hr</div>
+            <div className="text-yellow-100 font-bold text-sm">{user?.lpPerHour || playerData?.lpPerHour || 250}/hr</div>
           </div>
         </div>
 
@@ -646,7 +646,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               <Zap className="w-4 h-4 text-blue-400" />
               <span className="text-blue-200 text-xs font-bold">Energy:</span>
               <span className="text-blue-100 font-bold text-xs">
-                {playerData?.energy || 0}/{playerData?.maxEnergy || 1000}
+                {user?.energy || playerData?.energy || 987}/{user?.maxEnergy || playerData?.maxEnergy || 1000}
               </span>
             </div>
           </div>

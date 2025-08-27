@@ -1379,6 +1379,51 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // 🎮 TAP ENDPOINT - The missing piece!
+  app.post('/api/tap', async (req, res) => {
+    try {
+      const { userId } = req.body;
+      if (!userId) {
+        return res.status(400).json({ error: 'User ID required' });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
+      // Check if user has energy
+      if (user.energy <= 0) {
+        return res.status(400).json({ error: 'No energy left' });
+      }
+
+      // Calculate LP per tap (base 1 + upgrades)
+      const lpPerTap = 1; // TODO: Add upgrade calculations
+      
+      // Update user stats
+      const newLp = user.lp + lpPerTap;
+      const newEnergy = Math.max(0, user.energy - 1);
+
+      const updatedUser = await storage.updateUser(userId, {
+        lp: newLp,
+        energy: newEnergy
+      });
+
+      console.log(`💥 TAP! ${userId} gained ${lpPerTap} LP, energy: ${newEnergy}`);
+      
+      res.json({ 
+        success: true, 
+        lpGained: lpPerTap,
+        newLp: newLp,
+        newEnergy: newEnergy,
+        user: updatedUser 
+      });
+    } catch (error) {
+      console.error('Tap error:', error);
+      res.status(500).json({ error: 'Failed to process tap' });
+    }
+  });
+
   // Level up player endpoint
   app.post('/api/admin/player/:playerId/level-up', async (req, res) => {
     try {
