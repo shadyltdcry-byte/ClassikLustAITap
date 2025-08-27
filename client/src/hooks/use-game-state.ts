@@ -54,8 +54,8 @@ export function useGameState() {
       return response.json();
     },
     onSuccess: () => {
-      // REMOVED - These were causing API cascade spam after every tap
-      // The server already returns updated user data in the tap response
+      // Only invalidate user data to update LP display (no stats to avoid API spam)
+      queryClient.invalidateQueries({ queryKey: ["/api/user", userId] });
     },
   });
 
