@@ -471,12 +471,14 @@ export class SupabaseStorage implements IStorage {
       incrementedUpdates.total_energy_used = (currentStats.totalEnergyUsed || 0) + (updates.totalEnergyUsed - (currentStats.totalEnergyUsed || 0));
     }
     
-    const { error } = await this.supabase
-      .from('user_stats')
-      .update(incrementedUpdates)
-      .eq('user_id', userId);
-    
-    if (error) throw error;
+    // DISABLED: user_stats table was removed during ghost column cleanup
+    // const { error } = await this.supabase
+    //   .from('user_stats')
+    //   .update(incrementedUpdates)
+    //   .eq('user_id', userId);
+    // 
+    // if (error) throw error;
+    console.log('📊 User stats update skipped - table removed during cleanup');
   }
 
   // Chat system

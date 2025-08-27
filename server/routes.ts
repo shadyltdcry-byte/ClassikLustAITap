@@ -1430,8 +1430,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Calculate LP per tap (use user's lpPerTap stat)
       const lpPerTap = user.lpPerTap || 1.5; // Use user's actual lpPerTap stat
       
-      // Update user stats - PARSE LP AS NUMBER to prevent string concatenation!
-      const currentLp = parseInt(String(user.lp)) || 0;
+      // Update user stats - PARSE LP AS FLOAT to support decimals like 1.5!
+      const currentLp = parseFloat(String(user.lp)) || 0;
       const newLp = currentLp + lpPerTap;
       const newEnergy = Math.max(0, user.energy - 1);
       
