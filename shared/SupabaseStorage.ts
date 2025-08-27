@@ -63,14 +63,14 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .select('*')
-        .eq('telegramId', telegramId)
-        .single();
+        .eq('telegram_id', telegramId)
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching user by telegram ID:', error);
         return undefined;
       }
-      return data;
+      return data || undefined;
     } else {
       // Regular UUID lookup
       const { data, error } = await this.supabase
@@ -366,8 +366,8 @@ export class SupabaseStorage implements IStorage {
         const { data: user } = await this.supabase
           .from('users')
           .select('id')
-          .eq('telegramId', telegramId)
-          .single();
+          .eq('telegram_id', telegramId)
+          .maybeSingle();
         
         if (user?.id) {
           realUserId = user.id;
