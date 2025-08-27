@@ -22,6 +22,8 @@ export function useGameState() {
   const characterQuery = useQuery<Character>({
     queryKey: ["/api/character/selected", userId],
     enabled,
+    staleTime: 10 * 60 * 1000, // 10 minute cache for character data
+    refetchInterval: false,
     queryFn: async () => {
       if (!userId) throw new Error('No user ID');
       const response = await fetch(`/api/character/selected/${userId}`);
@@ -34,6 +36,8 @@ export function useGameState() {
   const statsQuery = useQuery<GameStats>({
     queryKey: ["/api/stats", userId],
     enabled,
+    staleTime: 2 * 60 * 1000, // 2 minute cache for stats
+    refetchInterval: false,
     queryFn: async () => {
       if (!userId) throw new Error('No user ID');
       const response = await fetch(`/api/stats/${userId}`);
