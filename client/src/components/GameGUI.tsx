@@ -597,66 +597,66 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             </div>
           </div>
 
-          {/* Left Column: LustPoints and Lust Gems Stacked (Snugged closer) */}
-          <div className="flex flex-col gap-2 ml-1">
+          {/* Left Column: LustPoints and Lust Gems Stacked (More compact) */}
+          <div className="flex flex-col gap-1 ml-1">
             {/* LustPoints Frame */}
-            <div className="relative px-3 py-2 bg-gradient-to-r from-pink-600/20 to-pink-500/20 border border-pink-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-pink-500/20 hover:shadow-xl transition-all duration-300">
+            <div className="relative px-2 py-1 bg-gradient-to-r from-pink-600/20 to-pink-500/20 border border-pink-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-pink-500/20 hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-pink-500/10 to-transparent rounded-lg blur-sm"></div>
-              <div className="relative flex items-center gap-2">
+              <div className="relative flex items-center gap-1">
                 <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
-                <span className="text-pink-200 text-sm font-bold">LustPoints:</span>
-                <span className="text-pink-100 font-bold text-sm">{playerData?.lp || 0}</span>
+                <span className="text-pink-200 text-xs font-bold">LustPoints:</span>
+                <span className="text-pink-100 font-bold text-xs">{playerData?.lp || 0}</span>
               </div>
             </div>
 
             {/* Lust Gems Frame */}
-            <div className="relative px-3 py-2 bg-gradient-to-r from-purple-600/20 to-purple-500/20 border border-purple-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-purple-500/20 hover:shadow-xl transition-all duration-300">
+            <div className="relative px-2 py-1 bg-gradient-to-r from-purple-600/20 to-purple-500/20 border border-purple-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-purple-500/20 hover:shadow-xl transition-all duration-300">
               <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-transparent rounded-lg blur-sm"></div>
-              <div className="relative flex items-center gap-2">
+              <div className="relative flex items-center gap-1">
                 <img src="/media/lustgems.png" alt="Gems" className="w-4 h-4" />
-                <span className="text-purple-200 text-sm font-bold">Lust Gems:</span>
-                <span className="text-purple-100 font-bold text-sm">{playerData?.lustGems || 0}</span>
+                <span className="text-purple-200 text-xs font-bold whitespace-nowrap">Lust Gems:</span>
+                <span className="text-purple-100 font-bold text-xs">{playerData?.lustGems || 0}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Center Section: LP per Hour (Bigger) */}
-        <div className="relative px-4 py-3 bg-gradient-to-r from-yellow-600/20 to-orange-500/20 border border-yellow-400/30 rounded-xl shadow-xl backdrop-blur-sm hover:shadow-yellow-500/30 hover:shadow-2xl transition-all duration-300">
+        {/* Center Section: LP per Hour (More spaced out) */}
+        <div className="relative px-3 py-2 mx-8 bg-gradient-to-r from-yellow-600/20 to-orange-500/20 border border-yellow-400/30 rounded-xl shadow-xl backdrop-blur-sm hover:shadow-yellow-500/30 hover:shadow-2xl transition-all duration-300">
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/15 to-orange-500/10 rounded-xl blur-sm"></div>
           <div className="relative flex flex-col items-center gap-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
               <span className="text-yellow-200 text-sm font-bold">LP per Hour</span>
               <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
             </div>
             <div className="flex items-center justify-center">
-              <span className="text-lg font-bold text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">∞</span>
+              <span className="text-sm font-bold text-transparent bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text">∞</span>
             </div>
-            <div className="text-yellow-100 font-bold text-2xl">{playerData?.lpPerHour || 0}/hr</div>
+            <div className="text-yellow-100 font-bold text-sm">{playerData?.lpPerHour || 0}/hr</div>
           </div>
         </div>
 
-        {/* Right Section: Energy and Boosters Stacked */}
-        <div className="flex flex-col gap-2">
+        {/* Right Section: Energy and Boosters Stacked (More spaced out) */}
+        <div className="flex flex-col gap-1">
           {/* Energy Frame */}
-          <div className="relative px-3 py-2 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-blue-500/20 hover:shadow-xl transition-all duration-300">
+          <div className="relative px-2 py-1 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-blue-500/20 hover:shadow-xl transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent rounded-lg blur-sm"></div>
-            <div className="relative flex items-center gap-2">
+            <div className="relative flex items-center gap-1">
               <Zap className="w-4 h-4 text-blue-400" />
-              <span className="text-blue-200 text-sm font-bold">Energy:</span>
-              <span className="text-blue-100 font-bold text-sm">
+              <span className="text-blue-200 text-xs font-bold">Energy:</span>
+              <span className="text-blue-100 font-bold text-xs">
                 {playerData?.energy || 0}/{playerData?.maxEnergy || 1000}
               </span>
             </div>
           </div>
 
           {/* Boosters Frame (Taller) */}
-          <div className="relative px-3 py-3 bg-gradient-to-r from-green-600/20 to-emerald-500/20 border border-green-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-green-500/20 hover:shadow-xl transition-all duration-300">
+          <div className="relative px-2 py-2 bg-gradient-to-r from-green-600/20 to-emerald-500/20 border border-green-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-green-500/20 hover:shadow-xl transition-all duration-300">
             <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-transparent rounded-lg blur-sm"></div>
             <div className="relative text-center">
-              <div className="flex items-center justify-center gap-2 mb-1">
-                <span className="text-green-200 text-sm font-bold">Boosters</span>
+              <div className="flex items-center justify-center mb-1">
+                <span className="text-green-200 text-xs font-bold">Boosters</span>
               </div>
               <div className="text-green-100 text-xs">
                 +20% LP [2:30]
