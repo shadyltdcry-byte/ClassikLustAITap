@@ -446,10 +446,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Use SQL increment for better performance and accuracy
         // Use direct database update instead of supabase RPC
         await storage.updateUserStats(realUserId, {
-          p_user_id: realUserId,
-          p_taps: 1,
-          p_lp_earned: lpGain,
-          p_energy_used: 1
+          totalTaps: 1,
+          totalLpEarned: lpGain,
+          totalEnergyUsed: 1
         });
 
         // Stats updated successfully
