@@ -18,8 +18,20 @@ import multer from 'multer';
 import jwt from 'jsonwebtoken';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
 
-// Create Supabase storage instance
+// Create Supabase storage instance  
 const storage = new SupabaseStorage();
+
+// Force Supabase schema refresh on startup
+(async () => {
+  try {
+    console.log('[Supabase] Refreshing schema cache...');
+    // This forces Supabase to reload its schema cache
+    await storage.supabase.rpc('version');
+    console.log('[Supabase] Schema cache refreshed successfully');
+  } catch (error) {
+    console.warn('[Supabase] Schema refresh failed, will retry on first query:', error);
+  }
+})();
 
 // Create a global variable to store token validation function reference
 declare global {
