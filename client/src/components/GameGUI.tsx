@@ -33,6 +33,7 @@ import WheelGame from "@/components/wheel/WheelGame";
 import VIP from "@/components/vip/VIP";
 import { useGameState } from "@/hooks/use-game-state";
 import { useGame } from "@/context/GameProvider";
+import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 //import { AdminUIToggler } from './debugger/modules/adminUI';
 
@@ -96,6 +97,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   
   // Use game provider for offline income
   const { playerData: gamePlayerData, claimOfflineIncome } = useGame();
+  
+  // Toast notifications
+  const { toast } = useToast();
 
   const [guiState, setGUIState] = useState<GUIState>({
     activePlugin: "main",
@@ -146,7 +150,15 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     setTimeout(() => setIsTapping(false), 200);
   };
 
+  // Prevent spam clicking
+  const [claimingRewards, setClaimingRewards] = useState<Set<string>>(new Set());
+  
   const claimReward = async (id: string, type: 'task' | 'achievement') => {
+    // Prevent multiple claims of the same reward
+    if (claimingRewards.has(id)) return;
+    
+    setClaimingRewards(prev => new Set(prev).add(id));
+    
     try {
       console.log(`Claiming ${type} reward:`, id);
       
@@ -158,7 +170,10 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       
       if (response.ok) {
         const result = await response.json();
-        toast.success(`Claimed ${result.reward} successfully!`);
+        toast({
+          title: "Reward Claimed!",
+          description: `${result.reward} added to your account`,
+        });
         
         // Invalidate relevant queries to refresh data
         queryClient.invalidateQueries({ queryKey: ['/api/user'] });
@@ -168,7 +183,20 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       }
     } catch (error) {
       console.error(`Error claiming ${type} reward:`, error);
-      toast.error(`Failed to claim ${type} reward`);
+      toast({
+        title: "Claim Failed",
+        description: `Unable to claim ${type} reward. Please try again.`,
+        variant: "destructive",
+      });
+    } finally {
+      // Remove from claiming set after a short delay
+      setTimeout(() => {
+        setClaimingRewards(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(id);
+          return newSet;
+        });
+      }, 1000);
     }
   };
 
@@ -242,11 +270,12 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                       <span className="text-xs text-green-400">Reward: {task.reward}</span>
                       <Button
                         size="sm"
-                        disabled={task.status !== 'completed'}
+                        disabled={task.status !== 'completed' || claimingRewards.has(task.id)}
                         onClick={() => claimReward(task.id, 'task')}
                         className="bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1"
                       >
-                        {task.status === 'completed' ? 'Claim' : 'In Progress'}
+                        {claimingRewards.has(task.id) ? 'Claiming...' : 
+                         task.status === 'completed' ? 'Claim' : 'In Progress'}
                       </Button>
                     </div>
                   </CardContent>
@@ -329,11 +358,13 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                       <span className="text-xs text-green-400">Reward: {achievement.reward}</span>
                       <Button
                         size="sm"
-                        disabled={achievement.status !== 'completed'}
+                        disabled={achievement.status !== 'completed' || claimingRewards.has(achievement.id)}
                         onClick={() => claimReward(achievement.id, 'achievement')}
                         className="bg-yellow-600 hover:bg-yellow-700 text-xs px-3 py-1"
                       >
-                        {achievement.status === 'completed' ? 'Claim' : achievement.status === 'in_progress' ? 'In Progress' : 'Locked'}
+                        {claimingRewards.has(achievement.id) ? 'Claiming...' : 
+                         achievement.status === 'completed' ? 'Claim' : 
+                         achievement.status === 'in_progress' ? 'In Progress' : 'Locked'}
                       </Button>
                     </div>
                   </CardContent>
