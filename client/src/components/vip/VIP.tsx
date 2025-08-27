@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { useToast } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Star, X } from "lucide-react";
@@ -83,11 +83,11 @@ export default function VIP({ isOpen, onClose, userId }: VIPProps) {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: [`/api/vip/status/${userId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/user/${userId}`] });
-      toast(`Welcome to ${data.planType} VIP! Enjoy your exclusive benefits.`);
+      toast.success(`Welcome to ${data.planType} VIP! Enjoy your exclusive benefits.`);
       onClose();
     },
     onError: (error: any) => {
-      toast(error.message || "Failed to purchase VIP plan");
+      toast.error(error.message || "Failed to purchase VIP plan");
     },
   });
 

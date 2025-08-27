@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
-import { useToast } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,7 +49,6 @@ export default function WheelPrizeManager({ isOpen, onClose }: WheelPrizeManager
     probability: 0.1
   });
   
-  const toast = useToast();
   const queryClient = useQueryClient();
 
   // Fetch available data for selects
@@ -83,10 +82,10 @@ export default function WheelPrizeManager({ isOpen, onClose }: WheelPrizeManager
         max: 0,
         probability: 0.1
       });
-      toast("Prize created successfully");
+      toast.success("Prize created successfully");
     },
     onError: () => {
-      toast("Failed to create prize");
+      toast.error("Failed to create prize");
     }
   });
 
@@ -98,13 +97,13 @@ export default function WheelPrizeManager({ isOpen, onClose }: WheelPrizeManager
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/wheel-prizes"] });
-      toast("Prize deleted successfully");
+      toast.success("Prize deleted successfully");
     }
   });
 
   const handleCreatePrize = () => {
     if (!newPrize.label || newPrize.probability <= 0) {
-      toast("Please fill in all required fields");
+      toast.error("Please fill in all required fields");
       return;
     }
 

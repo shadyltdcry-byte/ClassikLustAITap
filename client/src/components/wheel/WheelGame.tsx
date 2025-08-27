@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
-import { useToast } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -160,12 +160,12 @@ export default function WheelGame({ isOpen, onClose, userId }: WheelGameProps) {
       
       setTimeout(() => {
         setIsSpinning(false);
-        toast(`🎉 You won ${wonPrize.name}!`);
+        toast.success(`🎉 You won ${wonPrize.name}!`);
       }, 3000);
     },
     onError: (error: any) => {
       setIsSpinning(false);
-      toast(error.message || "Spin failed!");
+      toast.error(error.message || "Spin failed!");
     },
   });
 
