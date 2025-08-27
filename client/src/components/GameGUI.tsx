@@ -40,17 +40,17 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 
 // Mock Data
 const mockTasks = [
-  { id: "t1", icon: "⭐", title: "Login Daily", description: "Log in to the game every day.", status: "completed", progress: 1, maxProgress: 1, reward: "10 Coins", category: "basic" },
-  { id: "t2", icon: "⚡", title: "Gain 100 Energy", description: "Reach 100 energy points.", status: "active", progress: 75, maxProgress: 100, reward: "5 Gems", category: "energy" },
-  { id: "t3", icon: "⬆️", title: "Level Up", description: "Reach level 5.", status: "in_progress", progress: 3, maxProgress: 5, reward: "20 Coins", category: "progression" },
-  { id: "t4", icon: "💬", title: "Send a Message", description: "Send a message in the chat.", status: "completed", progress: 1, maxProgress: 1, reward: "5 Coins", category: "basic" },
+  { id: "t1", icon: "⭐", title: "Login Daily", description: "Log in to the game every day.", status: "completed", progress: 1, maxProgress: 1, reward: "100 LP", category: "basic" },
+  { id: "t2", icon: "⚡", title: "Gain 100 Energy", description: "Reach 100 energy points.", status: "active", progress: 75, maxProgress: 100, reward: "75 LP", category: "energy" },
+  { id: "t3", icon: "⬆️", title: "Level Up", description: "Reach level 5.", status: "in_progress", progress: 3, maxProgress: 5, reward: "250 LP", category: "progression" },
+  { id: "t4", icon: "💬", title: "Send a Message", description: "Send a message in the chat.", status: "completed", progress: 1, maxProgress: 1, reward: "50 LP", category: "basic" },
 ];
 
 const mockAchievements = [
-  { id: "a1", icon: "🏆", title: "First Steps", description: "Complete your first task.", status: "completed", progress: 1, maxProgress: 1, reward: "5 Coins", category: "beginner" },
-  { id: "a2", icon: "💖", title: "Chat Enthusiast", description: "Send 10 messages.", status: "in_progress", progress: 7, maxProgress: 10, reward: "10 Coins", category: "interaction" },
-  { id: "a3", icon: "🚀", title: "Rising Star", description: "Reach level 10.", status: "locked", progress: 5, maxProgress: 10, reward: "50 Coins", category: "progression" },
-  { id: "a4", icon: "💎", title: "Gem Hoarder", description: "Collect 100 Gems.", status: "locked", progress: 40, maxProgress: 100, reward: "1 Gem Package", category: "collection" },
+  { id: "a1", icon: "🏆", title: "First Steps", description: "Complete your first task.", status: "completed", progress: 1, maxProgress: 1, reward: "100 LP", category: "beginner" },
+  { id: "a2", icon: "💖", title: "Chat Enthusiast", description: "Send 10 messages.", status: "in_progress", progress: 7, maxProgress: 10, reward: "200 LP", category: "interaction" },
+  { id: "a3", icon: "🚀", title: "Rising Star", description: "Reach level 10.", status: "locked", progress: 5, maxProgress: 10, reward: "500 LP", category: "progression" },
+  { id: "a4", icon: "💎", title: "Lust Master", description: "Reach 10,000 LP total.", status: "locked", progress: 40, maxProgress: 100, reward: "1000 LP", category: "collection" },
 ];
 
 interface PlayerData {
