@@ -76,8 +76,8 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .select('*')
-        .eq('telegramId', telegramId)
-        .maybeSingle();
+        .eq('telegram_id', telegramId)
+        .single();
       
       if (error) {
         console.error('Error fetching user by telegram ID:', error);
