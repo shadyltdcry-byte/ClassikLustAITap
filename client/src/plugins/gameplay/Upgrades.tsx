@@ -79,8 +79,10 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case "lp":
+      case "lpPerHour":
         return "bg-yellow-500/20 text-yellow-400";
+      case "lpPerTap":
+        return "bg-orange-500/20 text-orange-400";
       case "energy":
         return "bg-blue-500/20 text-blue-400";
       case "special":
@@ -128,25 +130,25 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
       <div className="flex gap-2 p-4 bg-black/20">
         <Button 
           onClick={() => setActiveTab("all")}
-          className={`px-6 py-2 rounded-full ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          className={`px-4 py-2 rounded-full min-w-[120px] ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
         >
           ⭐ All
         </Button>
         <Button 
-          onClick={() => setActiveTab("lp")}
-          className={`px-6 py-2 rounded-full ${activeTab === "lp" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          onClick={() => setActiveTab("lpPerHour")}
+          className={`px-4 py-2 rounded-full min-w-[120px] ${activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
         >
           💰 LP per Hour
         </Button>
         <Button 
           onClick={() => setActiveTab("energy")}
-          className={`px-6 py-2 rounded-full ${activeTab === "energy" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          className={`px-4 py-2 rounded-full min-w-[120px] ${activeTab === "energy" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
         >
           ⚡ Energy
         </Button>
         <Button 
           onClick={() => setActiveTab("special")}
-          className={`px-6 py-2 rounded-full ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+          className={`px-4 py-2 rounded-full min-w-[120px] ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
         >
           ✨ Special
         </Button>
