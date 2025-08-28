@@ -320,7 +320,11 @@ export function registerUserRoutes(app: Express) {
       const { telegram_id } = req.query;
 
       if (!telegram_id || typeof telegram_id !== 'string') {
-        return res.status(400).json({ error: 'telegram_id parameter required' });
+        console.log('[Auth] Missing or invalid telegram_id parameter');
+        return res.status(400).json({ 
+          authenticated: false, 
+          error: 'telegram_id parameter required' 
+        });
       }
 
       console.log(`[Auth] Checking telegram auth for ID: ${telegram_id}`);
@@ -342,26 +346,53 @@ export function registerUserRoutes(app: Express) {
         }
       }
 
-      // Check if user exists in database
+      // Check if user exists in database with both formats
       try {
-        const existingUser = await storage.getUser(telegram_id);
+        let existingUser = await storage.getUser(`telegram_${telegram_id}`);
+        if (!existingUser) {
+          existingUser = await storage.getUser(telegram_id);
+        }
+        
         if (existingUser) {
           console.log(`[Auth] Found existing user for ${telegram_id}`);
+          const userResponse = {
+            id: `telegram_${telegram_id}`,
+            telegram_id: telegram_id,
+            username: existingUser.username || `User${telegram_id}`,
+            name: existingUser.username || `User${telegram_id}`
+          };
+          
+          const token = generateJWT(`telegram_${telegram_id}`);
+          
+          // Cache the result
+          global.recentTelegramAuth?.set(telegram_id, {
+            user: userResponse,
+            token,
+            timestamp: Date.now()
+          });
+          
           return res.json({
             authenticated: true,
-            user: existingUser,
-            token: 'existing_user'
+            user: userResponse,
+            token
           });
         }
       } catch (dbError) {
         console.error(`[Auth] Database check failed for ${telegram_id}:`, dbError);
+        return res.json({ 
+          authenticated: false, 
+          error: 'Database error during auth check' 
+        });
       }
 
       console.log(`[Auth] No authentication found for ${telegram_id}`);
       res.json({ authenticated: false });
     } catch (error: any) {
       console.error('Telegram auth check error:', error);
-      res.status(500).json({ error: 'Internal server error' });
+      res.status(500).json({ 
+        authenticated: false, 
+        error: 'Internal server error' 
+      });
     }
   });
 }

@@ -47,7 +47,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log(`[DEBUG] Checking bot auth for telegram_id: ${telegramId}`);
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
       const response = await fetch(`/api/auth/telegram/check?telegram_id=${telegramId}`, {
         signal: controller.signal,
@@ -55,26 +55,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+      }).catch(error => {
+        console.log('Fetch error caught:', error);
+        throw error;
       });
+      
       clearTimeout(timeoutId);
 
       if (!response.ok) {
         console.log(`[DEBUG] Bot auth check failed with status: ${response.status}`);
-        return { success: false, error: 'Bot auth check failed' };
+        return { success: false, error: `Bot auth check failed: ${response.status}` };
       }
 
       const data = await response.json();
-      console.log(`[DEBUG] Bot authentication found for ${telegramId}`, data);
+      console.log(`[DEBUG] Bot authentication response for ${telegramId}:`, data);
 
       if (data.authenticated) {
         return { success: true, user: data.user, token: data.token };
       } else {
         return { success: false, error: 'Not authenticated via bot' };
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('Bot auth check timed out');
+        return { success: false, error: 'Request timed out' };
+      }
       console.log('Bot auth check error:', error);
-      // Don't let network errors cause infinite loading
-      return { success: false, error: 'Network error during bot auth check' };
+      return { success: false, error: `Network error: ${error.message || 'Unknown error'}` };
     }
   };
 
@@ -127,6 +134,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
+    let isCancelled = false;
+
     // Handle unhandled promise rejections
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       console.error('Unhandled promise rejection:', event.reason);
@@ -136,62 +145,69 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     const initializeAuth = async () => {
+      if (isCancelled) return;
+      
       setIsLoading(true);
 
       try {
+        // Check URL params first
         const urlParams = new URLSearchParams(window.location.search);
         const telegramIdFromUrl = urlParams.get('telegram_id');
 
-        if (telegramIdFromUrl) {
+        if (telegramIdFromUrl && !isCancelled) {
           console.log(`[DEBUG] Found telegram_id in URL: ${telegramIdFromUrl}, checking bot auth status`);
-          try {
-            const authData = await checkBotAuth(telegramIdFromUrl);
+          
+          const authData = await checkBotAuth(telegramIdFromUrl);
+          if (isCancelled) return;
 
-            if (authData?.success && authData.user && authData.token) {
-              login(authData.user.id, authData.user, authData.token);
-              localStorage.setItem('telegram_id', telegramIdFromUrl);
-              return;
-            } else if (authData?.error) {
-              console.error(`[DEBUG] URL auth check error for ${telegramIdFromUrl}: ${authData.error}`);
-            }
-          } catch (error) {
-            console.error('URL auth check failed:', error);
+          if (authData?.success && authData.user && authData.token) {
+            login(authData.user.id, authData.user, authData.token);
+            localStorage.setItem('telegram_id', telegramIdFromUrl);
+            return;
+          } else if (authData?.error) {
+            console.log(`[DEBUG] URL auth failed for ${telegramIdFromUrl}: ${authData.error}`);
           }
         }
 
-        // Check stored telegram_id
-        const storedTelegramId = localStorage.getItem('telegram_id');
-        if (storedTelegramId) {
-          console.log(`[DEBUG] No URL param but found stored telegram_id: ${storedTelegramId}, checking auth`);
-          try {
+        // Only check stored ID if no URL param or URL auth failed
+        if (!telegramIdFromUrl && !isCancelled) {
+          const storedTelegramId = localStorage.getItem('telegram_id');
+          if (storedTelegramId) {
+            console.log(`[DEBUG] Checking stored telegram_id: ${storedTelegramId}`);
+            
             const authData = await checkBotAuth(storedTelegramId);
+            if (isCancelled) return;
 
             if (authData?.success && authData.user) {
               console.log(`[DEBUG] Auto-login successful for stored telegram_id: ${storedTelegramId}`);
               login(authData.user.id, authData.user, authData.token);
               return;
             } else {
-              console.log(`[DEBUG] Auto-login failed for stored telegram_id: ${storedTelegramId}`);
+              console.log(`[DEBUG] Stored auth failed, clearing storage`);
               localStorage.removeItem('telegram_id');
             }
-          } catch (error) {
-            console.error('Stored auth check failed:', error);
-            localStorage.removeItem('telegram_id');
           }
         }
 
-        console.log('[DEBUG] No valid authentication found, showing auth screen');
+        if (!isCancelled) {
+          console.log('[DEBUG] No valid authentication found, showing auth screen');
+        }
       } catch (error) {
-        console.error('Auto-login check error:', error);
-        localStorage.removeItem('telegram_id');
+        if (!isCancelled) {
+          console.error('Auth initialization error:', error);
+          localStorage.removeItem('telegram_id');
+        }
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     initializeAuth();
 
     return () => {
+      isCancelled = true;
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
