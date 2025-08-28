@@ -229,7 +229,12 @@ app.use((req, res, next) => {
 
 (async () => {
 
-  const routes = await registerRoutes(app);
+  // Let routes.ts handle the server startup
+  const server = await registerRoutes(app);
+  console.log("Server initialized via routes.ts");
+  
+  // Remove duplicate frontend serving since routes.ts handles it
+  return;
 
 
 
@@ -259,20 +264,7 @@ app.use((req, res, next) => {
   // It is the only port that is not firewalled.
   const PORT = process.env.PORT || 5000;
 
-  // WebSocket server for real-time features - using different port to avoid conflicts
-  let wss;
-  try {
-    wss = new WebSocketServer({
-      port: 8082,
-      host: '0.0.0.0'
-    });
-
-    wss.on('error', (error: any) => {
-      console.error('WebSocket server error:', error.message);
-    });
-  } catch (error: any) {
-    console.warn('WebSocket server failed to start:', error.message);
-  }
+  // WebSocket removed to prevent port conflicts
 
   // Modular routes are already registered by registerRoutes(app)
 
@@ -541,18 +533,11 @@ app.use((req, res, next) => {
     });
   }
 
-  routes.listen(
-    {
-      port: PORT,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
-      console.log(`🎮 Character Tap Game server running on port ${PORT}`);
-      console.log(`📡 Modular route architecture loaded successfully`);
-      console.log(`serving on port ${PORT}`);
-    },
-  );
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log(`🎮 Character Tap Game server running on port ${PORT}`);
+    console.log(`📡 Modular route architecture loaded successfully`);
+    console.log(`serving on port ${PORT}`);
+  });
 })();
 
 // Initialize storage for server operations
