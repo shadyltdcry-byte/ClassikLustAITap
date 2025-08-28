@@ -70,6 +70,14 @@ export interface IStorage {
   deleteMediaFile(id: string): Promise<void>;
 }
 
-// REMOVED: All PostgreSQL DrizzleStorage implementation per user requirement
-// Using SUPABASE ONLY - All storage operations handled by SupabaseStorage in shared/SupabaseStorage.ts
-// Routes import: SupabaseStorage.getInstance() for all database operations
+// SINGLE DATABASE SOLUTION: Supabase handles all storage operations
+// - Database: PostgreSQL (managed by Supabase)
+// - Authentication: Built-in Supabase Auth
+// - File Storage: Supabase Storage buckets
+// - Real-time: Supabase real-time subscriptions
+// 
+// Benefits:
+// ✅ One service to manage
+// ✅ Automatic scaling and backups
+// ✅ Works on any hosting platform
+// ✅ Built-in authentication and file storage
