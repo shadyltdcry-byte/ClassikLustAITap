@@ -1,18 +1,18 @@
 import React from "react";
 import { Switch, Route } from "wouter";
-import { queryClient } from "@/lib/queryClient";
+import { queryClient } from "../lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import GameGUI from "@/components/GameGUI";
-import AdminMenu from "@/plugins/admin/AdminMenu";
-import NotFound from "@/pages/not-found";
-import { GameProvider } from "@/context/GameProvider";
-import { LoadingScreen } from "@/components/LoadingScreen";
+import { Toaster } from "../components/ui/toaster";
+import { TooltipProvider } from "../components/ui/tooltip";
+import GameGUI from "../components/GameGUI";
+import AdminMenu from "../plugins/admin/AdminMenu";
+import NotFound from "./not-found";
+import { GameProvider } from "../context/GameProvider";
+import { LoadingScreen } from "../components/LoadingScreen";
 import { useEffect, useState } from "react";
-import { AdminUIToggler } from "@/plugins/admin/adminGUI";
-import { AuthProvider, useAuth } from "@/context/AuthContext";
-import TelegramAuth from "@/components/TelegramAuth";
+import { AdminUIToggler } from "../plugins/admin/adminGUI";
+import { AuthProvider, useAuth } from "../context/AuthContext";
+import TelegramAuth from "../components/TelegramAuth";
 
 // Wrapper component for GameGUI to handle routing
 function GameGUIPage() {
