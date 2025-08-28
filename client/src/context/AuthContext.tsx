@@ -30,7 +30,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
+    const initializeAuth = () => {
       try {
         // Check for existing Telegram authentication
         const token = localStorage.getItem('telegram_auth_token');
@@ -66,80 +66,57 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (telegramId) {
         console.log(`[DEBUG] Found telegram_id in URL: ${telegramId}, checking bot auth status`);
         try {
-          const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`);
+          const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`).catch(() => null);
           
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-          
-          const data = await response.json();
-          
-          if (data.authenticated) {
-            console.log(`[DEBUG] Bot authentication found for ${telegramId}`, data);
-            localStorage.setItem('telegram_auth_token', data.token);
-            localStorage.setItem('telegram_user_id', data.user.id);
-            localStorage.setItem('telegram_id', telegramId);
-            setUserId(data.user.id);
-            setIsAuthenticated(true);
-            setIsLoading(false);
-            authChecked = true;
+          if (response && response.ok) {
+            const data = await response.json().catch(() => null);
             
-            // Clean up URL
-            window.history.replaceState({}, document.title, window.location.pathname);
-            return;
-          }
-        } catch (error) {
-          console.error('Bot auth check error:', error);
-          // Continue to fallback auth
-        }
-      }
-      
-      // Only check stored telegram_id if we haven't already authenticated
-      if (!authChecked) {
-        const storedTelegramId = localStorage.getItem('telegram_id');
-        if (storedTelegramId) {
-          console.log(`[DEBUG] Found stored telegram_id: ${storedTelegramId}, attempting auto-login`);
-          try {
-            const response = await deDupeFetch(`/api/auth/telegram/status/${storedTelegramId}`);
-            
-            if (!response.ok) {
-              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            const data = await response.json();
-            
-            if (data.authenticated) {
-              console.log(`[DEBUG] Auto-login successful for stored telegram_id: ${storedTelegramId}`);
+            if (data && data.authenticated) {
+              console.log(`[DEBUG] Bot authentication found for ${telegramId}`, data);
               localStorage.setItem('telegram_auth_token', data.token);
               localStorage.setItem('telegram_user_id', data.user.id);
+              localStorage.setItem('telegram_id', telegramId);
               setUserId(data.user.id);
               setIsAuthenticated(true);
               setIsLoading(false);
               authChecked = true;
+              
+              // Clean up URL
+              window.history.replaceState({}, document.title, window.location.pathname);
               return;
             }
-          } catch (error) {
-            console.error('Auto-login check error:', error);
-            // Clear invalid stored telegram_id to prevent future attempts
-            localStorage.removeItem('telegram_id');
           }
+        } catch (error) {
+          console.log('[DEBUG] Bot auth check failed, using stored credentials');
         }
       }
       
-      // If no URL param and no valid stored auth, use normal initialization with timeout
+      // If no URL auth or it failed, just use stored credentials immediately
       if (!authChecked) {
-        console.log('[DEBUG] No valid auth found, initializing normally');
-        setTimeout(initializeAuth, 1500); // Reduced timeout
+        console.log('[DEBUG] Using stored credentials for faster login');
+        initializeAuth();
+        authChecked = true;
       }
     };
 
-    // Set a maximum loading time to prevent infinite loading
+    // Set a much shorter maximum loading time to prevent infinite loading
     const maxLoadingTimer = setTimeout(() => {
-      console.log('[DEBUG] Max loading time reached, forcing auth check');
+      console.log('[DEBUG] Max loading time reached (3s), forcing login');
       if (isLoading) {
+        // Force login with existing credentials or guest mode
+        const storedUserId = localStorage.getItem('telegram_user_id');
+        const guestId = localStorage.getItem('guest_user_id');
+        
+        if (storedUserId) {
+          setUserId(storedUserId);
+          setIsAuthenticated(true);
+        } else if (guestId) {
+          setUserId(guestId);
+          setIsAuthenticated(true);
+        }
         setIsLoading(false);
       }
-    }, 8000); // 8 second maximum
+    }, 3000); // Reduced to 3 seconds
 
     checkBotAuth();
     
