@@ -63,16 +63,16 @@ function AppContent() {
 
   useEffect(() => {
     if (isLoading) {
-      // Simulate slower loading progress to allow for proper login flow
+      // Faster loading progress to reduce wait time
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
           if (prev >= 100) {
             clearInterval(interval);
             return 100;
           }
-          return prev + 10; // Normal increment
+          return prev + 20; // Faster increment
         });
-      }, 300); // Normal interval
+      }, 200); // Faster interval
 
       return () => clearInterval(interval);
     }

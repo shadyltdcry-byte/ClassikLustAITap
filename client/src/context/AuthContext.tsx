@@ -37,12 +37,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const storedUserId = localStorage.getItem('telegram_user_id');
 
         if (token && storedUserId) {
+          console.log('[DEBUG] Found stored credentials, logging in as:', storedUserId);
           setUserId(storedUserId);
           setIsAuthenticated(true);
         } else {
           // Check for guest mode
           const guestId = localStorage.getItem('guest_user_id');
           if (guestId) {
+            console.log('[DEBUG] Found guest ID, logging in as guest:', guestId);
             setUserId(guestId);
             setIsAuthenticated(true);
           }
@@ -56,6 +58,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
     // Check for bot authentication via URL params (from Telegram bot)
     const checkBotAuth = async () => {
+      let authChecked = false;
+      
       const urlParams = new URLSearchParams(window.location.search);
       const telegramId = urlParams.get('telegram_id');
       
@@ -63,16 +67,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log(`[DEBUG] Found telegram_id in URL: ${telegramId}, checking bot auth status`);
         try {
           const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`);
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          
           const data = await response.json();
           
           if (data.authenticated) {
             console.log(`[DEBUG] Bot authentication found for ${telegramId}`, data);
             localStorage.setItem('telegram_auth_token', data.token);
             localStorage.setItem('telegram_user_id', data.user.id);
-            localStorage.setItem('telegram_id', telegramId); // Store for future auto-login
+            localStorage.setItem('telegram_id', telegramId);
             setUserId(data.user.id);
             setIsAuthenticated(true);
             setIsLoading(false);
+            authChecked = true;
             
             // Clean up URL
             window.history.replaceState({}, document.title, window.location.pathname);
@@ -80,14 +90,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         } catch (error) {
           console.error('Bot auth check error:', error);
+          // Continue to fallback auth
         }
-      } else {
-        // No URL param, but check if we have a stored telegram_id from previous login
+      }
+      
+      // Only check stored telegram_id if we haven't already authenticated
+      if (!authChecked) {
         const storedTelegramId = localStorage.getItem('telegram_id');
         if (storedTelegramId) {
-          console.log(`[DEBUG] No URL param but found stored telegram_id: ${storedTelegramId}, checking auth`);
+          console.log(`[DEBUG] Found stored telegram_id: ${storedTelegramId}, attempting auto-login`);
           try {
             const response = await deDupeFetch(`/api/auth/telegram/status/${storedTelegramId}`);
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
             
             if (data.authenticated) {
@@ -97,20 +115,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               setUserId(data.user.id);
               setIsAuthenticated(true);
               setIsLoading(false);
+              authChecked = true;
               return;
             }
           } catch (error) {
             console.error('Auto-login check error:', error);
+            // Clear invalid stored telegram_id to prevent future attempts
+            localStorage.removeItem('telegram_id');
           }
         }
       }
       
-      // Fall back to normal auth check
-      const timer = setTimeout(initializeAuth, 3000);
-      return () => clearTimeout(timer);
+      // If no URL param and no valid stored auth, use normal initialization with timeout
+      if (!authChecked) {
+        console.log('[DEBUG] No valid auth found, initializing normally');
+        setTimeout(initializeAuth, 1500); // Reduced timeout
+      }
     };
 
+    // Set a maximum loading time to prevent infinite loading
+    const maxLoadingTimer = setTimeout(() => {
+      console.log('[DEBUG] Max loading time reached, forcing auth check');
+      if (isLoading) {
+        setIsLoading(false);
+      }
+    }, 8000); // 8 second maximum
+
     checkBotAuth();
+    
+    return () => clearTimeout(maxLoadingTimer);
   }, []);
 
   // Auto-refresh mechanism to maintain login state - DISABLED TO STOP API SPAM
