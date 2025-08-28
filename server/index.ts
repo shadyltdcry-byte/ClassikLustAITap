@@ -9,6 +9,8 @@
 
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
@@ -186,6 +188,8 @@ app.use(cors({
 }));
 
 // Serve static files from client dist directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 app.use(express.static(path.join(__dirname, '../client/dist')));
 
 app.use(express.json());
@@ -269,8 +273,7 @@ app.use((req, res, next) => {
     console.warn('WebSocket server failed to start:', error.message);
   }
 
-  // Register modular routes
-  app.use("/api", routes);
+  // Modular routes are already registered by registerRoutes(app)
 
   // Serve static files from uploads directory
   app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
@@ -302,7 +305,7 @@ app.use((req, res, next) => {
     });
   }
 
-  server.listen(
+  routes.listen(
     {
       port: PORT,
       host: "0.0.0.0",
