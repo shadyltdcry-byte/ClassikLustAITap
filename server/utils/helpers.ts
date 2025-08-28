@@ -1,0 +1,183 @@
+/**
+ * helpers.ts - Shared Utilities for Character Tap Game
+ * Last Edited: 2025-08-28 by Assistant
+ * 
+ * Centralized helper functions, UUID validation, and mock data generators
+ */
+
+import crypto from 'crypto';
+
+// UUID validation function
+export function isValidUUID(id: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+}
+
+// Telegram ID validation function
+export function isValidTelegramId(id: string): boolean {
+  const telegramRegex = /^telegram_\d+$/;
+  return telegramRegex.test(id);
+}
+
+// Combined user ID validation (UUID or Telegram format)
+export function isValidUserId(id: string): boolean {
+  return isValidUUID(id) || isValidTelegramId(id);
+}
+
+// Generate random UUID-like string for mock data
+export function generateMockId(): string {
+  return crypto.randomUUID();
+}
+
+// Mock user data generator
+export function generateMockUser(userId: string, overrides: any = {}) {
+  return {
+    id: userId,
+    username: overrides.username || "Player",
+    level: overrides.level || 1,
+    lp: overrides.lp || 5000,
+    lpPerHour: overrides.lpPerHour || 250,
+    lpPerTap: overrides.lpPerTap || 1.5,
+    energy: overrides.energy || 1000,
+    maxEnergy: overrides.maxEnergy || 1000,
+    coins: overrides.coins || 0,
+    xp: overrides.xp || 0,
+    xpToNext: overrides.xpToNext || 100,
+    isVip: overrides.isVip || false,
+    nsfwEnabled: overrides.nsfwEnabled || false,
+    charismaPoints: overrides.charismaPoints || 0,
+    vipStatus: overrides.vipStatus || false,
+    nsfwConsent: overrides.nsfwConsent || false,
+    charisma: overrides.charisma || 0,
+    createdAt: overrides.createdAt || new Date().toISOString(),
+    ...overrides
+  };
+}
+
+// Mock player stats generator
+export function generateMockStats(playerId: string) {
+  return {
+    playerId,
+    totalTaps: 0,
+    totalLpEarned: 0,
+    totalEnergyUsed: 0,
+    sessionsPlayed: 1,
+    timeSpent: 0,
+    charactersUnlocked: 1,
+    achievementsUnlocked: 0,
+    upgradesPurchased: 0,
+    wheelSpins: 0,
+    chatMessages: 0,
+    mediaShared: 0,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+// Telegram authentication verification
+export function verifyTelegramAuth(data: any, botToken: string): boolean {
+  const { hash, ...authData } = data;
+
+  // Create data-check-string
+  const dataCheckString = Object.keys(authData)
+    .sort()
+    .map(key => `${key}=${authData[key]}`)
+    .join('\n');
+
+  // Create secret key
+  const secretKey = crypto.createHash('sha256').update(botToken).digest();
+
+  // Calculate expected hash
+  const expectedHash = crypto
+    .createHmac('sha256', secretKey)
+    .update(dataCheckString)
+    .digest('hex');
+
+  return hash === expectedHash;
+}
+
+// JWT token generation
+export function generateJWT(userId: string): string {
+  const jwt = require('jsonwebtoken');
+  const secret = process.env.JWT_SECRET || 'your-secret-key';
+  return jwt.sign({ userId }, secret, { expiresIn: '7d' });
+}
+
+// Safe number parsing for LP values (supports decimals)
+export function parseLP(value: any): number {
+  return parseFloat(String(value)) || 0;
+}
+
+// Calculate LP per tap with multipliers
+export function calculateLPPerTap(baseLpPerTap: number, multipliers: number[] = []): number {
+  let totalLp = baseLpPerTap;
+  multipliers.forEach(multiplier => {
+    totalLp *= multiplier;
+  });
+  return totalLp;
+}
+
+// Energy calculations
+export function calculateEnergyRegen(maxEnergy: number, regenRate: number = 0.2): number {
+  return Math.max(1, Math.floor(maxEnergy * regenRate));
+}
+
+// Time-based calculations
+export function calculateOfflineLP(lpPerHour: number, offlineMinutes: number, maxOfflineHours: number = 2): number {
+  const maxMinutes = maxOfflineHours * 60;
+  const actualMinutes = Math.min(offlineMinutes, maxMinutes);
+  return Math.floor((actualMinutes / 60) * lpPerHour);
+}
+
+// Validation helpers
+export function validateRequired(obj: any, requiredFields: string[]): string | null {
+  for (const field of requiredFields) {
+    if (!obj[field]) {
+      return `${field} is required`;
+    }
+  }
+  return null;
+}
+
+// Response helpers
+export function createSuccessResponse(data: any, message?: string) {
+  return {
+    success: true,
+    data,
+    ...(message && { message })
+  };
+}
+
+export function createErrorResponse(error: string, code?: number) {
+  return {
+    success: false,
+    error,
+    ...(code && { code })
+  };
+}
+
+// File upload helpers
+export function getFileExtension(filename: string): string {
+  return filename.split('.').pop()?.toLowerCase() || '';
+}
+
+export function isValidMediaType(mimetype: string): boolean {
+  const allowedTypes = [
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/jpg', 
+    'video/mp4', 'video/webm'
+  ];
+  return allowedTypes.includes(mimetype);
+}
+
+// Character helpers
+export function getDefaultCharacter() {
+  return {
+    id: "550e8400-e29b-41d4-a716-446655440000",
+    name: "Default Character",
+    personality: "friendly",
+    mood: "happy",
+    isEnabled: true,
+    nsfwEnabled: false,
+    vipRequired: false
+  };
+}
