@@ -63,22 +63,22 @@ function AppContent() {
 
   useEffect(() => {
     if (isLoading) {
-      // Faster loading progress to reduce wait time
+      // Much faster loading progress
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
           if (prev >= 100) {
             clearInterval(interval);
             return 100;
           }
-          return prev + 20; // Faster increment
+          return prev + 25; // Even faster increment
         });
-      }, 200); // Faster interval
+      }, 100); // Much faster interval
 
-      // Emergency fallback - force stop loading after 15 seconds
+      // Emergency fallback - force stop loading after 8 seconds
       const emergencyTimeout = setTimeout(() => {
         console.log('[EMERGENCY] Forcing stop loading after timeout');
         setLoadingProgress(100);
-      }, 15000);
+      }, 8000); // Shorter timeout
 
       return () => {
         clearInterval(interval);

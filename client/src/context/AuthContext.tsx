@@ -5,7 +5,7 @@ interface AuthContextType {
   userId: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (userId: string, userData?: any) => void;
+  login: (userId: string, userData?: any, token?: string) => void; // Added token param
   logout: () => void;
   loginAsGuest: () => void;
 }
@@ -43,14 +43,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.setItem('user_data', JSON.stringify(user));
   };
 
-  const checkBotAuth = async (telegramId: string): Promise<AuthResult> => {
+  const checkBotAuth = async (telegramId: string): Promise<AuthResult | null> => {
     try {
       console.log(`[DEBUG] Checking bot auth for telegram_id: ${telegramId}`);
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
 
       const response = await fetch(`/api/auth/telegram/check?telegram_id=${telegramId}`, {
-        signal: controller.signal
+        signal: controller.signal,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       clearTimeout(timeoutId);
 
@@ -84,13 +88,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log(`[DEBUG] Found telegram_id in URL: ${telegramIdFromUrl}, checking bot auth status`);
         const result = await checkBotAuth(telegramIdFromUrl);
 
-        if (result.success && result.user && result.token) {
+        if (result?.success && result.user && result.token) {
           // Store for future use
           localStorage.setItem('telegram_id', telegramIdFromUrl);
           setUser(result.user);
           setIsAuthenticated(true);
           console.log(`[DEBUG] URL-based login successful for telegram_id: ${telegramIdFromUrl}`);
           return true;
+        } else if (result?.error) {
+          console.error(`[DEBUG] URL auth check error for ${telegramIdFromUrl}: ${result.error}`);
         }
       }
 
@@ -100,7 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.log(`[DEBUG] No URL param but found stored telegram_id: ${storedTelegramId}, checking auth`);
 
         const result = await checkBotAuth(storedTelegramId);
-        if (result.success && result.user) {
+        if (result?.success && result.user) {
           setUser(result.user);
           setIsAuthenticated(true);
           console.log(`[DEBUG] Auto-login successful for stored telegram_id: ${storedTelegramId}`);
@@ -121,38 +127,81 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   useEffect(() => {
-    const initAuth = async () => {
+    // Handle unhandled promise rejections
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      event.preventDefault(); // Prevent the default behavior
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    const initializeAuth = async () => {
+      setIsLoading(true);
+
       try {
-        const success = await attemptAutoLogin();
-        if (!success) {
-          console.log('[DEBUG] No valid authentication found');
+        const urlParams = new URLSearchParams(window.location.search);
+        const telegramIdFromUrl = urlParams.get('telegram_id');
+
+        if (telegramIdFromUrl) {
+          console.log(`[DEBUG] Found telegram_id in URL: ${telegramIdFromUrl}, checking bot auth status`);
+          try {
+            const authData = await checkBotAuth(telegramIdFromUrl);
+
+            if (authData?.success && authData.user && authData.token) {
+              login(authData.user.id, authData.user, authData.token);
+              localStorage.setItem('telegram_id', telegramIdFromUrl);
+              return;
+            } else if (authData?.error) {
+              console.error(`[DEBUG] URL auth check error for ${telegramIdFromUrl}: ${authData.error}`);
+            }
+          } catch (error) {
+            console.error('URL auth check failed:', error);
+          }
         }
+
+        // Check stored telegram_id
+        const storedTelegramId = localStorage.getItem('telegram_id');
+        if (storedTelegramId) {
+          console.log(`[DEBUG] No URL param but found stored telegram_id: ${storedTelegramId}, checking auth`);
+          try {
+            const authData = await checkBotAuth(storedTelegramId);
+
+            if (authData?.success && authData.user) {
+              console.log(`[DEBUG] Auto-login successful for stored telegram_id: ${storedTelegramId}`);
+              login(authData.user.id, authData.user, authData.token);
+              return;
+            } else {
+              console.log(`[DEBUG] Auto-login failed for stored telegram_id: ${storedTelegramId}`);
+              localStorage.removeItem('telegram_id');
+            }
+          } catch (error) {
+            console.error('Stored auth check failed:', error);
+            localStorage.removeItem('telegram_id');
+          }
+        }
+
+        console.log('[DEBUG] No valid authentication found, showing auth screen');
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        console.error('Auto-login check error:', error);
+        localStorage.removeItem('telegram_id');
       } finally {
         setIsLoading(false);
       }
     };
 
-    // Add timeout to prevent infinite loading
-    const timeout = setTimeout(() => {
-      console.log('[DEBUG] Auth initialization timeout, stopping loading');
-      setIsLoading(false);
-    }, 10000); // 10 second timeout
+    initializeAuth();
 
-    initAuth().finally(() => {
-      clearTimeout(timeout);
-    });
-
-    return () => clearTimeout(timeout);
+    return () => {
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
+    };
   }, []);
 
 
-  const login = (userIdFromAuth: string, userData?: any) => {
+  const login = (userIdFromAuth: string, userData?: any, token?: string) => {
     console.log('AuthContext: Logging in user:', userIdFromAuth);
     localStorage.setItem('telegram_user_id', userIdFromAuth);
-    if (userData?.token) {
-      localStorage.setItem('telegram_auth_token', userData.token);
+    if (token) { // Use the token param directly
+      localStorage.setItem('telegram_auth_token', token);
     }
 
     // Store additional user data for auto-refresh
