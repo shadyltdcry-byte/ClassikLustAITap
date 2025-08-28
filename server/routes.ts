@@ -28,9 +28,16 @@ const __dirname = dirname(__filename);
 
 export function registerRoutes(app: Express): Server {
   const server = createServer(app);
+  
+  // Log ALL incoming requests to debug preview issue
+  app.use((req, res, next) => {
+    console.log(`📡 INCOMING REQUEST: ${req.method} ${req.path} from ${req.ip} | User-Agent: ${req.get('User-Agent')?.substring(0,50)}...`);
+    next();
+  });
 
   // Health check endpoint
   app.get("/api/health", (req: Request, res: Response) => {
+    console.log('🏥 Health check requested');
     res.json({ 
       status: 'healthy', 
       timestamp: new Date().toISOString(),
@@ -199,12 +206,19 @@ export function registerRoutes(app: Express): Server {
   
   // Test route to debug
   app.get('/test', (req: Request, res: Response) => {
-    res.send('<h1>Server is working!</h1>');
+    console.log('✅ TEST route hit!');
+    res.send('<h1 style="color: red; text-align: center; padding: 100px;">SERVER IS WORKING!</h1>');
+  });
+  
+  // Root route specifically
+  app.get('/', (req: Request, res: Response) => {
+    console.log('🏠 ROOT route hit! IP:', req.ip, 'User-Agent:', req.get('User-Agent'));
+    res.send('<!DOCTYPE html><html><head><title>Game</title></head><body style="background: red; color: white; text-align: center; padding: 100px; font-size: 24px;"><h1>GAME SERVER ONLINE</h1><p>If you see this, the server is working!</p></body></html>');
   });
 
   // Catch-all handler for frontend routes (SPA support)  
   app.get("*", (req: Request, res: Response) => {
-    console.log('🌐 REQUEST:', req.method, req.path, 'from', req.ip);
+    console.log('🌐 CATCHALL REQUEST:', req.method, req.path, 'from', req.ip);
     
     // Skip API routes
     if (req.path.startsWith('/api/')) {
