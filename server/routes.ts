@@ -202,23 +202,224 @@ export function registerRoutes(app: Express): Server {
     res.send('<h1>Server is working!</h1>');
   });
 
-  // Catch-all handler for frontend routes (SPA support)
+  // Catch-all handler for frontend routes (SPA support)  
   app.get("*", (req: Request, res: Response) => {
+    console.log('🌐 REQUEST:', req.method, req.path, 'from', req.ip);
+    
     // Skip API routes
     if (req.path.startsWith('/api/')) {
       return res.status(404).json({ error: 'API endpoint not found' });
     }
     
-    console.log('Serving frontend for path:', req.path);
-    
-    // Serve a simple working test
-    res.send(`
-<html>
-<head><title>Character Tap Game</title></head>
-<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-family: sans-serif; text-align: center; padding: 50px;">
-    <h1>🎮 Character Tap Game</h1>
-    <p>Server is working and responding!</p>
-    <button onclick="alert('Button works!')" style="padding: 20px; font-size: 18px; background: #ff6b6b; color: white; border: none; border-radius: 10px; cursor: pointer;">Test Button</button>
+    // Set proper headers and send the game
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.status(200).send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Character Tap Game</title>
+    <style>
+        body { 
+            font-family: system-ui, -apple-system, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            min-height: 100vh;
+            text-align: center;
+        }
+        .container { max-width: 400px; margin: 0 auto; }
+        .stats { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .tap-button { 
+            background: #ff6b6b; 
+            color: white; 
+            border: none; 
+            padding: 30px; 
+            border-radius: 50%; 
+            font-size: 24px; 
+            cursor: pointer; 
+            width: 150px; 
+            height: 150px; 
+            margin: 20px;
+            transition: transform 0.1s;
+        }
+        .tap-button:hover { transform: scale(1.1); }
+        .tap-button:active { transform: scale(0.95); }
+        .action-btn { 
+            background: #4ecdc4; 
+            color: white; 
+            border: none; 
+            padding: 12px 24px; 
+            border-radius: 6px; 
+            margin: 10px; 
+            cursor: pointer; 
+        }
+        .character { font-size: 60px; margin: 20px; }
+        .spinner { 
+            border: 4px solid #f3f3f3; 
+            border-top: 4px solid #3498db; 
+            border-radius: 50%; 
+            width: 40px; 
+            height: 40px; 
+            animation: spin 2s linear infinite; 
+            margin: 0 auto; 
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .error { background: rgba(255,0,0,0.2); padding: 15px; border-radius: 8px; margin: 10px 0; }
+        .success { background: rgba(0,255,0,0.2); padding: 15px; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Character Tap Game</h1>
+        
+        <div id="auth-section">
+            <div class="spinner"></div>
+            <p>Loading your game...</p>
+        </div>
+        
+        <div id="game-section" style="display:none;">
+            <div class="character">👤</div>
+            <div class="stats">
+                <div><strong>LP:</strong> <span id="lp">0</span></div>
+                <div><strong>Energy:</strong> <span id="energy">0</span>/<span id="maxEnergy">0</span></div>
+                <div><strong>Level:</strong> <span id="level">1</span></div>
+            </div>
+            
+            <button class="tap-button" id="tapBtn" onclick="tapCharacter()">TAP</button>
+            
+            <div>
+                <button class="action-btn" onclick="spinWheel()">🎰 Spin Wheel</button>
+                <button class="action-btn" onclick="showStats()">📊 Stats</button>
+            </div>
+            
+            <div id="message"></div>
+        </div>
+    </div>
+
+    <script>
+        console.log('🎮 Game script loading...');
+        
+        let user = null;
+        let gameState = {
+            lp: 0,
+            energy: 1000,
+            maxEnergy: 1000,
+            level: 1,
+            lpPerTap: 1.5
+        };
+
+        async function initGame() {
+            console.log('🚀 Initializing game...');
+            try {
+                // Simple auth for demo
+                const telegramId = prompt('Enter your Telegram ID (or any number for demo):') || '123456';
+                localStorage.setItem('telegram_id', telegramId);
+                
+                const authRes = await fetch('/api/auth/telegram/check?telegram_id=' + telegramId);
+                const authData = await authRes.json();
+                
+                if (authData.authenticated) {
+                    user = authData.user;
+                    console.log('✅ User authenticated:', user.username);
+                    await loadUserData();
+                    showGame();
+                } else {
+                    showMessage('Authentication failed. Please refresh and try again.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Init error:', error);
+                showMessage('Failed to connect to game server', 'error');
+            }
+        }
+
+        async function loadUserData() {
+            try {
+                const res = await fetch('/api/user/' + user.id);
+                const userData = await res.json();
+                
+                gameState.lp = userData.lp || 0;
+                gameState.energy = userData.energy || 1000;
+                gameState.maxEnergy = userData.maxEnergy || 1000;
+                gameState.level = userData.level || 1;
+                gameState.lpPerTap = userData.lpPerTap || 1.5;
+                
+                console.log('📊 User data loaded:', gameState);
+                updateUI();
+            } catch (error) {
+                console.error('❌ Load user data error:', error);
+            }
+        }
+
+        async function tapCharacter() {
+            if (gameState.energy <= 0) {
+                showMessage('Not enough energy!', 'error');
+                return;
+            }
+            
+            try {
+                const res = await fetch('/api/tap', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: user.id })
+                });
+                
+                const result = await res.json();
+                
+                if (result.success) {
+                    gameState.lp = result.newLp;
+                    gameState.energy = result.newEnergy;
+                    
+                    showMessage('+' + result.lpGain.toFixed(1) + ' LP!', 'success');
+                    updateUI();
+                    
+                    // Tap animation
+                    const btn = document.getElementById('tapBtn');
+                    btn.style.transform = 'scale(0.9)';
+                    setTimeout(() => btn.style.transform = '', 100);
+                } else {
+                    showMessage(result.error || 'Tap failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error', 'error');
+            }
+        }
+
+        function showGame() {
+            console.log('🎯 Showing game interface');
+            document.getElementById('auth-section').style.display = 'none';
+            document.getElementById('game-section').style.display = 'block';
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('lp').textContent = Math.floor(gameState.lp);
+            document.getElementById('energy').textContent = Math.floor(gameState.energy);
+            document.getElementById('maxEnergy').textContent = gameState.maxEnergy;
+            document.getElementById('level').textContent = gameState.level;
+        }
+
+        function showMessage(text, type = '') {
+            const msg = document.getElementById('message');
+            msg.innerHTML = '<div class="' + type + '">' + text + '</div>';
+            setTimeout(() => msg.innerHTML = '', 3000);
+        }
+
+        // Energy regeneration
+        setInterval(() => {
+            if (gameState.energy < gameState.maxEnergy) {
+                gameState.energy = Math.min(gameState.energy + 5, gameState.maxEnergy);
+                updateUI();
+            }
+        }, 5000);
+
+        // Initialize game
+        setTimeout(initGame, 500);
+        console.log('🎮 Game loaded successfully!');
+    </script>
 </body>
 </html>`);
   });
@@ -227,6 +428,7 @@ export function registerRoutes(app: Express): Server {
   server.listen(port, "0.0.0.0", () => {
     console.log(`🎮 Character Tap Game server running on port ${port}`);
     console.log(`📡 Modular route architecture loaded successfully`);
+    console.log(`🔗 Preview should be available at: https://${process.env.REPLIT_DEV_DOMAIN || 'localhost:5000'}`);
   });
 
   return server;
