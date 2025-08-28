@@ -16,6 +16,7 @@ import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
 import TelegramBot from 'node-telegram-bot-api';
 import cors from 'cors';
+import { createServer as createViteServer } from 'vite';
 
 // Use only Supabase - no PostgreSQL connection needed
 export { SupabaseStorage };
@@ -187,10 +188,10 @@ app.use(cors({
   credentials: true
 }));
 
-// Serve static files from client dist directory
+// Serve static files from client directory
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-app.use(express.static(path.join(__dirname, '../client/dist')));
+app.use(express.static(path.join(__dirname, '../client')));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -228,6 +229,24 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Create Vite server in middleware mode for development
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      const vite = await createViteServer({
+        server: { middlewareMode: true },
+        appType: 'custom',
+        root: path.join(__dirname, '../client')
+      });
+      
+      // Use vite's connect instance as middleware
+      app.use(vite.ssrFixStacktrace);
+      app.use(vite.middlewares);
+      console.log('[Vite] Frontend development server middleware enabled');
+    } catch (error) {
+      console.warn('[Vite] Failed to setup middleware:', error);
+    }
+  }
+
   const routes = await registerRoutes(app);
 
 
@@ -286,22 +305,12 @@ app.use((req, res, next) => {
       res.sendFile(path.join(__dirname, '../client/dist/index.html'));
     });
   } else {
-    // In development, serve a simple status page
+    // In development, serve the client index.html directly
     app.get('*', (req, res) => {
-      res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Character Tap Game</title>
-          <meta charset="utf-8">
-          <script type="module" src="http://localhost:5173/@vite/client"></script>
-          <script type="module" src="http://localhost:5173/src/main.tsx"></script>
-        </head>
-        <body>
-          <div id="root">Loading...</div>
-        </body>
-      </html>
-    `);
+      if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API endpoint not found' });
+      }
+      res.sendFile(path.join(__dirname, '../client/index.html'));
     });
   }
 
