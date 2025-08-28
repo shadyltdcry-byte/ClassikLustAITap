@@ -187,10 +187,15 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Serve static files and handle frontend routes
-  const frontendPath = join(__dirname, "..", "client", "dist");
+  const frontendPath = join(__dirname, "..", "dist", "public");
+  const clientPath = join(__dirname, "..", "client", "dist");
   
-  // Serve static files
-  app.use(express.static(frontendPath));
+  // Serve static files - try built version first, then client dist
+  if (fs.existsSync(frontendPath)) {
+    app.use(express.static(frontendPath));
+  } else if (fs.existsSync(clientPath)) {
+    app.use(express.static(clientPath));
+  }
   
   // Catch-all handler for frontend routes (SPA support)
   app.get("*", (req: Request, res: Response) => {
@@ -199,22 +204,31 @@ export function registerRoutes(app: Express): Server {
       return res.status(404).json({ error: 'API endpoint not found' });
     }
     
-    const indexPath = join(frontendPath, "index.html");
+    // Check if we're serving from the built frontend
+    const indexPath = join(__dirname, "..", "dist", "public", "index.html");
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);
     } else {
-      // Fallback for development
-      res.send(`
-        <html>
-          <body>
-            <h1>🎮 Character Tap Game</h1>
-            <p>Backend server is running successfully!</p>
-            <p>Modular routes loaded: ✅</p>
-            <p>API Health: <a href="/api/health">/api/health</a></p>
-            <p>Port: 5000</p>
-          </body>
-        </html>
-      `);
+      // Fallback - try the client dist folder
+      const clientIndexPath = join(__dirname, "..", "client", "dist", "index.html");
+      if (fs.existsSync(clientIndexPath)) {
+        res.sendFile(clientIndexPath);
+      } else {
+        // Development fallback - serve a simple redirect to the game
+        res.send(`
+          <html>
+            <head>
+              <title>🎮 Character Tap Game</title>
+              <meta http-equiv="refresh" content="0; url=/">
+            </head>
+            <body>
+              <h1>🎮 Character Tap Game</h1>
+              <p>Redirecting to game...</p>
+              <script>window.location.href = '/';</script>
+            </body>
+          </html>
+        `);
+      }
     }
   });
 
