@@ -12,7 +12,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
-import { SupabaseStorage } from '../shared/SupabaseStorage';
+import { PostgreSQLStorage } from '../shared/PostgreSQLStorage.js';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { registerAdminApi } from '../debugger/modules/adminAPI'; // adjust import as needed

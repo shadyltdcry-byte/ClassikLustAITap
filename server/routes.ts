@@ -14,25 +14,15 @@ import path from 'path';
 import fs from 'fs';
 import crypto from 'crypto';
 import multer from 'multer';
-// Using Supabase storage
+// Using PostgreSQL storage with Drizzle ORM
 import jwt from 'jsonwebtoken';
-import { SupabaseStorage } from '../shared/SupabaseStorage';
+import { PostgreSQLStorage } from '../shared/PostgreSQLStorage.js';
 import gameConfig from './game-config.json';
 
-// Create SINGLETON Supabase storage instance to avoid 4x duplicates
-const storage = SupabaseStorage.getInstance();
+// Create SINGLETON PostgreSQL storage instance
+const storage = PostgreSQLStorage.getInstance();
 
-// Force Supabase schema refresh on startup
-(async () => {
-  try {
-    console.log('[Supabase] Refreshing schema cache...');
-    // This forces Supabase to reload its schema cache
-    await storage.supabase.rpc('version');
-    console.log('[Supabase] Schema cache refreshed successfully');
-  } catch (error) {
-    console.warn('[Supabase] Schema refresh failed, will retry on first query:', error);
-  }
-})();
+// PostgreSQL storage is ready to use
 
 // Create a global variable to store token validation function reference
 declare global {
