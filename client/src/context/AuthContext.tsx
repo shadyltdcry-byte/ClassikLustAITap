@@ -10,6 +10,14 @@ interface AuthContextType {
   loginAsGuest: () => void;
 }
 
+// Define a type for the result of checkBotAuth
+interface AuthResult {
+  success: boolean;
+  user?: any; // User object from backend
+  token?: string; // Auth token
+  error?: string; // Error message
+}
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const useAuth = () => {
@@ -29,25 +37,95 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const initializeAuth = () => {
-      try {
-        // Check for existing Telegram authentication
-        const token = localStorage.getItem('telegram_auth_token');
-        const storedUserId = localStorage.getItem('telegram_user_id');
+  const setUser = (user: any) => {
+    setUserId(user.id);
+    // Optionally store other user details if needed
+    localStorage.setItem('user_data', JSON.stringify(user));
+  };
 
-        if (token && storedUserId) {
-          console.log('[DEBUG] Found stored credentials, logging in as:', storedUserId);
-          setUserId(storedUserId);
+  const checkBotAuth = async (telegramId: string): Promise<AuthResult> => {
+    try {
+      console.log(`[DEBUG] Checking bot auth for telegram_id: ${telegramId}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+
+      const response = await fetch(`/api/auth/telegram/check?telegram_id=${telegramId}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        console.log(`[DEBUG] Bot auth check failed with status: ${response.status}`);
+        return { success: false, error: 'Bot auth check failed' };
+      }
+
+      const data = await response.json();
+      console.log(`[DEBUG] Bot authentication found for ${telegramId}`, data);
+
+      if (data.authenticated) {
+        return { success: true, user: data.user, token: data.token };
+      } else {
+        return { success: false, error: 'Not authenticated via bot' };
+      }
+    } catch (error) {
+      console.log('Bot auth check error:', error);
+      // Don't let network errors cause infinite loading
+      return { success: false, error: 'Network error during bot auth check' };
+    }
+  };
+
+  const attemptAutoLogin = async (): Promise<boolean> => {
+    try {
+      // First check URL params
+      const urlParams = new URLSearchParams(window.location.search);
+      const telegramIdFromUrl = urlParams.get('telegram_id');
+
+      if (telegramIdFromUrl) {
+        console.log(`[DEBUG] Found telegram_id in URL: ${telegramIdFromUrl}, checking bot auth status`);
+        const result = await checkBotAuth(telegramIdFromUrl);
+
+        if (result.success && result.user && result.token) {
+          // Store for future use
+          localStorage.setItem('telegram_id', telegramIdFromUrl);
+          setUser(result.user);
           setIsAuthenticated(true);
+          console.log(`[DEBUG] URL-based login successful for telegram_id: ${telegramIdFromUrl}`);
+          return true;
+        }
+      }
+
+      // Check stored telegram_id
+      const storedTelegramId = localStorage.getItem('telegram_id');
+      if (storedTelegramId && storedTelegramId !== telegramIdFromUrl) {
+        console.log(`[DEBUG] No URL param but found stored telegram_id: ${storedTelegramId}, checking auth`);
+
+        const result = await checkBotAuth(storedTelegramId);
+        if (result.success && result.user) {
+          setUser(result.user);
+          setIsAuthenticated(true);
+          console.log(`[DEBUG] Auto-login successful for stored telegram_id: ${storedTelegramId}`);
+          return true;
         } else {
-          // Check for guest mode
-          const guestId = localStorage.getItem('guest_user_id');
-          if (guestId) {
-            console.log('[DEBUG] Found guest ID, logging in as guest:', guestId);
-            setUserId(guestId);
-            setIsAuthenticated(true);
-          }
+          console.log(`[DEBUG] Auto-login failed for stored telegram_id: ${storedTelegramId}, clearing storage`);
+          localStorage.removeItem('telegram_id');
+        }
+      }
+
+      return false;
+    } catch (error) {
+      console.log('Auto-login check error:', error);
+      // Clear any stored data that might be causing issues
+      localStorage.removeItem('telegram_id');
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const success = await attemptAutoLogin();
+        if (!success) {
+          console.log('[DEBUG] No valid authentication found');
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -56,99 +134,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Check for bot authentication via URL params (from Telegram bot)
-    const checkBotAuth = async () => {
-      let authChecked = false;
-      
-      const urlParams = new URLSearchParams(window.location.search);
-      const telegramId = urlParams.get('telegram_id');
-      
-      if (telegramId) {
-        console.log(`[DEBUG] Found telegram_id in URL: ${telegramId}, checking bot auth status`);
-        try {
-          const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`).catch(() => null);
-          
-          if (response && response.ok) {
-            const data = await response.json().catch(() => null);
-            
-            if (data && data.authenticated) {
-              console.log(`[DEBUG] Bot authentication found for ${telegramId}`, data);
-              localStorage.setItem('telegram_auth_token', data.token);
-              localStorage.setItem('telegram_user_id', data.user.id);
-              localStorage.setItem('telegram_id', telegramId);
-              setUserId(data.user.id);
-              setIsAuthenticated(true);
-              setIsLoading(false);
-              authChecked = true;
-              
-              // Clean up URL
-              window.history.replaceState({}, document.title, window.location.pathname);
-              return;
-            }
-          }
-        } catch (error) {
-          console.log('[DEBUG] Bot auth check failed, using stored credentials');
-        }
-      }
-      
-      // If no URL auth or it failed, just use stored credentials immediately
-      if (!authChecked) {
-        console.log('[DEBUG] Using stored credentials for faster login');
-        initializeAuth();
-        authChecked = true;
-      }
-    };
+    // Add timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.log('[DEBUG] Auth initialization timeout, stopping loading');
+      setIsLoading(false);
+    }, 10000); // 10 second timeout
 
-    // Set a much shorter maximum loading time to prevent infinite loading
-    const maxLoadingTimer = setTimeout(() => {
-      console.log('[DEBUG] Max loading time reached (3s), forcing login');
-      if (isLoading) {
-        // Force login with existing credentials or guest mode
-        const storedUserId = localStorage.getItem('telegram_user_id');
-        const guestId = localStorage.getItem('guest_user_id');
-        
-        if (storedUserId) {
-          setUserId(storedUserId);
-          setIsAuthenticated(true);
-        } else if (guestId) {
-          setUserId(guestId);
-          setIsAuthenticated(true);
-        }
-        setIsLoading(false);
-      }
-    }, 3000); // Reduced to 3 seconds
+    initAuth().finally(() => {
+      clearTimeout(timeout);
+    });
 
-    checkBotAuth();
-    
-    return () => clearTimeout(maxLoadingTimer);
+    return () => clearTimeout(timeout);
   }, []);
 
-  // Auto-refresh mechanism to maintain login state - DISABLED TO STOP API SPAM
-  // useEffect(() => {
-  //   if (!isAuthenticated || isLoading) return;
-
-  //   const autoRefresh = () => {
-  //     const token = localStorage.getItem('telegram_auth_token');
-  //     const storedUserId = localStorage.getItem('telegram_user_id');
-      
-  //     if (token && storedUserId) {
-  //       // Keep the session alive by refreshing state
-  //       console.log('[DEBUG] Auto-refreshing session for:', storedUserId);
-  //       setUserId(storedUserId);
-  //       setIsAuthenticated(true);
-  //     } else {
-  //       // Token was cleared, log out
-  //       console.log('[DEBUG] Token cleared, logging out');
-  //       setIsAuthenticated(false);
-  //       setUserId(null);
-  //     }
-  //   };
-
-  //   // Check every 5 minutes to maintain session
-  //   const refreshInterval = setInterval(autoRefresh, 300000);
-    
-  //   return () => clearInterval(refreshInterval);
-  // }, [isAuthenticated, isLoading]);
 
   const login = (userIdFromAuth: string, userData?: any) => {
     console.log('AuthContext: Logging in user:', userIdFromAuth);
@@ -156,12 +154,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     if (userData?.token) {
       localStorage.setItem('telegram_auth_token', userData.token);
     }
-    
+
     // Store additional user data for auto-refresh
     if (userData) {
       localStorage.setItem('user_data', JSON.stringify(userData));
     }
-    
+
     setUserId(userIdFromAuth);
     setIsAuthenticated(true);
   };
@@ -184,6 +182,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     localStorage.removeItem('telegram_auth_token');
     localStorage.removeItem('telegram_user_id');
     localStorage.removeItem('guest_user_id');
+    localStorage.removeItem('telegram_id'); // Also remove telegram_id
+    localStorage.removeItem('user_data'); // Also remove user data
     setUserId(null);
     setIsAuthenticated(false);
   };

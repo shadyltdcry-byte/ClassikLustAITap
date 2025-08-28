@@ -74,7 +74,16 @@ function AppContent() {
         });
       }, 200); // Faster interval
 
-      return () => clearInterval(interval);
+      // Emergency fallback - force stop loading after 15 seconds
+      const emergencyTimeout = setTimeout(() => {
+        console.log('[EMERGENCY] Forcing stop loading after timeout');
+        setLoadingProgress(100);
+      }, 15000);
+
+      return () => {
+        clearInterval(interval);
+        clearTimeout(emergencyTimeout);
+      };
     }
   }, [isLoading]);
 
