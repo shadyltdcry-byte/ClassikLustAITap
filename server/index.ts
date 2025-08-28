@@ -177,6 +177,7 @@ if (token) {
 
 // --- Start of Express App Configuration ---
 
+// Create Express app directly
 const app = express();
 
 app.use(cors({
@@ -223,7 +224,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  const server = await registerRoutes(app);
+  const routes = await registerRoutes(app);
 
 
 
@@ -268,6 +269,39 @@ app.use((req, res, next) => {
     console.warn('WebSocket server failed to start:', error.message);
   }
 
+  // Register modular routes
+  app.use("/api", routes);
+
+  // Serve static files from uploads directory
+  app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+
+  // Serve React app static files (when built)
+  if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../client/dist')));
+
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+    });
+  } else {
+    // In development, serve a simple status page
+    app.get('*', (req, res) => {
+      res.send(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Character Tap Game</title>
+          <meta charset="utf-8">
+          <script type="module" src="http://localhost:5173/@vite/client"></script>
+          <script type="module" src="http://localhost:5173/src/main.tsx"></script>
+        </head>
+        <body>
+          <div id="root">Loading...</div>
+        </body>
+      </html>
+    `);
+    });
+  }
+
   server.listen(
     {
       port: PORT,
@@ -275,6 +309,8 @@ app.use((req, res, next) => {
       reusePort: true,
     },
     () => {
+      console.log(`🎮 Character Tap Game server running on port ${PORT}`);
+      console.log(`📡 Modular route architecture loaded successfully`);
       console.log(`serving on port ${PORT}`);
     },
   );
