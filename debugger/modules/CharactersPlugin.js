@@ -1,6 +1,6 @@
 // debugger/modules/characters.js
 const DebuggerPlugin = require("../DebuggerPlugin");
-const SupabaseStorage = require("../../storage/SupabaseStorage");
+const { SupabaseStorage } = require("../../shared/SupabaseStorage");
 
 class CharactersPlugin extends DebuggerPlugin {
   constructor(storageInstance) {

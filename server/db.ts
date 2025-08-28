@@ -1,15 +1,6 @@
-import { Pool, neonConfig } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import ws from "ws";
-import * as schema from '../shared/database-schema';
+// Using Supabase only - no PostgreSQL connection needed
+import { SupabaseStorage } from '../shared/SupabaseStorage';
 
-neonConfig.webSocketConstructor = ws;
-
-if (!process.env.DATABASE_URL) {
-  throw new Error(
-    "DATABASE_URL must be set. Did you forget to provision a database?",
-  );
-}
-
-export const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-export const db = drizzle({ client: pool, schema });
+// Export Supabase storage singleton
+export const storage = SupabaseStorage.getInstance();
+export default storage;

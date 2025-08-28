@@ -13,42 +13,18 @@ import path from "path";
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
-import { drizzle } from 'drizzle-orm/postgres-js';
-import postgres from 'postgres';
-import { registerAdminApi } from '../debugger/modules/adminAPI'; // adjust import as needed
-import DebuggerCore from '../debugger/DebuggerCore';
-import DebuggerAssist from '../debugger/modules/CharactersPlugin';
-import AdminUIPlugin from '../debugger/modules/adminUI';
 import TelegramBot from 'node-telegram-bot-api';
-import crypto from 'crypto';
 
-// Initialize database connection only if DATABASE_URL is provided
-let db: any = null;
-const connectionString = process.env.DATABASE_URL;
-if (connectionString) {
-  try {
-    const sql = postgres(connectionString);
-    db = drizzle(sql);
-    console.log('Database connection established');
-  } catch (error) {
-    console.warn('Database connection fail, running in mock mode:', error);
-  }
-} else {
-  console.warn('DATABASE_URL not provided, running in mock mode');
-}
-
-export { db };
+// Use only Supabase - no PostgreSQL connection needed
+export { SupabaseStorage };
 
 function main() {
   console.log("[Main] Server loaded and started successfully... ");
-  if (db) {
-    console.log("[SupabaseDB] Database connected and loaded successfully...");
-  } else {
-    console.log("Running in mock mode without database");
-  }
+  console.log("[SupabaseStorage] Using Supabase for all database operations");
   
-  // Initialize storage
-  console.log("[Storage] Initialized SupabaseDB local storage system... ");
+  // Initialize Supabase storage singleton
+  const storage = SupabaseStorage.getInstance();
+  console.log("[Storage] Supabase storage system initialized successfully");
 }
 
 main();
