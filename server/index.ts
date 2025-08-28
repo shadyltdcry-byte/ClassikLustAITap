@@ -3,7 +3,6 @@
  * Last Edited: 2025-08-17 by Steven
  *
  *
- * 
  *
  */
 
@@ -14,6 +13,7 @@ import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
 import TelegramBot from 'node-telegram-bot-api';
+import cors from 'cors';
 
 // Use only Supabase - no PostgreSQL connection needed
 export { SupabaseStorage };
@@ -21,7 +21,7 @@ export { SupabaseStorage };
 function main() {
   console.log("[Main] Server loaded and started successfully... ");
   console.log("[SupabaseStorage] Using Supabase for all database operations");
-  
+
   // Initialize Supabase storage singleton
   const storage = SupabaseStorage.getInstance();
   console.log("[Storage] Supabase storage system initialized successfully");
@@ -30,11 +30,11 @@ function main() {
 main();
 
 // In-memory token storage (replace with database later)
-const telegramTokens = new Map<string, { 
-  telegramId: string, 
-  username: string, 
-  expiresAt: Date, 
-  used: boolean 
+const telegramTokens = new Map<string, {
+  telegramId: string,
+  username: string,
+  expiresAt: Date,
+  used: boolean
 }>();
 
 // Generate temporary auth token (6-12 chars alphanumeric)
@@ -52,14 +52,14 @@ function generateAuthToken(): string {
 function storeAuthToken(telegramId: string, username: string): string {
   const token = generateAuthToken();
   const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year (essentially permanent)
-  
+
   telegramTokens.set(token, {
     telegramId,
     username,
     expiresAt,
     used: false
   });
-  
+
   console.log(`Generated persistent token ${token} for Telegram user ${telegramId} (${username})`);
   return token;
 }
@@ -71,23 +71,23 @@ export function validateAuthToken(token: string, telegramId: string): boolean {
     console.log(`Token ${token} not found`);
     return false;
   }
-  
+
   if (tokenData.used) {
     console.log(`Token ${token} already used`);
     return false;
   }
-  
+
   if (new Date() > tokenData.expiresAt) {
     console.log(`Token ${token} expired`);
     telegramTokens.delete(token);
     return false;
   }
-  
+
   if (tokenData.telegramId !== telegramId) {
     console.log(`Token ${token} telegram_id mismatch`);
     return false;
   }
-  
+
   // Mark as used
   tokenData.used = true;
   console.log(`Token ${token} validated successfully for ${telegramId}`);
@@ -125,11 +125,11 @@ if (token) {
 
       try {
         console.log(`[${timestamp}] Telegram auth initiated for user: ${telegram_id} (${username}) with command: ${messageText}`);
-        
+
         // 1. Generate temporary authentication token
         const token = storeAuthToken(telegram_id, username);
         console.log(`[${timestamp}] Generated token: ${token} for telegram_id: ${telegram_id}`);
-        
+
         // 2. POST to game backend auth endpoint with token
         const authResponse = await fetch('http://localhost:5000/api/auth/telegram', {
           method: 'POST',
@@ -175,10 +175,17 @@ if (token) {
   console.warn('[Telegram] TELEGRAM_BOT_TOKEN not found, bot disabled');
 }
 
+// --- Start of Express App Configuration ---
+
 const app = express();
 
-// Serve static files from public directory
-app.use(express.static(path.join(process.cwd(), 'public')));
+app.use(cors({
+  origin: ['http://localhost:3000', 'http://localhost:5000', 'https://*.repl.co', 'https://*.replit.dev'],
+  credentials: true
+}));
+
+// Serve static files from client dist directory
+app.use(express.static(path.join(__dirname, '../client/dist')));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -188,7 +195,7 @@ app.use((req, res, next) => {
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-  
+
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
@@ -219,7 +226,7 @@ app.use((req, res, next) => {
   const server = await registerRoutes(app);
 
 
-  
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";
@@ -239,17 +246,17 @@ app.use((req, res, next) => {
     process.exit(1);
   });
 
-        
+
   // ALWAYS serve the app on the port specified in the environment variable PORT
   // Other ports are firewalled. Default to 5000 if not specified.
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const PORT = process.env.PORT || 5000;
-  
+
   // WebSocket server for real-time features - using different port to avoid conflicts
   let wss;
   try {
-    wss = new WebSocketServer({ 
+    wss = new WebSocketServer({
       port: 8082,
       host: '0.0.0.0'
     });
