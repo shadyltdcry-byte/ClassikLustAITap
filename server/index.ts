@@ -533,12 +533,7 @@ app.use((req, res, next) => {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`🎮 Character Tap Game server running on port ${PORT}`);
-    console.log(`📡 Modular route architecture loaded successfully`);
-    console.log(`serving on port ${PORT}`);
-  });
+  // Server startup is handled by routes.ts - no duplicate listen() needed
 })();
 
-// Initialize storage for server operations
-// Using shared storage from routes.ts - no duplicate instance needed
+console.log('[Index] Setup complete - server startup handled by routes.ts');
