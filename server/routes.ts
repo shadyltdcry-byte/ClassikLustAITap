@@ -214,20 +214,8 @@ export function registerRoutes(app: Express): Server {
       if (fs.existsSync(clientIndexPath)) {
         res.sendFile(clientIndexPath);
       } else {
-        // Development fallback - serve a simple redirect to the game
-        res.send(`
-          <html>
-            <head>
-              <title>🎮 Character Tap Game</title>
-              <meta http-equiv="refresh" content="0; url=/">
-            </head>
-            <body>
-              <h1>🎮 Character Tap Game</h1>
-              <p>Redirecting to game...</p>
-              <script>window.location.href = '/';</script>
-            </body>
-          </html>
-        `);
+        // Development fallback - redirect properly without meta refresh
+        res.redirect('/');
       }
     }
   });

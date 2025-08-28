@@ -35,7 +35,7 @@ function Router() {
       <Route path="/game" component={GameGUIPage} />
       <Route path="/AdminMenu" component={AdminMenuPage} />
       <Route path="/admin" component={AdminMenuPage} />
-      <Route component={NotFound} />
+      <Route path="*" component={GameGUIPage} />
     </Switch>
   );
 }
