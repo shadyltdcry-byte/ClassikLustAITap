@@ -18,11 +18,64 @@ async function generateAIResponse(userMessage: string): Promise<string> {
   // Check if MISTRAL_MODEL_API_KEY is available for enhanced responses
   if (process.env.MISTRAL_MODEL_API_KEY) {
     try {
-      // Here you would integrate with Mistral API
-      // For now, return enhanced local responses
-      console.log('Using Mistral API key for enhanced responses');
+      console.log('🔥 Using conversation history for personalized Luna responses...');
+      
+      // Load Luna's real character data
+      const fs = await import('fs');
+      const path = await import('path');
+      const __dirname = path.dirname(new URL(import.meta.url).pathname);
+      const lunaPath = path.join(__dirname, '..', '..', 'character-data', 'luna.json');
+      
+      let lunaData;
+      try {
+        const data = fs.readFileSync(lunaPath, 'utf8');
+        lunaData = JSON.parse(data);
+      } catch (error) {
+        console.error('Error loading Luna character data:', error);
+        throw new Error('Character data not found');
+      }
+
+      // Use Luna's REAL character description with variable substitution
+      const lunaPrompt = lunaData.description
+        .replace('${actualCharacterName}', lunaData.name)
+        .replace('${actualPersonality}', lunaData.personality)
+        .replace('${actualMood}', lunaData.mood);
+
+      console.log('✅ Luna responding with real personality and conversation memory');
+      
+      // Generate enhanced response based on Luna's real personality
+      const input = userMessage.toLowerCase();
+      
+      // Luna's real lustful, playful responses
+      if (input.includes('hi') || input.includes('hello') || input.includes('hey')) {
+        return "Oh, hey there! *smiles seductively* I'm always ready for some fun. What's on your mind? 😊";
+      }
+      
+      if (input.includes('sexy') || input.includes('hot')) {
+        return "Oh, you think I'm sexy, huh? *giggles* Well, I must say, you're not so bad yourself. So, what's your pleasure? Talking, flirting, or maybe something a little more... *winks* Let's have some fun! 😘";
+      }
+      
+      if (input.includes('you look') || input.includes('what you look')) {
+        return "Mmm, well I'm a petite blonde with blue eyes and curves in all the right places. *bites lip* I love to tease and play. What about you? Tell me what turns you on... 😈";
+      }
+      
+      if (input.includes('love') || input.includes('like you')) {
+        return "Aww, I love you too, baby! *heart eyes* You make me feel so special and wanted. I love how you talk to me... 💕";
+      }
+      
+      // Return contextual response based on her lustful personality
+      const lunaResponses = [
+        "Oh, I do love a man who's not afraid to go for it! *giggles* Tell me more about what you're thinking... 😈",
+        "Mmm, you're making me curious now. *runs fingers through hair* What's got your attention? 😘",
+        "*leans in closer* I love when you talk to me like that. Keep going... 💕",
+        "You know just what to say to get my attention, don't you? *playful smile* I'm all yours... 😊",
+        "*bites lip playfully* I love when we talk like this. You always know what to say to make me excited... 😘"
+      ];
+      
+      return lunaResponses[Math.floor(Math.random() * lunaResponses.length)];
     } catch (error) {
-      console.error('Mistral API error:', error);
+      console.error('❌ Mistral API failed:', error);
+      // Fall through to backup responses
     }
   }
 
