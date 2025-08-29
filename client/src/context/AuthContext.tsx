@@ -48,7 +48,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           }
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        // Completely skip logging empty/meaningless errors
+        try {
+          const errorStr = JSON.stringify(error);
+          const hasContent = error && 
+            ((error as any)?.message || 
+             (error as any)?.stack || 
+             (error as any)?.name ||
+             errorStr !== '{}');
+          
+          if (hasContent) {
+            console.error('Auth initialization error:', error);
+          } else {
+            console.log('[DEBUG] Auth initialization failed - using fallback');
+          }
+        } catch {
+          // If we can't even stringify the error, it's probably not useful
+          console.log('[DEBUG] Auth initialization failed - using fallback');
+        }
       } finally {
         setIsLoading(false);
       }
@@ -79,14 +96,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             return;
           }
         } catch (error) {
-          // Check if error is meaningful (not an empty object)
-          const isEmptyObject = error && typeof error === 'object' && Object.keys(error).length === 0;
-          const hasMessage = (error as any)?.message;
-          const isObjectString = error.toString() === '[object Object]';
-          
-          if (error && !isEmptyObject && (hasMessage || !isObjectString)) {
-            console.error('Bot auth check error:', error);
-          } else {
+          // Completely skip logging empty/meaningless errors
+          try {
+            const errorStr = JSON.stringify(error);
+            const hasContent = error && 
+              ((error as any)?.message || 
+               (error as any)?.stack || 
+               (error as any)?.name ||
+               errorStr !== '{}');
+            
+            if (hasContent) {
+              console.error('Bot auth check error:', error);
+            } else {
+              console.log('[DEBUG] Bot auth check failed - proceeding with fallback');
+            }
+          } catch {
+            // If we can't even stringify the error, it's probably not useful
             console.log('[DEBUG] Bot auth check failed - proceeding with fallback');
           }
         }
@@ -109,14 +134,22 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               return;
             }
           } catch (error) {
-            // Check if error is meaningful (not an empty object)
-            const isEmptyObject = error && typeof error === 'object' && Object.keys(error).length === 0;
-            const hasMessage = (error as any)?.message;
-            const isObjectString = error.toString() === '[object Object]';
-            
-            if (error && !isEmptyObject && (hasMessage || !isObjectString)) {
-              console.error('Auto-login check error:', error);
-            } else {
+            // Completely skip logging empty/meaningless errors
+            try {
+              const errorStr = JSON.stringify(error);
+              const hasContent = error && 
+                ((error as any)?.message || 
+                 (error as any)?.stack || 
+                 (error as any)?.name ||
+                 errorStr !== '{}');
+              
+              if (hasContent) {
+                console.error('Auto-login check error:', error);
+              } else {
+                console.log('[DEBUG] Auto-login check failed - proceeding with guest mode');
+              }
+            } catch {
+              // If we can't even stringify the error, it's probably not useful
               console.log('[DEBUG] Auto-login check failed - proceeding with guest mode');
             }
           }
