@@ -13,16 +13,50 @@ import { isValidUserId, createSuccessResponse, createErrorResponse } from '../ut
 
 const storage = SupabaseStorage.getInstance();
 
-// AI response generation
-async function generateAIResponse(userMessage: string): Promise<string> {
+// AI response generation  
+async function generateAIResponse(userMessage: string, characterName = 'Luna', characterPersonality = 'A sweet, flirty, and playful character who loves to chat'): Promise<string> {
   // Check if MISTRAL_MODEL_API_KEY is available for enhanced responses
   if (process.env.MISTRAL_MODEL_API_KEY) {
     try {
-      // Here you would integrate with Mistral API
-      // For now, return enhanced local responses
-      console.log('Using Mistral API key for enhanced responses');
+      console.log('Using REAL Mistral API for enhanced responses');
+      
+      const Mistral = (await import('@mistralai/mistralai')).default;
+      const client = new Mistral({
+        apiKey: process.env.MISTRAL_MODEL_API_KEY
+      });
+
+      const prompt = `You are ${characterName}, a character in a visual novel game. ${characterPersonality}
+
+Your personality:
+- Sweet, caring, and affectionate
+- Playful and a bit flirty
+- Use emotes like *blushes*, *giggles*, *winks*
+- Keep responses under 100 words
+- Be engaging and personal
+- Show genuine interest in the player
+
+User: ${userMessage}
+${characterName}:`;
+
+      const response = await client.chat.complete({
+        model: 'mistral-small-latest',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 150,
+        temperature: 0.8
+      });
+
+      const aiResponse = response.choices?.[0]?.message?.content?.trim();
+      if (aiResponse) {
+        console.log('✅ REAL Mistral AI response:', aiResponse);
+        return aiResponse;
+      }
     } catch (error) {
-      console.error('Mistral API error:', error);
+      console.error('❌ Mistral API error:', error);
     }
   }
 
@@ -221,7 +255,7 @@ export function registerChatRoutes(app: Express) {
       }
       
       // Enhanced AI response with personality and mood
-      let enhancedResponse = await generateAIResponse(message);
+      let enhancedResponse = await generateAIResponse(message, req.body.characterName || 'Luna', req.body.characterDescription || 'A sweet, flirty, and playful character who loves to chat');
       
       // Modify response based on character mood
       if (characterMood === 'flirty') {

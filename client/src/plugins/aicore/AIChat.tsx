@@ -324,10 +324,10 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
         return { result, originalMessage: message };
       } catch (error) {
         console.error("Mistral API failed, using fallback:", error);
-        // Return fallback response
+        // Use a more character-specific fallback that indicates the issue
         return { 
           result: { 
-            response: generateSmartResponse(message),
+            response: `*Luna looks a bit confused* Sorry, I'm having trouble thinking clearly right now... Can you try asking me again? 💕`,
             mood: getRandomMood()
           }, 
           originalMessage: message 

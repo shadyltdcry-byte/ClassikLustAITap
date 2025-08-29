@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Heart, TrendingUp, Zap, Trophy, MessageCircle } from "lucide-react";
+import { Heart, TrendingUp, Zap, Trophy, MessageCircle, Award } from "lucide-react";
 
 interface GameTabsPanelProps {
   activePlugin: string;
@@ -60,6 +60,18 @@ export default function GameTabsPanel({
         >
           <Trophy className="w-4 h-4" />
           <span className="text-xs">Tasks</span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${
+            activePlugin === "achievements" ? "bg-pink-600/30" : ""
+          }`}
+          onClick={() => onPluginChange("achievements")}
+        >
+          <Award className="w-4 h-4" />
+          <span className="text-xs">Achievements</span>
         </Button>
 
         <Button
