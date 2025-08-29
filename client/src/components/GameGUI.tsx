@@ -35,6 +35,7 @@ import { useGameState } from "@/hooks/use-game-state";
 import { useGame } from "@/context/GameProvider";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useQuery } from "@tanstack/react-query";
 //import { AdminUIToggler } from './debugger/modules/adminUI';
 
 
@@ -480,7 +481,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       queryKey: ['/api/admin/achievements'],
     });
 
-    const filteredAchievements = achievementFilter === "all" ? achievements : achievements.filter(achievement => achievement.category === achievementFilter);
+    const filteredAchievements = achievementFilter === "all" ? (achievements as any[]) : (achievements as any[]).filter((achievement: any) => achievement.category === achievementFilter);
 
     return (
       <div className="w-full max-w-2xl h-full flex flex-col">
@@ -495,7 +496,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               <p className="text-sm text-gray-400">Track your progress and unlock rewards</p>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-white">{filteredAchievements.filter(a => a.completed).length}</div>
+              <div className="text-2xl font-bold text-white">{filteredAchievements.filter((a: any) => a.completed).length}</div>
               <div className="text-xs text-gray-400">Completed</div>
             </div>
           </div>
@@ -533,7 +534,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                   <div className="text-gray-400">No achievements available</div>
                 </div>
               ) : (
-                filteredAchievements.map((achievement) => {
+                filteredAchievements.map((achievement: any) => {
                   const currentLevel = achievement.currentLevel || 1;
                   const maxLevel = achievement.maxLevel || 10;
                   const progress = achievement.progress || 0;

@@ -36,6 +36,7 @@ import {
   CheckCircle,
   AlertCircle 
 } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { toast } from 'react-hot-toast';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -549,7 +550,8 @@ export default function LevelUp() {
 
         {/* All Levels Overview */}
         <TabsContent value="all" className="space-y-4">
-          <div className="grid gap-4">
+          <ScrollArea className="h-96">
+            <div className="grid gap-4 pr-4">
             {levelRequirements
               .sort((a, b) => a.level - b.level)
               .map((levelReq) => {
