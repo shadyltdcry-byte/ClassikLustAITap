@@ -9,5 +9,4 @@ export { default as TaskManagement } from './TaskManagement';
 export { default as LevelManagement } from './LevelManagement';
 export { default as UpgradeManagement } from './UpgradeManagement';
 export { default as AchievementManagement } from './AchievementManagement';
-export { default as DebuggerInterface } from './DebuggerInterface';
 export { default as MediaFileCleanup } from './MediaFileCleanup';
