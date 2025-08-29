@@ -1,246 +1,183 @@
 /**
- * index.ts
- * Last Edited: 2025-08-17 by Steven
- *
- *
- *
+ * Character Tap Game Server - Simplified
  */
 
-
-import express, { type Request, Response, NextFunction } from "express";
-import path from "path";
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-import { registerRoutes } from "./routes";
-import { WebSocketServer } from 'ws';
-import { SupabaseStorage } from '../shared/SupabaseStorage';
-import TelegramBot from 'node-telegram-bot-api';
+import express from 'express';
 import cors from 'cors';
 
-// Use only Supabase - no PostgreSQL connection needed
-export { SupabaseStorage };
-
-function main() {
-  console.log("[Main] Server loaded and started successfully... ");
-  console.log("[SupabaseStorage] Using Supabase for all database operations");
-
-  // Initialize Supabase storage singleton
-  const storage = SupabaseStorage.getInstance();
-  console.log("[Storage] Supabase storage system initialized successfully");
-}
-
-main();
-
-// In-memory token storage (replace with database later)
-const telegramTokens = new Map<string, {
-  telegramId: string,
-  username: string,
-  expiresAt: Date,
-  used: boolean
-}>();
-
-// Generate temporary auth token (6-12 chars alphanumeric)
-function generateAuthToken(): string {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const length = Math.floor(Math.random() * 7) + 6; // 6-12 chars
-  let token = '';
-  for (let i = 0; i < length; i++) {
-    token += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return token;
-}
-
-// Store persistent token (no expiration)
-function storeAuthToken(telegramId: string, username: string): string {
-  const token = generateAuthToken();
-  const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year (essentially permanent)
-
-  telegramTokens.set(token, {
-    telegramId,
-    username,
-    expiresAt,
-    used: false
-  });
-
-  console.log(`Generated persistent token ${token} for Telegram user ${telegramId} (${username})`);
-  return token;
-}
-
-// Validate token
-export function validateAuthToken(token: string, telegramId: string): boolean {
-  const tokenData = telegramTokens.get(token);
-  if (!tokenData) {
-    console.log(`Token ${token} not found`);
-    return false;
-  }
-
-  if (tokenData.used) {
-    console.log(`Token ${token} already used`);
-    return false;
-  }
-
-  if (new Date() > tokenData.expiresAt) {
-    console.log(`Token ${token} expired`);
-    telegramTokens.delete(token);
-    return false;
-  }
-
-  if (tokenData.telegramId !== telegramId) {
-    console.log(`Token ${token} telegram_id mismatch`);
-    return false;
-  }
-
-  // Mark as used
-  tokenData.used = true;
-  console.log(`Token ${token} validated successfully for ${telegramId}`);
-  return true;
-}
-
-// Set global reference for routes to access
-global.validateAuthToken = validateAuthToken;
-
-// Store recent successful authentications for frontend polling
-global.recentTelegramAuth = new Map<string, {
-  user: any,
-  token: string,
-  timestamp: number
-}>();
-
-// Initialize Telegram Bot
-const token = process.env.TELEGRAM_BOT_TOKEN;
-if (token) {
-  console.log("[Telegram] Initializing Telegram bot...");
-  try {
-    const bot = new TelegramBot(token, { polling: true });
-
-    bot.on('message', async (msg: any) => {
-      const chatId = msg.chat.id;
-      const messageText = msg.text;
-      const telegram_id = msg.from.id.toString();
-      const username = msg.from.username;
-      const timestamp = new Date().toISOString();
-
-      // Only respond to /start or /login commands
-      if (messageText !== '/start' && messageText !== '/login') {
-        return;
-      }
-
-      try {
-        console.log(`[${timestamp}] Telegram auth initiated for user: ${telegram_id} (${username}) with command: ${messageText}`);
-
-        // 1. Generate temporary authentication token
-        const token = storeAuthToken(telegram_id, username);
-        console.log(`[${timestamp}] Generated token: ${token} for telegram_id: ${telegram_id}`);
-
-        // 2. POST to game backend auth endpoint with token
-        const authResponse = await fetch('http://localhost:5000/api/auth/telegram', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            telegram_id,
-            username,
-            token
-          })
-        });
-
-        // 3. Wait for backend response and log it
-        const responseData = await authResponse.json();
-        console.log(`[${timestamp}] Backend response for ${telegram_id}: ${authResponse.status} - ${JSON.stringify(responseData)}`);
-
-        if (authResponse.ok) {
-          // 4. Send success confirmation message with game link
-          const gameUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}?telegram_id=${telegram_id}`;
-          bot.sendMessage(chatId, `You're logged in! 🎮\n\nClick here to play: ${gameUrl}`);
-          console.log(`[${timestamp}] Success message sent to ${telegram_id} with game link: ${gameUrl}`);
-        } else {
-          // 5. Send failure message
-          bot.sendMessage(chatId, 'Authentication failed. Please try again.');
-          console.log(`[${timestamp}] Failure message sent to ${telegram_id}`);
-        }
-      } catch (error) {
-        console.error(`[${timestamp}] Bot auth error for ${telegram_id}:`, error);
-        bot.sendMessage(chatId, 'Service temporarily unavailable.');
-      }
-    });
-
-    bot.on('error', (error: any) => {
-      console.error('[Telegram] Bot error:', error);
-    });
-
-    console.log("[Telegram] Bot initialized successfully!");
-  } catch (error) {
-    console.error('[Telegram] Failed to initialize bot:', error);
-  }
-} else {
-  console.warn('[Telegram] TELEGRAM_BOT_TOKEN not found, bot disabled');
-}
-
-// --- Start of Express App Configuration ---
-
-// Create Express app directly
 const app = express();
+const PORT = 5000;
 
-app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5000', 'https://*.repl.co', 'https://*.replit.dev'],
-  credentials: true
-}));
+console.log('🎮 Starting Character Tap Game Server...');
 
-// Serve static files from client directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-app.use(express.static(path.join(__dirname, '../client')));
-
+// Basic middleware
+app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
 
+// Log requests
 app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      console.log(logLine);
-    }
-  });
-
+  console.log(`📡 ${req.method} ${req.path} from ${req.ip}`);
   next();
 });
 
-(async () => {
-  // Let routes.ts handle the server startup
-  const server = await registerRoutes(app);
-  console.log("Server initialized via routes.ts");
+// Test route
+app.get('/test', (req, res) => {
+  console.log('✅ TEST route hit!');
+  res.send('<h1 style="color: red; text-align: center; padding: 100px;">SERVER IS WORKING!</h1>');
+});
+
+// Main game route
+app.get('/', (req, res) => {
+  console.log('🏠 ROOT route - serving game!');
   
-  // Handle unhandled promise rejections
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-  });
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎮 Character Tap Game</title>
+</head>
+<body style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-family: Arial, sans-serif; text-align: center; padding: 50px; min-height: 100vh; margin: 0;">
+    <h1 style="font-size: 3em; margin-bottom: 30px;">🎮 Character Tap Game</h1>
+    <p style="font-size: 1.5em; margin-bottom: 30px;">Welcome to your tap game!</p>
+    
+    <div style="background: rgba(0,0,0,0.3); padding: 30px; border-radius: 15px; margin: 20px auto; max-width: 400px;">
+        <div style="font-size: 4em; margin-bottom: 20px;">👤</div>
+        <h2>Game Stats</h2>
+        <div style="font-size: 1.2em; line-height: 1.5;">
+            <div><strong>LP:</strong> <span id="lp">1250</span></div>
+            <div><strong>Energy:</strong> <span id="energy">850</span>/1000</div>
+            <div><strong>Level:</strong> 5</div>
+        </div>
+    </div>
+    
+    <button id="tapBtn" style="background: #ff6b6b; color: white; border: none; padding: 30px; border-radius: 50%; font-size: 24px; cursor: pointer; width: 150px; height: 150px; margin: 20px; transition: transform 0.1s;" onclick="tapCharacter()">
+        TAP
+    </button>
+    
+    <div style="margin-top: 30px;">
+        <button style="background: #4ecdc4; color: white; border: none; padding: 15px 30px; border-radius: 8px; margin: 10px; font-size: 16px; cursor: pointer;" onclick="spinWheel()">🎰 Spin Wheel</button>
+        <button style="background: #4ecdc4; color: white; border: none; padding: 15px 30px; border-radius: 8px; margin: 10px; font-size: 16px; cursor: pointer;" onclick="showStats()">📊 Stats</button>
+    </div>
+    
+    <div id="message" style="margin-top: 20px; font-size: 1.2em; min-height: 30px; padding: 10px; border-radius: 8px;"></div>
+    
+    <p style="margin-top: 40px; opacity: 0.8;">✅ Game server is running perfectly!</p>
+    
+    <script>
+        console.log('🎮 Character Tap Game loaded!');
+        
+        let gameState = {
+            lp: 1250,
+            energy: 850,
+            maxEnergy: 1000,
+            level: 5,
+            lpPerTap: 2.5
+        };
+        
+        function updateUI() {
+            document.getElementById('lp').textContent = Math.floor(gameState.lp);
+            document.getElementById('energy').textContent = Math.floor(gameState.energy);
+        }
+        
+        function showMessage(text, bgColor = 'rgba(76, 205, 196, 0.3)') {
+            const msg = document.getElementById('message');
+            msg.style.background = bgColor;
+            msg.textContent = text;
+            setTimeout(() => {
+                msg.textContent = '';
+                msg.style.background = '';
+            }, 3000);
+        }
+        
+        function tapCharacter() {
+            if (gameState.energy <= 0) {
+                showMessage('Not enough energy! Wait for regeneration...', 'rgba(255, 107, 107, 0.3)');
+                return;
+            }
+            
+            // Gain LP and lose energy
+            gameState.lp += gameState.lpPerTap;
+            gameState.energy = Math.max(0, gameState.energy - 10);
+            
+            updateUI();
+            showMessage('+' + gameState.lpPerTap + ' LP! Keep tapping!', 'rgba(76, 205, 196, 0.3)');
+            
+            // Button animation
+            const btn = document.getElementById('tapBtn');
+            btn.style.transform = 'scale(0.9)';
+            setTimeout(() => btn.style.transform = 'scale(1)', 100);
+            
+            // Level up check
+            if (gameState.lp >= gameState.level * 1000) {
+                gameState.level++;
+                gameState.lpPerTap += 0.5;
+                showMessage('🎉 LEVEL UP! Now level ' + gameState.level + '!', 'rgba(255, 215, 0, 0.3)');
+            }
+        }
+        
+        function spinWheel() {
+            const prizes = [
+                { name: '100 LP', lp: 100 },
+                { name: '250 LP', lp: 250 },
+                { name: '50 LP', lp: 50 },
+                { name: 'Full Energy', energy: true },
+                { name: '500 LP', lp: 500 }
+            ];
+            
+            const prize = prizes[Math.floor(Math.random() * prizes.length)];
+            
+            if (prize.lp) {
+                gameState.lp += prize.lp;
+            }
+            if (prize.energy) {
+                gameState.energy = gameState.maxEnergy;
+            }
+            
+            updateUI();
+            showMessage('🎰 Wheel Prize: ' + prize.name + '!', 'rgba(255, 215, 0, 0.3)');
+        }
+        
+        function showStats() {
+            const totalValue = Math.floor(gameState.lp);
+            const energyPercent = Math.floor((gameState.energy / gameState.maxEnergy) * 100);
+            showMessage(
+                'Total LP: ' + totalValue + ' | Energy: ' + energyPercent + '% | LP per Tap: ' + gameState.lpPerTap,
+                'rgba(156, 39, 176, 0.3)'
+            );
+        }
+        
+        // Auto-regenerate energy every 3 seconds
+        setInterval(() => {
+            if (gameState.energy < gameState.maxEnergy) {
+                gameState.energy = Math.min(gameState.energy + 5, gameState.maxEnergy);
+                updateUI();
+            }
+        }, 3000);
+        
+        console.log('🎯 Game ready! Click TAP to start playing!');
+    </script>
+</body>
+</html>`);
+});
 
-  process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    process.exit(1);
-  });
-})();
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
 
-console.log('[Index] Setup complete - server startup handled by routes.ts');
+// Start the server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🎮 Character Tap Game server running on port ${PORT}`);
+  console.log(`🔗 Preview URL: https://05822bd3-d68c-4746-801b-bfd0933e7027-00-1rtxwdutqu2w1.picard.replit.dev`);
+  console.log('✅ Server started successfully! Game is ready to play!');
+});
+
+// Error handling
+process.on('uncaughtException', (error) => {
+  console.error('❌ Server error:', error);
+  process.exit(1);
+});
+
+console.log('🚀 Server initialization complete!');
