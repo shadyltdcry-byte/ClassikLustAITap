@@ -111,9 +111,16 @@ export class LunaErrorMonitor {
       const { SupabaseStorage } = await import('../../shared/SupabaseStorage.js');
       const storage = SupabaseStorage.getInstance();
       
-      // Save as Luna's message in chat
+      // Get the user's actual UUID, not the telegram ID
+      const user = await storage.getUser(this.adminUserId);
+      if (!user || !user.id) {
+        console.log(`🌙 Luna Alert (No user UUID): ${message}`);
+        return;
+      }
+      
+      // Save as Luna's message in chat using proper UUID
       await storage.createChatMessage({
-        userId: this.adminUserId, 
+        userId: user.id, // Use actual UUID 
         characterId: '550e8400-e29b-41d4-a716-446655440002', // Luna's character ID
         message: '', // User message (empty for Luna's alerts)
         response: message, // Luna's alert message
