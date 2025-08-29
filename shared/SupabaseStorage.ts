@@ -126,9 +126,8 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
-    // Remove fields that might not exist in the database schema
+    // Use all updates since lastTick column now exists in database
     const safeUpdates = { ...updates };
-    delete safeUpdates.lastTick; // Remove lastTick since it might not exist in DB
     
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
