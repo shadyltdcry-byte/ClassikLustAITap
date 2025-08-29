@@ -66,10 +66,10 @@ export default function ChaosLog() {
     // Slowly decrease sanity over time (because agents are chaotic)
     const interval = setInterval(() => {
       setSanityLevel(prev => Math.max(25, prev - Math.random() * 2));
-    }, 5000);
+    }, 10000); // Slower interval to prevent infinite loops
 
     return () => clearInterval(interval);
-  }, []);
+  }, []); // Empty dependency array to prevent re-running
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
