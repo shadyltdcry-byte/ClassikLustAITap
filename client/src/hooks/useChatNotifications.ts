@@ -17,7 +17,7 @@ export function useChatNotifications(userId: string | null) {
   const { data: chatHistory = [] } = useQuery<ChatMessage[]>({
     queryKey: ['/api/chat-history', userId, '550e8400-e29b-41d4-a716-446655440002'], // Luna's ID
     enabled: !!userId,
-    refetchInterval: 5000, // Check for new messages every 5 seconds
+    refetchInterval: 30000, // Check for new messages every 30 seconds (reduced from 5s)
   });
 
   // Count unread messages from Luna (assistant messages newer than last read)

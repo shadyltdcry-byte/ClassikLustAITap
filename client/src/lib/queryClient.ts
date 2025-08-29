@@ -50,10 +50,21 @@ export async function apiRequest(
     const responseTime = Date.now() - startTime;
     console.log(`🌐 API: ${method} ${url} → ${res.status} (${responseTime}ms)`);
     
+    // Track API call in debugger (if available)
+    if (typeof window !== 'undefined' && (window as any).trackApiCall) {
+      (window as any).trackApiCall(`${method} ${url}`, responseTime);
+    }
+    
     return res;
   } catch (error) {
     const responseTime = Date.now() - startTime;
     console.error(`❌ API: ${method} ${url} → ERROR (${responseTime}ms)`, error);
+    
+    // Track failed API call in debugger
+    if (typeof window !== 'undefined' && (window as any).trackApiCall) {
+      (window as any).trackApiCall(`${method} ${url} [ERROR]`, responseTime);
+    }
+    
     throw error; // Re-throw to maintain existing behavior
   }
 }
@@ -82,10 +93,21 @@ export const getQueryFn: <T>(options: {
       const responseTime = Date.now() - startTime;
       console.log(`📊 Query: ${url} → ${res.status} (${responseTime}ms)`);
       
+      // Track query call in debugger
+      if (typeof window !== 'undefined' && (window as any).trackApiCall) {
+        (window as any).trackApiCall(`GET ${url}`, responseTime);
+      }
+      
       return await res.json();
     } catch (error) {
       const responseTime = Date.now() - startTime;
       console.error(`❌ Query: ${url} → ERROR (${responseTime}ms)`, error);
+      
+      // Track failed query in debugger
+      if (typeof window !== 'undefined' && (window as any).trackApiCall) {
+        (window as any).trackApiCall(`GET ${url} [ERROR]`, responseTime);
+      }
+      
       throw error;
     }
   };

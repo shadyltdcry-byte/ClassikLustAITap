@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -114,6 +114,18 @@ export default function AdminDebugPanel() {
   
   // Initialize React debugger for admin use
   const reactDebugger = useGameDebugger();
+  
+  // Make trackApiCall globally available for API monitoring
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      (window as any).trackApiCall = reactDebugger.trackApiCall;
+    }
+    return () => {
+      if (typeof window !== 'undefined') {
+        delete (window as any).trackApiCall;
+      }
+    };
+  }, [reactDebugger.trackApiCall]);
 
   return (
     <div className="p-6 space-y-6">

@@ -126,10 +126,11 @@ export function validateAuthToken(token: string, telegramId: string): boolean {
 }
 
 // Set global reference for routes to access
-global.validateAuthToken = validateAuthToken;
+(global as any).validateAuthToken = validateAuthToken;
+(global as any).lunaMonitorEnabled = false;
 
 // Store recent successful authentications for frontend polling
-global.recentTelegramAuth = new Map<string, {
+(global as any).recentTelegramAuth = new Map<string, {
   user: any,
   token: string,
   timestamp: number
