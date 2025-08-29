@@ -18,7 +18,15 @@ async function generateAIResponse(userMessage: string): Promise<string> {
   // Check if any Mistral API key is available for enhanced responses
   const apiKey = process.env.MISTRAL_MODEL_API_KEY || process.env.MISTRAL_API_KEY;
   
-  if (apiKey) {
+  // Debug API key without exposing it
+  console.log('🔑 API Key status:', {
+    hasKey: !!apiKey,
+    keyLength: apiKey?.length || 0,
+    keyStart: apiKey?.substring(0, 8) || 'none',
+    isPlaceholder: apiKey === 'YOUR_API_KEY'
+  });
+  
+  if (apiKey && apiKey !== 'YOUR_API_KEY') {
     try {
       console.log('🔥 Using conversation history for personalized Luna responses...');
       
