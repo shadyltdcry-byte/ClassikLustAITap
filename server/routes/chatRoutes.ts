@@ -15,8 +15,10 @@ const storage = SupabaseStorage.getInstance();
 
 // AI response generation
 async function generateAIResponse(userMessage: string): Promise<string> {
-  // Check if MISTRAL_MODEL_API_KEY is available for enhanced responses
-  if (process.env.MISTRAL_MODEL_API_KEY) {
+  // Check if any Mistral API key is available for enhanced responses
+  const apiKey = process.env.MISTRAL_MODEL_API_KEY || process.env.MISTRAL_API_KEY;
+  
+  if (apiKey) {
     try {
       console.log('🔥 Using conversation history for personalized Luna responses...');
       
@@ -43,10 +45,35 @@ async function generateAIResponse(userMessage: string): Promise<string> {
 
       console.log('✅ Luna responding with real personality and conversation memory');
       
-      // Generate enhanced response based on Luna's real personality
+      // Try real Mistral API first
+      try {
+        const { Mistral } = await import('@mistralai/mistralai');
+        const client = new Mistral({ apiKey: apiKey });
+
+        const fullPrompt = `${lunaPrompt}
+
+User: ${userMessage}
+Luna:`;
+
+        const response = await client.chat.complete({
+          model: 'mistral-small-latest',
+          messages: [{ role: 'user', content: fullPrompt }],
+          maxTokens: 150,
+          temperature: 0.8
+        });
+
+        const content = response.choices?.[0]?.message?.content;
+        if (content && typeof content === 'string') {
+          console.log('🎯 Real Mistral API response:', content.substring(0, 60) + '...');
+          return content.trim();
+        }
+      } catch (error) {
+        console.error('❌ Mistral API failed, using enhanced fallback:', error);
+      }
+      
+      // Enhanced fallback responses based on Luna's real personality
       const input = userMessage.toLowerCase();
       
-      // Luna's real lustful, playful responses
       if (input.includes('hi') || input.includes('hello') || input.includes('hey')) {
         return "Oh, hey there! *smiles seductively* I'm always ready for some fun. What's on your mind? 😊";
       }
