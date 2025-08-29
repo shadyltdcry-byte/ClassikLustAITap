@@ -130,16 +130,16 @@ export function registerTapRoutes(app: Express) {
       // Mock reward values - TODO: implement real reward system
       const rewards = {
         'task': { 
-          't1': '10 Coins', 
-          't2': '5 Gems', 
-          't3': '20 Coins', 
-          't4': '5 Coins' 
+          'task_1': '100 LP', 
+          'task_2': '50 LP', 
+          'task_3': '200 LP', 
+          'task_4': '75 LP' 
         },
         'achievement': { 
-          'a1': '5 Coins', 
-          'a2': '10 Coins', 
-          'a3': '50 Coins', 
-          'a4': '1 Gem Package' 
+          'achieve_1': '50 LP', 
+          'achieve_2': '100 LP', 
+          'achieve_3': '500 LP', 
+          'achieve_4': '1000 LP' 
         }
       };
 

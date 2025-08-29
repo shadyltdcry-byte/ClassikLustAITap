@@ -257,6 +257,61 @@ export function registerChatRoutes(app: Express) {
     res.json(mockConversation);
   });
 
+  // Save message to conversation history
+  app.post("/api/chat/:userId/:characterId", async (req: Request, res: Response) => {
+    try {
+      const { userId, characterId } = req.params;
+      const { message, isFromUser, mood, type } = req.body;
+      
+      if (!isValidUserId(userId) && !userId.startsWith('guest_')) {
+        console.log(`Invalid userId: ${userId}, cannot save message`);
+        return res.status(400).json(createErrorResponse('Invalid user ID'));
+      }
+
+      const __dirname = path.dirname(new URL(import.meta.url).pathname);
+      const playerFolder = path.join(__dirname, '..', '..', 'player-data', userId);
+      const conversationPath = path.join(playerFolder, `conversations_${characterId}.json`);
+      
+      // Ensure player folder exists
+      if (!fs.existsSync(playerFolder)) {
+        fs.mkdirSync(playerFolder, { recursive: true });
+      }
+      
+      // Load existing conversations
+      let conversations = [];
+      if (fs.existsSync(conversationPath)) {
+        const data = fs.readFileSync(conversationPath, 'utf8');
+        conversations = JSON.parse(data);
+      }
+      
+      // Add new message
+      const newMessage = {
+        id: Date.now().toString(),
+        content: message,
+        sender: isFromUser ? 'user' : 'character',
+        timestamp: new Date().toISOString(),
+        type: type || 'text',
+        mood: mood || 'normal'
+      };
+      
+      conversations.push(newMessage);
+      
+      // Save back to file
+      fs.writeFileSync(conversationPath, JSON.stringify(conversations, null, 2));
+      
+      console.log(`💾 Message saved: ${userId} -> ${characterId}`);
+      
+      res.json(createSuccessResponse({
+        message: 'Message saved successfully',
+        messageId: newMessage.id
+      }));
+      
+    } catch (error) {
+      console.error('Error saving message:', error);
+      res.status(500).json(createErrorResponse('Failed to save message'));
+    }
+  });
+
   // Send message endpoint
   app.post("/api/chat/send", async (req: Request, res: Response) => {
     try {
