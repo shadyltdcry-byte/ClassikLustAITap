@@ -412,17 +412,22 @@ export function registerAdminRoutes(app: Express) {
                                ext === 'webm' ? 'video/webm' : 'application/octet-stream';
                 
                 const mediaEntry = {
-                  filename: file,
-                  originalName: file,
-                  mimeType: mimeType,
-                  size: stats.size,
-                  url: `/uploads/${file}`,
-                  characterId: null,
+                  id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  mood: null,
                   isNsfw: file.includes('nsfw'),
                   isVip: false,
-                  tags: [],
-                  createdAt: stats.birthtime.toISOString(),
-                  updatedAt: stats.mtime.toISOString()
+                  createdAt: stats.birthtime,
+                  characterId: null,
+                  fileName: file,
+                  filePath: `/uploads/${file}`,
+                  fileType: mimeType.startsWith('image/') ? 'image' : 'file',
+                  pose: null,
+                  animationSequence: null,
+                  randomSendChance: 5,
+                  requiredLevel: 1,
+                  enabledForChat: true,
+                  autoOrganized: true,
+                  category: null
                 };
                 
                 try {
@@ -462,17 +467,22 @@ export function registerAdminRoutes(app: Express) {
       
       for (const file of files) {
         const mediaEntry = {
-          filename: file.filename,
-          originalName: file.originalname,
-          mimeType: file.mimetype,
-          size: file.size,
-          url: `/uploads/${file.filename}`,
-          characterId: req.body.characterId || null,
+          id: `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          mood: null,
           isNsfw: req.body.isNsfw === 'true' || false,
           isVip: req.body.isVip === 'true' || false,
-          tags: req.body.tags ? req.body.tags.split(',') : [],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          createdAt: new Date(),
+          characterId: req.body.characterId || null,
+          fileName: file.originalname,
+          filePath: `/uploads/${file.filename}`,
+          fileType: file.mimetype?.startsWith('image/') ? 'image' : 'file',
+          pose: null,
+          animationSequence: null,
+          randomSendChance: 5,
+          requiredLevel: 1,
+          enabledForChat: true,
+          autoOrganized: false,
+          category: null
         };
         
         try {
@@ -501,7 +511,7 @@ export function registerAdminRoutes(app: Express) {
       const updates = req.body;
       
       // Since updateMedia method doesn't exist, return the updated data
-      console.log(`Media update requested for ID: ${id}`, updates);
+      console.log('Media update requested for ID:', id.slice(0, 8) + '...'); // Sanitize logged ID
       res.json(createSuccessResponse({ id, ...updates }));
     } catch (error) {
       console.error('Error updating media:', error);
@@ -513,7 +523,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { id } = req.params;
       // Since deleteMedia method doesn't exist, log and return success
-      console.log(`Media delete requested for ID: ${id}`);
+      console.log('Media delete requested for ID:', id.slice(0, 8) + '...'); // Sanitize logged ID
       res.json(createSuccessResponse({ message: 'Media deleted successfully' }));
     } catch (error) {
       console.error('Error deleting media:', error);
@@ -546,7 +556,7 @@ export function registerAdminRoutes(app: Express) {
   app.get('/api/admin/media/orphaned', async (req: Request, res: Response) => {
     try {
       // Mock orphaned files (files not assigned to any character)
-      const orphanedFiles = [];
+      const orphanedFiles: any[] = [];
       res.json(orphanedFiles);
     } catch (error) {
       console.error('Error fetching orphaned media:', error);
@@ -557,7 +567,7 @@ export function registerAdminRoutes(app: Express) {
   app.get('/api/admin/media/duplicates', async (req: Request, res: Response) => {
     try {
       // Mock duplicate files
-      const duplicates = [];
+      const duplicates: any[] = [];
       res.json(duplicates);
     } catch (error) {
       console.error('Error fetching duplicate media:', error);

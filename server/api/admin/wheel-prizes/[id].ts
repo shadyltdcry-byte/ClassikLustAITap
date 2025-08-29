@@ -49,7 +49,16 @@ export default async function handler(req: Request, res: Response) {
           return res.status(404).json({ message: 'Prize not found' });
         }
         
-        mockWheelPrizes[prizeIndex] = { ...mockWheelPrizes[prizeIndex], ...req.body };
+        // Validate and sanitize input to prevent object injection
+        const allowedFields = ['type', 'label', 'min', 'max', 'probability'];
+        const updatedFields: any = {};
+        for (const field of allowedFields) {
+          if (req.body[field] !== undefined) {
+            updatedFields[field] = req.body[field];
+          }
+        }
+        
+        mockWheelPrizes[prizeIndex] = { ...mockWheelPrizes[prizeIndex], ...updatedFields };
         return res.status(200).json(mockWheelPrizes[prizeIndex]);
         
       default:

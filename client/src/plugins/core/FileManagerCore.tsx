@@ -243,13 +243,17 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     
     // Handle both old and new file path formats
     const filePath = file.filePath || (file as any).filepath || (file as any).url;
-    const fileUrl = filePath?.startsWith('/') 
-      ? filePath 
-      : filePath 
-        ? `/uploads/${filePath}` 
-        : fileName 
-          ? `/uploads/${fileName}` 
-          : '/uploads/placeholder-character.jpg';
+    const fileUrl = filePath?.startsWith('http') 
+      ? filePath // External URL (e.g., Supabase storage)
+      : filePath?.startsWith('/api/') 
+        ? filePath // Already an API path
+        : filePath?.startsWith('/') 
+          ? filePath 
+          : filePath 
+            ? `/api/media/file/${filePath}` // Use API endpoint for file serving
+            : fileName 
+              ? `/api/media/file/${fileName}` 
+              : '/uploads/placeholder-character.jpg';
     const fileExt = fileName.toLowerCase().split('.').pop() || '';
     
     // Better file type detection - check fileType field and filename extension

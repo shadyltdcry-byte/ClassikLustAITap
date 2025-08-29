@@ -193,7 +193,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Get user and check balance  
-      const { storage } = await import('./storage.js');
+      const { SupabaseStorage } = await import('../shared/SupabaseStorage.js');
+      const storage = SupabaseStorage.getInstance();
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ error: "User not found" });

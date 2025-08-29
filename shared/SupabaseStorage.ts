@@ -740,6 +740,15 @@ export class SupabaseStorage implements IStorage {
     if (error) throw error;
   }
 
+  // Additional methods for admin routes compatibility
+  async createMedia(file: MediaFile): Promise<MediaFile> {
+    return this.saveMediaFile(file);
+  }
+
+  async deleteMedia(id: string): Promise<void> {
+    return this.deleteMediaFile(id);
+  }
+
   // Bulk cleanup methods for ghost files
   async bulkDeleteMediaFiles(ids: string[]): Promise<{ deletedCount: number; errors: string[] }> {
     const results = { deletedCount: 0, errors: [] as string[] };
