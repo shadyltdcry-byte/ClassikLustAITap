@@ -10,7 +10,6 @@ import { SupabaseStorage } from '../../shared/SupabaseStorage';
 import { 
   isValidUUID, 
   isValidTelegramId, 
-  generateMockUser, 
   verifyTelegramAuth, 
   generateJWT,
   createSuccessResponse, 
@@ -62,30 +61,21 @@ export function registerUserRoutes(app: Express) {
 
       // Check if userId is valid UUID or telegram format
       if (!isValidUUID(userId) && !isValidTelegramId(userId)) {
-        console.log(`Invalid userId format: ${userId}, returning mock user`);
-        const mockUser = generateMockUser(userId);
-        return res.json(mockUser);
+        return res.status(400).json(createErrorResponse('Invalid user ID format'));
       }
 
       // Try to get user from storage
-      try {
-        const user = await storage.getUser(userId);
-        if (user) {
-          return res.json(user);
-        }
-      } catch (error) {
-        console.error('Error fetching user by UUID:', error);
+      const user = await storage.getUser(userId);
+      if (user) {
+        return res.json(user);
       }
 
-      // If user not found, return mock user for invalid UUIDs  
-      console.log(`User ${userId} not found, returning mock data`);
-      const mockUser = generateMockUser(userId);
-      res.json(mockUser);
+      // User not found
+      return res.status(404).json(createErrorResponse('User not found'));
 
     } catch (error) {
       console.error('Error in user endpoint:', error);
-      const mockUser = generateMockUser(req.params.userId);
-      res.json(mockUser);
+      res.status(500).json(createErrorResponse('Failed to get user'));
     }
   });
 
@@ -126,7 +116,7 @@ export function registerUserRoutes(app: Express) {
           }
         } catch (dbError) {
           console.error('Database lookup error:', dbError);
-          return res.json(generateMockUser(playerId));
+          return res.status(404).json(createErrorResponse('Player not found'));
         }
       }
 
@@ -162,15 +152,9 @@ export function registerUserRoutes(app: Express) {
       const { playerId } = req.params;
       const updates = req.body;
 
-      // If playerId is not a valid UUID, just return success with mock data
-      if (!isValidUUID(playerId)) {
-        console.log(`Invalid UUID playerId for update: ${playerId}, returning mock success`);
-        return res.json({
-          success: true,
-          playerId,
-          message: "Player updated successfully (mock)",
-          user: generateMockUser(playerId, updates)
-        });
+      // If playerId is not a valid UUID, return error
+      if (!isValidUUID(playerId) && !isValidTelegramId(playerId)) {
+        return res.status(400).json(createErrorResponse('Invalid player ID format'));
       }
 
       const updatedUser = await storage.updateUser(playerId, updates);

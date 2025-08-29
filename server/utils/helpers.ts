@@ -25,55 +25,11 @@ export function isValidUserId(id: string): boolean {
   return isValidUUID(id) || isValidTelegramId(id);
 }
 
-// Generate random UUID-like string for mock data
-export function generateMockId(): string {
-  return crypto.randomUUID();
-}
+// Mock ID generator removed - no mock data allowed
 
-// Mock user data generator
-export function generateMockUser(userId: string, overrides: any = {}) {
-  return {
-    id: userId,
-    username: overrides.username || "Player",
-    level: overrides.level || 1,
-    lp: overrides.lp || 5000,
-    lpPerHour: overrides.lpPerHour || 250,
-    lpPerTap: overrides.lpPerTap || 1.5,
-    energy: overrides.energy || 1000,
-    maxEnergy: overrides.maxEnergy || 1000,
-    coins: overrides.coins || 0,
-    xp: overrides.xp || 0,
-    xpToNext: overrides.xpToNext || 100,
-    isVip: overrides.isVip || false,
-    nsfwEnabled: overrides.nsfwEnabled || false,
-    charismaPoints: overrides.charismaPoints || 0,
-    vipStatus: overrides.vipStatus || false,
-    nsfwConsent: overrides.nsfwConsent || false,
-    charisma: overrides.charisma || 0,
-    createdAt: overrides.createdAt || new Date().toISOString(),
-    ...overrides
-  };
-}
+// Mock user data generator removed - no mock data allowed
 
-// Mock player stats generator
-export function generateMockStats(playerId: string) {
-  return {
-    playerId,
-    totalTaps: 0,
-    totalLpEarned: 0,
-    totalEnergyUsed: 0,
-    sessionsPlayed: 1,
-    timeSpent: 0,
-    charactersUnlocked: 1,
-    achievementsUnlocked: 0,
-    upgradesPurchased: 0,
-    wheelSpins: 0,
-    chatMessages: 0,
-    mediaShared: 0,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-}
+// Mock stats generator removed - no mock data allowed
 
 // Telegram authentication verification
 export function verifyTelegramAuth(data: any, botToken: string): boolean {

@@ -47,16 +47,7 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
     }
   };
 
-  const handleManualLogin = () => {
-    // Fallback for development/testing
-    const mockUser = {
-      id: "default-player",
-      username: "Player",
-      firstName: "Test",
-      lastName: "User"
-    };
-    onAuthSuccess(mockUser);
-  };
+  // No mock login - require real Telegram authentication only
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-black to-pink-900 flex items-center justify-center p-4">
@@ -110,24 +101,8 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
                 🚀 Start with Telegram Bot
               </Button>
 
-              <div className="text-center">
-                <div className="text-xs text-white/40 mb-2">OR</div>
-                <Button
-                  onClick={handleManualLogin}
-                  variant="ghost"
-                  size="sm"
-                  className="text-xs text-white/50 hover:text-white/70 hover:bg-gray-800/30"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    "Continue as Guest (limited features)"
-                  )}
-                </Button>
+              <div className="text-center text-xs text-white/40">
+                Telegram authentication required for full game access
               </div>
             </div>
 

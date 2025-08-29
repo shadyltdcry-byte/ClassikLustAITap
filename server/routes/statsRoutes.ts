@@ -7,7 +7,7 @@
 
 import type { Express, Request, Response } from "express";
 import { SupabaseStorage } from '../../shared/SupabaseStorage';
-import { isValidUUID, isValidTelegramId, generateMockStats, createSuccessResponse, createErrorResponse } from '../utils/helpers';
+import { isValidUUID, isValidTelegramId, createSuccessResponse, createErrorResponse } from '../utils/helpers';
 
 const storage = SupabaseStorage.getInstance();
 
@@ -18,11 +18,9 @@ export function registerStatsRoutes(app: Express) {
     try {
       const { playerId } = req.params;
 
-      // If playerId is not valid, return mock stats
+      // If playerId is not valid, return error
       if (!isValidUUID(playerId) && !isValidTelegramId(playerId)) {
-        console.log(`Invalid playerId for stats: ${playerId}, returning mock stats`);
-        const mockStats = generateMockStats(playerId);
-        return res.json(mockStats);
+        return res.status(400).json(createErrorResponse('Invalid player ID format'));
       }
 
       try {
@@ -61,15 +59,12 @@ export function registerStatsRoutes(app: Express) {
         }
       } catch (dbError) {
         console.error('Database error fetching stats:', dbError);
-        // Return mock stats on database error
-        const mockStats = generateMockStats(playerId);
-        return res.json(mockStats);
+        return res.status(500).json(createErrorResponse('Database error'));
       }
 
     } catch (error) {
       console.error('Error in stats endpoint:', error);
-      const mockStats = generateMockStats(req.params.playerId);
-      res.json(mockStats);
+      res.status(500).json(createErrorResponse('Failed to get stats'));
     }
   });
 

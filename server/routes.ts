@@ -78,7 +78,6 @@ export function registerRoutes(app: Express): Server {
 
   // Legacy endpoints that don't fit into modules yet
   app.get("/api/upgrades", (req: Request, res: Response) => {
-    // Mock upgrades data
     const upgrades = [
       {
         id: 'lp_tap_1',
@@ -118,7 +117,6 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/upgrades/:playerId", (req: Request, res: Response) => {
     const { playerId } = req.params;
     
-    // Mock player-specific upgrades
     const playerUpgrades = [
       { id: 'lp_tap_1', level: 1, purchased: true },
       { id: 'lp_hour_1', level: 2, purchased: true },
@@ -129,7 +127,6 @@ export function registerRoutes(app: Express): Server {
   });
 
   app.get("/api/level-requirements", (req: Request, res: Response) => {
-    // Mock level requirements
     const levelRequirements = [
       {
         level: 2,
@@ -162,7 +159,6 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/player/:playerId/level-up", (req: Request, res: Response) => {
     const { playerId } = req.params;
     
-    // Mock level up
     res.json({
       success: true,
       newLevel: 2,
@@ -177,7 +173,6 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/tasks/claim/:taskId", (req: Request, res: Response) => {
     const { taskId } = req.params;
     
-    // Mock task reward claiming
     res.json({
       success: true,
       taskId,
