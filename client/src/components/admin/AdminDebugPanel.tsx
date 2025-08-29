@@ -3,9 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Terminal, Bug, Code, Activity } from "lucide-react";
+import { Terminal, Bug, Code, Activity, Monitor } from "lucide-react";
 import MistralDebugger from "@/plugins/aicore/MistralDebugger";
 import DebuggerInterface from "@/components/admin/DebuggerInterface";
+import { GameDebugger } from "@/components/debug";
+import { useGameDebugger } from "@/hooks/useGameDebugger";
 
 // Backend Debugger Component
 const AdminBackendDebugger = () => {
@@ -76,6 +78,10 @@ export default function AdminDebugPanel() {
   const [showMistralDebugger, setShowMistralDebugger] = useState(false);
   const [showBackendDebugger, setShowBackendDebugger] = useState(false);
   const [showDebuggerInterface, setShowDebuggerInterface] = useState(false);
+  const [showReactDebugger, setShowReactDebugger] = useState(false);
+  
+  // Initialize React debugger for admin use
+  const reactDebugger = useGameDebugger();
 
   return (
     <div className="p-6 space-y-6">
@@ -126,6 +132,20 @@ export default function AdminDebugPanel() {
             <p className="text-gray-400 text-sm">Advanced debugging interface with detailed logs</p>
           </CardContent>
         </Card>
+
+        {/* React State Debugger */}
+        <Card className="bg-gray-800 border-gray-700 hover:border-orange-500/50 transition-colors cursor-pointer"
+              onClick={() => setShowReactDebugger(true)}>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-white flex items-center gap-2">
+              <Monitor className="w-5 h-5 text-orange-400" />
+              React Debugger
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-400 text-sm">Real-time React state monitoring and mutation tools</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Backend Debugger Toggle */}
@@ -160,6 +180,27 @@ export default function AdminDebugPanel() {
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
               <DebuggerInterface />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* React State Debugger Modal */}
+      {showReactDebugger && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
+            <div className="flex justify-between items-center p-6 border-b border-gray-700">
+              <h3 className="text-xl font-bold text-white">React State Debugger</h3>
+              <Button variant="ghost" onClick={() => setShowReactDebugger(false)}>×</Button>
+            </div>
+            <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
+              <GameDebugger
+                gameState={reactDebugger.debugState}
+                onStateChange={reactDebugger.updateDebugState}
+                componentRefs={reactDebugger.componentRefs}
+                isVisible={true}
+                onToggle={() => setShowReactDebugger(false)}
+              />
             </div>
           </div>
         </div>

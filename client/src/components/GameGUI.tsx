@@ -28,8 +28,6 @@ import GameTabsPanel from "@/components/game/GameTabsPanel";
 import GameProgressPanel from "@/components/game/GameProgressPanel";
 import TasksPanel from "@/components/game/TasksPanel";
 import AchievementsPanel from "@/components/game/AchievementsPanel";
-import { useGameDebugger } from "@/hooks/useGameDebugger";
-import { GameDebugger } from "@/components/debug";
 
 interface PlayerData {
   id: string;
@@ -65,14 +63,6 @@ interface GUIState {
 }
 
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
-  // Initialize advanced debugger with state exposure
-  const debugger = useGameDebugger({
-    playerId: playerData?.id || '',
-    playerLevel: playerData?.level || 1,
-    playerLP: playerData?.lp || 0,
-    playerEnergy: playerData?.energy || 1000,
-    playerMaxEnergy: playerData?.maxEnergy || 1000,
-  });
 
   // Use auth context for consistent authentication
   const { userId: authUserId } = useAuth();
@@ -96,23 +86,6 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     showVIP: false,
   });
 
-  // Pro tip #1: Expose state clearly to debugger
-  React.useEffect(() => {
-    debugger.exposeState({
-      playerId: userId || '',
-      playerLevel: stats?.level || playerData?.level || 1,
-      playerLP: stats?.lp || playerData?.lp || 0,
-      playerEnergy: stats?.energy || playerData?.energy || 1000,
-      playerMaxEnergy: stats?.maxEnergy || playerData?.maxEnergy || 1000,
-      activeTab: guiState.activePlugin,
-      isTapping: gameStateTapping,
-      selectedCharacter,
-      showOfflineDialog,
-      showAdminMenu: guiState.showAdminMenu,
-      showWheelGame: guiState.showWheelGame,
-      showVIP: guiState.showVIP,
-    });
-  }, [stats, playerData, guiState, gameStateTapping, selectedCharacter, userId, showOfflineDialog, debugger]);
 
   // Offline income dialog state
   const [showOfflineDialog, setShowOfflineDialog] = useState(false);
@@ -448,14 +421,6 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         />
       )}
 
-      {/* Advanced React Debugger - Real-time monitoring */}
-      <GameDebugger
-        gameState={debugger.debugState}
-        onStateChange={debugger.updateDebugState}
-        componentRefs={debugger.componentRefs}
-        isVisible={debugger.isDebuggerVisible}
-        onToggle={debugger.toggleDebugger}
-      />
     </div>
   );
 }
