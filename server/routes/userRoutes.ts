@@ -6,7 +6,7 @@
  */
 
 import type { Express, Request, Response } from "express";
-import { SupabaseStorage } from '../../shared/SupabaseStorage';
+import { PostgreSQLStorage } from '../../shared/storage.js';
 import { 
   isValidUUID, 
   isValidTelegramId, 
@@ -17,7 +17,7 @@ import {
   createErrorResponse 
 } from '../utils/helpers';
 
-const storage = SupabaseStorage.getInstance();
+const storage = new PostgreSQLStorage();
 
 // Global auth cache to avoid repeated database calls
 declare global {
