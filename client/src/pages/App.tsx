@@ -10,7 +10,6 @@ import NotFound from "@/pages/not-found";
 import { GameProvider } from "@/context/GameProvider";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { useEffect, useState } from "react";
-import { AdminUIToggler } from "@/plugins/admin/adminGUI";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import TelegramAuth from "@/components/TelegramAuth";
 
