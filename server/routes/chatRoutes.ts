@@ -399,13 +399,17 @@ export function registerChatRoutes(app: Express) {
     }
   });
 
-  // Mistral AI chat endpoint
+  // Mistral AI chat endpoint with conversation saving
   app.post("/api/mistral/chat", async (req: Request, res: Response) => {
     try {
-      const { message, characterPersonality, characterMood } = req.body;
+      const { message, characterPersonality, characterMood, userId, characterId } = req.body;
       
       if (!message) {
         return res.status(400).json(createErrorResponse('Message is required'));
+      }
+
+      if (!userId || !characterId) {
+        console.warn('Missing userId or characterId - conversation will not be saved');
       }
       
       // Enhanced AI response with personality and mood
@@ -418,6 +422,58 @@ export function registerChatRoutes(app: Express) {
         enhancedResponse = "*looks away bashfully* " + enhancedResponse;
       } else if (characterMood === 'excited') {
         enhancedResponse = "*bounces excitedly* " + enhancedResponse;
+      }
+
+      // Save conversation to JSON files for history persistence
+      if (userId && characterId && isValidUserId(userId)) {
+        try {
+          const __dirname = path.dirname(new URL(import.meta.url).pathname);
+          const playerFolder = path.join(__dirname, '..', '..', 'player-data', userId);
+          const conversationPath = path.join(playerFolder, `conversations_${characterId}.json`);
+          
+          // Ensure player folder exists
+          if (!fs.existsSync(playerFolder)) {
+            fs.mkdirSync(playerFolder, { recursive: true });
+          }
+          
+          // Load existing conversations
+          let conversations = [];
+          if (fs.existsSync(conversationPath)) {
+            const data = fs.readFileSync(conversationPath, 'utf8');
+            conversations = JSON.parse(data);
+          }
+          
+          // Add user message
+          const userMessage = {
+            id: `user-${Date.now()}`,
+            content: message,
+            sender: 'user',
+            timestamp: new Date().toISOString(),
+            type: 'text',
+            mood: 'normal'
+          };
+          
+          // Add AI response
+          const aiMessage = {
+            id: `ai-${Date.now() + 1}`,
+            content: enhancedResponse,
+            sender: 'character',
+            timestamp: new Date().toISOString(),
+            type: 'text',
+            mood: characterMood || 'normal'
+          };
+          
+          conversations.push(userMessage, aiMessage);
+          
+          // Save back to file
+          fs.writeFileSync(conversationPath, JSON.stringify(conversations, null, 2));
+          
+          console.log(`💾 Conversation saved: ${userId} <-> ${characterId} (${conversations.length} total messages)`);
+          
+        } catch (saveError) {
+          console.error('Failed to save conversation:', saveError);
+          // Don't fail the request if saving fails
+        }
       }
       
       res.json(createSuccessResponse({
