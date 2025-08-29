@@ -46,6 +46,15 @@ interface DebugState {
   apiCalls: number;
 }
 
+interface LogEntry {
+  id: string;
+  timestamp: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  component: string;
+  message: string;
+  data?: any;
+}
+
 interface GameDebuggerProps {
   // State exposure props - components pass their state here
   gameState: DebugState;
@@ -76,6 +85,48 @@ export default function GameDebugger({
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshRate, setRefreshRate] = useState(1000);
   const intervalRef = useRef<NodeJS.Timeout>();
+  
+  // Color-coded logging system (inspired by your original debugger!)
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [maxLogs, setMaxLogs] = useState(50);
+
+  // Add log entry with color coding
+  const addLog = (type: LogEntry['type'], component: string, message: string, data?: any) => {
+    const newLog: LogEntry = {
+      id: Date.now().toString(),
+      timestamp: new Date().toLocaleTimeString(),
+      type,
+      component,
+      message,
+      data
+    };
+    
+    setLogs(prev => {
+      const updated = [newLog, ...prev];
+      return updated.slice(0, maxLogs); // Keep only recent logs
+    });
+  };
+
+  // Component lifecycle tracking
+  const trackComponentInit = (componentName: string, success: boolean, error?: string) => {
+    if (success) {
+      addLog('success', componentName, 'Component initialized successfully');
+    } else {
+      addLog('error', componentName, `Failed to initialize: ${error || 'Unknown error'}`);
+    }
+  };
+
+  // Command execution tracking
+  const executeCommand = (command: string, data?: any) => {
+    addLog('info', 'Debugger', `Executing command: ${command}`, data);
+    try {
+      // Command logic here
+      onStateChange(data);
+      addLog('success', 'Debugger', `Command executed: ${command}`);
+    } catch (error: any) {
+      addLog('error', 'Debugger', `Command failed: ${command} - ${error.message}`);
+    }
+  };
 
   // Real-time state monitoring
   useEffect(() => {
@@ -93,10 +144,12 @@ export default function GameDebugger({
 
   // Safe state mutations - no hardcoded values
   const mutatePlayerState = (field: keyof DebugState, value: any) => {
+    addLog('info', 'State Mutation', `Changed ${field} to ${value}`);
     onStateChange({ [field]: value });
   };
 
   const resetToDefaults = () => {
+    addLog('warning', 'State Reset', 'Resetting all values to defaults');
     onStateChange({
       playerLP: 1000,
       playerEnergy: 1000,
@@ -105,6 +158,19 @@ export default function GameDebugger({
       isTapping: false
     });
   };
+
+  // Component status tracking
+  React.useEffect(() => {
+    trackComponentInit('GameDebugger', true);
+    addLog('info', 'System', 'Debugger started - Real-time monitoring active');
+  }, []);
+
+  // Track state changes
+  React.useEffect(() => {
+    if (gameState.lastUpdate) {
+      addLog('success', 'StateUpdate', 'Game state synchronized');
+    }
+  }, [gameState.lastUpdate]);
 
   if (!isVisible) {
     return (
@@ -144,7 +210,11 @@ export default function GameDebugger({
         </div>
 
         <Tabs value={selectedComponent} onValueChange={setSelectedComponent} className="h-full">
-          <TabsList className="w-full bg-gray-800/50 p-1 m-2 grid grid-cols-4 gap-1">
+          <TabsList className="w-full bg-gray-800/50 p-1 m-2 grid grid-cols-5 gap-1">
+            <TabsTrigger value="logs" className="text-xs">
+              <Code className="w-3 h-3 mr-1" />
+              Logs
+            </TabsTrigger>
             <TabsTrigger value="player" className="text-xs">
               <Heart className="w-3 h-3 mr-1" />
               Player
@@ -164,6 +234,91 @@ export default function GameDebugger({
           </TabsList>
 
           <ScrollArea className="h-[60vh] px-3 pb-3">
+            {/* Logs Tab - Color-coded like your original system! */}
+            <TabsContent value="logs" className="space-y-3 mt-0">
+              <Card className="bg-gray-800/50 border-gray-700">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm text-white flex items-center gap-2">
+                    <Code className="w-4 h-4 text-blue-400" />
+                    Color-Coded Logs
+                    <Badge className="text-xs bg-gray-700">{logs.length}</Badge>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Button 
+                      onClick={() => setLogs([])} 
+                      size="sm" 
+                      variant="outline"
+                      className="text-xs h-6"
+                    >
+                      Clear Logs
+                    </Button>
+                    <Input
+                      type="number"
+                      value={maxLogs}
+                      onChange={(e) => setMaxLogs(Number(e.target.value))}
+                      className="w-16 h-6 text-xs bg-gray-700 border-gray-600"
+                      min="10"
+                      max="200"
+                    />
+                  </div>
+                  
+                  <div className="space-y-1 max-h-80 overflow-y-auto">
+                    {logs.map((log) => (
+                      <div key={log.id} className="text-xs p-2 rounded border border-gray-600 bg-gray-700/50">
+                        <div className="flex items-center gap-2">
+                          {/* Color-coded indicator */}
+                          <div className={`w-2 h-2 rounded-full ${
+                            log.type === 'success' ? 'bg-green-400' :
+                            log.type === 'error' ? 'bg-red-400' :
+                            log.type === 'warning' ? 'bg-yellow-400' :
+                            'bg-blue-400'
+                          }`} />
+                          
+                          {/* Timestamp */}
+                          <span className="text-gray-400 text-xs">{log.timestamp}</span>
+                          
+                          {/* Component name */}
+                          <Badge className={`text-xs px-1 py-0 ${
+                            log.type === 'success' ? 'bg-green-600/20 text-green-300 border-green-500/50' :
+                            log.type === 'error' ? 'bg-red-600/20 text-red-300 border-red-500/50' :
+                            log.type === 'warning' ? 'bg-yellow-600/20 text-yellow-300 border-yellow-500/50' :
+                            'bg-blue-600/20 text-blue-300 border-blue-500/50'
+                          }`}>
+                            {log.component}
+                          </Badge>
+                        </div>
+                        
+                        {/* Message */}
+                        <div className={`mt-1 ${
+                          log.type === 'success' ? 'text-green-300' :
+                          log.type === 'error' ? 'text-red-300' :
+                          log.type === 'warning' ? 'text-yellow-300' :
+                          'text-blue-300'
+                        }`}>
+                          {log.message}
+                        </div>
+                        
+                        {/* Data */}
+                        {log.data && (
+                          <pre className="text-xs text-gray-400 mt-1 whitespace-pre-wrap">
+                            {JSON.stringify(log.data, null, 2)}
+                          </pre>
+                        )}
+                      </div>
+                    ))}
+                    
+                    {logs.length === 0 && (
+                      <div className="text-center text-gray-400 py-4">
+                        No logs yet. Interact with the game to see activity.
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
             {/* Player State Tab */}
             <TabsContent value="player" className="space-y-3 mt-0">
               <Card className="bg-gray-800/50 border-gray-700">
@@ -355,7 +510,10 @@ export default function GameDebugger({
             
             <div className="grid grid-cols-2 gap-2">
               <Button
-                onClick={() => mutatePlayerState('playerEnergy', gameState.playerMaxEnergy || 1000)}
+                onClick={() => {
+                  executeCommand('maxEnergy', { playerEnergy: gameState.playerMaxEnergy || 1000 });
+                  mutatePlayerState('playerEnergy', gameState.playerMaxEnergy || 1000);
+                }}
                 className="bg-blue-600 hover:bg-blue-700 text-xs h-7"
                 size="sm"
               >
@@ -364,13 +522,41 @@ export default function GameDebugger({
               </Button>
               
               <Button
-                onClick={() => mutatePlayerState('playerLP', (gameState.playerLP || 0) + 1000)}
+                onClick={() => {
+                  const newLP = (gameState.playerLP || 0) + 1000;
+                  executeCommand('addLP', { playerLP: newLP });
+                  mutatePlayerState('playerLP', newLP);
+                }}
                 className="bg-pink-600 hover:bg-pink-700 text-xs h-7"
                 size="sm"
               >
                 <Heart className="w-3 h-3 mr-1" />
                 +1000 LP
               </Button>
+            </div>
+            
+            {/* Command Input */}
+            <div className="pt-2 border-t border-gray-700">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Enter command (e.g., 'addLP 500')"
+                  className="flex-1 h-6 text-xs bg-gray-700 border-gray-600"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const command = (e.target as HTMLInputElement).value;
+                      executeCommand('custom', { command });
+                      (e.target as HTMLInputElement).value = '';
+                    }
+                  }}
+                />
+                <Button
+                  onClick={() => addLog('info', 'Help', 'Available commands: addLP, maxEnergy, resetAll')}
+                  className="bg-gray-600 hover:bg-gray-700 text-xs h-6 px-2"
+                  size="sm"
+                >
+                  ?
+                </Button>
+              </div>
             </div>
           </div>
         </Tabs>

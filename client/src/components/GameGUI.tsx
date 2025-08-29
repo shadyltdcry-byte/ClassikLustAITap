@@ -114,15 +114,17 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
 
   // Calculate progress percentages from real data
   const calculateTasksProgress = () => {
-    if (allTasks.length === 0) return 0;
-    const completedTasks = allTasks.filter((task: any) => task.completed).length;
-    return Math.round((completedTasks / allTasks.length) * 100);
+    const tasks = allTasks as any[];
+    if (tasks.length === 0) return 0;
+    const completedTasks = tasks.filter((task: any) => task.completed).length;
+    return Math.round((completedTasks / tasks.length) * 100);
   };
 
   const calculateAchievementsProgress = () => {
-    if (allAchievements.length === 0) return 0;
-    const completedAchievements = allAchievements.filter((achievement: any) => achievement.completed).length;
-    return Math.round((completedAchievements / allAchievements.length) * 100);
+    const achievements = allAchievements as any[];
+    if (achievements.length === 0) return 0;
+    const completedAchievements = achievements.filter((achievement: any) => achievement.completed).length;
+    return Math.round((completedAchievements / achievements.length) * 100);
   };
 
   // Helper functions for claim rewards
@@ -185,8 +187,6 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     setTimeout(() => setIsTapping(false), 80);
   };
 
-  // Prevent spam clicking
-  const [claimingRewards, setClaimingRewards] = useState<Set<string>>(new Set());
   
   const claimReward = async (id: string, type: 'task' | 'achievement') => {
     // Prevent multiple claims of the same reward
