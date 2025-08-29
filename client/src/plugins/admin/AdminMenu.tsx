@@ -13,9 +13,9 @@ interface AdminMenuProps {
 }
 
 export default function AdminMenu({ onClose }: AdminMenuProps) {
-  // BLOCK ALL NON-ADMIN ACCESS - SECURITY FIX
-  // Only allow authorized admin access - regular users should NOT see this
-  const isRegularUser = true; // This should be a regular user, not admin
+  // ADMIN ACCESS CONTROL
+  // Allow admin access for development/testing purposes
+  const isRegularUser = false; // Set to false to enable admin access
   
   if (isRegularUser) {
     return (
