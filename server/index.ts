@@ -41,7 +41,7 @@ app.get('/', (req, res) => {
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #1a0033 0%, #330066 50%, #660033 100%);
+            background: linear-gradient(135deg, #2d1b4e 0%, #5a1a1a 50%, #3d1a4e 100%);
             color: white;
             min-height: 100vh;
             overflow-x: hidden;
@@ -150,50 +150,109 @@ app.get('/', (req, res) => {
             max-width: 420px;
             margin: 0 auto;
             min-height: 100vh;
-            background: linear-gradient(135deg, #1a0033 0%, #330066 50%, #660033 100%);
+            background: linear-gradient(135deg, #2d1b4e 0%, #5a1a1a 50%, #3d1a4e 100%);
             position: relative;
         }
         
-        /* Top Bar */
-        .top-bar {
-            padding: 20px 15px 10px;
+        /* Header Layout */
+        .game-header {
+            padding: 15px 10px;
+            background: rgba(0, 0, 0, 0.3);
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            background: rgba(0, 0, 0, 0.2);
+            gap: 8px;
+            font-size: 12px;
         }
         
-        .user-profile {
+        .user-section {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
+            min-width: 80px;
         }
         
         .user-avatar {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ff4081, #e91e63);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            font-weight: bold;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="%23ff4081"/><text x="50" y="58" text-anchor="middle" fill="white" font-size="24" font-weight="bold">S</text></svg>');
+            background-size: cover;
+        }
+        
+        .user-info {
+            color: white;
         }
         
         .user-info h3 {
-            font-size: 16px;
+            font-size: 13px;
             margin-bottom: 2px;
+            font-weight: bold;
         }
         
         .user-info .level {
+            font-size: 11px;
+            opacity: 0.8;
+        }
+        
+        .currency-section {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 90px;
+        }
+        
+        .currency-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 11px;
+        }
+        
+        .lp-per-hour-section {
+            background: linear-gradient(135deg, #d84315, #bf360c);
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            min-width: 60px;
+            color: white;
+        }
+        
+        .lp-hour-title {
+            font-size: 9px;
+            margin-bottom: 2px;
+            opacity: 0.9;
+        }
+        
+        .lp-hour-value {
             font-size: 12px;
-            opacity: 0.7;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+        
+        .lp-hour-amount {
+            font-size: 10px;
+        }
+        
+        .energy-section {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 90px;
+            font-size: 11px;
+        }
+        
+        .energy-booster {
+            background: linear-gradient(135deg, #1565c0, #0d47a1);
+            border-radius: 6px;
+            padding: 4px 6px;
+            text-align: center;
+            font-size: 9px;
+            color: white;
         }
         
         .settings-btn {
-            width: 32px;
-            height: 32px;
+            width: 24px;
+            height: 24px;
             border: none;
             background: rgba(255, 255, 255, 0.1);
             border-radius: 50%;
@@ -202,54 +261,6 @@ app.get('/', (req, res) => {
             align-items: center;
             justify-content: center;
             cursor: pointer;
-        }
-        
-        /* Stats Bar */
-        .stats-bar {
-            padding: 10px 15px;
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
-            gap: 10px;
-            align-items: center;
-        }
-        
-        .stat-card {
-            background: rgba(0, 0, 0, 0.2);
-            border-radius: 12px;
-            padding: 12px;
-            text-align: center;
-        }
-        
-        .stat-card.main {
-            background: linear-gradient(135deg, #8e24aa, #7b1fa2);
-        }
-        
-        .stat-value {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-        
-        .stat-label {
-            font-size: 10px;
-            opacity: 0.8;
-        }
-        
-        .lp-per-hour {
-            background: linear-gradient(135deg, #ff8f00, #ff6f00);
-            color: white;
-            padding: 15px;
-            border-radius: 12px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .energy-booster {
-            background: linear-gradient(135deg, #1976d2, #1565c0);
-            color: white;
-            padding: 10px;
-            border-radius: 8px;
-            text-align: center;
             font-size: 12px;
         }
         
@@ -280,18 +291,21 @@ app.get('/', (req, res) => {
         }
         
         .character-image {
-            width: 250px;
-            height: 320px;
+            width: 300px;
+            height: 400px;
             background: linear-gradient(135deg, #424242, #616161);
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 400"><defs><linearGradient id="skin" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%23ffdbcc"/><stop offset="100%" style="stop-color:%23f4c2a1"/></linearGradient><linearGradient id="hair" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%232d1b1b"/><stop offset="100%" style="stop-color:%231a0e0e"/></linearGradient></defs><rect width="300" height="400" fill="%23f0f0f0"/><ellipse cx="150" cy="180" rx="80" ry="100" fill="url(%23skin)"/><path d="M80 120 Q150 80 220 120 Q200 100 180 110 Q150 100 120 110 Q100 100 80 120" fill="url(%23hair)"/><circle cx="130" cy="160" r="8" fill="%23333"/><circle cx="170" cy="160" r="8" fill="%23333"/><path d="M140 180 Q150 190 160 180" stroke="%23333" stroke-width="2" fill="none"/><path d="M135 200 Q150 210 165 200" stroke="%23ff69b4" stroke-width="3" fill="none"/><text x="150" y="350" text-anchor="middle" fill="%23333" font-size="16" font-weight="bold">Luna</text></svg>');
+            background-size: cover;
+            background-position: center;
             border-radius: 15px;
             margin: 0 auto 20px;
             display: flex;
-            align-items: center;
+            align-items: flex-end;
             justify-content: center;
-            font-size: 80px;
             border: 3px solid rgba(233, 30, 99, 0.5);
             cursor: pointer;
             transition: transform 0.2s;
+            font-size: 0;
         }
         
         .character-image:hover {
@@ -740,41 +754,42 @@ app.get('/', (req, res) => {
 
     <!-- Main Game Container -->
     <div class="main-container" id="mainContainer" style="display: none;">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="user-profile">
-                <div class="user-avatar">S</div>
+        <!-- Game Header -->
+        <div class="game-header">
+            <div class="user-section">
+                <div class="user-avatar"></div>
                 <div class="user-info">
                     <h3>ShadyLTDx</h3>
                     <div class="level">Level: <span id="userLevel">1</span></div>
                 </div>
             </div>
-            <button class="settings-btn" onclick="toggleAdminPanel()">⚙️</button>
-        </div>
-
-        <!-- Stats Bar -->
-        <div class="stats-bar">
-            <div class="stat-card">
-                <div class="stat-value">💎 <span id="lustPoints">5026</span></div>
-                <div class="stat-label">LustPoints</div>
-                <div class="stat-value">💜 <span id="lustGems">0</span></div>
-                <div class="stat-label">Lust Gems</div>
+            
+            <div class="currency-section">
+                <div class="currency-row">
+                    <span style="color: #ff4081;">💎</span>
+                    <span>LustPoints: <span id="lustPoints">5026</span></span>
+                </div>
+                <div class="currency-row">
+                    <span style="color: #9c27b0;">💜</span>
+                    <span>Lust Gems: <span id="lustGems">0</span></span>
+                </div>
             </div>
             
-            <div class="lp-per-hour">
-                <div style="font-size: 12px; margin-bottom: 4px;">LP per Hour</div>
-                <div style="font-size: 18px;">🔥 ∞ 🔥</div>
-                <div style="font-size: 14px;">250</div>
+            <div class="lp-per-hour-section">
+                <div class="lp-hour-title">LP per Hour</div>
+                <div class="lp-hour-value">🔥 ∞ 🔥</div>
+                <div class="lp-hour-amount">250</div>
             </div>
             
-            <div class="stat-card">
-                <div class="stat-value">⚡ <span id="energy">987</span>/<span id="maxEnergy">1000</span></div>
-                <div class="stat-label">Energy</div>
+            <div class="energy-section">
+                <div style="color: #4fc3f7;">⚡ Energy: <span id="energy">987</span>/<span id="maxEnergy">1000</span></div>
                 <div class="energy-booster">
                     Boosters<br>
                     +20% LP [2:30]
                 </div>
             </div>
+            
+            <button class="settings-btn" onclick="toggleAdminPanel()">⚙️</button>
         </div>
 
         <!-- Main Game Content -->
@@ -783,7 +798,7 @@ app.get('/', (req, res) => {
                 <div class="character-card">
                     <div class="character-name">Luna</div>
                     <div class="character-description">An enigmatic character with deep knowledge</div>
-                    <div class="character-image" onclick="tapCharacter()">👱‍♀️</div>
+                    <div class="character-image" onclick="tapCharacter()"></div>
                 </div>
             </div>
         </div>
