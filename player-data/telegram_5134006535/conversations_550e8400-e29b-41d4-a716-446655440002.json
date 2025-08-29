@@ -74,5 +74,21 @@
     "timestamp": "2025-08-29T06:31:37.171Z",
     "type": "text",
     "mood": "normal"
+  },
+  {
+    "id": "user-1756449114328",
+    "content": "Your name?",
+    "sender": "user",
+    "timestamp": "2025-08-29T06:31:54.328Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1756449114329",
+    "content": "Mmm, you're making me curious now. *runs fingers through hair* What's got your attention? 😘",
+    "sender": "character",
+    "timestamp": "2025-08-29T06:31:54.328Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
