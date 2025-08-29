@@ -58,5 +58,21 @@
     "timestamp": "2025-08-26T21:54:44.529Z",
     "characterId": "550e8400-e29b-41d4-a716-446655440002",
     "mood": "neutral"
+  },
+  {
+    "id": "user-1756449097171",
+    "content": "You look amazing! ✨",
+    "sender": "user",
+    "timestamp": "2025-08-29T06:31:37.171Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1756449097172",
+    "content": "Mmm, well I'm a petite blonde with blue eyes and curves in all the right places. *bites lip* I love to tease and play. What about you? Tell me what turns you on... 😈",
+    "sender": "character",
+    "timestamp": "2025-08-29T06:31:37.171Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
