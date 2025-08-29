@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/context/AuthContext";
 // Auth is handled at App level
-import { Settings, Activity, Crown } from "lucide-react";
+import { Settings } from "lucide-react";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import CharacterGallery from "@/components/CharacterGallery";
 import OfflineIncomeDialog from "@/components/OfflineIncomeDialog";
@@ -25,6 +25,7 @@ import { useQuery } from "@tanstack/react-query";
 // Import new focused components
 import PlayerStatsPanel from "@/components/game/PlayerStatsPanel";
 import GameTabsPanel from "@/components/game/GameTabsPanel";
+import FloatingActionIcons from "@/components/ui/FloatingActionIcons";
 import GameProgressPanel from "@/components/game/GameProgressPanel";
 import TasksPanel from "@/components/game/TasksPanel";
 import AchievementsPanel from "@/components/game/AchievementsPanel";
@@ -377,43 +378,12 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         onPluginChange={(plugin) => updateGUIState({ activePlugin: plugin })}
       />
 
-      {/* Floating Action Icons on the Right */}
-      <div className="fixed right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-50">
-        {/* Wheel Game Icon */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 border-2 border-yellow-400/50 shadow-lg hover:shadow-yellow-400/30 hover:scale-110 transition-all duration-200"
-          onClick={() => updateGUIState({ showWheelGame: true })}
-          data-testid="button-wheel-game"
-        >
-          <Activity className="w-6 h-6 text-yellow-100" />
-        </Button>
-
-        {/* VIP Icon */}
-        <Button
-          variant="outline"
-          size="icon"
-          className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 border-2 border-purple-400/50 shadow-lg hover:shadow-purple-400/30 hover:scale-110 transition-all duration-200"
-          onClick={() => updateGUIState({ showVIP: true })}
-          data-testid="button-vip"
-        >
-          <Crown className="w-6 h-6 text-purple-100" />
-        </Button>
-
-        {/* Admin Debug (Dev Only) */}
-        {import.meta.env.DEV && (
-          <Button
-            variant="outline"
-            size="icon"
-            className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 border-2 border-gray-400/50 shadow-lg hover:shadow-gray-400/30 hover:scale-110 transition-all duration-200"
-            onClick={() => updateGUIState({ showAdminMenu: true })}
-            data-testid="button-admin-debug"
-          >
-            <Settings className="w-6 h-6 text-gray-100" />
-          </Button>
-        )}
-      </div>
+      {/* Floating Action Icons */}
+      <FloatingActionIcons
+        onOpenWheel={() => updateGUIState({ showWheelGame: true })}
+        onOpenVIP={() => updateGUIState({ showVIP: true })}
+        onOpenAdmin={() => updateGUIState({ showAdminMenu: true })}
+      />
 
 
       {/* Admin Menu Modal */}
