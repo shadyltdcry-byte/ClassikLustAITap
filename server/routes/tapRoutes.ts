@@ -126,20 +126,32 @@ export function registerTapRoutes(app: Express) {
         return res.status(400).json(createErrorResponse('User ID required'));
       }
 
-      // Get reward from real game configuration instead of mock data
-      const reward = await storage.claimReward(userId, rewardType, rewardId);
-      
+      // Mock reward values - TODO: implement real reward system
+      const rewards = {
+        'task': { 
+          't1': '10 Coins', 
+          't2': '5 Gems', 
+          't3': '20 Coins', 
+          't4': '5 Coins' 
+        },
+        'achievement': { 
+          'a1': '5 Coins', 
+          'a2': '10 Coins', 
+          'a3': '50 Coins', 
+          'a4': '1 Gem Package' 
+        }
+      };
+
+      const reward = rewards[rewardType]?.[rewardId];
       if (!reward) {
         return res.status(404).json(createErrorResponse('Reward not found'));
       }
 
-      console.log(`🎁 ${userId} claimed ${rewardType} reward: ${reward.description}`);
+      console.log(`🎁 ${userId} claimed ${rewardType} reward: ${reward}`);
       
       res.json(createSuccessResponse({
-        reward: reward.description,
-        amount: reward.amount,
-        currency: reward.currency,
-        message: `Successfully claimed ${reward.description}!`
+        reward: reward,
+        message: `Successfully claimed ${reward}!`
       }));
     } catch (error) {
       console.error('Reward claiming error:', error);

@@ -111,10 +111,8 @@ export function registerChatRoutes(app: Express) {
     try {
       const { userId, characterId } = req.params;
       
-      // Get real chat messages from database/storage
-      const chatMessages = await storage.getChatMessages(userId, characterId);
-      
-      res.json(chatMessages);
+      // Return empty chat messages - TODO: implement real chat storage
+      res.json([]);
     } catch (error) {
       console.error('Error fetching chat:', error);
       res.status(500).json(createErrorResponse('Failed to fetch chat'));
