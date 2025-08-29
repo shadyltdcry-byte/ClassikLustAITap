@@ -248,9 +248,10 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       
       if (response.ok) {
         const result = await response.json();
+        const reward = result.data?.reward || result.reward || "Unknown reward";
         toast({
           title: "Reward Claimed!",
-          description: `${result.reward} added to your account`,
+          description: `${reward} added to your account`,
         });
         
         // Invalidate relevant queries to refresh data
