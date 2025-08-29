@@ -58,9 +58,8 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
   const updateDebugState = useCallback((updates: Partial<DebugState>) => {
     setDebugState(prev => ({
       ...prev,
-      ...updates,
-      renderCount: renderCountRef.current, // Always get latest render count
-      lastUpdate: Date.now()
+      ...updates
+      // Removed automatic renderCount and lastUpdate to stop render loops
     }));
   }, []);
 
@@ -78,8 +77,8 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
   const trackApiCall = useCallback(() => {
     setDebugState(prev => ({ 
       ...prev,
-      apiCalls: prev.apiCalls + 1,
-      lastUpdate: Date.now()
+      apiCalls: prev.apiCalls + 1
+      // Removed lastUpdate to stop render loops
     }));
   }, []);
 

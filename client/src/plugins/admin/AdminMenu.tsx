@@ -13,6 +13,23 @@ interface AdminMenuProps {
 }
 
 export default function AdminMenu({ onClose }: AdminMenuProps) {
+  // BLOCK ALL NON-ADMIN ACCESS - SECURITY FIX
+  // Only allow authorized admin access - regular users should NOT see this
+  const isRegularUser = true; // This should be a regular user, not admin
+  
+  if (isRegularUser) {
+    return (
+      <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+        <div className="bg-red-900 border border-red-700 rounded-lg p-6 max-w-md">
+          <h3 className="text-white text-xl font-bold mb-4">🔒 Access Denied</h3>
+          <p className="text-red-200 mb-4">This is an admin panel. Regular users should use the upgrade tab at the bottom instead.</p>
+          <Button onClick={onClose} className="w-full bg-red-600 hover:bg-red-700">
+            Close - Use Upgrade Tab Below
+          </Button>
+        </div>
+      </div>
+    );
+  }
   const [activeTab, setActiveTab] = useState("characters");
 
   return (
