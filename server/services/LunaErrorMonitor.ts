@@ -122,7 +122,7 @@ export class LunaErrorMonitor {
       await storage.createChatMessage({
         userId: user.id, // Use actual UUID 
         characterId: '550e8400-e29b-41d4-a716-446655440002', // Luna's character ID
-        message: '', // User message (empty for Luna's alerts)
+        message: '🤖 System Alert', // User message (Luna's alerts)
         response: message, // Luna's alert message
         charismaGained: 0
       });
