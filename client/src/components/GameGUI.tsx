@@ -314,6 +314,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
               }}
               isTapping={actuallyTapping}
               lpPerTap={playerData?.lpPerTap || 1}
+              userId={userId} // Add userId for Luna's notifications
             />
           </div>
         );

@@ -4,6 +4,7 @@
 import { useState } from "react";
 //import { Button } from "@/components/ui/button";
 import type { Character, User, GameStats } from "@shared/schema";
+import { useChatNotifications } from "@/hooks/useChatNotifications";
 
 interface CharacterDisplayProps {
   character?: Character; // made optional
@@ -13,6 +14,7 @@ interface CharacterDisplayProps {
   onAvatarClick?: () => void; // New prop for avatar click
   isTapping: boolean;
   lpPerTap?: number; // Add LP per tap for display
+  userId?: string; // Add userId for notifications
 }
 
 // Fallback when no character is selected
@@ -47,8 +49,13 @@ export default function CharacterDisplay({
   onAvatarClick,
   isTapping,
   lpPerTap,
+  userId,
 }: CharacterDisplayProps) {
   const [tapEffect, setTapEffect] = useState(false);
+  
+  // Luna's notification system - Luna's ID is "550e8400-e29b-41d4-a716-446655440002"
+  const isLuna = character?.id === "550e8400-e29b-41d4-a716-446655440002";
+  const { unreadCount } = useChatNotifications(userId || null);
 
   const handleTap = (event: React.MouseEvent) => {
     if (user.energy <= 0 || isTapping) return;
@@ -77,6 +84,14 @@ export default function CharacterDisplay({
         {/* Character Main Image Container */}
         <div className="relative mx-auto max-w-[416px] mb-6">
           <div className="relative">
+            {/* Luna's Error Alert Notification Badge */}
+            {isLuna && unreadCount > 0 && (
+              <div className="absolute -top-2 -right-2 z-50">
+                <div className="bg-blue-500 text-white text-xs font-bold rounded-full min-w-[24px] h-6 flex items-center justify-center px-2 shadow-lg animate-pulse border-2 border-white">
+                  {unreadCount}
+                </div>
+              </div>
+            )}
             <img
               src={
                 (character?.avatarPath && character.avatarPath !== 'null' && character.avatarPath !== '/uploads/undefined') ? character.avatarPath :
