@@ -105,13 +105,13 @@ export class LunaErrorMonitor {
 
   private async saveLunaChatMessage(message: string, severity: string) {
     // This would save the error message to Luna's chat history
-    // so it appears in the chat interface as if Luna sent it
+    // For now, just log to console since chat_messages table may not exist
     try {
-      const { SupabaseStorage } = await import('../../shared/SupabaseStorage.js');
-      const storage = SupabaseStorage.getInstance();
-      
       if (this.adminUserId) {
-        // Save as Luna's chat message to admin
+        // Try to save to chat, but don't fail if table doesn't exist
+        const { SupabaseStorage } = await import('../../shared/SupabaseStorage.js');
+        const storage = SupabaseStorage.getInstance();
+        
         await storage.createChatMessage({
           userId: this.adminUserId, 
           characterId: '550e8400-e29b-41d4-a716-446655440002', // Luna's character ID
@@ -122,7 +122,8 @@ export class LunaErrorMonitor {
         console.log(`💬 Luna sent debug alert to admin chat`);
       }
     } catch (chatError) {
-      console.error('Failed to save Luna chat message:', chatError);
+      // Silently fail chat saving - Luna still works via console alerts
+      console.log(`🌙 Luna Alert (Chat unavailable): ${message}`);
     }
   }
 
