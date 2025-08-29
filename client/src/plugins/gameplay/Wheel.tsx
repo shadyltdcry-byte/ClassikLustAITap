@@ -7,7 +7,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import GameManagerCore, { WheelPrize } from "@/plugins/manager/GameManagerCore";
+import GameManagerCore, { WheelPrize } from "@/plugins/core/GameManagerCore";
 
 interface WheelProps {
   playerId: string;

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Database, Settings, RefreshCw, Trash2 } from "lucide-react";
-import FileManagerCore from "@/plugins/manager/FileManagerCore";
+import FileManagerCore from "@/plugins/core/FileManagerCore";
 import MediaFileCleanup from "@/components/admin/MediaFileCleanup";
 
 export default function AdminSystemPanel() {
