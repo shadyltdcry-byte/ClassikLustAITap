@@ -156,7 +156,7 @@ export default function GameDebugger({
     if (autoRefresh) {
       intervalRef.current = setInterval(() => {
         // Force re-render to show live data
-        onStateChange({ lastUpdate: Date.now() });
+        onStateChange?.({ lastUpdate: Date.now() });
       }, refreshRate);
     }
     
@@ -202,7 +202,7 @@ export default function GameDebugger({
   return (
     <>
       {/* Floating Debug Panel */}
-      <div className="fixed top-4 left-4 z-[60] w-96 max-h-[80vh] bg-gray-900/95 border border-green-500/50 rounded-lg shadow-2xl backdrop-blur-sm">
+      <div className="fixed top-4 left-4 z-[100] w-96 max-h-[80vh] bg-gray-900/95 border border-green-500/50 rounded-lg shadow-2xl backdrop-blur-sm pointer-events-auto" style={{isolation: 'isolate'}}>
         <div className="flex items-center justify-between p-3 border-b border-green-500/30">
           <div className="flex items-center gap-2">
             <Bug className="w-5 h-5 text-green-400" />
@@ -225,23 +225,43 @@ export default function GameDebugger({
 
         <Tabs value={selectedComponent} onValueChange={setSelectedComponent} className="h-full">
           <TabsList className="w-full bg-gray-800/50 p-1 m-2 grid grid-cols-5 gap-1">
-            <TabsTrigger value="logs" className="text-xs">
+            <TabsTrigger 
+              value="logs" 
+              className="text-xs min-h-[44px] touch-manipulation cursor-pointer select-none"
+              style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', touchAction: 'manipulation' }}
+            >
               <Code className="w-3 h-3 mr-1" />
               Logs
             </TabsTrigger>
-            <TabsTrigger value="player" className="text-xs">
+            <TabsTrigger 
+              value="player" 
+              className="text-xs min-h-[44px] touch-manipulation cursor-pointer select-none"
+              style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', touchAction: 'manipulation' }}
+            >
               <Heart className="w-3 h-3 mr-1" />
               Player
             </TabsTrigger>
-            <TabsTrigger value="game" className="text-xs">
+            <TabsTrigger 
+              value="game" 
+              className="text-xs min-h-[44px] touch-manipulation cursor-pointer select-none"
+              style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', touchAction: 'manipulation' }}
+            >
               <Activity className="w-3 h-3 mr-1" />
               Game
             </TabsTrigger>
-            <TabsTrigger value="api" className="text-xs">
+            <TabsTrigger 
+              value="api" 
+              className="text-xs min-h-[44px] touch-manipulation cursor-pointer select-none"
+              style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', touchAction: 'manipulation' }}
+            >
               <Database className="w-3 h-3 mr-1" />
               API
             </TabsTrigger>
-            <TabsTrigger value="perf" className="text-xs">
+            <TabsTrigger 
+              value="perf" 
+              className="text-xs min-h-[44px] touch-manipulation cursor-pointer select-none"
+              style={{ WebkitTouchCallout: 'none', WebkitUserSelect: 'none', touchAction: 'manipulation' }}
+            >
               <Monitor className="w-3 h-3 mr-1" />
               Perf
             </TabsTrigger>
@@ -506,20 +526,16 @@ export default function GameDebugger({
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="text-gray-300">API Floods:</Label>
-                    <Badge className={`${
-                      (gameState.apiFloodCount || 0) > 0 
-                        ? 'bg-red-600/20 text-red-300 border-red-500/50' 
-                        : 'bg-gray-600/20 text-gray-300 border-gray-500/50'
-                    }`}>
-                      {gameState.apiFloodCount || 0}
+                    <Label className="text-gray-300">Status:</Label>
+                    <Badge className="bg-green-600/20 text-green-300 border-green-500/50">
+                      Active
                     </Badge>
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <Label className="text-gray-300">Recent Calls:</Label>
+                    <Label className="text-gray-300">Logs:</Label>
                     <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/50">
-                      {gameState.recentApiCalls?.length || 0}
+                      {logs.filter(l => l.component.includes('API')).length}
                     </Badge>
                   </div>
                   
