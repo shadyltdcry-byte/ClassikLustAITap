@@ -268,14 +268,14 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         variant: "destructive",
       });
     } finally {
-      // Remove from claiming set after a short delay
+      // Remove from claiming set after a longer delay to prevent spam
       setTimeout(() => {
         setClaimingRewards(prev => {
           const newSet = new Set(prev);
           newSet.delete(id);
           return newSet;
         });
-      }, 1000);
+      }, 3000); // Increased to 3 seconds to prevent spam clicking
     }
   };
 

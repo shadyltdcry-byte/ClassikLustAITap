@@ -115,13 +115,17 @@ export function registerTapRoutes(app: Express) {
     } catch (error) {
       console.error('Error processing tap:', error);
       // Report to Luna if monitoring is enabled
-      if (global.lunaMonitorEnabled) {
+      if ((global as any).lunaMonitorEnabled) {
         const { reportToLuna } = await import('../services/LunaErrorMonitor.js');
-        reportToLuna('error', 'Tap System', `Tap processing failed: ${error.message}`, error, userId);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        reportToLuna('error', 'Tap System', `Tap processing failed: ${errorMessage}`, error as Error, userId);
       }
       res.status(500).json(createErrorResponse('Failed to process tap'));
     }
   });
+
+  // Track claimed rewards to prevent spam (simple in-memory cache)
+  const claimedRewards = new Map<string, Set<string>>();
 
   // Rewards claiming endpoint
   app.post('/api/rewards/claim', validateUserId(), requireAuthenticatedUser(), async (req: Request, res: Response) => {
@@ -132,35 +136,44 @@ export function registerTapRoutes(app: Express) {
         return res.status(400).json(createErrorResponse('User ID required'));
       }
 
-      // Mock reward values - TODO: implement real reward system
-      const rewards = {
+      // Prevent multiple claims of the same reward
+      const userClaimed = claimedRewards.get(userId) || new Set();
+      const rewardKey = `${rewardType}_${rewardId}`;
+      
+      if (userClaimed.has(rewardKey)) {
+        return res.status(400).json(createErrorResponse('Reward already claimed'));
+      }
+
+      // Reward values (fixed "LP LP" duplication - removed "LP" from values)
+      const rewards: Record<string, Record<string, number>> = {
         'task': { 
-          'task_1': '100 LP', 
-          'task_2': '50 LP', 
-          'task_3': '200 LP', 
-          'task_4': '75 LP' 
+          'task_1': 100, 
+          'task_2': 50, 
+          'task_3': 200, 
+          'task_4': 75 
         },
         'achievement': { 
-          'achievement_1': '50 LP', 
-          'achievement_2': '100 LP', 
-          'achievement_3': '500 LP', 
-          'achievement_4': '1000 LP' 
+          'achievement_1': 50, 
+          'achievement_2': 100, 
+          'achievement_3': 500, 
+          'achievement_4': 1000 
         }
       };
 
-      const reward = rewards[rewardType]?.[rewardId];
-      if (!reward) {
+      const lpAmount = rewards[rewardType]?.[rewardId];
+      if (!lpAmount) {
         return res.status(404).json(createErrorResponse('Reward not found'));
       }
 
-      // Parse LP amount from reward string (e.g., "50 LP" -> 50)
-      const lpAmount = parseInt(reward.split(' ')[0]) || 0;
-      
       // Get user from storage
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json(createErrorResponse('User not found'));
       }
+
+      // Mark reward as claimed BEFORE processing
+      userClaimed.add(rewardKey);
+      claimedRewards.set(userId, userClaimed);
 
       // Add LP to user's balance
       const currentLp = parseLP(user.lp);
@@ -171,17 +184,23 @@ export function registerTapRoutes(app: Express) {
         lp: newLp
       });
 
-      console.log(`🎁 ${userId} claimed ${rewardType} reward: ${reward} - Balance: ${currentLp} → ${newLp}`);
+      console.log(`🎁 ${userId} claimed ${rewardType} reward: ${lpAmount} LP - Balance: ${currentLp} → ${newLp}`);
       
       res.json(createSuccessResponse({
-        reward: reward,
-        message: `Successfully claimed ${reward}!`,
+        reward: `${lpAmount} LP`,
+        message: `Successfully claimed ${lpAmount} LP!`,
         lpAdded: lpAmount,
         newLp: newLp,
         user: updatedUser
       }));
     } catch (error) {
       console.error('Reward claiming error:', error);
+      // Report to Luna if monitoring is enabled
+      if ((global as any).lunaMonitorEnabled) {
+        const { reportToLuna } = await import('../services/LunaErrorMonitor.js');
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        reportToLuna('error', 'Rewards System', `Reward claiming failed: ${errorMessage}`, error as Error, userId);
+      }
       res.status(500).json(createErrorResponse('Failed to claim reward'));
     }
   });
