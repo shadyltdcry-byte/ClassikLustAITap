@@ -52,10 +52,8 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
   const renderCountRef = useRef(0);
 
   // Track renders for performance monitoring
-  useEffect(() => {
-    renderCountRef.current += 1;
-    updateDebugState({ renderCount: renderCountRef.current });
-  });
+  // Track renders without causing infinite loops
+  renderCountRef.current += 1;
 
   // Safe state mutation - allows debugger to change any state
   const updateDebugState = useCallback((updates: Partial<DebugState>) => {
