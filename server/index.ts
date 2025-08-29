@@ -10,6 +10,7 @@
 
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
+import { LunaErrorMonitor, setupLunaErrorHandlers } from './services/LunaErrorMonitor.js';
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';

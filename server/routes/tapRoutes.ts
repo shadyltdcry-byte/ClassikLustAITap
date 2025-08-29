@@ -90,8 +90,8 @@ export function registerTapRoutes(app: Express) {
         });
       }
 
-      // Calculate LP gain
-      const lpGain = user.lpPerTap || 1.5;
+      // Calculate LP gain (using whole numbers only)
+      const lpGain = user.lpPerTap || 2;
       const currentLp = parseLP(user.lp);
       const newLp = currentLp + lpGain;
       const newEnergy = Math.max(0, user.energy - 1);
@@ -114,6 +114,11 @@ export function registerTapRoutes(app: Express) {
       });
     } catch (error) {
       console.error('Error processing tap:', error);
+      // Report to Luna if monitoring is enabled
+      if (global.lunaMonitorEnabled) {
+        const { reportToLuna } = await import('../services/LunaErrorMonitor.js');
+        reportToLuna('error', 'Tap System', `Tap processing failed: ${error.message}`, error, userId);
+      }
       res.status(500).json(createErrorResponse('Failed to process tap'));
     }
   });
@@ -136,10 +141,10 @@ export function registerTapRoutes(app: Express) {
           'task_4': '75 LP' 
         },
         'achievement': { 
-          'achieve_1': '50 LP', 
-          'achieve_2': '100 LP', 
-          'achieve_3': '500 LP', 
-          'achieve_4': '1000 LP' 
+          'achievement_1': '50 LP', 
+          'achievement_2': '100 LP', 
+          'achievement_3': '500 LP', 
+          'achievement_4': '1000 LP' 
         }
       };
 
