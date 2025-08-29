@@ -462,6 +462,24 @@ export default function GameDebugger({
                   </div>
                   
                   <div className="flex items-center justify-between">
+                    <Label className="text-gray-300">API Floods:</Label>
+                    <Badge className={`${
+                      (gameState.apiFloodCount || 0) > 0 
+                        ? 'bg-red-600/20 text-red-300 border-red-500/50' 
+                        : 'bg-gray-600/20 text-gray-300 border-gray-500/50'
+                    }`}>
+                      {gameState.apiFloodCount || 0}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
+                    <Label className="text-gray-300">Recent Calls:</Label>
+                    <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/50">
+                      {gameState.recentApiCalls?.length || 0}
+                    </Badge>
+                  </div>
+                  
+                  <div className="flex items-center justify-between">
                     <Label className="text-gray-300">Last Update:</Label>
                     <Badge className="bg-gray-600/20 text-gray-300 border-gray-500/50">
                       {gameState.lastUpdate ? new Date(gameState.lastUpdate).toLocaleTimeString() : 'Never'}

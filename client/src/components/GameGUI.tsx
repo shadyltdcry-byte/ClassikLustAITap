@@ -413,8 +413,8 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         }}
       />
 
-      {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-4 pb-24 overflow-auto">
+      {/* Main Content - Fixed Top Spacing */}
+      <div className="flex-1 flex items-center justify-center px-4 pt-2 pb-24 overflow-auto">
         <div className="w-full h-full flex items-center justify-center">
           {renderActivePlugin()}
         </div>

@@ -135,32 +135,36 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
         </div>
       </div>
 
-      {/* Upgrade Tabs */}
-      <div className="flex gap-2 p-4 bg-black/20 overflow-x-auto">
-        <Button 
-          onClick={() => setActiveTab("all")}
-          className={`px-4 py-2 rounded-full min-w-[100px] flex-shrink-0 ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
-        >
-          ⭐ All
-        </Button>
-        <Button 
-          onClick={() => setActiveTab("lpPerHour")}
-          className={`px-4 py-2 rounded-full min-w-[100px] flex-shrink-0 ${activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
-        >
-          💰 LP per Hour
-        </Button>
-        <Button 
-          onClick={() => setActiveTab("energy")}
-          className={`px-4 py-2 rounded-full min-w-[100px] flex-shrink-0 ${activeTab === "energy" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
-        >
-          ⚡ Energy
-        </Button>
-        <Button 
-          onClick={() => setActiveTab("special")}
-          className={`px-4 py-2 rounded-full min-w-[100px] flex-shrink-0 ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
-        >
-          ✨ Special
-        </Button>
+      {/* Upgrade Tabs - Fixed Responsive Layout */}
+      <div className="p-3 bg-black/20">
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
+          <div className="flex gap-1 min-w-max">
+            <Button 
+              onClick={() => setActiveTab("all")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+            >
+              ⭐ All
+            </Button>
+            <Button 
+              onClick={() => setActiveTab("lpPerHour")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+            >
+              💰 LP/Hr
+            </Button>
+            <Button 
+              onClick={() => setActiveTab("energy")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "energy" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+            >
+              ⚡ Energy
+            </Button>
+            <Button 
+              onClick={() => setActiveTab("special")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+            >
+              ✨ Special
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Upgrade List */}

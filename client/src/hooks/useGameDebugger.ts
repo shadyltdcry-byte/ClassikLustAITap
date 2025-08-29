@@ -13,6 +13,8 @@ export interface DebugState {
   warnings: DebugAlert[];
   errors: DebugAlert[];
   securityAlerts: DebugAlert[];
+  recentApiCalls?: { endpoint: string; timestamp: number }[];
+  apiFloodCount?: number;
   components: Record<string, any>;
   states: Record<string, any>;
 }
@@ -137,14 +139,26 @@ export function useGameDebugger() {
     }));
   }, []);
 
-  // Simple API call tracking
+  // API call tracking with flood detection
   const trackApiCall = useCallback((endpoint: string, responseTime?: number) => {
     apiCallCount.current++;
+    const now = Date.now();
     
-    setDebugState(prev => ({ 
-      ...prev,
-      apiCalls: prev.apiCalls + 1
-    }));
+    // Track recent API calls for flood detection
+    setDebugState(prev => {
+      const recentCalls = [...(prev.recentApiCalls || []), { endpoint, timestamp: now }]
+        .filter(call => now - call.timestamp < 5000); // Keep last 5 seconds
+      
+      // Detect API flood (more than 10 calls in 5 seconds)
+      const floodDetected = recentCalls.length > 10;
+      
+      return {
+        ...prev,
+        apiCalls: prev.apiCalls + 1,
+        recentApiCalls: recentCalls,
+        apiFloodCount: floodDetected ? (prev.apiFloodCount || 0) + 1 : (prev.apiFloodCount || 0)
+      };
+    });
     
     // Simple slow API warning
     if (responseTime && responseTime > 3000) {
