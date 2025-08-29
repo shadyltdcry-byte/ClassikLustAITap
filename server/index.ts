@@ -15,10 +15,8 @@ import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from '../shared/SupabaseStorage';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { registerAdminApi } from '../debugger/modules/adminAPI'; // adjust import as needed
-import DebuggerCore from '../debugger/DebuggerCore';
-import DebuggerAssist from '../debugger/modules/CharactersPlugin';
-import AdminUIPlugin from '../debugger/modules/adminUI';
+// Old adminAPI import removed - using React State Debugger instead
+// Old debugger imports removed - using React State Debugger instead
 import TelegramBot from 'node-telegram-bot-api';
 import crypto from 'crypto';
 
