@@ -54,7 +54,7 @@ class GameManagerCoreClass {
         lp: 5000,
         energy: 800,
         maxEnergy: this.maxEnergy,
-        lpPerTap: 1.5,
+        lpPerTap: 2,
         lpPerHour: 125,
         boosters: [],
       };

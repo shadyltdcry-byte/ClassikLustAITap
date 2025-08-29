@@ -33,10 +33,10 @@ export function registerTapRoutes(app: Express) {
       }
 
       // Calculate LP per tap (use user's lpPerTap stat)
-      const lpPerTap = user.lpPerTap || 1.5;
+      const lpPerTap = Math.floor(user.lpPerTap || 2);
       
-      // Update user stats - PARSE LP AS FLOAT to support decimals like 1.5!
-      const currentLp = parseLP(user.lp);
+      // Update user stats - Use whole numbers for LP calculations
+      const currentLp = Math.floor(parseLP(user.lp));
       const newLp = currentLp + lpPerTap;
       const newEnergy = Math.max(0, user.energy - 1);
       

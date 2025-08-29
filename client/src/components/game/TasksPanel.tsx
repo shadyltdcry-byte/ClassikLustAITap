@@ -41,9 +41,9 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
 
   return (
     <div className="w-full max-w-2xl h-full flex flex-col overflow-hidden">
-      {/* Tasks & Achievements Tabs */}
+      {/* Tasks & Achievements Tabs - Fixed Layout */}
       <Tabs defaultValue="tasks" className="w-full h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-2 mb-3 flex-shrink-0 bg-black/40 border border-purple-500/30">
+        <TabsList className="grid w-full grid-cols-2 mb-3 flex-shrink-0 bg-black/40 border border-purple-500/30 p-1">
           <TabsTrigger value="tasks" className="flex items-center gap-2">
             <Target className="w-4 h-4" />
             Tasks

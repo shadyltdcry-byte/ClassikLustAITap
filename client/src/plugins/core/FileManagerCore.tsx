@@ -269,9 +269,14 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
           src={fileUrl}
           alt="Media preview"
           style={commonStyles}
+          loading="lazy"
           onError={(e) => {
-            console.log('Image failed to load:', fileUrl);
-            (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg';
+            console.log('Image failed to load:', fileUrl, 'File details:', file);
+            const img = e.target as HTMLImageElement;
+            // Try alternative paths
+            if (!img.src.includes('placeholder')) {
+              img.src = '/uploads/placeholder-character.jpg';
+            }
           }}
         />
       );

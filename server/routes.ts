@@ -206,7 +206,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Apply upgrade
       const updates: any = { lp: user.lp - upgrade.cost };
-      if (upgrade.effect.lpPerTap) updates.lpPerTap = (user.lpPerTap || 1.5) + upgrade.effect.lpPerTap;
+      if (upgrade.effect.lpPerTap) updates.lpPerTap = Math.floor((user.lpPerTap || 2) + upgrade.effect.lpPerTap);
       if (upgrade.effect.lpPerHour) updates.lpPerHour = (user.lpPerHour || 250) + upgrade.effect.lpPerHour;
       if (upgrade.effect.maxEnergy) updates.maxEnergy = (user.maxEnergy || 1000) + upgrade.effect.maxEnergy;
       
