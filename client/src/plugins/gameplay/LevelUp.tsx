@@ -427,10 +427,9 @@ export default function LevelUp() {
       </Card>
 
       <Tabs defaultValue="next" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="next">Next Level</TabsTrigger>
           <TabsTrigger value="all">All Levels</TabsTrigger>
-          <TabsTrigger value="admin">Admin</TabsTrigger>
         </TabsList>
 
         {/* Next Level Requirements */}

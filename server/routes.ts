@@ -82,7 +82,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       {
         id: 'lp_tap_1',
         name: 'Dexterity Lv. 1',
-        type: 'lpPerTap',
+        category: 'lpPerTap',
         description: 'Increase LP per tap',
         cost: 2500,
         effect: '1x LP per tap',
@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       {
         id: 'lp_hour_1',
         name: 'Intellect Lv. 1',
-        type: 'lpPerHour',
+        category: 'lpPerHour',
         description: 'Increase LP per hour',
         cost: 1500,
         effect: '150 LP per hour',
@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       {
         id: 'energy_1',
         name: 'Book Smarts Lv. 1',
-        type: 'energy',
+        category: 'energy',
         description: 'Increase maximum energy',
         cost: 1500,
         effect: '+100 energy',
@@ -136,7 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         rewards: {
           lp: 100,
           maxEnergy: 10,
-          unlocks: ['Basic character creation']
+          unlocks: ['New character slots']
         }
       },
       {
@@ -168,6 +168,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       },
       message: "Level up successful!"
     });
+  });
+
+  // Upgrade purchase endpoint
+  app.post("/api/upgrades/:upgradeId/purchase", async (req: Request, res: Response) => {
+    try {
+      const { upgradeId } = req.params;
+      const { userId } = req.body;
+      
+      if (!userId) {
+        return res.status(400).json({ error: "User ID required" });
+      }
+      
+      // Get upgrade details
+      const upgrades = [
+        { id: 'lp_tap_1', cost: 2500, effect: { lpPerTap: 1 } },
+        { id: 'lp_hour_1', cost: 1500, effect: { lpPerHour: 150 } },
+        { id: 'energy_1', cost: 1500, effect: { maxEnergy: 100 } }
+      ];
+      
+      const upgrade = upgrades.find(u => u.id === upgradeId);
+      if (!upgrade) {
+        return res.status(404).json({ error: "Upgrade not found" });
+      }
+      
+      // Get user and check balance  
+      const { storage } = await import('./storage.js');
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      if (user.lp < upgrade.cost) {
+        return res.status(400).json({ error: "Insufficient LP" });
+      }
+      
+      // Apply upgrade
+      const updates: any = { lp: user.lp - upgrade.cost };
+      if (upgrade.effect.lpPerTap) updates.lpPerTap = (user.lpPerTap || 1.5) + upgrade.effect.lpPerTap;
+      if (upgrade.effect.lpPerHour) updates.lpPerHour = (user.lpPerHour || 250) + upgrade.effect.lpPerHour;
+      if (upgrade.effect.maxEnergy) updates.maxEnergy = (user.maxEnergy || 1000) + upgrade.effect.maxEnergy;
+      
+      const updatedUser = await storage.updateUser(userId, updates);
+      
+      console.log(`💎 ${userId} purchased ${upgradeId} for ${upgrade.cost} LP`);
+      
+      res.json({ success: true, user: updatedUser });
+      
+    } catch (error) {
+      console.error('Upgrade purchase error:', error);
+      res.status(500).json({ error: "Failed to purchase upgrade" });
+    }
   });
 
   app.post("/api/tasks/claim/:taskId", (req: Request, res: Response) => {

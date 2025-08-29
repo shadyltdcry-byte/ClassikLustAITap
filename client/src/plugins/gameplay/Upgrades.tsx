@@ -49,7 +49,9 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
   // Purchase upgrade mutation
   const purchaseUpgradeMutation = useMutation({
     mutationFn: async (upgradeId: string) => {
-      const response = await apiRequest("POST", `/api/upgrades/${upgradeId}/purchase`);
+      const response = await apiRequest("POST", `/api/upgrades/${upgradeId}/purchase`, {
+        userId: playerData?.userId || playerData?.id
+      });
       return await response.json();
     },
     onSuccess: () => {
