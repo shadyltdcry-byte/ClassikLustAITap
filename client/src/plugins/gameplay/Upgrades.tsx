@@ -52,17 +52,24 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
       const response = await apiRequest("POST", `/api/upgrades/${upgradeId}/purchase`, {
         userId: playerData?.userId || playerData?.id
       });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Purchase failed');
+      }
       return await response.json();
     },
     onSuccess: () => {
       toast.success("Upgrade purchased successfully!");
+      // Invalidate both upgrades and user data to sync LP balance
       queryClient.invalidateQueries({ queryKey: ["/api/upgrades"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/user"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/player"] });
       if (onUpgradeAction) {
         onUpgradeAction('purchase');
       }
     },
-    onError: () => {
-      toast.error("Failed to purchase upgrade");
+    onError: (error: Error) => {
+      toast.error(error.message || "Failed to purchase upgrade");
     },
   });
 

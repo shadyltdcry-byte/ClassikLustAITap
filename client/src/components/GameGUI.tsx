@@ -325,8 +325,13 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         return (
           <div className="w-full max-w-2xl">
             <Upgrades
-              playerData={playerData}
-              onUpgradeAction={onPluginAction}
+              playerData={user || playerData} // Use fresh user data from hooks
+              onUpgradeAction={(action, data) => {
+                // Refresh user data after any upgrade action
+                queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+                queryClient.invalidateQueries({ queryKey: ['/api/player'] });
+                onPluginAction(action, data);
+              }}
             />
           </div>
         );
