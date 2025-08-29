@@ -116,17 +116,7 @@ export default function GameDebugger({
     }
   };
 
-  // Command execution tracking
-  const executeCommand = (command: string, data?: any) => {
-    addLog('info', 'Debugger', `Executing command: ${command}`, data);
-    try {
-      // Command logic here
-      onStateChange(data);
-      addLog('success', 'Debugger', `Command executed: ${command}`);
-    } catch (error: any) {
-      addLog('error', 'Debugger', `Command failed: ${command} - ${error.message}`);
-    }
-  };
+  // Removed old command execution - React State Debugger is view-only for safety
 
   // Real-time state monitoring
   useEffect(() => {
@@ -142,22 +132,7 @@ export default function GameDebugger({
     };
   }, [autoRefresh, refreshRate, onStateChange]);
 
-  // Safe state mutations - no hardcoded values
-  const mutatePlayerState = (field: keyof DebugState, value: any) => {
-    addLog('info', 'State Mutation', `Changed ${field} to ${value}`);
-    onStateChange({ [field]: value });
-  };
-
-  const resetToDefaults = () => {
-    addLog('warning', 'State Reset', 'Resetting all values to defaults');
-    onStateChange({
-      playerLP: 1000,
-      playerEnergy: 1000,
-      playerLevel: 1,
-      activeTab: 'main',
-      isTapping: false
-    });
-  };
+  // React State Debugger is read-only - no state mutations for stability
 
   // Component status tracking
   React.useEffect(() => {
@@ -339,8 +314,8 @@ export default function GameDebugger({
                       <Input
                         type="number"
                         value={gameState.playerLP || 0}
-                        onChange={(e) => mutatePlayerState('playerLP', Number(e.target.value))}
-                        className="w-20 h-6 text-xs bg-gray-700 border-gray-600"
+                        readOnly
+                        className="w-20 h-6 text-xs bg-gray-800 border-gray-600 text-gray-400"
                       />
                     </div>
                   </div>
@@ -355,8 +330,8 @@ export default function GameDebugger({
                       <Input
                         type="number"
                         value={gameState.playerEnergy || 0}
-                        onChange={(e) => mutatePlayerState('playerEnergy', Number(e.target.value))}
-                        className="w-20 h-6 text-xs bg-gray-700 border-gray-600"
+                        readOnly
+                        className="w-20 h-6 text-xs bg-gray-800 border-gray-600 text-gray-400"
                       />
                     </div>
                   </div>
@@ -371,8 +346,8 @@ export default function GameDebugger({
                       <Input
                         type="number"
                         value={gameState.playerLevel || 1}
-                        onChange={(e) => mutatePlayerState('playerLevel', Number(e.target.value))}
-                        className="w-20 h-6 text-xs bg-gray-700 border-gray-600"
+                        readOnly
+                        className="w-20 h-6 text-xs bg-gray-800 border-gray-600 text-gray-400"
                       />
                     </div>
                   </div>
@@ -497,66 +472,12 @@ export default function GameDebugger({
             </TabsContent>
           </ScrollArea>
 
-          {/* Action Buttons */}
-          <div className="p-3 border-t border-gray-700 space-y-2">
-            <Button
-              onClick={resetToDefaults}
-              className="w-full bg-red-600 hover:bg-red-700 text-xs h-8"
-              size="sm"
-            >
-              <RefreshCw className="w-3 h-3 mr-2" />
-              Reset to Defaults
-            </Button>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <Button
-                onClick={() => {
-                  executeCommand('maxEnergy', { playerEnergy: gameState.playerMaxEnergy || 1000 });
-                  mutatePlayerState('playerEnergy', gameState.playerMaxEnergy || 1000);
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-xs h-7"
-                size="sm"
-              >
-                <Zap className="w-3 h-3 mr-1" />
-                Max Energy
-              </Button>
-              
-              <Button
-                onClick={() => {
-                  const newLP = (gameState.playerLP || 0) + 1000;
-                  executeCommand('addLP', { playerLP: newLP });
-                  mutatePlayerState('playerLP', newLP);
-                }}
-                className="bg-pink-600 hover:bg-pink-700 text-xs h-7"
-                size="sm"
-              >
-                <Heart className="w-3 h-3 mr-1" />
-                +1000 LP
-              </Button>
-            </div>
-            
-            {/* Command Input */}
-            <div className="pt-2 border-t border-gray-700">
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Enter command (e.g., 'addLP 500')"
-                  className="flex-1 h-6 text-xs bg-gray-700 border-gray-600"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      const command = (e.target as HTMLInputElement).value;
-                      executeCommand('custom', { command });
-                      (e.target as HTMLInputElement).value = '';
-                    }
-                  }}
-                />
-                <Button
-                  onClick={() => addLog('info', 'Help', 'Available commands: addLP, maxEnergy, resetAll')}
-                  className="bg-gray-600 hover:bg-gray-700 text-xs h-6 px-2"
-                  size="sm"
-                >
-                  ?
-                </Button>
-              </div>
+          {/* React State Debugger - Read Only Monitoring */}
+          <div className="p-3 border-t border-gray-700">
+            <div className="text-center text-xs text-gray-400">
+              🔍 React State Debugger - View Only
+              <br />
+              Real-time monitoring without state mutations
             </div>
           </div>
         </Tabs>
