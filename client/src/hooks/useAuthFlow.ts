@@ -136,12 +136,63 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
   // Check Telegram authentication
   const checkTelegramAuth = async (): Promise<AuthState | null> => {
     try {
-      // Check URL params first
+      // STEP 1: Check stored auth FIRST (this fixes persistence!)
+      const storedToken = localStorage.getItem('telegram_auth_token');
+      const storedUserId = localStorage.getItem('telegram_user_id');
+      const storedTelegramId = localStorage.getItem('telegram_id');
+      
+      if (storedToken && storedUserId && storedTelegramId) {
+        if (finalConfig.debug) {
+          console.log('[useAuthFlow] Found stored auth, validating...');
+        }
+        
+        try {
+          const response = await fetch(`/api/auth/telegram/status/${storedTelegramId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            cache: 'no-cache'
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            
+            if (data.authenticated) {
+              const loginTime = localStorage.getItem('login_timestamp');
+              const sessionAge = loginTime ? 
+                Math.floor((Date.now() - parseInt(loginTime)) / 60000) : 0;
+              
+              if (finalConfig.debug) {
+                console.log('[useAuthFlow] ✅ STORED AUTH SUCCESS - You stay logged in!');
+              }
+              
+              return {
+                userId: storedUserId,
+                authSource: 'telegram' as const,
+                sessionAge,
+                lastLoginMethod: 'telegram_stored',
+                isAuthenticated: true,
+                isLoading: false,
+                error: null
+              };
+            }
+          }
+        } catch (error) {
+          if (finalConfig.debug) {
+            console.log('[useAuthFlow] Stored auth validation failed, clearing storage');
+          }
+          localStorage.removeItem('telegram_auth_token');
+          localStorage.removeItem('telegram_user_id'); 
+          localStorage.removeItem('telegram_id');
+          localStorage.removeItem('login_timestamp');
+        }
+      }
+
+      // STEP 2: Check URL params (for initial login)
       const urlParams = new URLSearchParams(window.location.search);
       const telegramId = urlParams.get('telegram_id');
       
       if (finalConfig.debug) {
-        console.log('[useAuthFlow] Checking URL params:', { telegramId, fullURL: window.location.href });
+        console.log('[useAuthFlow] No stored auth, checking URL params:', { telegramId, fullURL: window.location.href });
       }
       
       if (telegramId) {
@@ -206,40 +257,6 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
         }
       }
 
-      // Check stored Telegram data
-      const storedToken = localStorage.getItem('telegram_auth_token');
-      const storedUserId = localStorage.getItem('telegram_user_id');
-      const storedTelegramId = localStorage.getItem('telegram_id');
-      
-      if (storedToken && storedUserId && storedTelegramId) {
-        // Validate stored session
-        const response = await deDupeFetch(`/api/auth/telegram/status/${storedTelegramId}`);
-        
-        if (!response.ok) {
-          if (finalConfig.debug) {
-            console.log('[useAuthFlow] Stored auth validation failed:', response.status);
-          }
-          return null;
-        }
-        
-        const data = await response.json();
-        
-        if (data.authenticated) {
-          const loginTime = localStorage.getItem('login_timestamp');
-          const sessionAge = loginTime ? 
-            Math.floor((Date.now() - parseInt(loginTime)) / 60000) : 0;
-          
-          return {
-            userId: storedUserId,
-            authSource: 'telegram',
-            sessionAge,
-            lastLoginMethod: 'telegram_stored',
-            isAuthenticated: true,
-            isLoading: false,
-            error: null
-          };
-        }
-      }
 
       return null;
     } catch (error) {
