@@ -18,12 +18,11 @@ async function generateAIResponse(userMessage: string): Promise<string> {
   // Check if any Mistral API key is available for enhanced responses
   const apiKey = process.env.MISTRAL_MODEL_API_KEY || process.env.MISTRAL_API_KEY;
   
-  // Debug API key without exposing it
-  console.log('🔑 API Key status:', {
-    hasKey: !!apiKey,
-    keyLength: apiKey?.length || 0,
-    keyStart: apiKey?.substring(0, 8) || 'none',
-    isPlaceholder: apiKey === 'YOUR_API_KEY'
+  // Debug AI backend status
+  console.log('🤖 AI Backend options:', {
+    mistralKey: !!apiKey && apiKey !== 'YOUR_API_KEY',
+    ollamaCheck: 'Will check localhost:11434',
+    lmStudioCheck: 'Will check localhost:1234'
   });
   
   if (apiKey && apiKey !== 'YOUR_API_KEY') {
@@ -53,30 +52,76 @@ async function generateAIResponse(userMessage: string): Promise<string> {
 
       console.log('✅ Luna responding with real personality and conversation memory');
       
-      // Try real Mistral API first
-      try {
-        const { Mistral } = await import('@mistralai/mistralai');
-        const client = new Mistral({ apiKey: apiKey });
-
-        const fullPrompt = `${lunaPrompt}
-
-User: ${userMessage}
-Luna:`;
-
-        const response = await client.chat.complete({
-          model: 'mistral-small-latest',
-          messages: [{ role: 'user', content: fullPrompt }],
-          maxTokens: 150,
-          temperature: 0.8
-        });
-
-        const content = response.choices?.[0]?.message?.content;
-        if (content && typeof content === 'string') {
-          console.log('🎯 Real Mistral API response:', content.substring(0, 60) + '...');
-          return content.trim();
+      // Try multiple AI backends in order
+      const backends = [
+        {
+          name: 'Mistral API',
+          fn: async () => {
+            const { Mistral } = await import('@mistralai/mistralai');
+            const client = new Mistral({ apiKey: apiKey });
+            const response = await client.chat.complete({
+              model: 'mistral-small-latest',
+              messages: [{ role: 'user', content: `${lunaPrompt}\n\nUser: ${userMessage}\nLuna:` }],
+              maxTokens: 150,
+              temperature: 0.8
+            });
+            const content = response.choices?.[0]?.message?.content;
+            return typeof content === 'string' ? content.trim() : undefined;
+          }
+        },
+        {
+          name: 'Local Ollama',
+          fn: async () => {
+            const response = await fetch('http://localhost:11434/api/generate', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                model: 'llama3.1:8b',
+                prompt: `${lunaPrompt}\n\nUser: ${userMessage}\nLuna:`,
+                stream: false,
+                options: { temperature: 0.8, num_predict: 150 }
+              })
+            });
+            if (response.ok) {
+              const data = await response.json();
+              return data.response?.trim();
+            }
+            throw new Error('Ollama not available');
+          }
+        },
+        {
+          name: 'Local LM Studio',
+          fn: async () => {
+            const response = await fetch('http://localhost:1234/v1/chat/completions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                model: 'local',
+                messages: [{ role: 'user', content: `${lunaPrompt}\n\nUser: ${userMessage}\nLuna:` }],
+                max_tokens: 150,
+                temperature: 0.8
+              })
+            });
+            if (response.ok) {
+              const data = await response.json();
+              return data.choices?.[0]?.message?.content?.trim();
+            }
+            throw new Error('LM Studio not available');
+          }
         }
-      } catch (error) {
-        console.error('❌ Mistral API failed, using enhanced fallback:', error);
+      ];
+
+      // Try each backend in order
+      for (const backend of backends) {
+        try {
+          const result = await backend.fn();
+          if (result && typeof result === 'string') {
+            console.log(`🎯 ${backend.name} response:`, result.substring(0, 60) + '...');
+            return result;
+          }
+        } catch (error) {
+          console.log(`❌ ${backend.name} failed:`, error instanceof Error ? error.message : 'Unknown error');
+        }
       }
       
       // Enhanced fallback responses based on Luna's real personality
