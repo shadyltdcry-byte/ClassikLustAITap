@@ -8,6 +8,7 @@
 import type { Express, Request, Response } from "express";
 import { SupabaseStorage } from '../../shared/SupabaseStorage';
 import { createSuccessResponse, createErrorResponse } from '../utils/helpers';
+import { requireAuthenticatedUser, requireTelegramAuth, validateUserId } from '../middleware/authGuards';
 
 const storage = SupabaseStorage.getInstance();
 
@@ -42,7 +43,7 @@ function selectRandomPrize() {
 export function registerWheelRoutes(app: Express) {
 
   // Main wheel spin endpoint
-  app.post('/api/wheel/spin', async (req: Request, res: Response) => {
+  app.post('/api/wheel/spin', validateUserId(), requireAuthenticatedUser(), async (req: Request, res: Response) => {
     try {
       const { userId } = req.body;
       
@@ -184,7 +185,7 @@ export function registerWheelRoutes(app: Express) {
     }
   });
 
-  app.post('/api/admin/wheel-prizes', async (req: Request, res: Response) => {
+  app.post('/api/admin/wheel-prizes', requireTelegramAuth(), async (req: Request, res: Response) => {
     try {
       const prizeData = req.body;
       

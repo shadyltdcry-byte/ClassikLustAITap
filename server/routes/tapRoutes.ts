@@ -8,13 +8,14 @@
 import type { Express, Request, Response } from "express";
 import { SupabaseStorage } from '../../shared/SupabaseStorage';
 import { parseLP, calculateLPPerTap, createSuccessResponse, createErrorResponse } from '../utils/helpers';
+import { requireAuthenticatedUser, validateUserId } from '../middleware/authGuards';
 
 const storage = SupabaseStorage.getInstance();
 
 export function registerTapRoutes(app: Express) {
   
   // Main tap endpoint - optimized for performance
-  app.post('/api/tap', async (req: Request, res: Response) => {
+  app.post('/api/tap', validateUserId(), requireAuthenticatedUser(), async (req: Request, res: Response) => {
     try {
       const { userId } = req.body;
       if (!userId) {
@@ -118,7 +119,7 @@ export function registerTapRoutes(app: Express) {
   });
 
   // Rewards claiming endpoint
-  app.post('/api/rewards/claim', async (req: Request, res: Response) => {
+  app.post('/api/rewards/claim', validateUserId(), requireAuthenticatedUser(), async (req: Request, res: Response) => {
     try {
       const { rewardId, rewardType, userId } = req.body;
       
