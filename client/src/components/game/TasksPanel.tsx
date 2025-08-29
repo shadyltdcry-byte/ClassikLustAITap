@@ -167,7 +167,7 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
         <div className="flex-1 overflow-hidden">
           <ScrollArea className="h-full">
             <div className="space-y-3 p-4">
-              {achievementsLoading ? (
+              {isLoading ? (
                 <div className="flex justify-center items-center py-8">
                   <div className="text-gray-400">Loading achievements...</div>
                 </div>

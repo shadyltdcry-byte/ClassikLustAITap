@@ -46,5 +46,37 @@
     "timestamp": "2025-08-29T05:20:29.082Z",
     "type": "text",
     "mood": "normal"
+  },
+  {
+    "id": "user-1756446602823",
+    "content": "How are you feeling today?",
+    "sender": "user",
+    "timestamp": "2025-08-29T05:50:02.823Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1756446602824",
+    "content": "*bites lip playfully* I love when we talk like this. You always know what to say to make me excited... 😘",
+    "sender": "character",
+    "timestamp": "2025-08-29T05:50:02.823Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "user-1756446614025",
+    "content": "What do you like to do?",
+    "sender": "user",
+    "timestamp": "2025-08-29T05:50:14.025Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1756446614026",
+    "content": "Mmm, you're making me curious now. *runs fingers through hair* What's got your attention? 😘",
+    "sender": "character",
+    "timestamp": "2025-08-29T05:50:14.025Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]

@@ -122,7 +122,7 @@ export default function AdminGameplayPanel() {
               <Button variant="ghost" onClick={() => setShowUpgrades(false)}>×</Button>
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <Upgrades playerData={{}} onUpgradeAction={() => {}} />
+              {/* SECURITY FIX: Only show admin components, not user components */}
               <UpgradeManagement />
             </div>
           </div>

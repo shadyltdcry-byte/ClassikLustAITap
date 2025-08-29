@@ -281,7 +281,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     }
     return (
       <div style={{ ...commonStyles, display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#374151' }}>
-        <span className="text-white text-xs">Type: {file.fileType || fileExt || 'unknown'}</span>
+        <span className="text-white text-xs">📄 {file.fileType || fileExt || 'file'}</span>
       </div>
     );
   };
