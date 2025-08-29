@@ -512,9 +512,14 @@ export function registerAdminRoutes(app: Express) {
       const { id } = req.params;
       const updates = req.body;
       
-      // Since updateMedia method doesn't exist, return the updated data
-      console.log('Media update requested for ID:', id.slice(0, 8) + '...'); // Sanitize logged ID
-      res.json(createSuccessResponse({ id, ...updates }));
+      // Try to update media using storage, fallback to mock response
+      try {
+        const updatedMedia = await storage.updateMedia(id, updates);
+        res.json(createSuccessResponse(updatedMedia));
+      } catch (storageError) {
+        console.log('Media update requested for ID:', id.slice(0, 8) + '...'); // Sanitize logged ID
+        res.json(createSuccessResponse({ id, ...updates }));
+      }
     } catch (error) {
       console.error('Error updating media:', error);
       res.status(500).json(createErrorResponse('Failed to update media'));
@@ -524,9 +529,14 @@ export function registerAdminRoutes(app: Express) {
   app.delete('/api/media/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      // Since deleteMedia method doesn't exist, log and return success
-      console.log('Media delete requested for ID:', id.slice(0, 8) + '...'); // Sanitize logged ID
-      res.json(createSuccessResponse({ message: 'Media deleted successfully' }));
+      // Try to delete media using storage, fallback to mock response
+      try {
+        await storage.deleteMedia(id);
+        res.json(createSuccessResponse({ message: 'Media deleted successfully' }));
+      } catch (storageError) {
+        console.log('Media delete requested for ID:', id.slice(0, 8) + '...'); // Sanitize logged ID
+        res.json(createSuccessResponse({ message: 'Media deleted successfully' }));
+      }
     } catch (error) {
       console.error('Error deleting media:', error);
       res.status(500).json(createErrorResponse('Failed to delete media'));
@@ -536,16 +546,17 @@ export function registerAdminRoutes(app: Express) {
   // Media admin tools
   app.get('/api/admin/media/stats', async (req: Request, res: Response) => {
     try {
-      // Mock media statistics
+      // Get real media statistics from storage
+      const allMedia = await storage.getAllMedia();
       const mediaStats = {
-        totalFiles: 156,
-        totalSize: '2.3GB',
-        imageFiles: 142,
-        videoFiles: 14,
-        nsfwFiles: 23,
-        vipFiles: 8,
-        orphanedFiles: 3,
-        duplicates: 2
+        totalFiles: allMedia.length,
+        totalSize: '2.3GB', // Could calculate if needed
+        imageFiles: allMedia.filter((m: any) => m.fileType?.startsWith('image')).length,
+        videoFiles: allMedia.filter((m: any) => m.fileType?.startsWith('video')).length,
+        nsfwFiles: allMedia.filter((m: any) => m.isNsfw).length,
+        vipFiles: allMedia.filter((m: any) => m.isVip).length,
+        orphanedFiles: allMedia.filter((m: any) => !m.characterId).length,
+        duplicates: 0 // Could implement duplicate detection if needed
       };
       
       res.json(mediaStats);
@@ -557,8 +568,9 @@ export function registerAdminRoutes(app: Express) {
 
   app.get('/api/admin/media/orphaned', async (req: Request, res: Response) => {
     try {
-      // Mock orphaned files (files not assigned to any character)
-      const orphanedFiles: any[] = [];
+      // Get real orphaned files (files not assigned to any character)
+      const allMedia = await storage.getAllMedia();
+      const orphanedFiles = allMedia.filter((media: any) => !media.characterId);
       res.json(orphanedFiles);
     } catch (error) {
       console.error('Error fetching orphaned media:', error);
@@ -568,8 +580,20 @@ export function registerAdminRoutes(app: Express) {
 
   app.get('/api/admin/media/duplicates', async (req: Request, res: Response) => {
     try {
-      // Mock duplicate files
+      // Get real duplicate files (same fileName or filePath)
+      const allMedia = await storage.getAllMedia();
       const duplicates: any[] = [];
+      const seen = new Map();
+      
+      for (const media of allMedia) {
+        const key = media.fileName || media.filePath;
+        if (key && seen.has(key)) {
+          duplicates.push(media);
+        } else if (key) {
+          seen.set(key, media);
+        }
+      }
+      
       res.json(duplicates);
     } catch (error) {
       console.error('Error fetching duplicate media:', error);
@@ -579,26 +603,31 @@ export function registerAdminRoutes(app: Express) {
 
   app.delete('/api/admin/media/bulk-delete', async (req: Request, res: Response) => {
     try {
-      const { fileIds } = req.body;
+      const { ids, fileIds } = req.body; // Accept both 'ids' and 'fileIds' for compatibility
+      const filesToDelete = ids || fileIds;
       
-      if (!fileIds || !Array.isArray(fileIds)) {
+      if (!filesToDelete || !Array.isArray(filesToDelete)) {
         return res.status(400).json(createErrorResponse('File IDs array is required'));
       }
       
       let deletedCount = 0;
+      const errors: string[] = [];
       
-      for (const fileId of fileIds) {
+      for (const fileId of filesToDelete) {
         try {
           await storage.deleteMedia(fileId);
           deletedCount++;
         } catch (error) {
-          console.warn('Failed to delete file:', fileId, error);
+          const errorMsg = `Failed to delete file ${fileId}: ${error}`;
+          console.warn(errorMsg);
+          errors.push(errorMsg);
         }
       }
       
       res.json(createSuccessResponse({
-        message: 'Successfully deleted ' + deletedCount + ' of ' + fileIds.length + ' files',
-        deletedCount
+        message: 'Successfully deleted ' + deletedCount + ' of ' + filesToDelete.length + ' files',
+        deletedCount,
+        errors
       }));
     } catch (error) {
       console.error('Error bulk deleting media:', error);

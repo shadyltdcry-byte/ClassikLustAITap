@@ -58,10 +58,10 @@ interface LogEntry {
 interface GameDebuggerProps {
   // State exposure props - components pass their state here
   gameState: DebugState;
-  onStateChange: (newState: Partial<DebugState>) => void;
+  onStateChange?: (newState: Partial<DebugState>) => void;
   
   // Component refs for direct state access
-  componentRefs: {
+  componentRefs?: {
     gameGUI?: any;
     playerStats?: any;
     gameTabs?: any;
@@ -72,6 +72,16 @@ interface GameDebuggerProps {
   // Real-time monitoring
   isVisible: boolean;
   onToggle: () => void;
+  
+  // Real game state for connection
+  realGameState?: {
+    selectedCharacter: any;
+    user: any;
+    activePlugin: string;
+    isTapping: boolean;
+    guiState: any;
+    onToggleModal?: (modal: string) => void;
+  };
 }
 
 export default function GameDebugger({ 
@@ -79,7 +89,8 @@ export default function GameDebugger({
   onStateChange, 
   componentRefs,
   isVisible, 
-  onToggle 
+  onToggle,
+  realGameState 
 }: GameDebuggerProps) {
   const [selectedComponent, setSelectedComponent] = useState('player');
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -402,15 +413,15 @@ export default function GameDebugger({
                   <div className="flex items-center justify-between">
                     <Label className="text-gray-300">Active Tab:</Label>
                     <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/50">
-                      {gameState.activeTab || 'main'}
+                      {realGameState?.activePlugin || gameState.activeTab || 'main'}
                     </Badge>
                   </div>
 
                   {/* Tapping State */}
                   <div className="flex items-center justify-between">
                     <Label className="text-gray-300">Is Tapping:</Label>
-                    <Badge className={`${gameState.isTapping ? 'bg-green-600/20 text-green-300 border-green-500/50' : 'bg-gray-600/20 text-gray-300 border-gray-500/50'}`}>
-                      {gameState.isTapping ? 'YES' : 'NO'}
+                    <Badge className={`${(realGameState?.isTapping || gameState.isTapping) ? 'bg-green-600/20 text-green-300 border-green-500/50' : 'bg-gray-600/20 text-gray-300 border-gray-500/50'}`}>
+                      {(realGameState?.isTapping || gameState.isTapping) ? 'YES' : 'NO'}
                     </Badge>
                   </div>
 
@@ -418,26 +429,59 @@ export default function GameDebugger({
                   <div className="flex items-center justify-between">
                     <Label className="text-gray-300">Character:</Label>
                     <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/50">
-                      {gameState.selectedCharacter?.name || 'None'}
+                      {realGameState?.selectedCharacter?.name || gameState.selectedCharacter?.name || 'None'}
                     </Badge>
+                  </div>
+                  
+                  {/* Player Info */}
+                  <div className="space-y-1">
+                    <Label className="text-gray-300">Player Info:</Label>
+                    <div className="text-xs text-gray-400">
+                      LP: {realGameState?.user?.lp || gameState.playerLP || 0} | 
+                      Energy: {realGameState?.user?.energy || gameState.playerEnergy || 0}
+                    </div>
                   </div>
 
                   {/* Modal States */}
                   <div className="space-y-2">
                     <Label className="text-gray-300 text-xs">Open Modals:</Label>
                     <div className="grid grid-cols-2 gap-1">
-                      <Badge variant={gameState.showOfflineDialog ? "default" : "outline"} className="text-xs">
+                      <Button 
+                        size="sm" 
+                        variant={realGameState?.guiState?.showOfflineDialog ? "default" : "outline"}
+                        className={`text-xs h-6 ${realGameState?.guiState?.showOfflineDialog ? 'bg-blue-600' : ''}`}
+                        onClick={() => realGameState?.onToggleModal?.('offline')}
+                        disabled={!realGameState?.onToggleModal}
+                      >
                         Offline
-                      </Badge>
-                      <Badge variant={gameState.showAdminMenu ? "default" : "outline"} className="text-xs">
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant={realGameState?.guiState?.showAdminMenu ? "default" : "outline"}
+                        className={`text-xs h-6 ${realGameState?.guiState?.showAdminMenu ? 'bg-purple-600' : ''}`}
+                        onClick={() => realGameState?.onToggleModal?.('admin')}
+                        disabled={!realGameState?.onToggleModal}
+                      >
                         Admin
-                      </Badge>
-                      <Badge variant={gameState.showWheelGame ? "default" : "outline"} className="text-xs">
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant={realGameState?.guiState?.showWheelGame ? "default" : "outline"}
+                        className={`text-xs h-6 ${realGameState?.guiState?.showWheelGame ? 'bg-yellow-600' : ''}`}
+                        onClick={() => realGameState?.onToggleModal?.('wheel')}
+                        disabled={!realGameState?.onToggleModal}
+                      >
                         Wheel
-                      </Badge>
-                      <Badge variant={gameState.showVIP ? "default" : "outline"} className="text-xs">
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant={realGameState?.guiState?.showVIP ? "default" : "outline"}
+                        className={`text-xs h-6 ${realGameState?.guiState?.showVIP ? 'bg-pink-600' : ''}`}
+                        onClick={() => realGameState?.onToggleModal?.('vip')}
+                        disabled={!realGameState?.onToggleModal}
+                      >
                         VIP
-                      </Badge>
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
