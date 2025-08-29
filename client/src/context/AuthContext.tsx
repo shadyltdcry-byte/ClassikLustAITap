@@ -146,7 +146,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // return () => clearTimeout(timer);
     };
 
-    checkBotAuth();
+    // Await checkBotAuth to ensure errors are properly handled
+    checkBotAuth().catch(error => {
+      console.error('Auth initialization failed:', error);
+      setIsLoading(false);
+    });
   }, []);
 
   // Auto-refresh mechanism to maintain login state - DISABLED TO STOP API SPAM
