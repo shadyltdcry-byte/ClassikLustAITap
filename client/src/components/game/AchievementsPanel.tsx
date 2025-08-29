@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { getAchievementsByCategory } from "@/plugins/gameplay/Achievements";
 
 interface AchievementsPanelProps {
   claimingRewards: Set<string>;
@@ -15,12 +16,24 @@ interface AchievementsPanelProps {
 export default function AchievementsPanel({ claimingRewards, onClaimReward }: AchievementsPanelProps) {
   const [achievementFilter, setAchievementFilter] = useState("all");
 
-  // Fetch real achievements from database
-  const { data: achievements = [], isLoading } = useQuery({
-    queryKey: ['/api/admin/achievements'],
+  // Fetch user data for dynamic calculation
+  const { data: userData, isLoading: userLoading } = useQuery({
+    queryKey: ['/api/user/telegram_8276164651'],
+  });
+  
+  const { data: userStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/stats/telegram_8276164651'],
   });
 
-  const filteredAchievements = achievementFilter === "all" ? (achievements as any[]) : (achievements as any[]).filter((achievement: any) => achievement.category === achievementFilter);
+  // Calculate dynamic achievements based on real user data
+  const userStatsForCalculation = userData ? {
+    ...userData,
+    totalTaps: userStats?.totalTaps || 0,
+    completedTasks: 0 // TODO: Track completed tasks
+  } : null;
+
+  const dynamicAchievements = userStatsForCalculation ? getAchievementsByCategory(achievementFilter, userStatsForCalculation) : [];
+  const isLoading = userLoading || statsLoading;
 
   return (
     <div className="w-full max-w-2xl h-full flex flex-col">
@@ -35,7 +48,7 @@ export default function AchievementsPanel({ claimingRewards, onClaimReward }: Ac
             <p className="text-sm text-gray-400">Track your progress and unlock rewards</p>
           </div>
           <div className="text-center">
-            <div className="text-2xl font-bold text-white">{filteredAchievements.filter((a: any) => a.completed).length}</div>
+            <div className="text-2xl font-bold text-white">{dynamicAchievements.filter((a) => a.status === 'completed').length}</div>
             <div className="text-xs text-gray-400">Completed</div>
           </div>
         </div>
@@ -68,12 +81,12 @@ export default function AchievementsPanel({ claimingRewards, onClaimReward }: Ac
               <div className="flex justify-center items-center py-8">
                 <div className="text-gray-400">Loading achievements...</div>
               </div>
-            ) : filteredAchievements.length === 0 ? (
+            ) : dynamicAchievements.length === 0 ? (
               <div className="flex justify-center items-center py-8">
                 <div className="text-gray-400">No achievements available</div>
               </div>
             ) : (
-              filteredAchievements.map((achievement: any) => {
+              dynamicAchievements.map((achievement) => {
                 const currentLevel = achievement.currentLevel || 1;
                 const maxLevel = achievement.maxLevel || 10;
                 const progress = achievement.progress || 0;

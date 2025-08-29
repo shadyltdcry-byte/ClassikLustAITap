@@ -7,6 +7,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Target, Trophy } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { getTasksByCategory } from "@/plugins/gameplay/Task";
+import { getAchievementsByCategory } from "@/plugins/gameplay/Achievements";
 
 interface TasksPanelProps {
   claimingRewards: Set<string>;
@@ -16,16 +18,26 @@ interface TasksPanelProps {
 export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPanelProps) {
   const [taskFilter, setTaskFilter] = useState("all");
 
-  // Fetch real tasks and achievements from database
-  const { data: allTasks = [], isLoading: tasksLoading } = useQuery({
-    queryKey: ['/api/admin/tasks'],
+  // Fetch user data for dynamic calculation
+  const { data: userData, isLoading: userLoading } = useQuery({
+    queryKey: ['/api/user/telegram_8276164651'],
+  });
+  
+  const { data: userStats, isLoading: statsLoading } = useQuery({
+    queryKey: ['/api/stats/telegram_8276164651'],
   });
 
-  const { data: allAchievements = [], isLoading: achievementsLoading } = useQuery({
-    queryKey: ['/api/admin/achievements'],
-  });
+  // Calculate dynamic tasks and achievements based on real user data
+  const userStatsForCalculation = userData ? {
+    ...userData,
+    totalTaps: userStats?.totalTaps || 0,
+    completedTasks: 0 // TODO: Track completed tasks
+  } : null;
 
-  const filteredTasks = taskFilter === "all" ? (allTasks as any[]) : (allTasks as any[]).filter((task: any) => task.category === taskFilter);
+  const dynamicTasks = userStatsForCalculation ? getTasksByCategory(taskFilter, userStatsForCalculation) : [];
+  const dynamicAchievements = userStatsForCalculation ? getAchievementsByCategory("all", userStatsForCalculation) : [];
+
+  const isLoading = userLoading || statsLoading;
 
   return (
     <div className="w-full max-w-2xl h-full flex flex-col overflow-hidden">
@@ -80,16 +92,16 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
           <div className="flex-1 overflow-hidden">
             <ScrollArea className="h-full">
               <div className="space-y-3 p-4">
-                {tasksLoading ? (
+                {isLoading ? (
                   <div className="flex justify-center items-center py-8">
                     <div className="text-gray-400">Loading tasks...</div>
                   </div>
-                ) : filteredTasks.length === 0 ? (
+                ) : dynamicTasks.length === 0 ? (
                   <div className="flex justify-center items-center py-8">
                     <div className="text-gray-400">No tasks available</div>
                   </div>
                 ) : (
-                filteredTasks.map((task: any) => (
+                dynamicTasks.map((task) => (
                     <Card key={task.id} className="bg-gray-800/50 border-gray-600/50 hover:border-purple-500/50 transition-all">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">

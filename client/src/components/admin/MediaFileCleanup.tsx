@@ -43,6 +43,13 @@ export default function MediaFileCleanup() {
     groups: { [key: string]: MediaFile[] };
   }>({
     queryKey: ['/api/admin/media/duplicates'],
+    select: (data) => {
+      // Handle API returning array instead of object
+      if (Array.isArray(data)) {
+        return { duplicates: data, groups: {} };
+      }
+      return data || { duplicates: [], groups: {} };
+    }
   });
 
   const bulkDeleteMutation = useMutation({

@@ -53,23 +53,13 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
 
   // Track renders WITHOUT causing re-renders (moved outside render cycle)
   renderCountRef.current += 1;
-  
-  // Update render count in debug state every 10 renders to avoid spam
-  if (renderCountRef.current % 10 === 0) {
-    setTimeout(() => {
-      setDebugState(prev => ({ 
-        ...prev, 
-        renderCount: renderCountRef.current,
-        lastUpdate: Date.now()
-      }));
-    }, 0);
-  }
 
   // Safe state mutation - allows debugger to change any state
   const updateDebugState = useCallback((updates: Partial<DebugState>) => {
     setDebugState(prev => ({
       ...prev,
       ...updates,
+      renderCount: renderCountRef.current, // Always get latest render count
       lastUpdate: Date.now()
     }));
   }, []);

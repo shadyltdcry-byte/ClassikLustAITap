@@ -76,9 +76,79 @@ export const mockAchievements: Achievements[] = [
   }
 ];
 
-export const getAchievementsByCategory = (category?: string) => {
-  if (!category || category === "all") return mockAchievements;
-  return mockAchievements.filter(achievements => achievements.category === category);
+// Dynamic achievement calculation based on real user data
+export const calculateDynamicAchievements = (userStats: any): Achievements[] => {
+  const baseAchievements: Omit<Achievements, 'progress' | 'status'>[] = [
+    {
+      id: "1",
+      title: "First Steps",
+      description: "Complete your first task",
+      maxProgress: 1,
+      reward: "100 LP",
+      category: "beginner",
+      icon: "🎯"
+    },
+    {
+      id: "2",
+      title: "Tap Master",
+      description: "Tap character 100 times",
+      maxProgress: 100,
+      reward: "500 LP",
+      category: "interaction",
+      icon: "👆"
+    },
+    {
+      id: "3",
+      title: "Level Up Master",
+      description: "Reach level 5", 
+      maxProgress: 5,
+      reward: "1000 LP + Energy Boost",
+      category: "progression",
+      icon: "⬆️"
+    },
+    {
+      id: "4",
+      title: "LP Millionaire",
+      description: "Earn 5000 LP total",
+      maxProgress: 5000,
+      reward: "Special Character Unlock",
+      category: "collection",
+      icon: "📦"
+    }
+  ];
+
+  return baseAchievements.map(achievement => {
+    let progress = 0;
+    
+    switch (achievement.id) {
+      case "1": // First Steps - check if any task completed
+        progress = userStats.completedTasks > 0 ? 1 : 0;
+        break;
+      case "2": // Tap Master
+        progress = Math.min(userStats.totalTaps || 0, achievement.maxProgress);
+        break;
+      case "3": // Level Up Master
+        progress = Math.min(userStats.level || 1, achievement.maxProgress);
+        break;
+      case "4": // LP Millionaire
+        progress = Math.min(userStats.lp || 0, achievement.maxProgress);
+        break;
+    }
+    
+    const status: Achievements['status'] = progress >= achievement.maxProgress ? 'completed' : 'in_progress';
+    
+    return {
+      ...achievement,
+      progress,
+      status
+    };
+  });
+};
+
+export const getAchievementsByCategory = (category?: string, userStats?: any) => {
+  const dynamicAchievements = userStats ? calculateDynamicAchievements(userStats) : mockAchievements;
+  if (!category || category === "all") return dynamicAchievements;
+  return dynamicAchievements.filter(achievements => achievements.category === category);
 };
 
 export const claimAchievementsReward = (achievementsId: string) => {
