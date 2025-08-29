@@ -60,16 +60,16 @@ function AppContent() {
 
   useEffect(() => {
     if (isLoading) {
-      // Simulate slower loading progress to allow for proper login flow
+      // Much slower loading to allow image caching and prevent glitches
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
           if (prev >= 100) {
             clearInterval(interval);
             return 100;
           }
-          return prev + 10; // Normal increment
+          return prev + 4; // Slower increment for better caching
         });
-      }, 300); // Normal interval
+      }, 650); // Longer interval for smoother loading
 
       return () => clearInterval(interval);
     }

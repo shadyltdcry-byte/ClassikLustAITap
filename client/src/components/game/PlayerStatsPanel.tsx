@@ -30,13 +30,21 @@ export default function PlayerStatsPanel({
             <img
               src={selectedCharacter?.avatarUrl || selectedCharacter?.imageUrl || selectedCharacter?.avatarPath || "https://via.placeholder.com/64x64/1a1a1a/ff1493?text=👤"}
               alt="Character Avatar"
+              loading="eager"
+              onLoad={(e) => {
+                // Smooth fade-in effect when image loads
+                const target = e.target as HTMLImageElement;
+                target.style.opacity = '1';
+              }}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 if (target.src !== "https://via.placeholder.com/64x64/1a1a1a/ff1493?text=👤") {
                   target.src = "https://via.placeholder.com/64x64/1a1a1a/ff1493?text=👤";
                 }
+                target.style.opacity = '1';
               }}
-              className="w-[74px] h-[74px] object-cover rounded-xl shadow-lg border-2 border-purple-500/50 cursor-pointer hover:border-purple-400/70 transition-colors"
+              className="w-[74px] h-[74px] object-cover rounded-xl shadow-lg border-2 border-purple-500/50 cursor-pointer hover:border-purple-400/70 transition-all duration-500"
+              style={{ opacity: 0, transition: 'opacity 0.5s ease-in-out' }}
             />
           </div>
           <div className="flex flex-col items-center gap-1">

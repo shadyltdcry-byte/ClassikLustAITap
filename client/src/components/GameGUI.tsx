@@ -409,7 +409,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex items-center justify-center p-4 pb-20 overflow-auto">
+      <div className="flex-1 flex items-center justify-center p-4 pb-24 overflow-auto">
         <div className="w-full h-full flex items-center justify-center">
           {renderActivePlugin()}
         </div>

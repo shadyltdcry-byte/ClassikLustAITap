@@ -43,9 +43,9 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
         </TabsList>
 
         {/* Tasks Tab */}
-        <TabsContent value="tasks" className="flex-1 flex flex-col">
+        <TabsContent value="tasks" className="flex-1 flex flex-col overflow-hidden">
           {/* Tasks Header */}
-          <div className="p-4 bg-black/30 border-b border-purple-500/30 rounded-t-lg">
+          <div className="p-3 bg-black/30 border-b border-purple-500/30 rounded-t-lg flex-shrink-0">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center">
                 <Target className="w-6 h-6 text-white" />
