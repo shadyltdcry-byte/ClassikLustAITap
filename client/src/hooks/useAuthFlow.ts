@@ -21,7 +21,7 @@ interface AuthFlowConfig {
 const DEFAULT_CONFIG: AuthFlowConfig = {
   telegramTimeout: 5000, // 5 seconds
   supabaseTimeout: 3000, // 3 seconds  
-  allowGuestFallback: false, // Block guest mode by default
+  allowGuestFallback: true, // Allow guest mode temporarily for testing
   debug: import.meta.env.DEV
 };
 
@@ -141,63 +141,86 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
 
   // Check Telegram authentication
   const checkTelegramAuth = async (): Promise<AuthState | null> => {
-    // Check URL params first
-    const urlParams = new URLSearchParams(window.location.search);
-    const telegramId = urlParams.get('telegram_id');
-    
-    if (telegramId) {
-      const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`);
-      const data = await response.json();
+    try {
+      // Check URL params first
+      const urlParams = new URLSearchParams(window.location.search);
+      const telegramId = urlParams.get('telegram_id');
       
-      if (data.authenticated) {
-        localStorage.setItem('telegram_auth_token', data.token);
-        localStorage.setItem('telegram_user_id', data.user.id);
-        localStorage.setItem('telegram_id', telegramId);
-        localStorage.setItem('login_timestamp', Date.now().toString());
+      if (telegramId) {
+        const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`);
         
-        // Clean URL
-        window.history.replaceState({}, document.title, window.location.pathname);
+        if (!response.ok) {
+          if (finalConfig.debug) {
+            console.log('[useAuthFlow] Telegram auth response not ok:', response.status);
+          }
+          return null;
+        }
         
-        return {
-          userId: data.user.id,
-          authSource: 'telegram',
-          sessionAge: 0,
-          lastLoginMethod: 'telegram_url',
-          isAuthenticated: true,
-          isLoading: false,
-          error: null
-        };
+        const data = await response.json();
+        
+        if (data.authenticated) {
+          localStorage.setItem('telegram_auth_token', data.token);
+          localStorage.setItem('telegram_user_id', data.user.id);
+          localStorage.setItem('telegram_id', telegramId);
+          localStorage.setItem('login_timestamp', Date.now().toString());
+          
+          // Clean URL
+          window.history.replaceState({}, document.title, window.location.pathname);
+          
+          return {
+            userId: data.user.id,
+            authSource: 'telegram',
+            sessionAge: 0,
+            lastLoginMethod: 'telegram_url',
+            isAuthenticated: true,
+            isLoading: false,
+            error: null
+          };
+        }
       }
-    }
 
-    // Check stored Telegram data
-    const storedToken = localStorage.getItem('telegram_auth_token');
-    const storedUserId = localStorage.getItem('telegram_user_id');
-    const storedTelegramId = localStorage.getItem('telegram_id');
-    
-    if (storedToken && storedUserId && storedTelegramId) {
-      // Validate stored session
-      const response = await deDupeFetch(`/api/auth/telegram/status/${storedTelegramId}`);
-      const data = await response.json();
+      // Check stored Telegram data
+      const storedToken = localStorage.getItem('telegram_auth_token');
+      const storedUserId = localStorage.getItem('telegram_user_id');
+      const storedTelegramId = localStorage.getItem('telegram_id');
       
-      if (data.authenticated) {
-        const loginTime = localStorage.getItem('login_timestamp');
-        const sessionAge = loginTime ? 
-          Math.floor((Date.now() - parseInt(loginTime)) / 60000) : 0;
+      if (storedToken && storedUserId && storedTelegramId) {
+        // Validate stored session
+        const response = await deDupeFetch(`/api/auth/telegram/status/${storedTelegramId}`);
         
-        return {
-          userId: storedUserId,
-          authSource: 'telegram',
-          sessionAge,
-          lastLoginMethod: 'telegram_stored',
-          isAuthenticated: true,
-          isLoading: false,
-          error: null
-        };
+        if (!response.ok) {
+          if (finalConfig.debug) {
+            console.log('[useAuthFlow] Stored auth validation failed:', response.status);
+          }
+          return null;
+        }
+        
+        const data = await response.json();
+        
+        if (data.authenticated) {
+          const loginTime = localStorage.getItem('login_timestamp');
+          const sessionAge = loginTime ? 
+            Math.floor((Date.now() - parseInt(loginTime)) / 60000) : 0;
+          
+          return {
+            userId: storedUserId,
+            authSource: 'telegram',
+            sessionAge,
+            lastLoginMethod: 'telegram_stored',
+            isAuthenticated: true,
+            isLoading: false,
+            error: null
+          };
+        }
       }
-    }
 
-    return null;
+      return null;
+    } catch (error) {
+      if (finalConfig.debug) {
+        console.error('[useAuthFlow] Telegram auth check error:', error);
+      }
+      return null;
+    }
   };
 
   // Check Supabase session
@@ -254,7 +277,7 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
   };
 
   // Login function (for external auth success)
-  const login = (userId: string, authSource: 'telegram' | 'supabase', userData?: any) => {
+  const login = (userId: string, authSource: 'telegram' | 'supabase' | 'guest', userData?: any) => {
     localStorage.setItem('login_timestamp', Date.now().toString());
     
     if (authSource === 'telegram') {
@@ -265,6 +288,8 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
       if (userData?.telegramId) {
         localStorage.setItem('telegram_id', userData.telegramId);
       }
+    } else if (authSource === 'guest') {
+      localStorage.setItem('guest_user_id', userId);
     }
 
     setAuthState({

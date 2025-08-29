@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const authFlow = useAuthFlow({
     telegramTimeout: 5000,
     supabaseTimeout: 3000,
-    allowGuestFallback: false, // Block guest fallback by default
+    allowGuestFallback: true, // Allow guest fallback for testing
     debug: import.meta.env.DEV
   });
 
