@@ -638,8 +638,9 @@ export default function LevelUp() {
                 );
               })}
           </div>
-        </TabsContent>
-   </Tabs>
-    </div>
+        </ScrollArea>
+      </TabsContent>
+    </Tabs>
+  </div>
   );
 }
