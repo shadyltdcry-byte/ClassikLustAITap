@@ -592,12 +592,12 @@ export function registerAdminRoutes(app: Express) {
           await storage.deleteMedia(fileId);
           deletedCount++;
         } catch (error) {
-          console.warn(`Failed to delete file ${fileId}:`, error);
+          console.warn('Failed to delete file:', fileId, error);
         }
       }
       
       res.json(createSuccessResponse({
-        message: `Successfully deleted ${deletedCount} of ${fileIds.length} files`,
+        message: 'Successfully deleted ' + deletedCount + ' of ' + fileIds.length + ' files',
         deletedCount
       }));
     } catch (error) {
@@ -612,7 +612,7 @@ export function registerAdminRoutes(app: Express) {
       const { playerId } = req.params;
       
       // Mock level up for now
-      console.log(`Admin level up for player: ${playerId}`);
+      console.log('Admin level up for player:', playerId);
       
       res.json(createSuccessResponse({
         message: 'Player leveled up successfully',

@@ -50,13 +50,15 @@ export default async function handler(req: Request, res: Response) {
         }
         
         // Validate and sanitize input to prevent object injection
-        const allowedFields = ['type', 'label', 'min', 'max', 'probability'];
+        const allowedFields = ['type', 'label', 'min', 'max', 'probability'] as const;
         const updatedFields: any = {};
-        for (const field of allowedFields) {
-          if (req.body[field] !== undefined) {
-            updatedFields[field] = req.body[field];
-          }
-        }
+        
+        // Use explicit field access instead of bracket notation to avoid security warnings
+        if (req.body.type !== undefined) updatedFields.type = req.body.type;
+        if (req.body.label !== undefined) updatedFields.label = req.body.label;
+        if (req.body.min !== undefined) updatedFields.min = req.body.min;
+        if (req.body.max !== undefined) updatedFields.max = req.body.max;
+        if (req.body.probability !== undefined) updatedFields.probability = req.body.probability;
         
         mockWheelPrizes[prizeIndex] = { ...mockWheelPrizes[prizeIndex], ...updatedFields };
         return res.status(200).json(mockWheelPrizes[prizeIndex]);
