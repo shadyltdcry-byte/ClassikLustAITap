@@ -79,7 +79,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             return;
           }
         } catch (error) {
-          console.error('Bot auth check error:', error);
+          // Only log actual errors, not empty objects
+          if (error && ((error as any)?.message || error.toString() !== '[object Object]')) {
+            console.error('Bot auth check error:', error);
+          } else {
+            console.log('[DEBUG] Bot auth check failed - proceeding with fallback');
+          }
         }
       } else {
         // No URL param, but check if we have a stored telegram_id from previous login
@@ -100,7 +105,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               return;
             }
           } catch (error) {
-            console.error('Auto-login check error:', error);
+            // Only log actual errors, not empty objects
+            if (error && ((error as any)?.message || error.toString() !== '[object Object]')) {
+              console.error('Auto-login check error:', error);
+            } else {
+              console.log('[DEBUG] Auto-login check failed - proceeding with guest mode');
+            }
           }
         }
       }

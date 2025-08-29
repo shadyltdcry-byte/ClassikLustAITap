@@ -257,12 +257,13 @@ export function registerChatRoutes(app: Express) {
   // Mistral debug endpoint
   app.post("/api/mistral/debug", async (req: Request, res: Response) => {
     try {
-      const { message, debugMode } = req.body;
+      const { message, debugMode, prompt } = req.body;
       
+      const debugMessage = message || prompt || 'test';
       const debugResponse = {
-        originalMessage: message,
-        processedMessage: message.toLowerCase(),
-        responseGenerated: await generateAIResponse(message),
+        originalMessage: debugMessage,
+        processedMessage: debugMessage.toLowerCase(),
+        response: await generateAIResponse(debugMessage),
         debugMode: debugMode || false,
         timestamp: new Date().toISOString()
       };

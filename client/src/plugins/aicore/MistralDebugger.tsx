@@ -152,7 +152,12 @@ export default function MistralDebugger({
       setIsChatLoading(false);
     },
     onError: (error: any) => {
-      console.error("Chat error:", error);
+      // Only log actual errors, not empty objects
+      if (error && ((error as any)?.message || error.toString() !== '[object Object]')) {
+        console.error("Chat error:", error);
+      } else {
+        console.log('[DEBUG] Chat operation failed - using fallback');
+      }
       const errorMessage: ChatMessage = {
         text: `Sorry, I encountered an error: ${error.message || 'Unknown error'}. Please try again.`,
         sender: "bot",
