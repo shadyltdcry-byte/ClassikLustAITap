@@ -37,7 +37,15 @@ if (connectionString) {
 
 export { db };
 
+// Prevent duplicate initialization during hot-reload
+let isInitialized = false;
+
 function main() {
+  if (isInitialized) {
+    return; // Skip duplicate initialization
+  }
+  isInitialized = true;
+  
   console.log("[Main] Server loaded and started successfully... ");
   if (db) {
     console.log("[SupabaseDB] Database connected and loaded successfully...");
@@ -126,9 +134,12 @@ global.recentTelegramAuth = new Map<string, {
   timestamp: number
 }>();
 
-// Initialize Telegram Bot
+// Initialize Telegram Bot with duplication prevention
 const token = process.env.TELEGRAM_BOT_TOKEN;
-if (token) {
+let telegramBotInitialized = false;
+
+if (token && !telegramBotInitialized) {
+  telegramBotInitialized = true;
   console.log("[Telegram] Initializing Telegram bot...");
   try {
     const bot = new TelegramBot(token, { polling: true });
