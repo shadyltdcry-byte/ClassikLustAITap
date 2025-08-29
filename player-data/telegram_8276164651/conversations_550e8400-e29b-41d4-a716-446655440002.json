@@ -1,1 +1,18 @@
-[]
+[
+  {
+    "id": "user-1756444656069",
+    "content": "You look amazing! ✨",
+    "sender": "user",
+    "timestamp": "2025-08-29T05:17:36.069Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1756444656070",
+    "content": "Mmm, well I'm a petite blonde with blue eyes and curves in all the right places. *bites lip* I love to tease and play. What about you? Tell me what turns you on... 😈",
+    "sender": "character",
+    "timestamp": "2025-08-29T05:17:36.069Z",
+    "type": "text",
+    "mood": "normal"
+  }
+]

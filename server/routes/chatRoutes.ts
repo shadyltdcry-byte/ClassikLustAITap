@@ -60,7 +60,7 @@ async function generateAIResponse(userMessage: string): Promise<string> {
             const { Mistral } = await import('@mistralai/mistralai');
             const client = new Mistral({ apiKey: apiKey });
             const response = await client.chat.complete({
-              model: 'mistral-small-latest',
+              model: 'mistral-small-2506',
               messages: [{ role: 'user', content: `${lunaPrompt}\n\nUser: ${userMessage}\nLuna:` }],
               maxTokens: 150,
               temperature: 0.8
