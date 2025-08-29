@@ -1,18 +1,18 @@
 import React from "react";
 import { Switch, Route } from "wouter";
-import { queryClient } from "../lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "../components/ui/toaster";
-import { TooltipProvider } from "../components/ui/tooltip";
-import GameGUI from "../components/GameGUI";
-import AdminMenu from "../plugins/admin/AdminMenu";
-import NotFound from "./not-found";
-import { GameProvider } from "../context/GameProvider";
-import { LoadingScreen } from "../components/LoadingScreen";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import GameGUI from "@/components/GameGUI";
+import AdminMenu from "@/plugins/admin/AdminMenu";
+import NotFound from "@/pages/not-found";
+import { GameProvider } from "@/context/GameProvider";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { useEffect, useState } from "react";
-import { AdminUIToggler } from "../plugins/admin/adminGUI";
-import { AuthProvider, useAuth } from "../context/AuthContext";
-import TelegramAuth from "../components/TelegramAuth";
+import { AdminUIToggler } from "@/plugins/admin/adminGUI";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
+import TelegramAuth from "@/components/TelegramAuth";
 
 // Wrapper component for GameGUI to handle routing
 function GameGUIPage() {
@@ -32,10 +32,8 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={GameGUIPage} />
-      <Route path="/game" component={GameGUIPage} />
       <Route path="/AdminMenu" component={AdminMenuPage} />
-      <Route path="/admin" component={AdminMenuPage} />
-      <Route path="*" component={GameGUIPage} />
+      <Route component={NotFound} />
     </Switch>
   );
 }
@@ -63,27 +61,18 @@ function AppContent() {
 
   useEffect(() => {
     if (isLoading) {
-      // Much faster loading progress
+      // Simulate slower loading progress to allow for proper login flow
       const interval = setInterval(() => {
         setLoadingProgress(prev => {
           if (prev >= 100) {
             clearInterval(interval);
             return 100;
           }
-          return prev + 25; // Even faster increment
+          return prev + 10; // Normal increment
         });
-      }, 100); // Much faster interval
+      }, 300); // Normal interval
 
-      // Emergency fallback - force stop loading after 8 seconds
-      const emergencyTimeout = setTimeout(() => {
-        console.log('[EMERGENCY] Forcing stop loading after timeout');
-        setLoadingProgress(100);
-      }, 8000); // Shorter timeout
-
-      return () => {
-        clearInterval(interval);
-        clearTimeout(emergencyTimeout);
-      };
+      return () => clearInterval(interval);
     }
   }, [isLoading]);
 

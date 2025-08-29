@@ -1,50 +1,301 @@
 /**
- * ClassikLust Game Server - With Vite Development Support
+ * index.ts
+ * Last Edited: 2025-08-17 by Steven
+ *
+ *
+ * 
+ *
  */
 
-import express from 'express';
-import cors from 'cors';
-import { setupViteDevServer, log } from './vite.js';
+
+import express, { type Request, Response, NextFunction } from "express";
+import path from "path";
+import { registerRoutes } from "./routes";
+import { WebSocketServer } from 'ws';
+import { SupabaseStorage } from '../shared/SupabaseStorage';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import { registerAdminApi } from '../debugger/modules/adminAPI'; // adjust import as needed
+import DebuggerCore from '../debugger/DebuggerCore';
+import DebuggerAssist from '../debugger/modules/CharactersPlugin';
+import AdminUIPlugin from '../debugger/modules/adminUI';
+import TelegramBot from 'node-telegram-bot-api';
+import crypto from 'crypto';
+
+// Initialize database connection only if DATABASE_URL is provided
+let db: any = null;
+const connectionString = process.env.DATABASE_URL;
+if (connectionString) {
+  try {
+    const sql = postgres(connectionString);
+    db = drizzle(sql);
+    console.log('Database connection established');
+  } catch (error) {
+    console.warn('Database connection fail, running in mock mode:', error);
+  }
+} else {
+  console.warn('DATABASE_URL not provided, running in mock mode');
+}
+
+export { db };
+
+function main() {
+  console.log("[Main] Server loaded and started successfully... ");
+  if (db) {
+    console.log("[SupabaseDB] Database connected and loaded successfully...");
+  } else {
+    console.log("Running in mock mode without database");
+  }
+  
+  // Initialize storage
+  console.log("[Storage] Initialized SupabaseDB local storage system... ");
+}
+
+main();
+
+// In-memory token storage (replace with database later)
+const telegramTokens = new Map<string, { 
+  telegramId: string, 
+  username: string, 
+  expiresAt: Date, 
+  used: boolean 
+}>();
+
+// Generate temporary auth token (6-12 chars alphanumeric)
+function generateAuthToken(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const length = Math.floor(Math.random() * 7) + 6; // 6-12 chars
+  let token = '';
+  for (let i = 0; i < length; i++) {
+    token += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return token;
+}
+
+// Store persistent token (no expiration)
+function storeAuthToken(telegramId: string, username: string): string {
+  const token = generateAuthToken();
+  const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000); // 1 year (essentially permanent)
+  
+  telegramTokens.set(token, {
+    telegramId,
+    username,
+    expiresAt,
+    used: false
+  });
+  
+  console.log(`Generated persistent token ${token} for Telegram user ${telegramId} (${username})`);
+  return token;
+}
+
+// Validate token
+export function validateAuthToken(token: string, telegramId: string): boolean {
+  const tokenData = telegramTokens.get(token);
+  if (!tokenData) {
+    console.log(`Token ${token} not found`);
+    return false;
+  }
+  
+  if (tokenData.used) {
+    console.log(`Token ${token} already used`);
+    return false;
+  }
+  
+  if (new Date() > tokenData.expiresAt) {
+    console.log(`Token ${token} expired`);
+    telegramTokens.delete(token);
+    return false;
+  }
+  
+  if (tokenData.telegramId !== telegramId) {
+    console.log(`Token ${token} telegram_id mismatch`);
+    return false;
+  }
+  
+  // Mark as used
+  tokenData.used = true;
+  console.log(`Token ${token} validated successfully for ${telegramId}`);
+  return true;
+}
+
+// Set global reference for routes to access
+global.validateAuthToken = validateAuthToken;
+
+// Store recent successful authentications for frontend polling
+global.recentTelegramAuth = new Map<string, {
+  user: any,
+  token: string,
+  timestamp: number
+}>();
+
+// Initialize Telegram Bot
+const token = process.env.TELEGRAM_BOT_TOKEN;
+if (token) {
+  console.log("[Telegram] Initializing Telegram bot...");
+  try {
+    const bot = new TelegramBot(token, { polling: true });
+
+    bot.on('message', async (msg: any) => {
+      const chatId = msg.chat.id;
+      const messageText = msg.text;
+      const telegram_id = msg.from.id.toString();
+      const username = msg.from.username;
+      const timestamp = new Date().toISOString();
+
+      // Only respond to /start or /login commands
+      if (messageText !== '/start' && messageText !== '/login') {
+        return;
+      }
+
+      try {
+        console.log(`[${timestamp}] Telegram auth initiated for user: ${telegram_id} (${username}) with command: ${messageText}`);
+        
+        // 1. Generate temporary authentication token
+        const token = storeAuthToken(telegram_id, username);
+        console.log(`[${timestamp}] Generated token: ${token} for telegram_id: ${telegram_id}`);
+        
+        // 2. POST to game backend auth endpoint with token
+        const authResponse = await fetch('http://localhost:5000/api/auth/telegram', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            telegram_id,
+            username,
+            token
+          })
+        });
+
+        // 3. Wait for backend response and log it
+        const responseData = await authResponse.json();
+        console.log(`[${timestamp}] Backend response for ${telegram_id}: ${authResponse.status} - ${JSON.stringify(responseData)}`);
+
+        if (authResponse.ok) {
+          // 4. Send success confirmation message with game link
+          const gameUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}?telegram_id=${telegram_id}`;
+          bot.sendMessage(chatId, `You're logged in! 🎮\n\nClick here to play: ${gameUrl}`);
+          console.log(`[${timestamp}] Success message sent to ${telegram_id} with game link: ${gameUrl}`);
+        } else {
+          // 5. Send failure message
+          bot.sendMessage(chatId, 'Authentication failed. Please try again.');
+          console.log(`[${timestamp}] Failure message sent to ${telegram_id}`);
+        }
+      } catch (error) {
+        console.error(`[${timestamp}] Bot auth error for ${telegram_id}:`, error);
+        bot.sendMessage(chatId, 'Service temporarily unavailable.');
+      }
+    });
+
+    bot.on('error', (error: any) => {
+      console.error('[Telegram] Bot error:', error);
+    });
+
+    console.log("[Telegram] Bot initialized successfully!");
+  } catch (error) {
+    console.error('[Telegram] Failed to initialize bot:', error);
+  }
+} else {
+  console.warn('[Telegram] TELEGRAM_BOT_TOKEN not found, bot disabled');
+}
 
 const app = express();
-const PORT = 5000;
 
-console.log('🎮 Starting ClassikLust Game Server...');
+// Serve static files from public directory
+app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Basic middleware
-app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
-// Log requests
 app.use((req, res, next) => {
-  log(`${req.method} ${req.path} from ${req.ip}`);
+  const start = Date.now();
+  const path = req.path;
+  let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  
+
+  const originalResJson = res.json;
+  res.json = function (bodyJson, ...args) {
+    capturedJsonResponse = bodyJson;
+    return originalResJson.apply(res, [bodyJson, ...args]);
+  };
+
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    if (path.startsWith("/api")) {
+      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+      if (capturedJsonResponse) {
+        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
+      }
+
+      if (logLine.length > 80) {
+        logLine = logLine.slice(0, 79) + "…";
+      }
+
+      console.log(logLine);
+    }
+  });
+
   next();
 });
 
-// Test route
-app.get('/test', (req, res) => {
-  log('✅ TEST route hit!');
-  res.send('<h1 style="color: #ff4081; text-align: center; padding: 100px;">🎮 ClassikLust Server is Working!</h1>');
-});
+(async () => {
+  const server = await registerRoutes(app);
 
-// Setup Vite development server for React frontend
-async function startServer() {
+
+  
+  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+
+    console.error('Express error:', err);
+    res.status(status).json({ message });
+  });
+
+  // Handle unhandled promise rejections
+  process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Don't exit the process, just log the error
+  });
+
+  process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
+    process.exit(1);
+  });
+
+        
+  // ALWAYS serve the app on the port specified in the environment variable PORT
+  // Other ports are firewalled. Default to 5000 if not specified.
+  // this serves both the API and the client.
+  // It is the only port that is not firewalled.
+  const PORT = process.env.PORT || 5000;
+  
+  // WebSocket server for real-time features - using different port to avoid conflicts
+  let wss;
   try {
-    log('🔧 Setting up Vite development server...');
-    await setupViteDevServer(app);
-    log('✅ Vite development server configured!');
-
-    // Start server
-    app.listen(PORT, '0.0.0.0', () => {
-      log(`🚀 ClassikLust server running on port ${PORT}`);
-      log(`🔗 Preview URL: https://05822bd3-d68c-4746-801b-bfd0933e7027-00-1rtxwdutqu2w1.picard.replit.dev`);
-      log('✅ ClassikLust is ready to play!');
+    wss = new WebSocketServer({ 
+      port: 8082,
+      host: '0.0.0.0'
     });
 
-  } catch (error) {
-    console.error('❌ Failed to start server:', error);
-    process.exit(1);
+    wss.on('error', (error: any) => {
+      console.error('WebSocket server error:', error.message);
+    });
+  } catch (error: any) {
+    console.warn('WebSocket server failed to start:', error.message);
   }
-}
 
-startServer();
+  server.listen(
+    {
+      port: PORT,
+      host: "0.0.0.0",
+      reusePort: true,
+    },
+    () => {
+      console.log(`serving on port ${PORT}`);
+    },
+  );
+})();
+
+// Initialize storage for server operations
+// Using shared storage from routes.ts - no duplicate instance needed

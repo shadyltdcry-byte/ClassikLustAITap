@@ -21,7 +21,7 @@ import {
   gameStats,
   chatMessages,
   bonuses
-} from "./database-schema";
+} from "./schema";
 import { IStorage } from './storage';
 
 // Define GameSettings type since it's referenced but not in schema

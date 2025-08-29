@@ -32,18 +32,7 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
     setError(null);
 
     try {
-      const response = await fetch("/api/auth/telegram", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ initData }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
+      const response = await apiRequest("POST", "/api/auth/telegram", { initData });
       const data = await response.json();
 
       if (data.success) {
@@ -52,8 +41,7 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
         setError(data.error || "Authentication failed");
       }
     } catch (err: any) {
-      console.error("Telegram auth error:", err);
-      setError(err.message || "Network error during authentication");
+      setError(err.message || "Authentication failed");
     } finally {
       setIsLoading(false);
     }

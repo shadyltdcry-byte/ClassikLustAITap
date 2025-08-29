@@ -3,9 +3,6 @@
  * Last Edited: 2025-08-18 by Assistant
  */
 
-// Re-export schema from shared location
-export * from '../../../shared/schema';
-
 // Media File Interfaces
 export interface MediaFile {
   id: string;
@@ -72,6 +69,38 @@ export interface Character {
   createdAt?: string;
   updatedAt?: string;
 }
+
+// Zod schema for validation (this should match your shared schema)
+import { z } from "zod";
+
+export const insertCharacterSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  bio: z.string().optional(),
+  description: z.string().optional(),
+  backstory: z.string().optional(),
+  interests: z.string().optional(),
+  quirks: z.string().optional(),
+  imageUrl: z.string().optional(),
+  avatarUrl: z.string().optional(),
+  personality: z.string().default("friendly"),
+  personalityStyle: z.string().default("Sweet & Caring"),
+  chatStyle: z.string().default("casual"),
+  likes: z.string().optional(),
+  dislikes: z.string().optional(),
+  requiredLevel: z.number().min(1).default(1),
+  level: z.number().min(1).default(1),
+  responseTimeMin: z.number().min(1).default(1),
+  responseTimeMax: z.number().min(1).default(3),
+  responseTimeMs: z.number().min(1000).default(2000),
+  pictureSendChance: z.number().min(0).max(100).default(5),
+  chatSendChance: z.number().min(0).max(100).default(5),
+  isNsfw: z.boolean().default(false),
+  isVip: z.boolean().default(false),
+  isEvent: z.boolean().default(false),
+  isWheelReward: z.boolean().default(false),
+  randomPictureSending: z.boolean().default(false),
+  randomChatResponsesEnabled: z.boolean().default(false),
+});
 
 // Player/User related schemas
 export interface PlayerUpgradesSchema {
