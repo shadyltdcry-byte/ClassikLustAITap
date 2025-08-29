@@ -83,3 +83,6 @@ args = "npm run dev"
 
 [agent]
 integrations = ["javascript_openai==1.0.0", "javascript_database==1.0.0", "javascript_object_storage==1.0.0", "javascript_supabase==1.0.0", "javascript_log_in_with_replit==1.0.0"]
+
+[objectStorage]
+defaultBucketID = "replit-objstore-df33f092-56e1-4923-9b4e-c4ff4b6e1c1d"

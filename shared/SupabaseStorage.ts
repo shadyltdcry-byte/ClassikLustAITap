@@ -138,6 +138,10 @@ export class SupabaseStorage implements IStorage {
       
       if (error) {
         console.error('Error updating user by telegram ID:', error);
+        // If user doesn't exist, try to create it with telegram ID
+        if (error.code === 'PGRST116') {
+          console.log(`User ${telegramId} not found, may need to be created`);
+        }
         return undefined;
       }
       return data;
@@ -152,6 +156,10 @@ export class SupabaseStorage implements IStorage {
       
       if (error) {
         console.error('Error updating user by UUID:', error);
+        // If user doesn't exist with UUID, it might be a telegram ID
+        if (error.code === 'PGRST116') {
+          console.log(`User ${id} not found via UUID, this might be a telegram ID mismatch`);
+        }
         return undefined;
       }
       return data;

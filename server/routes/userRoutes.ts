@@ -91,7 +91,8 @@ export function registerUserRoutes(app: Express) {
         try {
           const user = await storage.getUser(`telegram_${telegramId}`);
           if (user?.id) {
-            realUserId = user.id;
+            // Keep telegram format for API consistency 
+            realUserId = `telegram_${telegramId}`;
           } else {
             // Create real database user for authenticated Telegram user
             const existingCheck = await storage.getUser(`telegram_${telegramId}`);
@@ -104,7 +105,7 @@ export function registerUserRoutes(app: Express) {
                 level: 1,
                 lp: 5000,
                 lpPerHour: 250,
-                lpPerTap: 1.5,
+                lpPerTap: 2,
                 energy: 1000,
                 maxEnergy: 1000,
                 charisma: 0,
@@ -121,6 +122,11 @@ export function registerUserRoutes(app: Express) {
       }
 
       let user = await storage.getUser(realUserId);
+      
+      // Ensure response uses telegram format for consistency
+      if (user && realUserId.startsWith('telegram_')) {
+        user.id = realUserId;
+      }
 
       if (!user) {
         // Create default user if not exists - using timestamp-based username to avoid duplicates
@@ -130,7 +136,7 @@ export function registerUserRoutes(app: Express) {
           level: 1,
           lp: 5000,
           lpPerHour: 250,
-          lpPerTap: 1.5,
+          lpPerTap: 2,
           energy: 1000,
           maxEnergy: 1000,
           charisma: 0,
@@ -269,7 +275,7 @@ export function registerUserRoutes(app: Express) {
           level: 1,
           lp: 5000,
           lpPerHour: 250,
-          lpPerTap: 1.5,
+          lpPerTap: 2,
           energy: 1000,
           maxEnergy: 1000,
           charisma: 0,
