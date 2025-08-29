@@ -281,21 +281,59 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
 
   const handleTap = async () => {
     if (!user || user.energy <= 0 || actuallyTapping) return;
+    
+    // Immediate optimistic UI update for fluid tapping
+    const currentLp = parseFloat(user.lp?.toString() || '0');
+    const lpGain = user.lpPerTap || 1.5;
+    const newLp = currentLp + lpGain;
+    const newEnergy = Math.max(0, user.energy - 1);
+    
+    // Set visual feedback immediately
     setIsTapping(true);
     
+    // Optimistically update user data in cache
+    queryClient.setQueryData(['/api/user', userId], (oldData: any) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        lp: newLp,
+        energy: newEnergy
+      };
+    });
+    
     try {
-      // Use game state tap function if available, otherwise use API directly
-      if (tap) {
-        tap();
-      } else {
-        const response = await apiRequest('POST', `/api/player/${userId}/tap`);
-        // REMOVED - Was causing API cascade spam after every tap
+      // Use optimized tap endpoint in background
+      const response = await apiRequest('POST', '/api/tap', {
+        userId: userId
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        // Update with server response to ensure consistency
+        queryClient.setQueryData(['/api/user', userId], (oldData: any) => {
+          if (!oldData) return oldData;
+          return {
+            ...oldData,
+            lp: result.newLp,
+            energy: result.newEnergy
+          };
+        });
       }
     } catch (error) {
       console.error('Tap error:', error);
+      // Revert optimistic update on error
+      queryClient.setQueryData(['/api/user', userId], (oldData: any) => {
+        if (!oldData) return oldData;
+        return {
+          ...oldData,
+          lp: currentLp,
+          energy: user.energy
+        };
+      });
     }
     
-    setTimeout(() => setIsTapping(false), 200);
+    // Much faster visual feedback reset
+    setTimeout(() => setIsTapping(false), 80);
   };
 
   // Prevent spam clicking

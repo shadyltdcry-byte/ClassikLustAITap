@@ -41,41 +41,7 @@ export function registerTapRoutes(app: Express) {
       
       console.log(`💥 TAP: ${currentLp} + ${lpPerTap} = ${newLp}`);
 
-      // Direct database update for Telegram users to bypass cache issues
-      if (userId.startsWith('telegram_')) {
-        const telegramId = userId.replace('telegram_', '');
-        try {
-          // Use direct Supabase client for immediate updates
-          const { createClient } = await import('@supabase/supabase-js');
-          const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-          const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
-          
-          if (!supabaseUrl || !supabaseKey) {
-            throw new Error('Missing Supabase credentials');
-          }
-          
-          const supabase = createClient(supabaseUrl, supabaseKey);
-          
-          // Try RPC function first
-          const { error } = await supabase.rpc('update_user_stats', {
-            telegram_user_id: telegramId,
-            new_lp: newLp,
-            new_energy: newEnergy
-          });
-          
-          if (error) {
-            console.log('RPC failed, trying direct update...');
-            // Fallback to direct update
-            await supabase
-              .from('users')
-              .update({ lp: newLp, energy: newEnergy })
-              .eq('telegram_id', telegramId);
-          }
-        } catch (dbError) {
-          console.log('Direct update failed, using storage fallback');
-        }
-      }
-      
+      // Fast single database update
       const updatedUser = await storage.updateUser(userId, {
         lp: newLp,
         energy: newEnergy
