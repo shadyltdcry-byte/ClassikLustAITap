@@ -303,7 +303,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 charisma: playerData?.charismaPoints || 0,
                 vipStatus: playerData?.isVip || false,
                 nsfwConsent: playerData?.nsfwEnabled || false,
-                lastTick: new Date(playerData?.lastTickTimestamp || Date.now()),
+                last_tick: new Date(playerData?.lastTickTimestamp || Date.now()),
                 createdAt: new Date(),
                 ...(user || {}) // Override with user data if available
               } as any}

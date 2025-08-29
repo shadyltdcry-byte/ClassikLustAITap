@@ -573,7 +573,7 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
       // Sync with server to update lastTick timestamp (but not LP to avoid overwriting)
       try {
         await apiRequest('PUT', `/api/player/${state.playerData.id}`, {
-          lastTick: new Date()
+          last_tick: new Date()  // Use snake_case to match database column
         });
       } catch (error) {
         console.warn('Failed to sync offline claim with server:', error);
