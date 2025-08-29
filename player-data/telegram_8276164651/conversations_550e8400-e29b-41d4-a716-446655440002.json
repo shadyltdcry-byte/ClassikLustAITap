@@ -14,5 +14,37 @@
     "timestamp": "2025-08-29T05:17:36.069Z",
     "type": "text",
     "mood": "normal"
+  },
+  {
+    "id": "user-1756444812654",
+    "content": "Hmm",
+    "sender": "user",
+    "timestamp": "2025-08-29T05:20:12.654Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1756444812655",
+    "content": "*leans in closer* I love when you talk to me like that. Keep going... 💕",
+    "sender": "character",
+    "timestamp": "2025-08-29T05:20:12.654Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "user-1756444829082",
+    "content": "How are you feeling today?",
+    "sender": "user",
+    "timestamp": "2025-08-29T05:20:29.082Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1756444829083",
+    "content": "*leans in closer* I love when you talk to me like that. Keep going... 💕",
+    "sender": "character",
+    "timestamp": "2025-08-29T05:20:29.082Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
