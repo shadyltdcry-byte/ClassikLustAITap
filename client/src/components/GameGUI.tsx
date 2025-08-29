@@ -292,7 +292,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           <div className="flex gap-4 h-full max-w-6xl">
             <TasksPanel 
               claimingRewards={claimingRewards}
-              onClaimReward={claimReward}
+              onClaimReward={(id, type) => claimReward(id, type as "task" | "achievement")}
             />
             <GameProgressPanel 
               type="tasks" 
@@ -306,7 +306,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           <div className="flex gap-4 h-full max-w-6xl">
             <AchievementsPanel 
               claimingRewards={claimingRewards}
-              onClaimReward={claimReward}
+              onClaimReward={(id, type) => claimReward(id, type as "task" | "achievement")}
             />
             <GameProgressPanel 
               type="achievements" 
@@ -367,8 +367,10 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       />
 
       {/* Main Content */}
-      <div className="h-full flex items-center justify-center p-3 pb-20">
-        {renderActivePlugin()}
+      <div className="flex-1 flex items-center justify-center p-4 pb-20 overflow-auto">
+        <div className="w-full h-full flex items-center justify-center">
+          {renderActivePlugin()}
+        </div>
       </div>
 
       {/* Bottom Navigation */}
