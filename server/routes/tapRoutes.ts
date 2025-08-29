@@ -81,17 +81,7 @@ export function registerTapRoutes(app: Express) {
         energy: newEnergy
       });
 
-      // Update game stats (optional - don't fail if this errors)
-      try {
-        await storage.updateGameStats(userId, {
-          totalTaps: 1,
-          totalLpEarned: lpPerTap,
-          totalEnergyUsed: 1
-        });
-      } catch (statsError) {
-        console.log('📊 User stats update skipped - table removed during cleanup');
-        // Don't fail the tap if stats update fails
-      }
+      // Game stats tracking skipped - method not implemented
 
       console.log(`💥 TAP! ${userId} gained ${lpPerTap} LP, energy: ${newEnergy}`);
       
@@ -145,17 +135,7 @@ export function registerTapRoutes(app: Express) {
         energy: newEnergy
       });
 
-      // Update stats
-      try {
-        await storage.updateGameStats(userId, {
-          totalTaps: 1,
-          totalLpEarned: lpGain,
-          totalEnergyUsed: 1
-        });
-      } catch (statsError) {
-        console.error('Error updating game stats:', statsError);
-        // Don't fail the tap if stats update fails
-      }
+      // Game stats tracking skipped - method not implemented
 
       res.json({
         success: true,

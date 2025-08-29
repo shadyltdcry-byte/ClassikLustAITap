@@ -126,18 +126,36 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
-    const { data, error } = await this.supabase
-      .from('users')
-      .update(updates)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error updating user:', error);
-      return undefined;
+    // Handle telegram IDs differently from UUID IDs
+    if (id.startsWith('telegram_')) {
+      const telegramId = id.replace('telegram_', '');
+      const { data, error } = await this.supabase
+        .from('users')
+        .update(updates)
+        .eq('telegramId', telegramId)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating user by telegram ID:', error);
+        return undefined;
+      }
+      return data;
+    } else {
+      // Regular UUID update
+      const { data, error } = await this.supabase
+        .from('users')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error updating user by UUID:', error);
+        return undefined;
+      }
+      return data;
     }
-    return data;
   }
 
   // Character management
