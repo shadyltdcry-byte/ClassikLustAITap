@@ -42,7 +42,7 @@ import CharacterEditor from "@/components/CharacterEditor";
 import FileManagerCore from "@/plugins/manager/FileManagerCore";
 import LevelUp from "@/plugins/gameplay/LevelUp";
 import Upgrades from "@/plugins/gameplay/Upgrades";
-import Tasks from "@/plugins/gameplay/Task";
+import TaskManagement from "@/components/admin/TaskManagement";
 import Achievements from "@/plugins/gameplay/Achievements";
 import LevelManagement from "@/components/admin/LevelManagement";
 import UpgradeManagement from "@/components/admin/UpgradeManagement";
@@ -745,7 +745,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
       {/* Plugin Modals - Fixed LevelUp to show admin interface */}
       {showLevelUp && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
-          <div className="bg-gray-900 rounded-lg w-[90vw] max-w-4xl h-[80vh] overflow-auto relative">
+          <div className="bg-gray-900 rounded-lg w-[95vw] max-w-6xl h-[90vh] overflow-auto relative">
             <Button
               onClick={() => setShowLevelUp(false)}
               className="absolute top-4 right-4 z-10"
@@ -763,7 +763,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
       {showUpgrades && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
-          <div className="bg-gray-900 rounded-lg w-[90vw] max-w-4xl h-[80vh] overflow-auto relative">
+          <div className="bg-gray-900 rounded-lg w-[95vw] max-w-6xl h-[90vh] overflow-auto relative">
             <Button
               onClick={() => setShowUpgrades(false)}
               className="absolute top-4 right-4 z-10"
@@ -781,7 +781,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
       {showTasks && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
-          <div className="bg-gray-900 rounded-lg w-[90vw] max-w-4xl h-[80vh] overflow-auto relative">
+          <div className="bg-gray-900 rounded-lg w-[95vw] max-w-6xl h-[90vh] overflow-auto relative">
             <Button
               onClick={() => setShowTasks(false)}
               className="absolute top-4 right-4 z-10"
@@ -790,14 +790,16 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
             >
               <X className="w-4 h-4" />
             </Button>
-            <Tasks />
+            <div className="p-6">
+              <TaskManagement />
+            </div>
           </div>
         </div>
       )}
 
       {showAchievements && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center">
-          <div className="bg-gray-900 rounded-lg w-[90vw] max-w-4xl h-[80vh] overflow-auto relative">
+          <div className="bg-gray-900 rounded-lg w-[95vw] max-w-6xl h-[90vh] overflow-auto relative">
             <Button
               onClick={() => setShowAchievements(false)}
               className="absolute top-4 right-4 z-10"
