@@ -283,16 +283,32 @@ export default function WheelGame({ isOpen, onClose, userId }: WheelGameProps) {
               <WheelDisplay />
               
               {/* Spin Status */}
-              {timeLeft && (
-                <div className="text-center bg-blue-600/20 border border-blue-500 rounded-lg p-4">
-                  <div className="text-blue-300 font-bold mb-2">Free spin available!</div>
-                  <div className="text-blue-400">Claim your daily reward</div>
+              {!timeLeft && (
+                <div className="text-center bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/50 rounded-lg p-6 backdrop-blur-sm">
+                  <div className="flex items-center justify-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
+                      <div className="text-2xl animate-bounce">🎁</div>
+                    </div>
+                    <div className="text-green-300 font-bold text-xl">Daily Spin Ready!</div>
+                  </div>
+                  <div className="text-green-400 text-lg">Your luck awaits ✨</div>
                 </div>
               )}
               
-              {!timeLeft && user?.lastWheelSpin && (
-                <div className="text-center bg-gray-600/20 border border-gray-500 rounded-lg p-4">
-                  <div className="text-gray-300">Next spin available in: {timeLeft}</div>
+              {timeLeft && (
+                <div className="text-center bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border border-purple-500/50 rounded-lg p-6 backdrop-blur-sm">
+                  <div className="flex items-center justify-center gap-3 mb-4">
+                    <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">
+                      <div className="w-5 h-5 rounded-full bg-purple-400 animate-pulse"></div>
+                    </div>
+                    <div className="text-purple-300 font-bold text-xl">⏰ Wheel Locked</div>
+                  </div>
+                  <div className="text-purple-200 font-mono text-3xl mb-2 tracking-wider">{timeLeft}</div>
+                  <div className="text-purple-400 text-lg mb-4">Until next daily spin</div>
+                  <div className="w-full bg-purple-900/30 rounded-full h-3 overflow-hidden">
+                    <div className="bg-gradient-to-r from-purple-500 via-indigo-500 to-purple-500 h-3 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+                  </div>
+                  <div className="text-purple-300 text-sm mt-3">🌅 Resets daily at 12:00 AM</div>
                 </div>
               )}
               
