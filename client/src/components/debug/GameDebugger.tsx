@@ -140,10 +140,16 @@ export default function GameDebugger({
     addLog('info', 'System', 'Debugger started - Real-time monitoring active');
   }, []);
 
-  // Track state changes
+  // Track state changes (reduced logging frequency)
+  const lastLogTimeRef = React.useRef(0);
   React.useEffect(() => {
     if (gameState.lastUpdate) {
-      addLog('success', 'StateUpdate', 'Game state synchronized');
+      // Only log every 30 seconds instead of every 2 seconds to reduce spam
+      const now = Date.now();
+      if (now - lastLogTimeRef.current > 30000) { // 30 seconds
+        addLog('success', 'StateUpdate', 'Game state synchronized');
+        lastLogTimeRef.current = now;
+      }
     }
   }, [gameState.lastUpdate]);
 

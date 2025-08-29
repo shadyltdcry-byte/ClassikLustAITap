@@ -66,6 +66,18 @@ export default function GameTabsPanel({
           variant="ghost"
           size="sm"
           className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${
+            activePlugin === "achievements" ? "bg-pink-600/30" : ""
+          }`}
+          onClick={() => onPluginChange("achievements")}
+        >
+          <Trophy className="w-4 h-4" />
+          <span className="text-xs">Achievements</span>
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`flex flex-col items-center gap-1 text-white hover:bg-pink-600/20 p-2 ${
             activePlugin === "chat" ? "bg-pink-600/30" : ""
           }`}
           onClick={() => onPluginChange("chat")}
