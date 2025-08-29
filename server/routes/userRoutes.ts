@@ -150,11 +150,31 @@ export function registerUserRoutes(app: Express) {
   app.put("/api/player/:playerId", async (req: Request, res: Response) => {
     try {
       const { playerId } = req.params;
-      const updates = req.body;
+      const requestData = req.body;
 
       // If playerId is not a valid UUID, return error
       if (!isValidUUID(playerId) && !isValidTelegramId(playerId)) {
         return res.status(400).json(createErrorResponse('Invalid player ID format'));
+      }
+
+      // Filter out invalid fields that don't exist in users table
+      // Only allow valid user table columns to prevent PGRST204 errors
+      const validUserFields = [
+        'username', 'level', 'lp', 'energy', 'maxEnergy', 'charisma', 
+        'lpPerHour', 'lpPerTap', 'vipStatus', 'nsfwConsent', 'lastTick', 'lastWheelSpin'
+      ];
+      
+      const updates = Object.keys(requestData)
+        .filter(key => validUserFields.includes(key))
+        .reduce((obj: any, key) => {
+          obj[key] = requestData[key];
+          return obj;
+        }, {});
+
+      // Handle achievements separately if present (they go to user_achievements table)
+      if (requestData.achievements) {
+        console.log(`[UPDATE] Achievements data received but filtered out - should use separate achievements API`);
+        // TODO: Process achievements via user_achievements table in future
       }
 
       const updatedUser = await storage.updateUser(playerId, updates);
