@@ -37,7 +37,16 @@ export default function FloatingActionIcons({
         <Crown className="w-7 h-7 text-white drop-shadow-lg" />
       </Button>
 
-{/* Admin button hidden for production users */}
+      {/* Settings Icon */}
+      <Button
+        variant="default"
+        size="icon"
+        className="w-16 h-16 rounded-full bg-gradient-to-br from-slate-600 via-gray-600 to-slate-700 hover:from-slate-500 hover:via-gray-500 hover:to-slate-600 border-2 border-gray-300/70 shadow-2xl hover:shadow-gray-400/40 hover:scale-110 transition-all duration-300 backdrop-blur-sm"
+        onClick={onOpenAdmin}
+        data-testid="button-settings"
+      >
+        <Settings className="w-7 h-7 text-white drop-shadow-lg" />
+      </Button>
     </div>
   );
 }
