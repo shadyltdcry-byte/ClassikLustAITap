@@ -6,6 +6,7 @@
  */
 
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 
 // UUID validation function
 export function isValidUUID(id: string): boolean {
@@ -98,7 +99,6 @@ export function verifyTelegramAuth(data: any, botToken: string): boolean {
 
 // JWT token generation
 export function generateJWT(userId: string): string {
-  const jwt = require('jsonwebtoken');
   const secret = process.env.JWT_SECRET || 'your-secret-key';
   return jwt.sign({ userId }, secret, { expiresIn: '7d' });
 }
