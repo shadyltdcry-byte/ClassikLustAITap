@@ -152,7 +152,7 @@ export default function UpgradeManagement() {
         </div>
       </CardHeader>
       <CardContent>
-        <ScrollArea className="h-96">
+        <ScrollArea className="h-[60vh]">
           <div className="space-y-3">
             {isLoading ? (
               <div className="text-center text-gray-400">Loading...</div>

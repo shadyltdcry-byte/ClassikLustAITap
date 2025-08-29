@@ -283,8 +283,8 @@ export default function WheelPrizeManager({ isOpen, onClose }: WheelPrizeManager
                           <p>Type: <span className="text-yellow-300">{prize.type}</span></p>
                           {prize.type !== 'nothing' && (
                             <>
-                              <p>Min: <span className="text-green-300">{prize.min || 0}</span></p>
-                              <p>Max: <span className="text-green-300">{prize.max || 0}</span></p>
+                              <p>Min: <span className="text-green-300">{Number(prize.min) || 0}</span></p>
+                              <p>Max: <span className="text-green-300">{Number(prize.max) || 0}</span></p>
                             </>
                           )}
                         </div>
