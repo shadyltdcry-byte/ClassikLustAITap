@@ -93,7 +93,7 @@ export default function ChaosLog() {
 
   const addChaosEvent = (description: string, type: ChaosEvent['type'], severity: ChaosEvent['severity']) => {
     const newEvent: ChaosEvent = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
       type,
       description,

@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import type { TapStats, GameUpgrade, GameCharacter } from '@/shared/types';
+// Basic types for debugger (removed external dependencies)
 
 export interface DebugState {
   playerLP: number;
@@ -12,6 +12,7 @@ export interface DebugState {
   errorCount: number;
   warnings: DebugAlert[];
   errors: DebugAlert[];
+  securityAlerts: DebugAlert[];
   components: Record<string, any>;
   states: Record<string, any>;
 }
@@ -35,6 +36,7 @@ export function useGameDebugger() {
     errorCount: 0,
     warnings: [],
     errors: [],
+    securityAlerts: [],
     components: {},
     states: {}
   });
@@ -93,6 +95,20 @@ export function useGameDebugger() {
           component: 'Promise'
         }]
       }));
+      
+      // Check for potential security issues in error messages
+      const errorMsg = String(event.reason).toLowerCase();
+      if (errorMsg.includes('cors') || errorMsg.includes('unauthorized') || errorMsg.includes('forbidden')) {
+        setDebugState(prev => ({
+          ...prev,
+          securityAlerts: [...(prev.securityAlerts || []).slice(-3), {
+            timestamp: Date.now(),
+            type: 'error',
+            message: `🔒 Security-related error detected: ${event.reason}`,
+            component: 'Security Monitor'
+          }]
+        }));
+      }
     };
 
     window.addEventListener('error', handleError);
@@ -134,6 +150,19 @@ export function useGameDebugger() {
     if (responseTime && responseTime > 3000) {
       console.warn(`🐌 Slow API call: ${endpoint} → ${responseTime}ms`);
     }
+    
+    // Security monitoring for API calls
+    if (endpoint.includes('/admin/') && responseTime && responseTime < 10) {
+      setDebugState(prev => ({
+        ...prev,
+        securityAlerts: [...(prev.securityAlerts || []).slice(-3), {
+          timestamp: Date.now(),
+          type: 'warning',
+          message: `🔍 Suspiciously fast admin API call: ${endpoint} (${responseTime}ms)`,
+          component: 'Security Monitor'
+        }]
+      }));
+    }
   }, []);
 
   return {
@@ -163,7 +192,7 @@ export function useGameDebugger() {
     setTapping: (tapping: boolean) => updateDebugState({ isTapping: tapping }),
     
     // Enhanced debugging helpers
-    clearErrors: () => updateDebugState({ errors: [], warnings: [], errorCount: 0 }),
+    clearErrors: () => updateDebugState({ errors: [], warnings: [], securityAlerts: [], errorCount: 0 }),
     
     // Simple state watcher (no memory leaks)
     watchState: (key: keyof DebugState, threshold = 10) => {

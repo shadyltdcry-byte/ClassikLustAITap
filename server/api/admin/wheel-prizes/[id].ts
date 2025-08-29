@@ -49,16 +49,34 @@ export default async function handler(req: Request, res: Response) {
           return res.status(404).json({ message: 'Prize not found' });
         }
         
-        // Validate and sanitize input to prevent object injection
+        // Secure input validation - only allow specific predefined fields
         const allowedFields = ['type', 'label', 'min', 'max', 'probability'] as const;
-        const updatedFields: any = {};
+        const updatedFields: Partial<typeof mockWheelPrizes[0]> = {};
         
-        // Use explicit field access instead of bracket notation to avoid security warnings
-        if (req.body.type !== undefined) updatedFields.type = req.body.type;
-        if (req.body.label !== undefined) updatedFields.label = req.body.label;
-        if (req.body.min !== undefined) updatedFields.min = req.body.min;
-        if (req.body.max !== undefined) updatedFields.max = req.body.max;
-        if (req.body.probability !== undefined) updatedFields.probability = req.body.probability;
+        // Safe field extraction with validation (no user input as object keys)
+        const bodyData = req.body || {};
+        const typeValue = bodyData['type'];
+        const labelValue = bodyData['label']; 
+        const minValue = bodyData['min'];
+        const maxValue = bodyData['max'];
+        const probabilityValue = bodyData['probability'];
+        
+        // Validate each field individually
+        if (typeValue !== undefined && typeof typeValue === 'string') {
+          updatedFields.type = typeValue;
+        }
+        if (labelValue !== undefined && typeof labelValue === 'string') {
+          updatedFields.label = labelValue;
+        }
+        if (minValue !== undefined && typeof minValue === 'number') {
+          updatedFields.min = minValue;
+        }
+        if (maxValue !== undefined && typeof maxValue === 'number') {
+          updatedFields.max = maxValue;
+        }
+        if (probabilityValue !== undefined && typeof probabilityValue === 'number') {
+          updatedFields.probability = probabilityValue;
+        }
         
         mockWheelPrizes[prizeIndex] = { ...mockWheelPrizes[prizeIndex], ...updatedFields };
         return res.status(200).json(mockWheelPrizes[prizeIndex]);

@@ -89,11 +89,33 @@ export default function GameDebugger({
   // Color-coded logging system (inspired by your original debugger!)
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [maxLogs, setMaxLogs] = useState(50);
+  
+  // Fix any existing logs with duplicate keys on component mount
+  useEffect(() => {
+    setLogs(prevLogs => {
+      if (prevLogs.length === 0) return prevLogs;
+      
+      // Check if any logs have duplicate keys
+      const hasInvalidKeys = prevLogs.some((log, index) => 
+        prevLogs.findIndex(l => l.id === log.id) !== index
+      );
+      
+      if (hasInvalidKeys) {
+        console.log('🔧 Fixing duplicate log keys...');
+        return prevLogs.map((log, index) => ({
+          ...log,
+          id: `${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`
+        }));
+      }
+      
+      return prevLogs;
+    });
+  }, []);
 
   // Add log entry with color coding
   const addLog = (type: LogEntry['type'], component: string, message: string, data?: any) => {
     const newLog: LogEntry = {
-      id: Date.now().toString(),
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date().toLocaleTimeString(),
       type,
       component,
@@ -228,7 +250,12 @@ export default function GameDebugger({
                 <CardContent className="space-y-2">
                   <div className="flex items-center gap-2 mb-3">
                     <Button 
-                      onClick={() => setLogs([])} 
+                      onClick={() => {
+                        console.log('🧹 Force clearing all logs...');
+                        setLogs([]);
+                        // Force re-render to clear any React cache
+                        window.location.hash = '#debugger-cleared';
+                      }} 
                       size="sm" 
                       variant="outline"
                       className="text-xs h-6"
