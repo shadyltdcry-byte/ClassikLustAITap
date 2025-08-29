@@ -24,7 +24,7 @@ export default function PlayerStatsPanel({
       {/* Left Section: Avatar + Username + Level */}
       <div className="flex items-center gap-2 flex-1">
         <div className="flex flex-col items-center gap-1">
-          <p className="font-medium text-sm text-center">{playerData?.username?.replace('Player', '') || playerData?.name || "ShadyLTDx"}</p>
+          <p className="text-transparent bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 bg-clip-text text-lg font-bold text-center tracking-wider drop-shadow-lg uppercase">{playerData?.username?.replace('Player', '') || playerData?.name || "ShadyLTDx"}</p>
           <div 
             className="cursor-pointer hover:scale-105 transition-transform duration-200"
             onClick={onAvatarClick}
@@ -51,7 +51,7 @@ export default function PlayerStatsPanel({
             />
           </div>
           <div className="flex flex-col items-center gap-1">
-            <span className="text-white text-lg font-bold text-center drop-shadow-[2px_2px_4px_rgba(0,0,0,0.8)]">Level: {playerData?.level || 1}</span>
+            <span className="text-transparent bg-gradient-to-r from-yellow-200 via-orange-200 to-red-200 bg-clip-text text-xl font-bold text-center drop-shadow-lg tracking-wider">Level: {playerData?.level || 1}</span>
             <Progress value={(playerData?.xp || 0) / (playerData?.xpToNext || 100) * 100} className="h-2 w-20" />
           </div>
         </div>
