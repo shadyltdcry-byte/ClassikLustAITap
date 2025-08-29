@@ -16,13 +16,13 @@ export default function PlayerStatsPanel({
   onAvatarClick 
 }: PlayerStatsPanelProps) {
   return (
-    <div className="flex justify-between items-center p-4 pr-6 bg-gradient-to-r from-purple-900/40 via-pink-900/30 to-red-900/40 border-b-2 border-gradient-to-r from-pink-500/50 via-purple-500/50 to-red-500/50 flex-shrink-0 backdrop-blur-md relative overflow-hidden">
+    <div className="flex justify-between items-center p-4 pr-2 bg-gradient-to-r from-purple-900/40 via-pink-900/30 to-red-900/40 border-b-2 border-gradient-to-r from-pink-500/50 via-purple-500/50 to-red-500/50 flex-shrink-0 backdrop-blur-md relative overflow-hidden">
       {/* Animated Background Glow */}
       <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-purple-500/10 to-blue-500/5 animate-pulse"></div>
       <div className="absolute inset-0 bg-gradient-to-l from-red-500/5 via-pink-500/10 to-purple-500/5 animate-pulse" style={{animationDelay: '1s'}}></div>
       
       {/* Left Section: Avatar + Username + Level */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-1">
         <div className="flex flex-col items-center gap-1">
           <p className="font-medium text-sm text-center">{playerData?.username?.replace('Player', '') || playerData?.name || "ShadyLTDx"}</p>
           <div 
@@ -87,7 +87,7 @@ export default function PlayerStatsPanel({
       </div>
 
       {/* Center Section: LP per Hour - ULTRA ENHANCED */}
-      <div className="relative px-6 py-4 mx-6 bg-gradient-to-br from-yellow-600/35 via-orange-500/30 to-amber-500/35 border-3 border-yellow-400/60 rounded-2xl shadow-2xl backdrop-blur-md hover:shadow-yellow-500/50 hover:shadow-2xl transition-all duration-500 group overflow-hidden">
+      <div className="relative px-8 py-4 mx-8 bg-gradient-to-br from-yellow-600/35 via-orange-500/30 to-amber-500/35 border-3 border-yellow-400/60 rounded-2xl shadow-2xl backdrop-blur-md hover:shadow-yellow-500/50 hover:shadow-2xl transition-all duration-500 group overflow-hidden flex-1 max-w-[200px]">
         {/* Multi-layer glow effects */}
         <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/25 via-orange-400/20 to-amber-500/15 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300"></div>
         <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/15 via-orange-400/10 to-amber-400/15 rounded-2xl animate-pulse"></div>
@@ -99,19 +99,15 @@ export default function PlayerStatsPanel({
         <div className="absolute bottom-1 left-1 opacity-30">
           <Sparkles className="w-2 h-2 text-orange-300 animate-pulse" style={{animationDelay: '1s'}} />
         </div>
-        <div className="relative flex flex-col items-center gap-2 text-center">
-          <span className="text-transparent bg-gradient-to-r from-yellow-200 via-orange-200 to-amber-200 bg-clip-text text-sm font-bold tracking-wider drop-shadow-lg">LP per Hour</span>
-          <div className="flex items-center gap-3">
-            <TrendingUp className="w-5 h-5 text-yellow-300 drop-shadow-lg animate-pulse" />
-            <span className="text-2xl font-bold text-transparent bg-gradient-to-r from-yellow-200 via-orange-200 to-amber-200 bg-clip-text drop-shadow-2xl animate-pulse">∞</span>
-            <TrendingUp className="w-5 h-5 text-amber-300 drop-shadow-lg animate-pulse" style={{animationDelay: '0.5s'}} />
-          </div>
+        <div className="relative flex flex-col items-center gap-1 text-center">
+          <span className="text-transparent bg-gradient-to-r from-yellow-200 via-orange-200 to-amber-200 bg-clip-text text-sm font-bold tracking-wider drop-shadow-lg whitespace-nowrap">LP per Hour</span>
+          <span className="text-3xl font-bold text-transparent bg-gradient-to-r from-yellow-200 via-orange-200 to-amber-200 bg-clip-text drop-shadow-2xl animate-pulse">∞</span>
           <span className="text-transparent bg-gradient-to-r from-yellow-100 via-orange-100 to-amber-100 bg-clip-text font-bold text-base tracking-wider drop-shadow-lg">{user?.lpPerHour || playerData?.lpPerHour || 250}</span>
         </div>
       </div>
 
       {/* Right Section: Energy and Boosters */}
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 flex-1 max-w-[120px]">
         {/* Energy Frame - ULTRA ENHANCED */}
         <div className={`relative px-3 py-2 bg-gradient-to-br from-blue-600/30 via-cyan-500/25 to-sky-500/30 border-2 border-blue-400/50 rounded-xl shadow-2xl backdrop-blur-md hover:shadow-blue-500/40 hover:shadow-2xl transition-all duration-500 group overflow-hidden ${
           ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95 
