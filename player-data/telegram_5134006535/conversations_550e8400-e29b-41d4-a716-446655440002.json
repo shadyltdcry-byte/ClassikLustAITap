@@ -130,5 +130,37 @@
     "timestamp": "2025-08-29T08:37:50.686Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756456758334-mgn3fgd1s",
+    "content": "🌙 I noticed something unusual in System at 8:39:18 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-08-29T08:39:18.334Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756456793612-d3eqlbmaf",
+    "content": "🌙 Master, we have a serious problem! System is failing: Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-08-29T08:39:53.612Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756456801883-bv1o8t2ry",
+    "content": "🌙 Master, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-08-29T08:40:01.883Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756456851706-8nu4o6ffz",
+    "content": "🌙 Master, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-08-29T08:40:51.706Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
