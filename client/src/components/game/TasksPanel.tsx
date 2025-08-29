@@ -28,10 +28,10 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
   const filteredTasks = taskFilter === "all" ? (allTasks as any[]) : (allTasks as any[]).filter((task: any) => task.category === taskFilter);
 
   return (
-    <div className="w-full max-w-2xl h-full flex flex-col">
+    <div className="w-full max-w-2xl h-full flex flex-col overflow-hidden">
       {/* Tasks & Achievements Tabs */}
       <Tabs defaultValue="tasks" className="w-full h-full flex flex-col">
-        <TabsList className="grid w-full grid-cols-2 mb-4">
+        <TabsList className="grid w-full grid-cols-2 mb-2 flex-shrink-0">
           <TabsTrigger value="tasks" className="flex items-center gap-2">
             <Target className="w-4 h-4" />
             Tasks

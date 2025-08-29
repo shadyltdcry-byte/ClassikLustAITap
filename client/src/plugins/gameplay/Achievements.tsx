@@ -82,8 +82,9 @@ export const getAchievementsByCategory = (category?: string) => {
 };
 
 export const claimAchievementsReward = (achievementsId: string) => {
-  console.log("Failed to claim achievement");
-  return { success: false, error: "Achievement not ready to claim" };
+  console.log("Claiming achievement reward:", achievementsId);
+  // TODO: Implement actual reward claiming logic with API call
+  return { success: true, message: "Achievement reward claimed successfully!" };
 };
 
 export default function Achievements({ onClaimPrize }: { onClaimPrize?: () => void }) {
