@@ -79,8 +79,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             return;
           }
         } catch (error) {
-          // Only log actual errors, not empty objects
-          if (error && ((error as any)?.message || error.toString() !== '[object Object]')) {
+          // Check if error is meaningful (not an empty object)
+          const isEmptyObject = error && typeof error === 'object' && Object.keys(error).length === 0;
+          const hasMessage = (error as any)?.message;
+          const isObjectString = error.toString() === '[object Object]';
+          
+          if (error && !isEmptyObject && (hasMessage || !isObjectString)) {
             console.error('Bot auth check error:', error);
           } else {
             console.log('[DEBUG] Bot auth check failed - proceeding with fallback');
@@ -105,8 +109,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               return;
             }
           } catch (error) {
-            // Only log actual errors, not empty objects
-            if (error && ((error as any)?.message || error.toString() !== '[object Object]')) {
+            // Check if error is meaningful (not an empty object)
+            const isEmptyObject = error && typeof error === 'object' && Object.keys(error).length === 0;
+            const hasMessage = (error as any)?.message;
+            const isObjectString = error.toString() === '[object Object]';
+            
+            if (error && !isEmptyObject && (hasMessage || !isObjectString)) {
               console.error('Auto-login check error:', error);
             } else {
               console.log('[DEBUG] Auto-login check failed - proceeding with guest mode');
