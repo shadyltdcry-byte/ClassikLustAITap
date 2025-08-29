@@ -541,15 +541,21 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
                     </div>
                   </div>
                   <Avatar className={`w-8 h-8 ${message.sender === 'user' ? 'order-1' : 'order-2'}`}>
-                    <AvatarFallback className={message.sender === 'user' ? 'bg-purple-600' : 'bg-gray-600'}>
-                      {message.sender === 'user' ? 'U' : character.name[0]}
-                    </AvatarFallback>
+                    {message.sender === 'user' ? (
+                      <AvatarFallback className="bg-purple-600">U</AvatarFallback>
+                    ) : (
+                      <>
+                        <AvatarImage src={character.avatarUrl || character.imageUrl || character.avatarPath} alt={character.name} />
+                        <AvatarFallback className="bg-gray-600">{character.name[0]}</AvatarFallback>
+                      </>
+                    )}
                   </Avatar>
                 </div>
               ))}
               {typingIndicator && (
                 <div className="flex gap-3">
                   <Avatar className="w-8 h-8">
+                    <AvatarImage src={character.avatarUrl || character.imageUrl || character.avatarPath} alt={character.name} />
                     <AvatarFallback className="bg-gray-600">{character.name[0]}</AvatarFallback>
                   </Avatar>
                   <div className="bg-gray-700 text-white rounded-lg p-3 max-w-[80%]">
