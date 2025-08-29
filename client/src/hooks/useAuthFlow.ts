@@ -21,7 +21,7 @@ interface AuthFlowConfig {
 const DEFAULT_CONFIG: AuthFlowConfig = {
   telegramTimeout: 15000, // 15 seconds - longer timeout
   supabaseTimeout: 5000, // 5 seconds  
-  allowGuestFallback: true, // Allow guest mode temporarily for testing
+  allowGuestFallback: false, // No guest mode - auth required
   debug: import.meta.env.DEV
 };
 
@@ -101,21 +101,15 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
           return;
         }
 
-        // Step 3: Guest fallback (only if explicitly allowed)
-        if (finalConfig.allowGuestFallback) {
-          if (finalConfig.debug) {
-            console.log('[useAuthFlow] Falling back to guest mode');
-          }
-          const guestResult = createGuestSession();
-          updateAuthState(guestResult);
-        } else {
-          // No auth available and guest mode blocked
-          setAuthState(prev => ({
-            ...prev,
-            isLoading: false,
-            error: 'Authentication required. Please log in through Telegram.'
-          }));
+        // Step 3: No guest fallback - require authentication
+        if (finalConfig.debug) {
+          console.log('[useAuthFlow] No authentication found, requiring Telegram login');
         }
+        setAuthState(prev => ({
+          ...prev,
+          isLoading: false,
+          error: 'Authentication required. Please log in through Telegram to access the game.'
+        }));
 
       } catch (error) {
         if (!aborted) {

@@ -66,9 +66,51 @@ interface GUIState {
 export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
 
   // Use auth context for consistent authentication
-  const { userId: authUserId } = useAuth();
+  const { userId: authUserId, isLoading: authLoading, error: authError } = useAuth();
   const userId = authUserId || playerData?.id;
   const isAuthenticated = !!userId;
+
+  // Show loading screen during auth
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+        <div className="text-center text-white">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
+          <p>Loading game...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Block all unauthenticated users - NO GUEST MODE
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900">
+        <div className="text-center text-white max-w-md p-8">
+          <h1 className="text-4xl font-bold mb-4">🎮 Character Tap Game</h1>
+          <h2 className="text-2xl mb-6">Authentication Required</h2>
+          <p className="text-lg mb-8 text-purple-200">
+            Please log in through our Telegram bot to access the game.
+          </p>
+          <div className="bg-blue-900/50 p-6 rounded-lg border border-blue-500/30">
+            <h3 className="text-xl font-semibold mb-4">How to Login:</h3>
+            <ol className="text-left space-y-2 text-purple-200">
+              <li>1. Open Telegram</li>
+              <li>2. Find @ClassikLoyalty_Bot</li>
+              <li>3. Send /login command</li>
+              <li>4. Click the game link directly</li>
+              <li className="text-yellow-300 font-semibold">⚠️ Don't copy/paste the URL</li>
+            </ol>
+          </div>
+          {authError && (
+            <div className="mt-4 text-sm text-red-300 bg-red-900/30 p-3 rounded">
+              {authError}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
   
   // Use game state hook to get selected character (this already includes user data)
   const { user, character: selectedCharacter, stats, isLoading, tap, isTapping: gameStateTapping } = useGameState();
