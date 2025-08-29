@@ -119,8 +119,8 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
           </div>
           <div className="text-right">
             <div className="flex items-center gap-2">
-              <Coins className="w-4 h-4 text-yellow-400" />
-              <span className="text-yellow-400 font-bold">{playerData?.lp || 0} LP</span>
+              <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+              <span className="text-pink-400 font-bold">{playerData?.lp || 0} LP</span>
             </div>
           </div>
         </div>

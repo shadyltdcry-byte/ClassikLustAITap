@@ -570,10 +570,9 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     claimOfflineIncome: async () => {
       dispatch({ type: 'CLAIM_OFFLINE_LP' });
       
-      // Sync with server to update lastTick timestamp
+      // Sync with server to update lastTick timestamp (but not LP to avoid overwriting)
       try {
         await apiRequest('PUT', `/api/player/${state.playerData.id}`, {
-          ...state.playerData,
           lastTick: new Date()
         });
       } catch (error) {

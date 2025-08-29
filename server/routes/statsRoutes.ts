@@ -49,7 +49,7 @@ export function registerStatsRoutes(app: Express) {
           };
           
           // TODO: Implement createGameStats method
-          console.log('Game stats created for player:', playerId);
+          // Only log when actually creating stats (not every request)
           
           return res.json(defaultStats);
         }
