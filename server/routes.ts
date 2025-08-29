@@ -26,7 +26,7 @@ import { registerVipRoutes } from './routes/vipRoutes.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export function registerRoutes(app: Express): Server {
+export async function registerRoutes(app: Express): Promise<Server> {
   const server = createServer(app);
 
   // Health check endpoint
@@ -181,37 +181,16 @@ export function registerRoutes(app: Express): Server {
     });
   });
 
-  // Serve static files and handle frontend routes
-  const frontendPath = join(__dirname, "..", "dist", "public");
-  
-  // Serve static files
-  app.use(express.static(frontendPath));
-  
-  // Catch-all handler for frontend routes (SPA support)
-  app.get("*", (req: Request, res: Response) => {
-    // Skip API routes
-    if (req.path.startsWith('/api/')) {
-      return res.status(404).json({ error: 'API endpoint not found' });
-    }
-    
-    const indexPath = join(frontendPath, "index.html");
-    if (fs.existsSync(indexPath)) {
-      res.sendFile(indexPath);
-    } else {
-      // Fallback for development
-      res.send(`
-        <html>
-          <body>
-            <h1>🎮 Character Tap Game</h1>
-            <p>Backend server is running successfully!</p>
-            <p>Modular routes loaded: ✅</p>
-            <p>API Health: <a href="/api/health">/api/health</a></p>
-            <p>Port: 5000</p>
-          </body>
-        </html>
-      `);
-    }
-  });
+  // Setup Vite dev server for development or serve static files for production
+  if (process.env.NODE_ENV === "production") {
+    // Production: serve static files
+    const { serveStatic } = await import("./vite");
+    serveStatic(app);
+  } else {
+    // Development: use Vite dev server
+    const { setupViteDevServer } = await import("./vite");
+    await setupViteDevServer(app);
+  }
 
   const port = Number(process.env.PORT) || 5000;
   server.listen(port, "0.0.0.0", () => {
