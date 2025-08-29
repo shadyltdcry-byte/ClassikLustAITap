@@ -106,23 +106,15 @@ export function registerChatRoutes(app: Express) {
     }
   });
 
-  // Get chat messages
+  // Get chat messages - Using real database operations instead of mock data
   app.get("/api/chat/:userId/:characterId", async (req: Request, res: Response) => {
     try {
       const { userId, characterId } = req.params;
       
-      // Mock chat data for now
-      const mockMessages = [
-        {
-          id: 1,
-          senderId: characterId,
-          message: "Hey there! How are you doing today?",
-          timestamp: new Date().toISOString(),
-          type: 'character'
-        }
-      ];
+      // Get real chat messages from database/storage
+      const chatMessages = await storage.getChatMessages(userId, characterId);
       
-      res.json(mockMessages);
+      res.json(chatMessages);
     } catch (error) {
       console.error('Error fetching chat:', error);
       res.status(500).json(createErrorResponse('Failed to fetch chat'));
