@@ -164,28 +164,45 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
           console.log('[useAuthFlow] Telegram status response:', data);
         }
         
-        if (data.authenticated) {
-          localStorage.setItem('telegram_auth_token', data.token || 'no-token');
-          localStorage.setItem('telegram_user_id', data.user.id);
-          localStorage.setItem('telegram_id', telegramId);
-          localStorage.setItem('login_timestamp', Date.now().toString());
-          
-          if (finalConfig.debug) {
-            console.log('[useAuthFlow] Telegram auth successful, cleaning URL...');
+        if (data.authenticated && data.user && data.user.id) {
+          try {
+            localStorage.setItem('telegram_auth_token', data.token || 'no-token');
+            localStorage.setItem('telegram_user_id', data.user.id);
+            localStorage.setItem('telegram_id', telegramId);
+            localStorage.setItem('login_timestamp', Date.now().toString());
+            
+            if (finalConfig.debug) {
+              console.log('[useAuthFlow] Telegram auth successful, cleaning URL...');
+              console.log('[useAuthFlow] Stored user ID:', data.user.id);
+            }
+            
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            
+            const authResult = {
+              userId: data.user.id,
+              authSource: 'telegram' as const,
+              sessionAge: 0,
+              lastLoginMethod: 'telegram_url',
+              isAuthenticated: true,
+              isLoading: false,
+              error: null
+            };
+            
+            // Force immediate state update
+            setAuthState(authResult);
+            
+            return authResult;
+          } catch (storageError) {
+            if (finalConfig.debug) {
+              console.error('[useAuthFlow] LocalStorage error:', storageError);
+            }
+            throw storageError;
           }
-          
-          // Clean URL
-          window.history.replaceState({}, document.title, window.location.pathname);
-          
-          return {
-            userId: data.user.id,
-            authSource: 'telegram',
-            sessionAge: 0,
-            lastLoginMethod: 'telegram_url',
-            isAuthenticated: true,
-            isLoading: false,
-            error: null
-          };
+        } else {
+          if (finalConfig.debug) {
+            console.log('[useAuthFlow] Invalid auth response:', data);
+          }
         }
       }
 
@@ -228,6 +245,7 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
     } catch (error) {
       if (finalConfig.debug) {
         console.error('[useAuthFlow] Telegram auth check error:', error);
+        console.error('[useAuthFlow] Error details:', error instanceof Error ? error.message : 'Unknown error');
       }
       return null;
     }
