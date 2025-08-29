@@ -66,8 +66,8 @@ export default function PlayerStatsPanel({
             <div className="absolute -inset-1 bg-gradient-to-r from-pink-500/20 to-red-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
             <div className="relative flex items-center gap-2">
               <Heart className="w-4 h-4 text-pink-300 drop-shadow-lg animate-pulse" />
-              <span className="text-pink-200 text-xs font-bold tracking-wide drop-shadow-md">LustPoints:</span>
-              <span className="text-transparent bg-gradient-to-r from-pink-100 via-rose-100 to-red-100 bg-clip-text font-bold text-xs tracking-wider drop-shadow-lg">{Math.floor(user?.lp || playerData?.lp || 0).toLocaleString()}</span>
+              <span className="text-transparent bg-gradient-to-r from-pink-100 via-rose-100 to-red-100 bg-clip-text text-sm font-black tracking-wider drop-shadow-lg uppercase">LustPoints:</span>
+              <span className="text-transparent bg-gradient-to-r from-pink-50 via-rose-50 to-red-50 bg-clip-text font-black text-base tracking-wider drop-shadow-xl">{Math.floor(user?.lp || playerData?.lp || 0).toLocaleString()}</span>
             </div>
           </div>
 
@@ -79,8 +79,8 @@ export default function PlayerStatsPanel({
             <div className="absolute -inset-1 bg-gradient-to-r from-purple-500/20 to-indigo-500/20 rounded-xl blur-xl opacity-0 group-hover:opacity-100 transition-all duration-500"></div>
             <div className="relative flex items-center gap-2">
               <Gem className="w-4 h-4 text-purple-300 drop-shadow-lg animate-pulse" style={{animationDelay: '0.3s'}} />
-              <span className="text-purple-200 text-xs font-bold whitespace-nowrap tracking-wide drop-shadow-md">Lust Gems:</span>
-              <span className="text-transparent bg-gradient-to-r from-purple-100 via-violet-100 to-indigo-100 bg-clip-text font-bold text-xs tracking-wider drop-shadow-lg">{playerData?.lustGems || 0}</span>
+              <span className="text-transparent bg-gradient-to-r from-purple-100 via-violet-100 to-indigo-100 bg-clip-text text-sm font-black whitespace-nowrap tracking-wider drop-shadow-lg uppercase">Lust Gems:</span>
+              <span className="text-transparent bg-gradient-to-r from-purple-50 via-violet-50 to-indigo-50 bg-clip-text font-black text-base tracking-wider drop-shadow-xl">{playerData?.lustGems || 0}</span>
             </div>
           </div>
         </div>
@@ -124,8 +124,8 @@ export default function PlayerStatsPanel({
                 ? 'animate-pulse text-blue-200' 
                 : 'animate-pulse'
             }`} />
-            <span className="text-blue-200 text-xs font-bold tracking-wide drop-shadow-md">Energy:</span>
-            <span className="text-transparent bg-gradient-to-r from-blue-100 via-cyan-100 to-sky-100 bg-clip-text font-bold text-xs tracking-wider drop-shadow-lg transition-all duration-200">
+            <span className="text-transparent bg-gradient-to-r from-blue-100 via-cyan-100 to-sky-100 bg-clip-text text-sm font-black tracking-wider drop-shadow-lg uppercase">Energy:</span>
+            <span className="text-transparent bg-gradient-to-r from-blue-50 via-cyan-50 to-sky-50 bg-clip-text font-black text-base tracking-wider drop-shadow-xl transition-all duration-200">
               {user?.energy || playerData?.energy || 987}/{user?.maxEnergy || playerData?.maxEnergy || 1000}
             </span>
           </div>
@@ -144,9 +144,9 @@ export default function PlayerStatsPanel({
           <div className="relative text-center">
             <div className="flex items-center justify-center mb-1 gap-1">
               <Sparkles className="w-3 h-3 text-green-300 drop-shadow-lg animate-pulse" />
-              <span className="text-transparent bg-gradient-to-r from-green-200 via-emerald-200 to-teal-200 bg-clip-text text-xs font-bold tracking-wide drop-shadow-md">Boosters</span>
+              <span className="text-transparent bg-gradient-to-r from-green-100 via-emerald-100 to-teal-100 bg-clip-text text-sm font-black tracking-wider drop-shadow-lg uppercase">Boosters</span>
             </div>
-            <div className="text-transparent bg-gradient-to-r from-green-100 via-emerald-100 to-teal-100 bg-clip-text text-xs font-semibold tracking-wider drop-shadow-lg">
+            <div className="text-transparent bg-gradient-to-r from-green-50 via-emerald-50 to-teal-50 bg-clip-text text-sm font-black tracking-wider drop-shadow-xl">
               +20% LP [2:30]
             </div>
           </div>
