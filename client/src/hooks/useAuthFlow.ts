@@ -19,8 +19,8 @@ interface AuthFlowConfig {
 }
 
 const DEFAULT_CONFIG: AuthFlowConfig = {
-  telegramTimeout: 5000, // 5 seconds
-  supabaseTimeout: 3000, // 3 seconds  
+  telegramTimeout: 15000, // 15 seconds - longer timeout
+  supabaseTimeout: 5000, // 5 seconds  
   allowGuestFallback: true, // Allow guest mode temporarily for testing
   debug: import.meta.env.DEV
 };
@@ -146,7 +146,15 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
       const urlParams = new URLSearchParams(window.location.search);
       const telegramId = urlParams.get('telegram_id');
       
+      if (finalConfig.debug) {
+        console.log('[useAuthFlow] Checking URL params:', { telegramId, fullURL: window.location.href });
+      }
+      
       if (telegramId) {
+        if (finalConfig.debug) {
+          console.log('[useAuthFlow] Found telegram_id in URL, checking auth status...');
+        }
+        
         const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`);
         
         if (!response.ok) {
@@ -158,11 +166,19 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
         
         const data = await response.json();
         
+        if (finalConfig.debug) {
+          console.log('[useAuthFlow] Telegram status response:', data);
+        }
+        
         if (data.authenticated) {
-          localStorage.setItem('telegram_auth_token', data.token);
+          localStorage.setItem('telegram_auth_token', data.token || 'no-token');
           localStorage.setItem('telegram_user_id', data.user.id);
           localStorage.setItem('telegram_id', telegramId);
           localStorage.setItem('login_timestamp', Date.now().toString());
+          
+          if (finalConfig.debug) {
+            console.log('[useAuthFlow] Telegram auth successful, cleaning URL...');
+          }
           
           // Clean URL
           window.history.replaceState({}, document.title, window.location.pathname);

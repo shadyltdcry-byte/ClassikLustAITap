@@ -80,8 +80,8 @@ export function registerChatRoutes(app: Express) {
     try {
       const { userId, characterId } = req.params;
       
-      // Check if userId is valid UUID or telegram format  
-      if (!isValidUserId(userId)) {
+      // Check if userId is valid UUID, telegram, or guest format  
+      if (!isValidUserId(userId) && !userId.startsWith('guest_')) {
         console.log(`Invalid userId: ${userId}, returning empty chat history`);
         return res.json([]);
       }

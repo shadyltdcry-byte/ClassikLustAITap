@@ -32,8 +32,8 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Use the new centralized auth flow hook
   const authFlow = useAuthFlow({
-    telegramTimeout: 5000,
-    supabaseTimeout: 3000,
+    telegramTimeout: 15000, // Longer timeout for better Telegram auth
+    supabaseTimeout: 5000,
     allowGuestFallback: true, // Allow guest fallback for testing
     debug: import.meta.env.DEV
   });
