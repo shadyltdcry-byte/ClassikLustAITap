@@ -104,39 +104,48 @@ export class LunaErrorMonitor {
   }
 
   private async saveLunaChatMessage(message: string, severity: string) {
-    // Send Luna's alert directly to your chat using the existing chat API
+    // Save Luna's alert directly to conversation file without triggering AI
     if (!this.adminUserId) return;
     
     try {
-      const payload = {
-        message: message,
-        isFromUser: false, // Luna is sending the message
+      const path = await import('path');
+      const fs = await import('fs');
+      
+      const __dirname = path.dirname(new URL(import.meta.url).pathname);
+      const playerFolder = path.join(__dirname, '..', '..', 'player-data', 'telegram_5134006535');
+      const conversationPath = path.join(playerFolder, 'conversations_550e8400-e29b-41d4-a716-446655440002.json');
+      
+      // Ensure player folder exists
+      if (!fs.existsSync(playerFolder)) {
+        fs.mkdirSync(playerFolder, { recursive: true });
+      }
+      
+      // Load existing conversations
+      let conversations = [];
+      if (fs.existsSync(conversationPath)) {
+        const data = fs.readFileSync(conversationPath, 'utf8');
+        conversations = JSON.parse(data);
+      }
+      
+      // Add Luna's alert message directly
+      const newMessage = {
+        id: `luna-alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        content: `🌙 ${message}`,
+        sender: 'character',
+        timestamp: new Date().toISOString(),
         type: 'text',
         mood: 'alert'
       };
       
-      console.log('🌙 Luna sending payload:', JSON.stringify(payload, null, 2));
+      conversations.push(newMessage);
       
-      // Use the working chat API to add Luna's message
-      const response = await fetch('http://localhost:5000/api/chat/telegram_5134006535/550e8400-e29b-41d4-a716-446655440002', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload)
-      });
+      // Save back to file
+      fs.writeFileSync(conversationPath, JSON.stringify(conversations, null, 2));
       
-      const responseText = await response.text();
-      console.log('🌙 Luna API response:', response.status, responseText);
+      console.log(`💬 ✅ Luna error alert saved directly to your chat!`);
       
-      if (response.ok) {
-        console.log(`💬 ✅ Luna sent error alert to your chat!`);
-      } else {
-        console.log(`🌙 Luna Alert (API failed ${response.status}): ${message}`);
-      }
     } catch (error) {
-      // Fallback to console if API fails
-      console.log(`🌙 Luna Alert (Fetch error): ${message}`, error);
+      console.log(`🌙 Luna Alert (Save failed): ${message}`, error);
     }
   }
 
