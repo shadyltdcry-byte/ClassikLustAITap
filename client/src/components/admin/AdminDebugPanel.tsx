@@ -90,7 +90,7 @@ export default function AdminDebugPanel() {
         <p className="text-gray-400">Debug and monitor system performance</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Backend Debugger */}
         <Card className="bg-gray-800 border-gray-700 hover:border-blue-500/50 transition-colors cursor-pointer"
               onClick={() => setShowBackendDebugger(!showBackendDebugger)}>
@@ -133,17 +133,20 @@ export default function AdminDebugPanel() {
           </CardContent>
         </Card>
 
-        {/* React State Debugger */}
+      </div>
+
+      {/* React State Debugger - Separate row for visibility */}
+      <div className="mt-6">
         <Card className="bg-gray-800 border-gray-700 hover:border-orange-500/50 transition-colors cursor-pointer"
               onClick={() => setShowReactDebugger(true)}>
           <CardHeader className="pb-4">
             <CardTitle className="text-white flex items-center gap-2">
               <Monitor className="w-5 h-5 text-orange-400" />
-              React Debugger
+              React State Debugger
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-400 text-sm">Real-time React state monitoring and mutation tools</p>
+            <p className="text-gray-400 text-sm">Real-time React state monitoring with color-coded logging system</p>
           </CardContent>
         </Card>
       </div>
