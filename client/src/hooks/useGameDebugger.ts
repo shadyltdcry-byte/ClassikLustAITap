@@ -51,9 +51,10 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
   const componentRefs = useRef<Record<string, any>>({});
   const renderCountRef = useRef(0);
 
-  // Track renders for performance monitoring
-  // Track renders without causing infinite loops
-  renderCountRef.current += 1;
+  // Track renders WITHOUT causing re-renders (moved outside render cycle)
+  if (renderCountRef.current < 50) { // Cap at 50 to prevent explosion
+    renderCountRef.current += 1;
+  }
 
   // Safe state mutation - allows debugger to change any state
   const updateDebugState = useCallback((updates: Partial<DebugState>) => {
@@ -74,13 +75,14 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
     updateDebugState(componentState);
   }, [updateDebugState]);
 
-  // API call tracking
+  // API call tracking - use functional update to avoid dependency loops
   const trackApiCall = useCallback(() => {
-    updateDebugState({ 
-      apiCalls: debugState.apiCalls + 1,
+    setDebugState(prev => ({ 
+      ...prev,
+      apiCalls: prev.apiCalls + 1,
       lastUpdate: Date.now()
-    });
-  }, [debugState.apiCalls, updateDebugState]);
+    }));
+  }, []);
 
   return {
     // Debug state
