@@ -77,7 +77,6 @@ const AdminBackendDebugger = () => {
 export default function AdminDebugPanel() {
   const [showMistralDebugger, setShowMistralDebugger] = useState(false);
   const [showBackendDebugger, setShowBackendDebugger] = useState(false);
-  const [showDebuggerInterface, setShowDebuggerInterface] = useState(false);
   const [showReactDebugger, setShowReactDebugger] = useState(false);
   
   // Initialize React debugger for admin use
@@ -90,21 +89,24 @@ export default function AdminDebugPanel() {
         <p className="text-gray-400">Debug and monitor system performance</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Backend Debugger */}
-        <Card className="bg-gray-800 border-gray-700 hover:border-blue-500/50 transition-colors cursor-pointer"
-              onClick={() => setShowBackendDebugger(!showBackendDebugger)}>
+      {/* React State Debugger - Primary debugger */}
+      <div className="mb-6">
+        <Card className="bg-gray-800 border-gray-700 hover:border-orange-500/50 transition-colors cursor-pointer"
+              onClick={() => setShowReactDebugger(true)}>
           <CardHeader className="pb-4">
             <CardTitle className="text-white flex items-center gap-2">
-              <Terminal className="w-5 h-5 text-blue-400" />
-              Backend Debugger
+              <Monitor className="w-5 h-5 text-orange-400" />
+              React State Debugger
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-400 text-sm">Execute backend commands and view system status</p>
+            <p className="text-gray-400 text-sm">Real-time React state monitoring with color-coded logging system</p>
           </CardContent>
         </Card>
+      </div>
 
+      {/* Additional Debug Tools */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Mistral AI Debugger */}
         <Card className="bg-gray-800 border-gray-700 hover:border-purple-500/50 transition-colors cursor-pointer"
               onClick={() => setShowMistralDebugger(true)}>
@@ -119,34 +121,17 @@ export default function AdminDebugPanel() {
           </CardContent>
         </Card>
 
-        {/* Advanced Debugger Interface */}
-        <Card className="bg-gray-800 border-gray-700 hover:border-green-500/50 transition-colors cursor-pointer"
-              onClick={() => setShowDebuggerInterface(true)}>
+        {/* Backend Command Terminal */}
+        <Card className="bg-gray-800 border-gray-700 hover:border-blue-500/50 transition-colors cursor-pointer"
+              onClick={() => setShowBackendDebugger(!showBackendDebugger)}>
           <CardHeader className="pb-4">
             <CardTitle className="text-white flex items-center gap-2">
-              <Code className="w-5 h-5 text-green-400" />
-              Advanced Debugger
+              <Terminal className="w-5 h-5 text-blue-400" />
+              Backend Terminal
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-400 text-sm">Advanced debugging interface with detailed logs</p>
-          </CardContent>
-        </Card>
-
-      </div>
-
-      {/* React State Debugger - Separate row for visibility */}
-      <div className="mt-6">
-        <Card className="bg-gray-800 border-gray-700 hover:border-orange-500/50 transition-colors cursor-pointer"
-              onClick={() => setShowReactDebugger(true)}>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-white flex items-center gap-2">
-              <Monitor className="w-5 h-5 text-orange-400" />
-              React State Debugger
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-400 text-sm">Real-time React state monitoring with color-coded logging system</p>
+            <p className="text-gray-400 text-sm">Execute backend commands and view system status</p>
           </CardContent>
         </Card>
       </div>
@@ -173,20 +158,6 @@ export default function AdminDebugPanel() {
         </div>
       )}
 
-      {/* Advanced Debugger Interface Modal */}
-      {showDebuggerInterface && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b border-gray-700">
-              <h3 className="text-xl font-bold text-white">Advanced Debugger Interface</h3>
-              <Button variant="ghost" onClick={() => setShowDebuggerInterface(false)}>×</Button>
-            </div>
-            <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <DebuggerInterface />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* React State Debugger Modal */}
       {showReactDebugger && (
