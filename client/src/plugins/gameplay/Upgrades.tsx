@@ -179,7 +179,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="text-white font-semibold">{upgrade.name}</h4>
                         <Badge className={getCategoryColor(upgrade.category)}>
-                          {upgrade.category.toUpperCase()}
+{upgrade.category ? upgrade.category.toUpperCase() : 'MISC'}
                         </Badge>
                         {upgrade.currentLevel > 0 && (
                           <Badge className="bg-green-500/20 text-green-400">

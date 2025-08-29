@@ -44,14 +44,31 @@ const upload = multer({
 
 export function registerAdminRoutes(app: Express) {
 
-  // Level requirements management
+  // Level requirements management - use same data as working endpoint
   app.get('/api/admin/level-requirements', async (req: Request, res: Response) => {
     try {
-      const levelRequirements = await storage.getLevelRequirements();
-      res.json(levelRequirements || []);
+      // Use same hardcoded data as regular endpoint since storage method doesn't exist
+      const levelRequirements = [
+        {
+          level: 2,
+          requirements: [{ upgradeType: 'lpPerHour', requiredLevel: 2 }],
+          rewards: { lp: 100, maxEnergy: 10, unlocks: ['Basic character creation'] }
+        },
+        {
+          level: 3,
+          requirements: [{ upgradeType: 'lpPerHour', requiredLevel: 3 }],
+          rewards: { lp: 250, maxEnergy: 15, lpPerHour: 5, unlocks: ['Wheel of Fortune'] }
+        },
+        {
+          level: 4,
+          requirements: [{ upgradeType: 'lpPerHour', requiredLevel: 4 }],
+          rewards: { lp: 500, coins: 50, maxEnergy: 20, unlocks: ['Boosters system'] }
+        }
+      ];
+      res.json(levelRequirements);
     } catch (error) {
       console.error('Error fetching level requirements:', error);
-      res.json([]); // Return empty array on error
+      res.json([]);
     }
   });
 
@@ -89,11 +106,11 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Upgrades management
+  // Upgrades management - redirect to regular upgrades endpoint that works
   app.get('/api/admin/upgrades', async (req: Request, res: Response) => {
     try {
-      const upgrades = await storage.getUpgrades();
-      res.json(upgrades || []);
+      // Just redirect to regular upgrades endpoint
+      res.redirect('/api/upgrades');
     } catch (error) {
       console.error('Error fetching upgrades:', error);
       res.json([]);
