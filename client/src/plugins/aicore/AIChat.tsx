@@ -116,14 +116,14 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
     refetchOnWindowFocus: false,
   });
 
-  // Load chat history on character change
+  // Load chat history on character change ONLY
   useEffect(() => {
     if (!character?.id) {
       setMessages([]);
       return;
     }
 
-    // Only update messages when we actually have chat history data
+    // Only update messages when we actually have chat history data AND character changes
     if (chatHistory && Array.isArray(chatHistory) && !messagesLoading) {
       if (chatHistory.length > 0) {
         const formattedMessages = chatHistory.map((msg: any) => ({
@@ -152,7 +152,7 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
         console.log(`Showing initial greeting for ${character.name}`);
       }
     }
-  }, [character?.id, chatHistory?.length, messagesLoading])
+  }, [character?.id, messagesLoading])  // Removed chatHistory?.length dependency
 
   // Auto-scroll to bottom
   useEffect(() => {
