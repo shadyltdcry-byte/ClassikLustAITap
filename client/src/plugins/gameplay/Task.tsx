@@ -20,7 +20,7 @@ export interface Task {
 
 export const mockTasks: Task[] = [
   {
-    id: "1",
+    id: "task_1",
     title: "First Tap",
     description: "Tap your character 5 times",
     progress: 3,
@@ -31,7 +31,7 @@ export const mockTasks: Task[] = [
     icon: "👆"
   },
   {
-    id: "2", 
+    id: "task_2", 
     title: "Energy Master",
     description: "Reach maximum energy",
     progress: 80,
@@ -42,7 +42,7 @@ export const mockTasks: Task[] = [
     icon: "⚡"
   },
   {
-    id: "3",
+    id: "task_3",
     title: "Level Up",
     description: "Reach level 3",
     progress: 1,
@@ -53,7 +53,7 @@ export const mockTasks: Task[] = [
     icon: "⬆️"
   },
   {
-    id: "4",
+    id: "task_4",
     title: "Coin Collector",
     description: "Collect 1000 coins",
     progress: 450,
@@ -64,7 +64,7 @@ export const mockTasks: Task[] = [
     icon: "💰"
   },
   {
-    id: "5",
+    id: "task_5",
     title: "VIP Achievement", 
     description: "Purchase VIP membership",
     progress: 0,
@@ -80,7 +80,7 @@ export const mockTasks: Task[] = [
 export const calculateDynamicTasks = (userStats: any): Task[] => {
   const baseTasks: Omit<Task, 'progress' | 'status'>[] = [
     {
-      id: "1",
+      id: "task_1",
       title: "First Tap",
       description: "Tap your character 5 times",
       maxProgress: 5,
@@ -89,7 +89,7 @@ export const calculateDynamicTasks = (userStats: any): Task[] => {
       icon: "👆"
     },
     {
-      id: "2", 
+      id: "task_2", 
       title: "Energy Master",
       description: "Reach maximum energy",
       maxProgress: 100,
@@ -98,7 +98,7 @@ export const calculateDynamicTasks = (userStats: any): Task[] => {
       icon: "⚡"
     },
     {
-      id: "3",
+      id: "task_3",
       title: "Level Up",
       description: "Reach level 3",
       maxProgress: 3,
@@ -107,7 +107,7 @@ export const calculateDynamicTasks = (userStats: any): Task[] => {
       icon: "⬆️"
     },
     {
-      id: "4",
+      id: "task_4",
       title: "LP Collector",
       description: "Earn 1000 LP total",
       maxProgress: 1000,
@@ -121,16 +121,16 @@ export const calculateDynamicTasks = (userStats: any): Task[] => {
     let progress = 0;
     
     switch (task.id) {
-      case "1": // First Tap
+      case "task_1": // First Tap
         progress = Math.min(userStats.totalTaps || 0, task.maxProgress);
         break;
-      case "2": // Energy Master  
+      case "task_2": // Energy Master  
         progress = Math.min(userStats.energy || 0, task.maxProgress);
         break;
-      case "3": // Level Up
+      case "task_3": // Level Up
         progress = Math.min(userStats.level || 1, task.maxProgress);
         break;
-      case "4": // LP Collector
+      case "task_4": // LP Collector
         progress = Math.min(userStats.lp || 0, task.maxProgress);
         break;
     }

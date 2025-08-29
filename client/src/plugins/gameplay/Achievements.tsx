@@ -20,7 +20,7 @@ export interface Achievements {
 
 export const mockAchievements: Achievements[] = [
   {
-    id: "1",
+    id: "achievement_1",
     title: "First Steps",
     description: "Complete your first task",
     progress: 1,
@@ -31,7 +31,7 @@ export const mockAchievements: Achievements[] = [
     icon: "🎯"
   },
   {
-    id: "2",
+    id: "achievement_2",
     title: "Tap Master",
     description: "Tap character 100 times",
     progress: 45,
@@ -42,7 +42,7 @@ export const mockAchievements: Achievements[] = [
     icon: "👆"
   },
   {
-    id: "3",
+    id: "achievement_3",
     title: "Level Up",
     description: "Reach level 5", 
     progress: 3,
@@ -53,7 +53,7 @@ export const mockAchievements: Achievements[] = [
     icon: "⬆️"
   },
   {
-    id: "4",
+    id: "achievement_4",
     title: "Collector",
     description: "Unlock 5 different characters",
     progress: 1,
@@ -64,7 +64,7 @@ export const mockAchievements: Achievements[] = [
     icon: "📦"
   },
   {
-    id: "5",
+    id: "achievement_5",
     title: "VIP Status",
     description: "Purchase VIP membership",
     progress: 0,
@@ -80,7 +80,7 @@ export const mockAchievements: Achievements[] = [
 export const calculateDynamicAchievements = (userStats: any): Achievements[] => {
   const baseAchievements: Omit<Achievements, 'progress' | 'status'>[] = [
     {
-      id: "1",
+      id: "achievement_1",
       title: "First Steps",
       description: "Complete your first task",
       maxProgress: 1,
@@ -89,7 +89,7 @@ export const calculateDynamicAchievements = (userStats: any): Achievements[] => 
       icon: "🎯"
     },
     {
-      id: "2",
+      id: "achievement_2",
       title: "Tap Master",
       description: "Tap character 100 times",
       maxProgress: 100,
@@ -98,7 +98,7 @@ export const calculateDynamicAchievements = (userStats: any): Achievements[] => 
       icon: "👆"
     },
     {
-      id: "3",
+      id: "achievement_3",
       title: "Level Up Master",
       description: "Reach level 5", 
       maxProgress: 5,
@@ -107,7 +107,7 @@ export const calculateDynamicAchievements = (userStats: any): Achievements[] => 
       icon: "⬆️"
     },
     {
-      id: "4",
+      id: "achievement_4",
       title: "LP Millionaire",
       description: "Earn 5000 LP total",
       maxProgress: 5000,
@@ -121,16 +121,16 @@ export const calculateDynamicAchievements = (userStats: any): Achievements[] => 
     let progress = 0;
     
     switch (achievement.id) {
-      case "1": // First Steps - check if any task completed
+      case "achievement_1": // First Steps - check if any task completed
         progress = userStats.completedTasks > 0 ? 1 : 0;
         break;
-      case "2": // Tap Master
+      case "achievement_2": // Tap Master
         progress = Math.min(userStats.totalTaps || 0, achievement.maxProgress);
         break;
-      case "3": // Level Up Master
+      case "achievement_3": // Level Up Master
         progress = Math.min(userStats.level || 1, achievement.maxProgress);
         break;
-      case "4": // LP Millionaire
+      case "achievement_4": // LP Millionaire
         progress = Math.min(userStats.lp || 0, achievement.maxProgress);
         break;
     }
