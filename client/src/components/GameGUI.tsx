@@ -93,10 +93,10 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   const userId = authUserId || playerData?.id;
   const isAuthenticated = !!userId;
   
-  // Use game state hook to get selected character
+  // Use game state hook to get selected character (this already includes user data)
   const { user, character: selectedCharacter, stats, isLoading, tap, isTapping: gameStateTapping } = useGameState();
   
-  // Use game provider for offline income
+  // Use game provider for offline income (this already includes player data)
   const { playerData: gamePlayerData, claimOfflineIncome } = useGame();
   
   // Toast notifications

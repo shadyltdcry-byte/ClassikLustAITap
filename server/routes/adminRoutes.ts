@@ -44,30 +44,42 @@ const upload = multer({
 
 export function registerAdminRoutes(app: Express) {
 
-  // Level requirements management - use same data as working endpoint
+  // Admin Level Requirements - for editing/managing level progression
   app.get('/api/admin/level-requirements', async (req: Request, res: Response) => {
     try {
-      // Use same hardcoded data as regular endpoint since storage method doesn't exist
-      const levelRequirements = [
+      // Return editable level requirements for admin management
+      const adminLevelData = [
         {
+          id: 'level_2',
           level: 2,
-          requirements: [{ upgradeType: 'lpPerHour', requiredLevel: 2 }],
-          rewards: { lp: 100, maxEnergy: 10, unlocks: ['Basic character creation'] }
+          lpRequired: 1000,
+          description: 'Unlock basic character creation',
+          unlockRewards: ['Character Gallery', 'Basic Customization'],
+          functions: ['character_creation'],
+          upgradeRequirements: [{ upgradeId: 'lp_hour_1', requiredLevel: 2 }]
         },
         {
+          id: 'level_3', 
           level: 3,
-          requirements: [{ upgradeType: 'lpPerHour', requiredLevel: 3 }],
-          rewards: { lp: 250, maxEnergy: 15, lpPerHour: 5, unlocks: ['Wheel of Fortune'] }
+          lpRequired: 2500,
+          description: 'Unlock Wheel of Fortune',
+          unlockRewards: ['Wheel Game', 'Spin Rewards'],
+          functions: ['wheel_game'],
+          upgradeRequirements: [{ upgradeId: 'lp_hour_1', requiredLevel: 3 }]
         },
         {
+          id: 'level_4',
           level: 4,
-          requirements: [{ upgradeType: 'lpPerHour', requiredLevel: 4 }],
-          rewards: { lp: 500, coins: 50, maxEnergy: 20, unlocks: ['Boosters system'] }
+          lpRequired: 5000,
+          description: 'Unlock Booster System',
+          unlockRewards: ['Boosters', 'Temporary Upgrades'],
+          functions: ['booster_system'],
+          upgradeRequirements: [{ upgradeId: 'lp_hour_1', requiredLevel: 4 }]
         }
       ];
-      res.json(levelRequirements);
+      res.json(adminLevelData);
     } catch (error) {
-      console.error('Error fetching level requirements:', error);
+      console.error('Error fetching admin level requirements:', error);
       res.json([]);
     }
   });
@@ -106,13 +118,51 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Upgrades management - redirect to regular upgrades endpoint that works
+  // Admin Upgrades - for editing/managing upgrade definitions
   app.get('/api/admin/upgrades', async (req: Request, res: Response) => {
     try {
-      // Just redirect to regular upgrades endpoint
-      res.redirect('/api/upgrades');
+      // Return editable upgrade definitions for admin management
+      const adminUpgrades = [
+        {
+          id: 'lp_tap_1',
+          name: 'Dexterity Lv. 1',
+          description: 'Increase LP per tap',
+          category: 'lp_per_tap',
+          baseCost: 2500,
+          baseEffect: 1,
+          costMultiplier: 1.5,
+          effectMultiplier: 1.2,
+          maxLevel: 10,
+          levelRequirement: 1
+        },
+        {
+          id: 'lp_hour_1', 
+          name: 'Intellect Lv. 1',
+          description: 'Increase LP per hour',
+          category: 'lp_per_hour',
+          baseCost: 1500,
+          baseEffect: 150,
+          costMultiplier: 1.3,
+          effectMultiplier: 1.15,
+          maxLevel: 20,
+          levelRequirement: 1
+        },
+        {
+          id: 'energy_1',
+          name: 'Book Smarts Lv. 1', 
+          description: 'Increase maximum energy',
+          category: 'energy',
+          baseCost: 1500,
+          baseEffect: 100,
+          costMultiplier: 1.4,
+          effectMultiplier: 1.1,
+          maxLevel: 15,
+          levelRequirement: 1
+        }
+      ];
+      res.json(adminUpgrades);
     } catch (error) {
-      console.error('Error fetching upgrades:', error);
+      console.error('Error fetching admin upgrades:', error);
       res.json([]);
     }
   });
