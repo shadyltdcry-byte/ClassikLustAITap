@@ -15,6 +15,7 @@ import {
   createSuccessResponse, 
   createErrorResponse 
 } from '../utils/helpers';
+import { reportToLuna } from '../services/LunaErrorMonitor';
 
 const storage = SupabaseStorage.getInstance();
 
@@ -185,6 +186,7 @@ export function registerUserRoutes(app: Express) {
 
       const updatedUser = await storage.updateUser(playerId, updates);
       if (!updatedUser) {
+        reportToLuna('error', 'User API', `Player update failed: User ${playerId} not found`, undefined, playerId);
         return res.status(404).json(createErrorResponse('User not found'));
       }
 
@@ -194,6 +196,7 @@ export function registerUserRoutes(app: Express) {
       }));
     } catch (error) {
       console.error('Error updating player:', error);
+      reportToLuna('error', 'User API', 'Player update failed with server error', error as Error, playerId);
       res.status(500).json(createErrorResponse('Failed to update player'));
     }
   });

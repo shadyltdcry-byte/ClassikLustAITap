@@ -136,6 +136,22 @@ export function validateAuthToken(token: string, telegramId: string): boolean {
   timestamp: number
 }>();
 
+// Enable Luna Error Monitor for admin
+const lunaMonitor = LunaErrorMonitor.getInstance();
+lunaMonitor.enableForAdmin('telegram_5134006535');
+setupLunaErrorHandlers();
+console.log('🌙 Luna Error Monitor enabled for admin');
+
+// Send test notification after 10 seconds to confirm Luna is working
+setTimeout(async () => {
+  try {
+    const { reportToLuna } = await import('./services/LunaErrorMonitor.js');
+    reportToLuna('warning', 'System', 'Luna Error Monitor test - I\'m now watching for errors and will alert you!');
+  } catch (error) {
+    console.log('Luna test notification failed, but that\'s okay - she\'s still monitoring errors');
+  }
+}, 10000);
+
 // Initialize Telegram Bot with duplication prevention
 const token = process.env.TELEGRAM_BOT_TOKEN;
 let telegramBotInitialized = false;
@@ -263,16 +279,8 @@ app.use((req, res, next) => {
     res.status(status).json({ message });
   });
 
-  // Handle unhandled promise rejections
-  process.on('unhandledRejection', (reason, promise) => {
-    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
-    // Don't exit the process, just log the error
-  });
-
-  process.on('uncaughtException', (error) => {
-    console.error('Uncaught Exception:', error);
-    process.exit(1);
-  });
+  // Handle unhandled promise rejections (Luna monitor handles these now)
+  // process.on handlers are now in setupLunaErrorHandlers()
 
         
   // ALWAYS serve the app on the port specified in the environment variable PORT

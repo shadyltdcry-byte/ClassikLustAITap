@@ -107,7 +107,7 @@ export class LunaErrorMonitor {
     // This would save the error message to Luna's chat history
     // so it appears in the chat interface as if Luna sent it
     try {
-      const { SupabaseStorage } = await import('../shared/SupabaseStorage.js');
+      const { SupabaseStorage } = await import('../../shared/SupabaseStorage.js');
       const storage = SupabaseStorage.getInstance();
       
       if (this.adminUserId) {
@@ -168,6 +168,10 @@ export function setupLunaErrorHandlers() {
 
 // Helper function to report errors from anywhere in the app
 export function reportToLuna(type: ErrorReport['type'], component: string, message: string, error?: Error, userId?: string) {
-  const monitor = LunaErrorMonitor.getInstance();
-  monitor.reportError(type, component, message, error, userId);
+  try {
+    const monitor = LunaErrorMonitor.getInstance();
+    monitor.reportError(type, component, message, error, userId);
+  } catch (lunaError) {
+    console.error('Luna reporting failed:', lunaError);
+  }
 }
