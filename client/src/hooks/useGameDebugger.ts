@@ -70,12 +70,51 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
   const renderCountRef = useRef(0);
   const originalConsoleError = useRef(console.error);
   const originalConsoleWarn = useRef(console.warn);
+  const renderTimestamps = useRef<number[]>([]);
+  const apiCallTimes = useRef<{endpoint: string, time: number, responseTime?: number}[]>([]);
 
   // Track renders WITHOUT causing re-renders (moved outside render cycle)
   renderCountRef.current += 1;
+  
+  // Render spike detection
+  const now = Date.now();
+  renderTimestamps.current.push(now);
+  // Keep only timestamps from last 1 second
+  renderTimestamps.current = renderTimestamps.current.filter(time => now - time < 1000);
+  
+  // Alert on render spikes (>10 renders per second)
+  if (renderTimestamps.current.length > 10) {
+    setDebugState(prev => ({
+      ...prev,
+      warnings: [...prev.warnings.slice(-4), {
+        timestamp: now,
+        type: 'performance',
+        message: `⚠️ Render spike: ${renderTimestamps.current.length} renders in 1s`,
+        component: 'Multiple components'
+      }]
+    }));
+    renderTimestamps.current = []; // Reset after alert
+  }
 
   // Enhanced error/warning interception
   useEffect(() => {
+    // Handle unhandled promise rejections
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      console.error('Unhandled promise rejection:', event.reason);
+      setDebugState(prev => ({
+        ...prev,
+        errors: [...prev.errors.slice(-4), {
+          timestamp: Date.now(),
+          type: 'api',
+          message: `Unhandled promise rejection: ${event.reason?.message || event.reason}`,
+          component: 'Unknown - likely API call'
+        }],
+        errorCount: prev.errorCount + 1
+      }));
+      event.preventDefault(); // Prevent default browser behavior
+    };
+    
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
     // Intercept console.error for React warnings and errors
     console.error = (...args) => {
       const message = args.join(' ');
@@ -149,6 +188,7 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
     return () => {
       console.error = originalConsoleError.current;
       console.warn = originalConsoleWarn.current;
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 
@@ -171,13 +211,48 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
     updateDebugState(componentState);
   }, [updateDebugState]);
 
-  // API call tracking - use functional update to avoid dependency loops
-  const trackApiCall = useCallback(() => {
+  // Enhanced API call tracking with profiling
+  const trackApiCall = useCallback((endpoint: string, responseTime?: number) => {
+    const callInfo = { endpoint, time: Date.now(), responseTime };
+    apiCallTimes.current.push(callInfo);
+    // Keep only last 50 API calls
+    if (apiCallTimes.current.length > 50) {
+      apiCallTimes.current = apiCallTimes.current.slice(-50);
+    }
+    
     setDebugState(prev => ({ 
       ...prev,
       apiCalls: prev.apiCalls + 1
-      // Removed lastUpdate to stop render loops
     }));
+    
+    // Alert on slow API calls (>2 seconds)
+    if (responseTime && responseTime > 2000) {
+      setDebugState(prev => ({
+        ...prev,
+        warnings: [...prev.warnings.slice(-4), {
+          timestamp: Date.now(),
+          type: 'api',
+          message: `🐌 Slow API call: ${endpoint} → ${responseTime}ms`,
+          component: 'API Layer'
+        }]
+      }));
+    }
+    
+    // Alert on repeated API calls (same endpoint >3 times in 5 seconds)
+    const recentCalls = apiCallTimes.current.filter(call => 
+      call.endpoint === endpoint && (Date.now() - call.time) < 5000
+    );
+    if (recentCalls.length > 3) {
+      setDebugState(prev => ({
+        ...prev,
+        warnings: [...prev.warnings.slice(-4), {
+          timestamp: Date.now(),
+          type: 'api',
+          message: `🔄 Repeated API calls: ${endpoint} (${recentCalls.length}x in 5s)`,
+          component: 'API Layer'
+        }]
+      }));
+    }
   }, []);
 
   return {
@@ -208,6 +283,32 @@ export function useGameDebugger(initialState: Partial<DebugState> = {}) {
     
     // Enhanced debugging helpers
     clearErrors: () => updateDebugState({ errors: [], warnings: [], errorCount: 0 }),
+    
+    // State Mutation Watchdog - tracks rapid changes to critical state
+    watchState: (key: keyof DebugState, threshold = 5) => {
+      const changes = useRef<number[]>([]);
+      return (newValue: any) => {
+        const now = Date.now();
+        changes.current.push(now);
+        // Keep only changes from last 1 second
+        changes.current = changes.current.filter(time => now - time < 1000);
+        
+        // Alert on rapid mutations
+        if (changes.current.length > threshold) {
+          updateDebugState({ 
+            warnings: [...debugState.warnings.slice(-4), {
+              timestamp: now,
+              type: 'performance',
+              message: `⚡ Rapid ${key} mutations: ${changes.current.length} changes in 1s`,
+              component: 'State Layer'
+            }]
+          });
+          changes.current = []; // Reset after alert
+        }
+        
+        updateDebugState({ [key]: newValue });
+      };
+    },
     logError: (type: ErrorLog['type'], message: string, component?: string) => {
       const error: ErrorLog = {
         timestamp: Date.now(),

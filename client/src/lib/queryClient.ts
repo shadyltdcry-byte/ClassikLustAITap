@@ -34,15 +34,28 @@ export async function apiRequest(
   url: string,
   data?: unknown | undefined,
 ): Promise<Response> {
-  const res = await fetch(url, {
-    method,
-    headers: data ? { "Content-Type": "application/json" } : {},
-    body: data ? JSON.stringify(data) : undefined,
-    credentials: "include",
-  });
+  const startTime = Date.now();
+  
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: data ? { "Content-Type": "application/json" } : {},
+      body: data ? JSON.stringify(data) : undefined,
+      credentials: "include",
+    });
 
-  await throwIfResNotOk(res);
-  return res;
+    await throwIfResNotOk(res);
+    
+    // Track API call performance
+    const responseTime = Date.now() - startTime;
+    console.log(`🌐 API: ${method} ${url} → ${res.status} (${responseTime}ms)`);
+    
+    return res;
+  } catch (error) {
+    const responseTime = Date.now() - startTime;
+    console.error(`❌ API: ${method} ${url} → ERROR (${responseTime}ms)`, error);
+    throw error; // Re-throw to maintain existing behavior
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
@@ -51,16 +64,30 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey.join("/") as string, {
-      credentials: "include",
-    });
+    const startTime = Date.now();
+    const url = queryKey.join("/") as string;
+    
+    try {
+      const res = await fetch(url, {
+        credentials: "include",
+      });
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
-      return null;
+      if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+        return null;
+      }
+
+      await throwIfResNotOk(res);
+      
+      // Track query performance
+      const responseTime = Date.now() - startTime;
+      console.log(`📊 Query: ${url} → ${res.status} (${responseTime}ms)`);
+      
+      return await res.json();
+    } catch (error) {
+      const responseTime = Date.now() - startTime;
+      console.error(`❌ Query: ${url} → ERROR (${responseTime}ms)`, error);
+      throw error;
     }
-
-    await throwIfResNotOk(res);
-    return await res.json();
   };
 
 export const queryClient = new QueryClient({
