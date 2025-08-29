@@ -320,6 +320,7 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
         }
         
         const result = await response.json();
+        console.log('[AIChat] Raw Mistral response:', result);
         return { result, originalMessage: message };
       } catch (error) {
         console.error("Mistral API failed, using fallback:", error);
@@ -339,8 +340,23 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
       // Hide typing indicator
       setTypingIndicator(false);
       
-      const aiResponse = result.response || "I'm sorry, I didn't understand that.";
-      const aiMood = result.mood || getRandomMood();
+      // Fixed response handling - server returns {success: true, data: {response: "..."}}
+      console.log('[AIChat] Full response object:', result);
+      
+      let aiResponse;
+      if (result.success && result.data && result.data.response) {
+        // Server format: {success: true, data: {response: "..."}}
+        aiResponse = result.data.response;
+      } else if (result.response) {
+        // Direct response format
+        aiResponse = result.response;
+      } else {
+        // Fallback
+        aiResponse = "I'm having a wonderful time chatting with you! How are you feeling today? ✨";
+        console.log('[AIChat] Using fallback response, received:', result);
+      }
+      
+      const aiMood = result.data?.mood || result.mood || getRandomMood();
       
       // Add AI response to UI
       const aiMessage: ChatMessage = {

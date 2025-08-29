@@ -428,56 +428,56 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
               </div>
             </div>
 
-            {/* Toggle Options - VERY VISIBLE TEST */}
-            <div className="bg-red-500 p-4 border-4 border-yellow-400 rounded-lg">
-              <h3 className="text-white text-xl font-bold mb-4">TOGGLE SETTINGS</h3>
+            {/* Professional Settings Panel */}
+            <div className="bg-gray-800/80 border border-gray-600 rounded-lg p-4">
+              <h3 className="text-white text-sm font-semibold mb-3 text-gray-300">Upload Settings</h3>
               
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-4 bg-blue-600 rounded border-2 border-white">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded border border-gray-600">
                   <div>
-                    <span className="text-white text-lg font-bold">VIP Content</span>
-                    <p className="text-yellow-200">Requires premium access</p>
+                    <span className="text-white text-sm font-medium">VIP Content</span>
+                    <p className="text-gray-400 text-xs">Requires premium access</p>
                   </div>
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={uploadConfig.isVip}
                       onChange={(e) => setUploadConfig(prev => ({ ...prev, isVip: e.target.checked }))}
-                      className="w-8 h-8 mr-2"
+                      className="w-4 h-4 mr-2 text-purple-600 bg-gray-700 border-gray-600 rounded focus:ring-purple-500"
                     />
-                    <span className="text-white text-lg">{uploadConfig.isVip ? '✅ ON' : '❌ OFF'}</span>
+                    <span className="text-sm text-gray-300">{uploadConfig.isVip ? 'ON' : 'OFF'}</span>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-green-600 rounded border-2 border-white">
+                <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded border border-gray-600">
                   <div>
-                    <span className="text-white text-lg font-bold">NSFW Content</span>
-                    <p className="text-yellow-200">18+ content</p>
+                    <span className="text-white text-sm font-medium">NSFW Content</span>
+                    <p className="text-gray-400 text-xs">18+ content</p>
                   </div>
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={uploadConfig.isNsfw}
                       onChange={(e) => setUploadConfig(prev => ({ ...prev, isNsfw: e.target.checked }))}
-                      className="w-8 h-8 mr-2"
+                      className="w-4 h-4 mr-2 text-red-600 bg-gray-700 border-gray-600 rounded focus:ring-red-500"
                     />
-                    <span className="text-white text-lg">{uploadConfig.isNsfw ? '✅ ON' : '❌ OFF'}</span>
+                    <span className="text-sm text-gray-300">{uploadConfig.isNsfw ? 'ON' : 'OFF'}</span>
                   </label>
                 </div>
 
-                <div className="flex items-center justify-between p-4 bg-purple-600 rounded border-2 border-white">
+                <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded border border-gray-600">
                   <div>
-                    <span className="text-white text-lg font-bold">Chat Sending</span>
-                    <p className="text-yellow-200">Enable for chat</p>
+                    <span className="text-white text-sm font-medium">Chat Sending</span>
+                    <p className="text-gray-400 text-xs">Enable for chat</p>
                   </div>
                   <label className="flex items-center">
                     <input
                       type="checkbox"
                       checked={uploadConfig.enabledForChat}
                       onChange={(e) => setUploadConfig(prev => ({ ...prev, enabledForChat: e.target.checked }))}
-                      className="w-8 h-8 mr-2"
+                      className="w-4 h-4 mr-2 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
                     />
-                    <span className="text-white text-lg">{uploadConfig.enabledForChat ? '✅ ON' : '❌ OFF'}</span>
+                    <span className="text-sm text-gray-300">{uploadConfig.enabledForChat ? 'ON' : 'OFF'}</span>
                   </label>
                 </div>
               </div>
