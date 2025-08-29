@@ -169,7 +169,10 @@ export default function AdminGameplayPanel() {
               <Button variant="ghost" onClick={() => setShowWheelPrizeManager(false)}>×</Button>
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <WheelPrizeManager />
+              <WheelPrizeManager 
+                isOpen={showWheelPrizeManager} 
+                onClose={() => setShowWheelPrizeManager(false)} 
+              />
             </div>
           </div>
         </div>

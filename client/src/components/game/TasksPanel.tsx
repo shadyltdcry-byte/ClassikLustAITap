@@ -30,7 +30,7 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
   // Calculate dynamic tasks and achievements based on real user data
   const userStatsForCalculation = userData ? {
     ...userData,
-    totalTaps: userStats?.totalTaps || 0,
+    totalTaps: (userStats as any)?.totalTaps || 0,
     completedTasks: 0 // TODO: Track completed tasks
   } : null;
 
@@ -108,35 +108,35 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
                       <div className="flex items-center gap-3">
                         <span className="text-2xl">{task.icon || "⭐"}</span>
                         <div>
-                          <h3 className="font-semibold text-white text-sm">{task.name || task.title}</h3>
+                          <h3 className="font-semibold text-white text-sm">{task.title}</h3>
                           <p className="text-xs text-gray-400">{task.description}</p>
                         </div>
                       </div>
-                      <Badge variant={task.completed ? 'default' : 'secondary'}>
-                        {task.completed ? 'completed' : task.status || 'active'}
+                      <Badge variant={task.status === 'completed' ? 'default' : 'secondary'}>
+                        {task.status}
                       </Badge>
                     </div>
 
                     <div className="space-y-2">
                       <div className="flex justify-between text-xs">
                         <span>Progress</span>
-                        <span>{task.progress || 0}/{task.target || task.maxProgress || 1}</span>
+                        <span>{task.progress || 0}/{task.maxProgress || 1}</span>
                       </div>
-                      <Progress value={((task.progress || 0) / (task.target || task.maxProgress || 1)) * 100} className="h-2" />
+                      <Progress value={((task.progress || 0) / (task.maxProgress || 1)) * 100} className="h-2" />
                     </div>
 
                     <div className="flex items-center justify-between mt-3">
                       <span className="text-xs text-green-400">
-                        Reward: {task.reward?.amount || task.reward || "50"} {task.reward?.type?.toUpperCase() || "LP"}
+                        Reward: {task.reward || "50 LP"}
                       </span>
                       <Button
                         size="sm"
-                        disabled={!task.completed || claimingRewards.has(task.id)}
+                        disabled={task.status !== 'completed' || claimingRewards.has(task.id)}
                         onClick={() => onClaimReward(task.id, 'task')}
                         className="bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1"
                       >
                         {claimingRewards.has(task.id) ? 'Claiming...' : 
-                         task.completed ? 'Claim' : 'In Progress'}
+                         task.status === 'completed' ? 'Claim' : 'In Progress'}
                       </Button>
                     </div>
                   </CardContent>
@@ -171,12 +171,12 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
                 <div className="flex justify-center items-center py-8">
                   <div className="text-gray-400">Loading achievements...</div>
                 </div>
-              ) : (allAchievements as any[]).length === 0 ? (
+              ) : dynamicAchievements.length === 0 ? (
                 <div className="flex justify-center items-center py-8">
                   <div className="text-gray-400">No achievements available</div>
                 </div>
               ) : (
-                (allAchievements as any[]).map((achievement: any) => (
+                dynamicAchievements.map((achievement: any) => (
                   <Card key={achievement.id} className="bg-gray-800/50 border-gray-600/50 hover:border-yellow-500/50 transition-all">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-3">
