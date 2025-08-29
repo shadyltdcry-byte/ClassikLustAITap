@@ -20,7 +20,8 @@ async function generateAIResponse(userMessage: string): Promise<string> {
     try {
       console.log('🔥 Calling REAL Mistral API...');
       
-      const { default: Mistral } = await import('@mistralai/mistralai');
+      const MistralModule = await import('@mistralai/mistralai');
+      const Mistral = MistralModule.default;
       const client = new Mistral({
         apiKey: process.env.MISTRAL_MODEL_API_KEY
       });
