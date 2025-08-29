@@ -187,7 +187,7 @@ export function registerRoutes(app: Express): Server {
   });
 
   // Serve static files and handle frontend routes
-  const frontendPath = join(__dirname, "..", "client", "dist");
+  const frontendPath = join(__dirname, "..", "dist", "public");
   
   // Serve static files
   app.use(express.static(frontendPath));
