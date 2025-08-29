@@ -167,7 +167,7 @@ export default function AdminDebugPanel() {
               <Button variant="ghost" onClick={() => setShowMistralDebugger(false)}>×</Button>
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <MistralDebugger />
+              <MistralDebugger isOpen={showMistralDebugger} onClose={() => setShowMistralDebugger(false)} />
             </div>
           </div>
         </div>
