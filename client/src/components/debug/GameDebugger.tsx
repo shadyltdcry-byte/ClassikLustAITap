@@ -342,7 +342,7 @@ export default function GameDebugger({
                     <Label className="text-gray-300">Lust Points:</Label>
                     <div className="flex items-center gap-2">
                       <Badge className="bg-pink-600/20 text-pink-300 border-pink-500/50">
-                        {gameState.playerLP?.toLocaleString() || 'Loading...'}
+                        {Math.floor(gameState.playerLP || 0).toLocaleString() || 'Loading...'}
                       </Badge>
                       <Input
                         type="number"

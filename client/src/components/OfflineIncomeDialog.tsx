@@ -48,7 +48,7 @@ export default function OfflineIncomeDialog({
             <div className="flex items-center justify-center gap-3">
               <img src="/media/floatinghearts.png" alt="LP" className="w-8 h-8" />
               <span className="text-4xl font-bold text-yellow-400">
-                +{offlineLP.toLocaleString()}
+                +{Math.floor(offlineLP).toLocaleString()}
               </span>
               <span className="text-xl text-yellow-300">LP</span>
             </div>

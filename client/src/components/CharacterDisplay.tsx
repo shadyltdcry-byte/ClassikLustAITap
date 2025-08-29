@@ -92,8 +92,8 @@ export default function CharacterDisplay({
                   target.src = 'https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤';
                 }
               }}
-              className={`w-full h-auto aspect-[3/4] object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-transform duration-200 ${
-                tapEffect ? 'tap-effect' : ''
+              className={`w-full h-auto aspect-[3/4] object-cover rounded-2xl shadow-2xl cursor-pointer transform hover:scale-105 transition-all duration-200 active:scale-95 ${
+                tapEffect ? 'tap-effect scale-95' : ''
               } ${user.energy <= 0 ? 'grayscale opacity-50' : ''}`}
               style={{
                 filter: user.energy <= 0 ? 'grayscale(100%)' : 'none'

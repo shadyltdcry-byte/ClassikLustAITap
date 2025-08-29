@@ -39,6 +39,8 @@ export function useGameDebugger() {
     warnings: [],
     errors: [],
     securityAlerts: [],
+    recentApiCalls: [],
+    apiFloodCount: 0,
     components: {},
     states: {}
   });

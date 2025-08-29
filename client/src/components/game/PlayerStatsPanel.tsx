@@ -61,7 +61,7 @@ export default function PlayerStatsPanel({
             <div className="relative flex items-center gap-1">
               <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
               <span className="text-pink-200 text-xs font-bold">LustPoints:</span>
-              <span className="text-pink-100 font-bold text-xs">{user?.lp || playerData?.lp || 5026}</span>
+              <span className="text-pink-100 font-bold text-xs">{Math.floor(user?.lp || playerData?.lp || 0).toLocaleString()}</span>
             </div>
           </div>
 
@@ -93,13 +93,21 @@ export default function PlayerStatsPanel({
 
       {/* Right Section: Energy and Boosters */}
       <div className="flex flex-col gap-1">
-        {/* Energy Frame */}
-        <div className="relative px-2 py-1 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-blue-500/20 hover:shadow-xl transition-all duration-300">
+        {/* Energy Frame - Enhanced with Near-Full Glow */}
+        <div className={`relative px-2 py-1 bg-gradient-to-r from-blue-600/20 to-cyan-500/20 border border-blue-400/30 rounded-lg shadow-lg backdrop-blur-sm hover:shadow-blue-500/20 hover:shadow-xl transition-all duration-300 ${
+          ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95 
+            ? 'animate-pulse shadow-blue-400/60 shadow-lg ring-1 ring-blue-400/40' 
+            : ''
+        }`}>
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 to-transparent rounded-lg blur-sm"></div>
           <div className="relative flex items-center gap-1">
-            <Zap className="w-4 h-4 text-blue-400" />
+            <Zap className={`w-4 h-4 text-blue-400 ${
+              ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95 
+                ? 'animate-pulse' 
+                : ''
+            }`} />
             <span className="text-blue-200 text-xs font-bold">Energy:</span>
-            <span className="text-blue-100 font-bold text-xs">
+            <span className="text-blue-100 font-bold text-xs transition-all duration-200">
               {user?.energy || playerData?.energy || 987}/{user?.maxEnergy || playerData?.maxEnergy || 1000}
             </span>
           </div>
