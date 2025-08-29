@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/context/AuthContext";
 // Auth is handled at App level
-import { Settings } from "lucide-react";
+import { Settings, Activity, Crown } from "lucide-react";
 import CharacterDisplay from "@/components/CharacterDisplay";
 import CharacterGallery from "@/components/CharacterGallery";
 import OfflineIncomeDialog from "@/components/OfflineIncomeDialog";
@@ -290,28 +290,26 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       case "tasks":
         return (
           <div className="flex gap-4 h-full max-w-6xl">
-            <TasksPanel 
-              claimingRewards={claimingRewards}
-              onClaimReward={(id, type) => claimReward(id, type as "task" | "achievement")}
-            />
-            <GameProgressPanel 
-              type="tasks" 
-              progress={calculateTasksProgress()}
-            />
-          </div>
-        );
-
-      case "achievements":
-        return (
-          <div className="flex gap-4 h-full max-w-6xl">
-            <AchievementsPanel 
-              claimingRewards={claimingRewards}
-              onClaimReward={(id, type) => claimReward(id, type as "task" | "achievement")}
-            />
-            <GameProgressPanel 
-              type="achievements" 
-              progress={calculateAchievementsProgress()}
-            />
+            <div className="flex flex-col gap-4 flex-1">
+              <TasksPanel 
+                claimingRewards={claimingRewards}
+                onClaimReward={(id, type) => claimReward(id, type as "task" | "achievement")}
+              />
+              <AchievementsPanel 
+                claimingRewards={claimingRewards}
+                onClaimReward={(id, type) => claimReward(id, type as "task" | "achievement")}
+              />
+            </div>
+            <div className="flex flex-col gap-4">
+              <GameProgressPanel 
+                type="tasks" 
+                progress={calculateTasksProgress()}
+              />
+              <GameProgressPanel 
+                type="achievements" 
+                progress={calculateAchievementsProgress()}
+              />
+            </div>
           </div>
         );
 
@@ -377,10 +375,45 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       <GameTabsPanel
         activePlugin={guiState.activePlugin}
         onPluginChange={(plugin) => updateGUIState({ activePlugin: plugin })}
-        onOpenAdminMenu={() => updateGUIState({ showAdminMenu: true })}
-        onOpenWheelGame={() => updateGUIState({ showWheelGame: true })}
-        onOpenVIP={() => updateGUIState({ showVIP: true })}
       />
+
+      {/* Floating Action Icons on the Right */}
+      <div className="fixed right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-3 z-50">
+        {/* Wheel Game Icon */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-600 to-yellow-800 border-2 border-yellow-400/50 shadow-lg hover:shadow-yellow-400/30 hover:scale-110 transition-all duration-200"
+          onClick={() => updateGUIState({ showWheelGame: true })}
+          data-testid="button-wheel-game"
+        >
+          <Activity className="w-6 h-6 text-yellow-100" />
+        </Button>
+
+        {/* VIP Icon */}
+        <Button
+          variant="outline"
+          size="icon"
+          className="w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-purple-800 border-2 border-purple-400/50 shadow-lg hover:shadow-purple-400/30 hover:scale-110 transition-all duration-200"
+          onClick={() => updateGUIState({ showVIP: true })}
+          data-testid="button-vip"
+        >
+          <Crown className="w-6 h-6 text-purple-100" />
+        </Button>
+
+        {/* Admin Debug (Dev Only) */}
+        {import.meta.env.DEV && (
+          <Button
+            variant="outline"
+            size="icon"
+            className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-600 to-gray-800 border-2 border-gray-400/50 shadow-lg hover:shadow-gray-400/30 hover:scale-110 transition-all duration-200"
+            onClick={() => updateGUIState({ showAdminMenu: true })}
+            data-testid="button-admin-debug"
+          >
+            <Settings className="w-6 h-6 text-gray-100" />
+          </Button>
+        )}
+      </div>
 
 
       {/* Admin Menu Modal */}
