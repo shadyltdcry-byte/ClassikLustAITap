@@ -112,12 +112,13 @@ export class LunaErrorMonitor {
       
       if (this.adminUserId) {
         // Save as Luna's chat message to admin
-        await storage.saveChatMessage(
-          this.adminUserId, 
-          '550e8400-e29b-41d4-a716-446655440002', // Luna's character ID
-          message,
-          'assistant'
-        );
+        await storage.createChatMessage({
+          userId: this.adminUserId, 
+          characterId: '550e8400-e29b-41d4-a716-446655440002', // Luna's character ID
+          message: message,
+          response: '', // Luna's initial message
+          charismaGained: 0
+        });
         console.log(`💬 Luna sent debug alert to admin chat`);
       }
     } catch (chatError) {
