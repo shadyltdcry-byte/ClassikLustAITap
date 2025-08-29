@@ -3,9 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Terminal, Bug, Code, Activity, Monitor } from "lucide-react";
-import MistralDebugger from "@/plugins/aicore/MistralDebugger";
-import DebuggerInterface from "@/components/admin/DebuggerInterface";
 import { GameDebugger } from "@/components/debug";
 import { useGameDebugger } from "@/hooks/useGameDebugger";
 
@@ -75,8 +74,6 @@ const AdminBackendDebugger = () => {
 };
 
 export default function AdminDebugPanel() {
-  const [showMistralDebugger, setShowMistralDebugger] = useState(false);
-  const [showBackendDebugger, setShowBackendDebugger] = useState(false);
   const [showReactDebugger, setShowReactDebugger] = useState(false);
   
   // Initialize React debugger for admin use
@@ -109,58 +106,7 @@ export default function AdminDebugPanel() {
         </Card>
       </div>
 
-      {/* Additional Debug Tools */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Mistral AI Debugger */}
-        <Card className="bg-gray-800 border-gray-700 hover:border-purple-500/50 transition-colors cursor-pointer"
-              onClick={() => setShowMistralDebugger(true)}>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-white flex items-center gap-2">
-              <Bug className="w-5 h-5 text-purple-400" />
-              Mistral AI Debugger
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-400 text-sm">Debug AI chat responses and model behavior</p>
-          </CardContent>
-        </Card>
 
-        {/* Backend Command Terminal */}
-        <Card className="bg-gray-800 border-gray-700 hover:border-blue-500/50 transition-colors cursor-pointer"
-              onClick={() => setShowBackendDebugger(!showBackendDebugger)}>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-white flex items-center gap-2">
-              <Terminal className="w-5 h-5 text-blue-400" />
-              Backend Terminal
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-400 text-sm">Execute backend commands and view system status</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Backend Debugger Toggle */}
-      {showBackendDebugger && (
-        <div className="mt-6">
-          <AdminBackendDebugger />
-        </div>
-      )}
-
-      {/* Mistral Debugger Modal */}
-      {showMistralDebugger && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-900 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b border-gray-700">
-              <h3 className="text-xl font-bold text-white">Mistral AI Debugger</h3>
-              <Button variant="ghost" onClick={() => setShowMistralDebugger(false)}>×</Button>
-            </div>
-            <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <MistralDebugger isOpen={showMistralDebugger} onClose={() => setShowMistralDebugger(false)} />
-            </div>
-          </div>
-        </div>
-      )}
 
 
       {/* React State Debugger Modal */}
