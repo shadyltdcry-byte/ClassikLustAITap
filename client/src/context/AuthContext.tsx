@@ -134,24 +134,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
               return;
             }
           } catch (error) {
-            // Completely skip logging empty/meaningless errors
-            try {
-              const errorStr = JSON.stringify(error);
-              const hasContent = error && 
-                ((error as any)?.message || 
-                 (error as any)?.stack || 
-                 (error as any)?.name ||
-                 errorStr !== '{}');
-              
-              if (hasContent) {
-                console.error('Auto-login check error:', error);
-              } else {
-                console.log('[DEBUG] Auto-login check failed - proceeding with guest mode');
-              }
-            } catch {
-              // If we can't even stringify the error, it's probably not useful
-              console.log('[DEBUG] Auto-login check failed - proceeding with guest mode');
-            }
+            // Simple error handling without complex logging
+            console.log('[DEBUG] Auto-login check failed - proceeding with guest mode');
+            // Don't log the actual error to avoid TypeError {} issues
           }
         }
       }

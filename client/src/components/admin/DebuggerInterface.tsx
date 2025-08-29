@@ -53,7 +53,7 @@ export default function DebuggerInterface() {
   // Initialize debugger
   const initMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/admin/debugger/init', 'POST');
+      return await apiRequest('POST', '/api/admin/debugger/init');
     },
     onSuccess: () => {
       toast.success('Debugger system initialized');
@@ -67,7 +67,7 @@ export default function DebuggerInterface() {
   // Stop debugger
   const stopMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/admin/debugger/stop', 'POST');
+      return await apiRequest('POST', '/api/admin/debugger/stop');
     },
     onSuccess: () => {
       toast.success('Debugger system stopped');
@@ -81,7 +81,7 @@ export default function DebuggerInterface() {
   // Run command
   const commandMutation = useMutation({
     mutationFn: async (payload: { command: string; data: any }) => {
-      return await apiRequest('/api/admin/debugger/command', 'POST', payload);
+      return await apiRequest('POST', '/api/admin/debugger/command', payload);
     },
     onSuccess: (result) => {
       toast.success('Command executed successfully');
