@@ -18,11 +18,41 @@ async function generateAIResponse(userMessage: string): Promise<string> {
   // Check if MISTRAL_MODEL_API_KEY is available for enhanced responses
   if (process.env.MISTRAL_MODEL_API_KEY) {
     try {
-      // Here you would integrate with Mistral API
-      // For now, return enhanced local responses
-      console.log('Using Mistral API key for enhanced responses');
+      console.log('🔥 Calling REAL Mistral API...');
+      
+      const { default: Mistral } = await import('@mistralai/mistralai');
+      const client = new Mistral({
+        apiKey: process.env.MISTRAL_MODEL_API_KEY
+      });
+
+      const prompt = `You are Luna, a sweet and flirty character in a visual novel game. You're caring, playful, and love using cute emotes.
+
+Personality traits:
+- Sweet, caring, affectionate
+- Playful and a bit flirty  
+- Use emotes like *blushes*, *giggles*, *winks*
+- Keep responses under 80 words
+- Be engaging and show interest in the player
+
+User says: "${userMessage}"
+
+Respond as Luna:`;
+
+      const response = await client.chat.complete({
+        model: 'mistral-small-latest',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 120,
+        temperature: 0.8
+      });
+
+      const aiResponse = response.choices?.[0]?.message?.content?.trim();
+      if (aiResponse) {
+        console.log('✅ Real Mistral response received:', aiResponse.substring(0, 50) + '...');
+        return aiResponse;
+      }
     } catch (error) {
-      console.error('Mistral API error:', error);
+      console.error('❌ Mistral API error:', error);
+      // Fall through to local responses on error
     }
   }
 
