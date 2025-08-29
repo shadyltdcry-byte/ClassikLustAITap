@@ -196,7 +196,7 @@ export function registerWheelRoutes(app: Express) {
       
       // TODO: Implement createWheelPrize in SupabaseStorage
       console.log('Would create wheel prize:', prizeData);
-      const newPrize = { id: Date.now().toString(), ...prizeData };
+      const newPrize = { id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, ...prizeData };
       res.json(createSuccessResponse(newPrize));
     } catch (error) {
       console.error('Error creating wheel prize:', error);

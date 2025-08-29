@@ -267,7 +267,7 @@ export function registerChatRoutes(app: Express) {
       
       // Mock response for now
       const responseMessage = {
-        id: Date.now(),
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         senderId: characterId,
         message: aiResponse,
         timestamp: new Date().toISOString(),
@@ -339,7 +339,7 @@ export function registerChatRoutes(app: Express) {
       
       // Add new message
       const newMessage = {
-        id: Date.now().toString(),
+        id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         content: message,
         sender: isFromUser ? 'user' : 'character',
         timestamp: new Date().toISOString(),
@@ -380,13 +380,13 @@ export function registerChatRoutes(app: Express) {
       // Mock successful response
       res.json(createSuccessResponse({
         userMessage: {
-          id: Date.now(),
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           sender: 'user',
           message,
           timestamp: new Date().toISOString()
         },
         characterResponse: {
-          id: Date.now() + 1,
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           sender: 'character',
           message: aiResponse,
           timestamp: new Date().toISOString()
@@ -445,7 +445,7 @@ export function registerChatRoutes(app: Express) {
           
           // Add user message
           const userMessage = {
-            id: `user-${Date.now()}`,
+            id: `user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             content: message,
             sender: 'user',
             timestamp: new Date().toISOString(),
@@ -455,7 +455,7 @@ export function registerChatRoutes(app: Express) {
           
           // Add AI response
           const aiMessage = {
-            id: `ai-${Date.now() + 1}`,
+            id: `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             content: enhancedResponse,
             sender: 'character',
             timestamp: new Date().toISOString(),

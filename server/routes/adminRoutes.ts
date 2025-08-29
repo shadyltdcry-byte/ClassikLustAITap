@@ -331,7 +331,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const taskData = req.body;
       console.log('Creating task:', taskData);
-      res.json(createSuccessResponse({ id: Date.now().toString(), ...taskData }));
+      res.json(createSuccessResponse({ id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, ...taskData }));
     } catch (error) {
       res.status(500).json(createErrorResponse('Failed to create task'));
     }
