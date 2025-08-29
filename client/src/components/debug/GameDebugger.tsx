@@ -202,7 +202,15 @@ export default function GameDebugger({
   return (
     <>
       {/* Floating Debug Panel */}
-      <div className="fixed top-4 left-4 z-[100] w-96 max-h-[80vh] bg-gray-900/95 border border-green-500/50 rounded-lg shadow-2xl backdrop-blur-sm pointer-events-auto" style={{isolation: 'isolate'}}>
+      <div 
+        className="fixed top-4 left-4 w-96 max-h-[80vh] bg-gray-900/95 border border-green-500/50 rounded-lg shadow-2xl backdrop-blur-sm" 
+        style={{
+          zIndex: 999999,
+          isolation: 'isolate',
+          pointerEvents: 'auto',
+          position: 'fixed'
+        }}
+      >
         <div className="flex items-center justify-between p-3 border-b border-green-500/30">
           <div className="flex items-center gap-2">
             <Bug className="w-5 h-5 text-green-400" />
