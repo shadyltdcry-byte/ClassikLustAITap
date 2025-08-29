@@ -126,12 +126,16 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    // Remove fields that might not exist in the database schema
+    const safeUpdates = { ...updates };
+    delete safeUpdates.lastTick; // Remove lastTick since it might not exist in DB
+    
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
       const telegramId = id.replace('telegram_', '');
       const { data, error } = await this.supabase
         .from('users')
-        .update(updates)
+        .update(safeUpdates)
         .eq('telegramId', telegramId)
         .select()
         .single();
@@ -149,7 +153,7 @@ export class SupabaseStorage implements IStorage {
       // Regular UUID update
       const { data, error } = await this.supabase
         .from('users')
-        .update(updates)
+        .update(safeUpdates)
         .eq('id', id)
         .select()
         .single();

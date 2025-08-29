@@ -178,5 +178,21 @@
     "timestamp": "2025-08-29T08:48:10.191Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756459519831-kc2hycx14",
+    "content": "🌙 Hmm, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (9:25:19 AM)",
+    "sender": "character",
+    "timestamp": "2025-08-29T09:25:19.831Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756459520832-h0afb18z3",
+    "content": "🌙 Something's wrong with User API, Master! Player update failed: User telegram_5134006535 not found happened at 9:25:20 AM.",
+    "sender": "character",
+    "timestamp": "2025-08-29T09:25:20.832Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
