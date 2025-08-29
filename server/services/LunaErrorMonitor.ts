@@ -108,28 +108,35 @@ export class LunaErrorMonitor {
     if (!this.adminUserId) return;
     
     try {
+      const payload = {
+        message: message,
+        isFromUser: false, // Luna is sending the message
+        type: 'text',
+        mood: 'alert'
+      };
+      
+      console.log('🌙 Luna sending payload:', JSON.stringify(payload, null, 2));
+      
       // Use the working chat API to add Luna's message
       const response = await fetch('http://localhost:5000/api/chat/telegram_5134006535/550e8400-e29b-41d4-a716-446655440002', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: message,
-          isFromUser: false, // Luna is sending the message
-          type: 'text',
-          mood: 'alert'
-        })
+        body: JSON.stringify(payload)
       });
+      
+      const responseText = await response.text();
+      console.log('🌙 Luna API response:', response.status, responseText);
       
       if (response.ok) {
         console.log(`💬 ✅ Luna sent error alert to your chat!`);
       } else {
-        console.log(`🌙 Luna Alert (API failed): ${message}`);
+        console.log(`🌙 Luna Alert (API failed ${response.status}): ${message}`);
       }
     } catch (error) {
       // Fallback to console if API fails
-      console.log(`🌙 Luna Alert: ${message}`);
+      console.log(`🌙 Luna Alert (Fetch error): ${message}`, error);
     }
   }
 
