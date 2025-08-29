@@ -156,9 +156,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         }
       }
       
-      // Fall back to normal auth check
-      const timer = setTimeout(initializeAuth, 3000);
-      return () => clearTimeout(timer);
+      // DISABLED: Fall back auth check to prevent repeated API calls
+      // const timer = setTimeout(initializeAuth, 3000);
+      // return () => clearTimeout(timer);
     };
 
     checkBotAuth();
