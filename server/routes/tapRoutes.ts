@@ -148,11 +148,32 @@ export function registerTapRoutes(app: Express) {
         return res.status(404).json(createErrorResponse('Reward not found'));
       }
 
-      console.log(`🎁 ${userId} claimed ${rewardType} reward: ${reward}`);
+      // Parse LP amount from reward string (e.g., "50 LP" -> 50)
+      const lpAmount = parseInt(reward.split(' ')[0]) || 0;
+      
+      // Get user from storage
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json(createErrorResponse('User not found'));
+      }
+
+      // Add LP to user's balance
+      const currentLp = parseLP(user.lp);
+      const newLp = currentLp + lpAmount;
+
+      // Update user in database
+      const updatedUser = await storage.updateUser(userId, {
+        lp: newLp
+      });
+
+      console.log(`🎁 ${userId} claimed ${rewardType} reward: ${reward} - Balance: ${currentLp} → ${newLp}`);
       
       res.json(createSuccessResponse({
         reward: reward,
-        message: `Successfully claimed ${reward}!`
+        message: `Successfully claimed ${reward}!`,
+        lpAdded: lpAmount,
+        newLp: newLp,
+        user: updatedUser
       }));
     } catch (error) {
       console.error('Reward claiming error:', error);
