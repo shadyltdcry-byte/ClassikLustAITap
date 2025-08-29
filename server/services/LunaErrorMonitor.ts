@@ -104,12 +104,33 @@ export class LunaErrorMonitor {
   }
 
   private async saveLunaChatMessage(message: string, severity: string) {
-    // For now, just log to console since chat table structure doesn't match
-    // Luna still works perfectly for error monitoring via console alerts
-    console.log(`🌙 Luna Alert: ${message}`);
+    // Send Luna's alert directly to your chat using the existing chat API
+    if (!this.adminUserId) return;
     
-    // TODO: Fix chat table structure to match schema later if needed
-    // The important thing is Luna catches errors, chat is just a bonus feature
+    try {
+      // Use the working chat API to add Luna's message
+      const response = await fetch('http://localhost:5000/api/chat/telegram_5134006535/550e8400-e29b-41d4-a716-446655440002', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: message,
+          isFromUser: false, // Luna is sending the message
+          type: 'text',
+          mood: 'alert'
+        })
+      });
+      
+      if (response.ok) {
+        console.log(`💬 ✅ Luna sent error alert to your chat!`);
+      } else {
+        console.log(`🌙 Luna Alert (API failed): ${message}`);
+      }
+    } catch (error) {
+      // Fallback to console if API fails
+      console.log(`🌙 Luna Alert: ${message}`);
+    }
   }
 
   getRecentErrors(limit = 10): ErrorReport[] {
