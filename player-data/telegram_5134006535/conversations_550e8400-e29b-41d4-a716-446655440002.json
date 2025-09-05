@@ -218,5 +218,45 @@
     "timestamp": "2025-08-29T09:39:17.638Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756460698533-6y5jko9cs",
+    "content": "🌙 🚨 URGENT! Master, there's a critical issue with System! Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-08-29T09:44:58.533Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756460706264-5bbr71pe4",
+    "content": "🌙 Master, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-08-29T09:45:06.264Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756461031858-ooggzqqgu",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (9:50:31 AM)",
+    "sender": "character",
+    "timestamp": "2025-08-29T09:50:31.858Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1756463892953-y9l64rp2s",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (10:38:12 AM)",
+    "sender": "character",
+    "timestamp": "2025-08-29T10:38:12.953Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1757079615042-3y7pec4vw",
+    "content": "🌙 I noticed something unusual in System at 1:40:14 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-09-05T13:40:15.042Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]

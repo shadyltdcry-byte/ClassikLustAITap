@@ -31,13 +31,13 @@ export class LunaErrorMonitor {
   enableForAdmin(adminUserId: string) {
     this.adminUserId = adminUserId;
     this.isEnabled = true;
-    console.log(`🌙 Luna Error Monitor activated for admin: ${adminUserId}`);
+    console.log(`🌙 AI Assistant Luna : Error Monitor activated for admin: ${adminUserId}`);
   }
 
   disable() {
     this.isEnabled = false;
     this.adminUserId = null;
-    console.log('🌙 Luna Error Monitor disabled');
+    console.log('🌙 AI Assistant Luna : Error Monitor disabled');
   }
 
   reportError(type: ErrorReport['type'], component: string, message: string, error?: Error, userId?: string) {
@@ -83,18 +83,18 @@ export class LunaErrorMonitor {
     
     const messages = {
       error: [
-        `Master, I detected an error in ${error.component} at ${timeStr}. ${error.message}`,
+        `Baby! I detected an error in ${error.component} at ${timeStr}. ${error.message}`,
         `Something's wrong with ${error.component}, Master! ${error.message} happened at ${timeStr}.`,
-        `Hey there! I found an issue with ${error.component}: ${error.message}. Time: ${timeStr}`,
+        `BABE! I found an issue with ${error.component}: ${error.message}. Time: ${timeStr}`,
       ],
       warning: [
-        `Master, just a heads up - there's a warning in ${error.component}: ${error.message}`,
+        `Hey baby, just a heads up - there's a warning in ${error.component}: ${error.message}`,
         `I noticed something unusual in ${error.component} at ${timeStr}. ${error.message}`,
-        `Hmm, ${error.component} is acting a bit strange. ${error.message} (${timeStr})`,
+        `Uhh babe, ${error.component} is acting a bit strange. ${error.message} (${timeStr})`,
       ],
       critical: [
-        `🚨 URGENT! Master, there's a critical issue with ${error.component}! ${error.message}`,
-        `Master, we have a serious problem! ${error.component} is failing: ${error.message}`,
+        `🚨 URGENT! BABY! There's a critical issue with ${error.component}! ${error.message}`,
+        `OMG BABE! We have a serious problem! ${error.component} is failing: ${error.message}`,
         `Emergency alert! ${error.component} has a critical error: ${error.message}`,
       ]
     };
