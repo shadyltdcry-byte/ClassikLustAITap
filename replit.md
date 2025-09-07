@@ -21,12 +21,12 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js web framework
 - **Language**: TypeScript with ESM modules
-- **Database ORM**: Drizzle ORM for type-safe database operations
+- **Database ORM**: SUPABASE ONLY for type-safe database operations
 - **API Design**: RESTful API with structured route handlers
 - **Development Server**: Custom Vite integration for hot module replacement in development
 
 ### Data Storage
-- **Database**: PostgreSQL (configured for Neon serverless)
+- **Database**: SUPABASE ONLY (configured for Neon serverless)
 - **Schema**: Comprehensive game schema including users, characters, upgrades, chat messages, media files, boosters, and game statistics
 - **Connection**: Connection pooling with Neon serverless adapter
 - **Migrations**: Drizzle Kit for database schema migrations
@@ -42,12 +42,13 @@ Preferred communication style: Simple, everyday language.
 ### External Dependencies
 
 **Core Framework Dependencies**:
+- NODE, MISTRALAI, 
 - React 18+ with TypeScript support
 - Express.js for backend API server
 - Vite for frontend build tooling and development server
 
 **Database & ORM**:
-- PostgreSQL database (Neon serverless provider)
+- SUPABASE database (Neon serverless provider)
 - Drizzle ORM for database operations and schema management
 - Connection pooling via @neondatabase/serverless
 
@@ -72,3 +73,4 @@ Preferred communication style: Simple, everyday language.
 - ESBuild for production bundling
 - Replit-specific plugins for development environment integration
 - Custom error overlay and development tooling
+- Custom debugger with Ai integration 
