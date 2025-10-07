@@ -97,14 +97,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         console.log(`File type determined: ${fileType} for ${file.mimetype}`);
 
-        // Create media file record
+        // Auto-create character folder structure
+        if (config.characterId) {
+          const characterFolder = path.join(
+            process.cwd(), 
+            'public', 
+            'uploads', 
+            'characters',
+            config.characterId
+          );
+          
+          if (!fs.existsSync(characterFolder)) {
+            fs.mkdirSync(characterFolder, { recursive: true });
+            console.log(`[Upload] Created character folder: ${characterFolder}`);
+          }
+
+          // Move file to character folder
+          const newPath = path.join(characterFolder, file.filename);
+          fs.renameSync(file.path, newPath);
+          file.path = newPath;
+        }
+
+        // Create media file record with organized path
+        const filePath = config.characterId 
+          ? `/uploads/characters/${config.characterId}/${file.filename}`
+          : `/uploads/${file.filename}`;
+
         const mediaFileData = {
           id: uuidv4(),
           fileName: file.filename,
-          filePath: `/uploads/${file.filename}`,
+          filePath,
           fileType,
           characterId: config.characterId || null,
           mood: config.mood || null,
+          pose: config.pose || null,
           requiredLevel: config.requiredLevel || 1,
           isVip: config.isVip || false,
           isNsfw: config.isNsfw || false,

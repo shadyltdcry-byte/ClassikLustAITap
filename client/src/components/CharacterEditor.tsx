@@ -116,40 +116,38 @@ export default function CharacterEditor({
       const endpoint = isEditing
         ? `/api/admin/characters/${character?.id}`
         : "/api/admin/characters";
+      
+      console.log(`[CharacterEditor] ${method} ${endpoint}`, data);
+      
       const response = await apiRequest(method, endpoint, data);
       if (!response.ok) {
-        let errorMessage = "Character operation failed";
-        try {
-          const text = await response.text();
-          const errorData = text ? JSON.parse(text) : {};
-          errorMessage = errorData.error || errorMessage;
-        } catch (e) {
-          // If JSON parsing fails, use the status text
-          errorMessage = response.statusText || errorMessage;
-        }
-        throw new Error(errorMessage);
+        const errorText = await response.text();
+        console.error("[CharacterEditor] Save failed:", errorText);
+        throw new Error(errorText || "Character operation failed");
       }
       
-      try {
-        const text = await response.text();
-        return text ? JSON.parse(text) : {};
-      } catch (e) {
-        // If response has no content, return empty object
-        return {};
-      }
+      const result = await response.json();
+      console.log("[CharacterEditor] Save successful:", result);
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("[CharacterEditor] Mutation success, invalidating queries");
       toast.success(
         isEditing
           ? "Character updated successfully!"
           : "Character created successfully!"
       );
+      
+      // Invalidate all character-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/character/selected"] });
+      
       if (onSuccess) onSuccess();
       if (!isEditing) form.reset();
     },
     onError: (error: any) => {
-      console.error("Update failed:", error);
+      console.error("[CharacterEditor] Mutation error:", error);
       toast.error(error?.message || (isEditing ? "Failed to update character" : "Failed to create character"));
     },
   });

@@ -54,7 +54,7 @@ export default function ImageManager({
     chatSendChance: 5,
     isNsfw: false,
     isVipOnly: false,
-    isEventOnly: false,
+    isEvent: false,
     isWheelReward: false,
   });
 
@@ -321,10 +321,10 @@ export default function ImageManager({
 
             <div className="flex items-center space-x-2">
               <Switch
-                checked={formFields.isEventOnly}
-                onCheckedChange={(checked) => setFormFields(prev => ({ ...prev, isEventOnly: checked }))}
+                checked={formFields.isEvent}
+                onCheckedChange={(checked) => setFormFields(prev => ({ ...prev, isEvent: checked }))}
               />
-              <Label className="text-white">Event Only</Label>
+              <Label className="text-white">⭐ Event</Label>
             </div>
 
             <div className="flex items-center space-x-2">

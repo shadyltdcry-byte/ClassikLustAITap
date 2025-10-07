@@ -29,6 +29,7 @@ import FloatingActionIcons from "@/components/ui/FloatingActionIcons";
 import GameProgressPanel from "@/components/game/GameProgressPanel";
 import TasksPanel from "@/components/game/TasksPanel";
 import AchievementsPanel from "@/components/game/AchievementsPanel";
+import DebuggerConsole from "@/components/debug/DebuggerConsole";
 
 interface PlayerData {
   id: string;

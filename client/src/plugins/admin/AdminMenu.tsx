@@ -7,6 +7,7 @@ import AdminCharactersPanel from "@/components/admin/AdminCharactersPanel";
 import AdminGameplayPanel from "@/components/admin/AdminGameplayPanel";
 import AdminDebugPanel from "@/components/admin/AdminDebugPanel";
 import AdminSystemPanel from "@/components/admin/AdminSystemPanel";
+import DebuggerConsole from "@/components/debug/DebuggerConsole"; // Import DebuggerConsole component
 
 interface AdminMenuProps {
   onClose?: () => void;
@@ -16,7 +17,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
   // ADMIN ACCESS CONTROL
   // Allow admin access for development/testing purposes
   const isRegularUser = false; // Set to false to enable admin access
-  
+
   if (isRegularUser) {
     return (
       <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
@@ -31,6 +32,8 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     );
   }
   const [activeTab, setActiveTab] = useState("characters");
+  const [showDebugger, setShowDebugger] = useState(false); // State to control debugger visibility
+  // const queryClient = useQueryClient(); // This was in the original changes but not in the provided original code. Assuming it's not needed here.
 
   return (
     <Dialog open={true} onOpenChange={() => onClose?.()}>
@@ -59,7 +62,7 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
         <div className="flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="bg-gray-800/50 border border-gray-700/50 mb-4">
+            <TabsList className="grid w-full grid-cols-7 bg-gray-800/50"> {/* Increased columns to 7 */}
               <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600">
                 <Users className="w-4 h-4 mr-2" />
                 Characters
@@ -75,6 +78,10 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
               <TabsTrigger value="system" className="data-[state=active]:bg-purple-600">
                 <Database className="w-4 h-4 mr-2" />
                 System
+              </TabsTrigger>
+              {/* Removed "chaos tracker" references based on user message */}
+              <TabsTrigger value="debugger" className="data-[state=active]:bg-purple-600"> {/* Added Debugger Tab */}
+                🔧 Debugger
               </TabsTrigger>
             </TabsList>
 
@@ -93,6 +100,10 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
               <TabsContent value="system" className="h-full overflow-y-auto">
                 <AdminSystemPanel />
+              </TabsContent>
+
+              <TabsContent value="debugger" className="h-full overflow-y-auto"> {/* Added Debugger Tab Content */}
+                <DebuggerConsole isOpen={true} />
               </TabsContent>
             </div>
           </Tabs>
