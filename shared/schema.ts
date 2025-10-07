@@ -66,9 +66,9 @@ export const mediaFiles = pgTable("media_files", {
   mood: text("mood"),
   pose: text("pose"),
   animationSequence: integer("animation_sequence"),
-  isNsfw: boolean("is_nsfw").notNull().default(false),
-  isVip: boolean("is_vip").notNull().default(false),
-  isEvent: boolean("is_event").notNull().default(false),
+  is_nsfw: boolean("is_nsfw").notNull().default(false),
+  is_vip: boolean("is_vip").notNull().default(false),
+  is_event: boolean("is_event").notNull().default(false),
   randomSendChance: integer("random_send_chance").notNull().default(5),
   requiredLevel: integer("required_level").notNull().default(1),
   category: text("category").default("Character"), // Character, Avatar, Misc, Event, Other

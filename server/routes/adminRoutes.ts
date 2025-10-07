@@ -1,7 +1,7 @@
 /**
  * adminRoutes.ts - Administrative Tools and File Management Routes
  * Last Edited: 2025-08-28 by Assistant
- * 
+ *
  * Handles admin tools, file management, upgrades, achievements, and debug functionality
  */
 
@@ -11,11 +11,11 @@ import fs from 'fs';
 import multer from 'multer';
 import crypto from 'crypto'; // Import crypto module
 import { SupabaseStorage } from '../../shared/SupabaseStorage';
-import { 
-  createSuccessResponse, 
+import {
+  createSuccessResponse,
   createErrorResponse,
   isValidMediaType,
-  getFileExtension 
+  getFileExtension
 } from '../utils/helpers';
 
 const storage = SupabaseStorage.getInstance();
@@ -60,7 +60,7 @@ export function registerAdminRoutes(app: Express) {
           upgradeRequirements: [{ upgradeId: 'lp_hour_1', requiredLevel: 2 }]
         },
         {
-          id: 'level_3', 
+          id: 'level_3',
           level: 3,
           lpRequired: 2500,
           description: 'Unlock Wheel of Fortune',
@@ -137,7 +137,7 @@ export function registerAdminRoutes(app: Express) {
           levelRequirement: 1
         },
         {
-          id: 'lp_hour_1', 
+          id: 'lp_hour_1',
           name: 'Intellect Lv. 1',
           description: 'Increase LP per hour',
           category: 'lp_per_hour',
@@ -150,7 +150,7 @@ export function registerAdminRoutes(app: Express) {
         },
         {
           id: 'energy_1',
-          name: 'Book Smarts Lv. 1', 
+          name: 'Book Smarts Lv. 1',
           description: 'Increase maximum energy',
           category: 'energy',
           baseCost: 1500,
@@ -415,9 +415,9 @@ export function registerAdminRoutes(app: Express) {
                 const mediaEntry = {
                   id: crypto.randomUUID(), // Use crypto.randomUUID() for proper UUID generation
                   mood: null,
-                  isNsfw: file.includes('nsfw'),
-                  isVip: false,
-                  isEvent: false,
+                  is_nsfw: file.includes('nsfw'),
+                  is_vip: false,
+                  is_event: false,
                   createdAt: stats.birthtime,
                   characterId: null,
                   fileName: file,
@@ -470,9 +470,9 @@ export function registerAdminRoutes(app: Express) {
       for (const file of files) {
         const mediaEntry = {
           mood: null,
-          isNsfw: req.body.isNsfw === 'true' || false,
-          isVip: req.body.isVip === 'true' || false,
-          isEvent: req.body.isEvent === 'true' || false,
+          is_nsfw: req.body.isNsfw === 'true' || false,
+          is_vip: req.body.isVip === 'true' || false,
+          is_event: req.body.isEvent === 'true' || false,
           characterId: req.body.characterId || null,
           fileName: file.originalname,
           filePath: `/uploads/${file.filename}`,
@@ -534,8 +534,8 @@ export function registerAdminRoutes(app: Express) {
         totalSize: '2.3GB', // Could calculate if needed
         imageFiles: allMedia.filter((m: any) => m.fileType?.startsWith('image')).length,
         videoFiles: allMedia.filter((m: any) => m.fileType?.startsWith('video')).length,
-        nsfwFiles: allMedia.filter((m: any) => m.isNsfw).length,
-        vipFiles: allMedia.filter((m: any) => m.isVip).length,
+        nsfwFiles: allMedia.filter((m: any) => m.is_nsfw).length,
+        vipFiles: allMedia.filter((m: any) => m.is_vip).length,
         orphanedFiles: allMedia.filter((m: any) => !m.characterId).length,
         duplicates: 0 // Could implement duplicate detection if needed
       };
