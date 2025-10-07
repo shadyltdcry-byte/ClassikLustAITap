@@ -35,10 +35,7 @@ interface GameSettings {
   [key: string]: any;
 }
 
-// Helper function to convert camelCase to snake_case
-function toSnakeCase(str: string): string {
-  return str.replace(/([A-Z])/g, (g) => `_${g[0].toLowerCase()}`);
-}
+
 
 // Helper function to convert snake_case to camelCase
 function toCamelCase(str: string): string {
@@ -46,16 +43,6 @@ function toCamelCase(str: string): string {
 }
 
 // Universal mapper function for database operations
-function mapToSnakeCase<T extends Record<string, any>>(obj: T): Record<string, any> {
-  const newObj: Record<string, any> = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      newObj[toSnakeCase(key)] = obj[key];
-    }
-  }
-  return newObj;
-}
-
 function mapToCamelCase<T extends Record<string, any>>(obj: T): Record<string, any> {
   const newObj: Record<string, any> = {};
   for (const key in obj) {
@@ -65,6 +52,7 @@ function mapToCamelCase<T extends Record<string, any>>(obj: T): Record<string, a
   }
   return newObj;
 }
+
 
 // Function to map an array of objects from snake_case to camelCase
 function mapArrayToCamelCase<T extends Record<string, any>>(arr: T[]): Record<string, any>[] {
@@ -165,7 +153,7 @@ export class SupabaseStorage implements IStorage {
   async createUser(user: InsertUser): Promise<User> {
     const { data, error } = await this.supabase
       .from('users')
-      .insert(mapToSnakeCase(user))
+      .insert(mapToCamelCase(user))
       .select()
       .single();
 
@@ -184,8 +172,8 @@ export class SupabaseStorage implements IStorage {
       }
     });
 
-    // Convert to snake_case for database
-    const dbUpdates = mapToSnakeCase(safeUpdates);
+    // Convert to camel case for database
+    const dbUpdates = mapToCamelCase(safeUpdates);
 
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
@@ -193,7 +181,7 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .update(dbUpdates)
-        .eq('telegram_id', telegramId)
+        .eq('telegramId', telegramId)
         .select()
         .single();
 
@@ -332,7 +320,7 @@ export class SupabaseStorage implements IStorage {
   async createCharacter(character: InsertCharacter): Promise<Character> {
     const { data, error } = await this.supabase
       .from('characters')
-      .insert(mapToSnakeCase(character))
+      .insert(mapToCamelCase(character))
       .select()
       .single();
 
@@ -344,7 +332,7 @@ export class SupabaseStorage implements IStorage {
   async updateCharacter(id: string, updates: Partial<Character>): Promise<Character | undefined> {
     const { data, error } = await this.supabase
       .from('characters')
-      .update(mapToSnakeCase(updates))
+      .update(mapToCamelCase(updates))
       .eq('id', id)
       .select()
       .single();
@@ -419,7 +407,7 @@ export class SupabaseStorage implements IStorage {
   async createUpgrade(upgrade: InsertUpgrade): Promise<Upgrade> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .insert(mapToSnakeCase(upgrade))
+      .insert(mapToCamelCase(upgrade))
       .select()
       .single();
 
@@ -431,7 +419,7 @@ export class SupabaseStorage implements IStorage {
   async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | undefined> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .update(mapToSnakeCase(updates))
+      .update(mapToCamelCase(updates))
       .eq('id', id)
       .select()
       .single();
@@ -589,7 +577,7 @@ export class SupabaseStorage implements IStorage {
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
     const { data, error } = await this.supabase
       .from('chat_messages')
-      .insert(mapToSnakeCase(message))
+      .insert(mapToCamelCase(message))
       .select()
       .single();
 
@@ -738,7 +726,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async saveMediaFile(file: MediaFile): Promise<MediaFile> {
-    const dbFile = mapToSnakeCase(file);
+    const dbFile = mapToCamelCase(file);
 
     const { data, error } = await this.supabase
       .from('media_files')
@@ -756,7 +744,7 @@ export class SupabaseStorage implements IStorage {
 
   async uploadMedia(file: any): Promise<MediaFile> {
     const mediaFile: MediaFile = {
-      characterId: file.characterId,
+      character_id: file.character_id,
       fileName: file.filename,
       filePath: file.url,
       fileType: file.type,
@@ -778,7 +766,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateMediaFile(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
-    const dbUpdates = mapToSnakeCase(updates);
+    const dbUpdates = mapToCamelCase(updates);
 
     const { data, error } = await this.supabase
       .from('media_files')
@@ -810,7 +798,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateMedia(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
-    const dbUpdates = mapToSnakeCase(updates);
+    const dbUpdates = mapToCamelCase(updates);
 
     const { data, error } = await this.supabase
       .from('media_files')
@@ -851,7 +839,7 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await this.supabase
       .from('media_files')
       .select('*')
-      .or('file_name.is.null,file_path.is.null,character_id.is.null');
+      .or('fileName.is.null,filePath.is.null,character_id.is.null');
 
     if (error) {
       console.error('Error finding orphaned media files:', error);
@@ -894,7 +882,7 @@ export class SupabaseStorage implements IStorage {
     const orphanedFiles = await this.getOrphanedMediaFiles();
     const { duplicates } = await this.getDuplicateMediaFiles();
 
-    const withoutCharacter = allFiles.filter(f => !f.characterId).length;
+    const withoutCharacter = allFiles.filter(f => !f.character_id).length;
     const withoutFileName = allFiles.filter(f => !f.fileName).length;
 
     return {
@@ -923,7 +911,7 @@ export class SupabaseStorage implements IStorage {
   async createLevelRequirement(levelReq: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('level_requirements')
-      .insert(mapToSnakeCase(levelReq))
+      .insert(mapToCamelCase(levelReq))
       .select()
       .single();
 
@@ -937,7 +925,7 @@ export class SupabaseStorage implements IStorage {
   async updateLevelRequirement(id: string, updates: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('level_requirements')
-      .update(mapToSnakeCase(updates))
+      .update(mapToCamelCase(updates))
       .eq('id', id)
       .select()
       .single();
@@ -992,7 +980,7 @@ export class SupabaseStorage implements IStorage {
   async createAchievement(achievement: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('achievements')
-      .insert(mapToSnakeCase(achievement))
+      .insert(mapToCamelCase(achievement))
       .select()
       .single();
 
@@ -1006,7 +994,7 @@ export class SupabaseStorage implements IStorage {
   async updateAchievement(id: string, updates: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('achievements')
-      .update(mapToSnakeCase(updates))
+      .update(mapToCamelCase(updates))
       .eq('id', id)
       .select()
       .single();

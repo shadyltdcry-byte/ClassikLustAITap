@@ -410,20 +410,20 @@
           "primaryKey": false,
           "notNull": true
         },
-        "file_name": {
-          "name": "file_name",
+        "fileName": {
+          "name": "fileName",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "file_path": {
-          "name": "file_path",
+        "filePath": {
+          "name": "filePath",
           "type": "text",
           "primaryKey": false,
           "notNull": true
         },
-        "file_type": {
-          "name": "file_type",
+        "fileType": {
+          "name": "fileType",
           "type": "text",
           "primaryKey": false,
           "notNull": true
@@ -440,8 +440,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "animation_sequence": {
-          "name": "animation_sequence",
+        "animationSequence": {
+          "name": "animationSequence",
           "type": "integer",
           "primaryKey": false,
           "notNull": false

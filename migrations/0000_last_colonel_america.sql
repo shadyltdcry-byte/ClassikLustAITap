@@ -55,12 +55,12 @@ CREATE TABLE "game_stats" (
 CREATE TABLE "media_files" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"character_id" uuid NOT NULL,
-	"file_name" text NOT NULL,
-	"file_path" text NOT NULL,
-	"file_type" text NOT NULL,
+	"fileName" text NOT NULL,
+	"filePath" text NOT NULL,
+	"fileType" text NOT NULL,
 	"mood" text,
 	"pose" text,
-	"animation_sequence" integer,
+	"animationSequence" integer,
 	"isNsfw" boolean DEFAULT false NOT NULL,
 	"isVip" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL

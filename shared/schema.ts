@@ -6,13 +6,13 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  telegramId: text("telegram_id").unique(),
+  telegramId: text("telegramId").unique(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   level: integer("level").notNull().default(1),
   lp: real("lp").notNull().default(0), // Changed to real to support decimals like 1.5
   energy: integer("energy").notNull().default(1000),
-  maxEnergy: integer("max_energy").notNull().default(1000),
+  maxEnergy: integer("maxEnergy").notNull().default(1000),
   charisma: integer("charisma").notNull().default(0),
   lpPerHour: integer("lpPerHour").notNull().default(10),
   lpPerTap: real("lpPerTap").notNull().default(1.0),
@@ -35,39 +35,39 @@ export const characters = pgTable("characters", {
   isNsfw: boolean("isNsfw").notNull().default(false),
   isVip: boolean("isVip").notNull().default(false),
   isEvent: boolean("isEvent").notNull().default(false),
-  levelRequirement: integer("level_requirement").notNull().default(1),
+  levelRequirement: integer("levelRequirement").notNull().default(1),
   isEnabled: boolean("isEnabled").notNull().default(true),
-  customTriggers: jsonb("custom_triggers").default(sql`'[]'::jsonb`),
-  avatarPath: text("avatar_path"),
-  imageUrl: text("image_url"),
-  avatarUrl: text("avatar_url"),
-  chatStyle: text("chat_style").default("casual"),
+  customTriggers: jsonb("customTriggers").default(sql`'[]'::jsonb`),
+  avatarPath: text("avatarPath"),
+  imageUrl: text("imageUrl"),
+  avatarUrl: text("avatarUrl"),
+  chatStyle: text("chatStyle").default("casual"),
   likes: text("likes"),
   dislikes: text("dislikes"),
-  responseTimeMin: integer("response_time_min").default(1),
-  responseTimeMax: integer("response_time_max").default(3),
-  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  responseTimeMin: integer("responseTimeMin").default(1),
+  responseTimeMax: integer("responseTimeMax").default(3),
+  createdAt: timestamp("createdAt").notNull().default(sql`now()`),
 });
 
-export const userCharacters = pgTable("user_characters", {
+export const userCharacters = pgTable("userCharacters", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  characterId: uuid("character_id").notNull().references(() => characters.id, { onDelete: "cascade" }),
-  charismaPoints: integer("charisma_points").notNull().default(0),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  characterId: uuid("characterId").notNull().references(() => characters.id, { onDelete: "cascade" }),
+  charismaPoints: integer("charismaPoints").notNull().default(0),
   affection: integer("affection").notNull().default(0),
-  bondLevel: integer("bond_level").notNull().default(1),
-  unlockedAt: timestamp("unlocked_at").notNull().default(sql`now()`),
+  bondLevel: integer("bondLevel").notNull().default(1),
+  unlockedAt: timestamp("unlockedAt").notNull().default(sql`now()`),
 });
 
-export const mediaFiles = pgTable("media_files", {
+export const mediaFiles = pgTable("mediaFiles", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   character_id: uuid("character_id").references(() => characters.id, { onDelete: "cascade" }),
-  file_name: text("file_name").notNull(),
-  file_path: text("file_path").notNull(),
-  file_type: text("file_type").notNull(), // image, video, gif
+  fileName: text("fileName").notNull(),
+  filePath: text("filePath").notNull(),
+  fileType: text("fileType").notNull(), // image, video, gif
   mood: text("mood"),
   pose: text("pose"),
-  animation_sequence: integer("animation_sequence"),
+  animationSequence: integer("animationSequence"),
   isNsfw: boolean("isNsfw").notNull().default(false),
   isVip: boolean("isVip").notNull().default(false),
   isEvent: boolean("isEvent").notNull().default(false),

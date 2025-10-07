@@ -58,12 +58,12 @@ CREATE TABLE characters (
 CREATE TABLE media_files (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     character_id UUID REFERENCES characters(id) ON DELETE CASCADE,
-    file_name TEXT NOT NULL,
-    file_path TEXT NOT NULL,
-    file_type TEXT NOT NULL,
+    fileName TEXT NOT NULL,
+    filePath TEXT NOT NULL,
+    fileType TEXT NOT NULL,
     mood TEXT,
     pose TEXT,
-    animation_sequence INTEGER,
+    animationSequence INTEGER,
     isNsfw BOOLEAN NOT NULL DEFAULT false,
     isVip BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
