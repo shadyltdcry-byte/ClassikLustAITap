@@ -3,8 +3,8 @@
 -- Insert default upgrades
 INSERT INTO upgrades (id, name, description, category, base_cost, base_effect, cost_multiplier, effect_multiplier, unlock_level) VALUES
   ('650e8400-e29b-41d4-a716-446655440001', 'Energy Boost', 'Increases maximum energy', 'energy', 100, 50, 1.3, 1.15, 1),
-  ('650e8400-e29b-41d4-a716-446655440002', 'LP Per Hour', 'Increases passive LP generation', 'lp_per_hour', 150, 5, 1.4, 1.2, 1),
-  ('650e8400-e29b-41d4-a716-446655440003', 'LP Per Tap', 'Increases LP gained per tap', 'lp_per_tap', 200, 0.5, 1.5, 1.1, 1);
+  ('650e8400-e29b-41d4-a716-446655440002', 'LP Per Hour', 'Increases passive LP generation', 'lpPerHour', 150, 5, 1.4, 1.2, 1),
+  ('650e8400-e29b-41d4-a716-446655440003', 'LP Per Tap', 'Increases LP gained per tap', 'lpPerTap', 200, 0.5, 1.5, 1.1, 1);
 
 -- Sample media files removed - upload your own media via the admin interface
 

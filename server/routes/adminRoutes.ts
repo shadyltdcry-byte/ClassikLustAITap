@@ -128,7 +128,7 @@ export function registerAdminRoutes(app: Express) {
           id: 'lp_tap_1',
           name: 'Dexterity Lv. 1',
           description: 'Increase LP per tap',
-          category: 'lp_per_tap',
+          category: 'lpPerTap',
           baseCost: 2500,
           baseEffect: 1,
           costMultiplier: 1.5,
@@ -140,7 +140,7 @@ export function registerAdminRoutes(app: Express) {
           id: 'lp_hour_1',
           name: 'Intellect Lv. 1',
           description: 'Increase LP per hour',
-          category: 'lp_per_hour',
+          category: 'lpPerHour',
           baseCost: 1500,
           baseEffect: 150,
           costMultiplier: 1.3,
@@ -415,9 +415,9 @@ export function registerAdminRoutes(app: Express) {
                 const mediaEntry = {
                   id: crypto.randomUUID(), // Use crypto.randomUUID() for proper UUID generation
                   mood: null,
-                  is_nsfw: file.includes('nsfw'),
-                  is_vip: false,
-                  is_event: false,
+                  isNsfw: file.includes('nsfw'),
+                  isVip: false,
+                  isEvent: false,
                   createdAt: stats.birthtime,
                   characterId: null,
                   fileName: file,
@@ -534,8 +534,9 @@ export function registerAdminRoutes(app: Express) {
         totalSize: '2.3GB', // Could calculate if needed
         imageFiles: allMedia.filter((m: any) => m.fileType?.startsWith('image')).length,
         videoFiles: allMedia.filter((m: any) => m.fileType?.startsWith('video')).length,
-        nsfwFiles: allMedia.filter((m: any) => m.is_nsfw).length,
-        vipFiles: allMedia.filter((m: any) => m.is_vip).length,
+        nsfwFiles: allMedia.filter((m: any) => m.isfNsfw).length,
+        vipFiles: allMedia.filter((m: any) => m.isVip).length,
+        eventFiles: allMedia.filter((m: any) => m.isEvent).length,
         orphanedFiles: allMedia.filter((m: any) => !m.characterId).length,
         duplicates: 0 // Could implement duplicate detection if needed
       };

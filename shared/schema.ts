@@ -14,12 +14,13 @@ export const users = pgTable("users", {
   energy: integer("energy").notNull().default(1000),
   maxEnergy: integer("max_energy").notNull().default(1000),
   charisma: integer("charisma").notNull().default(0),
-  lpPerHour: integer("lp_per_hour").notNull().default(10),
-  lpPerTap: real("lp_per_tap").notNull().default(1.0),
-  vipStatus: boolean("vip_status").notNull().default(false),
-  nsfwConsent: boolean("nsfw_consent").notNull().default(false),
-  lastTick: timestamp("last_tick").notNull().default(sql`now()`),
-  lastWheelSpin: timestamp("last_wheel_spin"),
+  lpPerHour: integer("lpPerHour").notNull().default(10),
+  lpPerTap: real("lpPerTap").notNull().default(1.0),
+  vipStatus: boolean("vipStatus").notNull().default(false),
+  nsfwConsent: boolean("nsfwConsent").notNull().default(false),
+  isEvent: boolean("isEvent").notNull().default(false),
+  lastTick: timestamp("lastTick").notNull().default(sql`now()`),
+  lastWheelSpin: timestamp("lastWheelSpin"),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
@@ -31,10 +32,11 @@ export const characters = pgTable("characters", {
   description: text("description"), // For AI system prompts with variables like {characterName}, {mood}
   backstory: text("backstory"),
   mood: text("mood").notNull().default("neutral"),
-  isNsfw: boolean("is_nsfw").notNull().default(false),
-  isVip: boolean("is_vip").notNull().default(false),
+  isNsfw: boolean("isNsfw").notNull().default(false),
+  isVip: boolean("isVip").notNull().default(false),
+  isEvent: boolean("isEvent").notNull().default(false),
   levelRequirement: integer("level_requirement").notNull().default(1),
-  isEnabled: boolean("is_enabled").notNull().default(true),
+  isEnabled: boolean("isEnabled").notNull().default(true),
   customTriggers: jsonb("custom_triggers").default(sql`'[]'::jsonb`),
   avatarPath: text("avatar_path"),
   imageUrl: text("image_url"),
@@ -66,9 +68,9 @@ export const mediaFiles = pgTable("media_files", {
   mood: text("mood"),
   pose: text("pose"),
   animation_sequence: integer("animation_sequence"),
-  is_nsfw: boolean("is_nsfw").notNull().default(false),
-  is_vip: boolean("is_vip").notNull().default(false),
-  is_event: boolean("is_event").notNull().default(false),
+  isNsfw: boolean("isNsfw").notNull().default(false),
+  isVip: boolean("isVip").notNull().default(false),
+  isEvent: boolean("isEvent").notNull().default(false),
   random_send_chance: integer("random_send_chance").notNull().default(5),
   required_level: integer("required_level").notNull().default(1),
   category: text("category").default("Character"), // Character, Avatar, Misc, Event, Other
@@ -81,7 +83,7 @@ export const upgrades = pgTable("upgrades", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   name: text("name").notNull(),
   description: text("description"),
-  category: text("category").notNull(), // lp_per_hour, energy, lp_per_tap
+  category: text("category").notNull(), // lpPerHour, energy, lpPerTap
   baseCost: integer("base_cost").notNull(),
   baseEffect: real("base_effect").notNull(),
   costMultiplier: real("cost_multiplier").notNull().default(1.3),
@@ -166,8 +168,8 @@ export const achievements = pgTable("achievements", {
   levels: jsonb("levels").notNull().default(sql`'[]'::jsonb`), // [{level: 1, target: 10, reward: {type: "lp", amount: 100}}, {level: 2, target: 20, reward: {type: "lp", amount: 200}}]
   maxLevel: integer("max_level").notNull().default(30),
   icon: text("icon"),
-  isHidden: boolean("is_hidden").notNull().default(false),
-  isEnabled: boolean("is_enabled").notNull().default(true),
+  isHidden: boolean("isHidden").notNull().default(false),
+  isEnabled: boolean("isEnabled").notNull().default(true),
   sortOrder: integer("sort_order").notNull().default(0),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });

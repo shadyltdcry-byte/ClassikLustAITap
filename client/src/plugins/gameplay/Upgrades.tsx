@@ -109,7 +109,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
       if (activeTab === "special") {
         // Special includes energy and any other non-standard categories
         return upgrade.category === "special" || upgrade.category === "energy" || 
-               (upgrade.category !== "lp_per_hour" && upgrade.category !== "lp_per_tap");
+               (upgrade.category !== "lpPerHour" && upgrade.category !== "lpPerTap");
       }
       return upgrade.category === activeTab;
     });
@@ -155,14 +155,14 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
               ⭐ All
             </Button>
             <Button 
-              onClick={() => setActiveTab("lp_per_hour")}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lp_per_hour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+              onClick={() => setActiveTab("lpPerHour")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
             >
               💰 LP/Hour
             </Button>
             <Button 
-              onClick={() => setActiveTab("lp_per_tap")}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lp_per_tap" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+              onClick={() => setActiveTab("lpPerTap")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerTap" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
             >
               👆 LP/Tap
             </Button>

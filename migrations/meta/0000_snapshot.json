@@ -146,7 +146,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.characters": {
+    "characters": {
       "name": "characters",
       "schema": "",
       "columns": {
@@ -189,15 +189,15 @@
           "notNull": true,
           "default": 1
         },
-        "is_nsfw": {
-          "name": "is_nsfw",
+        "isNsfw": {
+          "name": "isNsfw",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "is_vip": {
-          "name": "is_vip",
+        "isVip": {
+          "name": "isVip",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -233,7 +233,7 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.chat_messages": {
+    "chat_messages": {
       "name": "chat_messages",
       "schema": "",
       "columns": {
@@ -446,15 +446,22 @@
           "primaryKey": false,
           "notNull": false
         },
-        "is_nsfw": {
-          "name": "is_nsfw",
+        "isNsfw": {
+          "name": "isNsfw",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "is_vip": {
-          "name": "is_vip",
+        "isVip": {
+          "name": "isVip",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "isEvent": {
+          "name": "isEvent",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
@@ -785,36 +792,36 @@
           "notNull": true,
           "default": 0
         },
-        "lp_per_hour": {
-          "name": "lp_per_hour",
+        "lpPerHour": {
+          "name": "lpPerHour",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 10
         },
-        "lp_per_tap": {
-          "name": "lp_per_tap",
+        "lpPerTap": {
+          "name": "lpPerTap",
           "type": "real",
           "primaryKey": false,
           "notNull": true,
           "default": 1
         },
-        "vip_status": {
-          "name": "vip_status",
+        "vipStatus": {
+          "name": "vipStatus",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "nsfw_consent": {
-          "name": "nsfw_consent",
+        "nsfwConsent": {
+          "name": "nsfwConsent",
           "type": "boolean",
           "primaryKey": false,
           "notNull": true,
           "default": false
         },
-        "last_tick": {
-          "name": "last_tick",
+        "lastTick": {
+          "name": "lastTick",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,

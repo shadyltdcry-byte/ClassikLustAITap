@@ -26,9 +26,9 @@ interface Upgrade {
 }
 
 const upgradeCategories = [
-  { value: 'lp_per_hour', label: 'LP Per Hour' },
+  { value: 'lpPerHour', label: 'LP per Hour' },
   { value: 'energy', label: 'Energy Increase' },
-  { value: 'lp_per_tap', label: 'LP Per Tap' }
+  { value: 'lpPerTap', label: 'LP per Tap' }
 ];
 
 export default function UpgradeManagement() {
@@ -37,7 +37,7 @@ export default function UpgradeManagement() {
   const [formData, setFormData] = useState<Upgrade>({
     name: '',
     description: '',
-    category: 'lp_per_hour',
+    category: 'lpPerHour',
     baseCost: 100,
     baseEffect: 1,
     costMultiplier: 1.3,
@@ -105,7 +105,7 @@ export default function UpgradeManagement() {
     setFormData({
       name: '',
       description: '',
-      category: 'lp_per_hour',
+      category: 'lpPerHour',
       baseCost: 100,
       baseEffect: 1,
       costMultiplier: 1.3,

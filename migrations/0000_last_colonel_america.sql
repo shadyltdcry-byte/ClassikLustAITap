@@ -25,8 +25,8 @@ CREATE TABLE "characters" (
 	"backstory" text,
 	"mood" text DEFAULT 'neutral' NOT NULL,
 	"level" integer DEFAULT 1 NOT NULL,
-	"is_nsfw" boolean DEFAULT false NOT NULL,
-	"is_vip" boolean DEFAULT false NOT NULL,
+	"isNsfw" boolean DEFAULT false NOT NULL,
+	"isVip" boolean DEFAULT false NOT NULL,
 	"level_requirement" integer DEFAULT 1 NOT NULL,
 	"custom_triggers" jsonb DEFAULT '[]'::jsonb,
 	"created_at" timestamp DEFAULT now() NOT NULL
@@ -61,8 +61,8 @@ CREATE TABLE "media_files" (
 	"mood" text,
 	"pose" text,
 	"animation_sequence" integer,
-	"is_nsfw" boolean DEFAULT false NOT NULL,
-	"is_vip" boolean DEFAULT false NOT NULL,
+	"isNsfw" boolean DEFAULT false NOT NULL,
+	"isVip" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -106,11 +106,11 @@ CREATE TABLE "users" (
 	"energy" integer DEFAULT 1000 NOT NULL,
 	"max_energy" integer DEFAULT 1000 NOT NULL,
 	"charisma" integer DEFAULT 0 NOT NULL,
-	"lp_per_hour" integer DEFAULT 10 NOT NULL,
-	"lp_per_tap" real DEFAULT 1 NOT NULL,
-	"vip_status" boolean DEFAULT false NOT NULL,
-	"nsfw_consent" boolean DEFAULT false NOT NULL,
-	"last_tick" timestamp DEFAULT now() NOT NULL,
+	"lpPerHour" integer DEFAULT 10 NOT NULL,
+	"lpPerTap" real DEFAULT 1 NOT NULL,
+	"vipStatus" boolean DEFAULT false NOT NULL,
+	"nsfwConsent" boolean DEFAULT false NOT NULL,
+	"lastTick" timestamp DEFAULT now() NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "users_username_unique" UNIQUE("username")
 );

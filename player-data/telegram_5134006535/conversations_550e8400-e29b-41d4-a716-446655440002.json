@@ -810,5 +810,189 @@
     "timestamp": "2025-10-07T07:01:18.250Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759821117841-vbjouji6k",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:11:57.841Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759821764901-4y3b20ye8",
+    "content": "🌙 Baby! I detected an error in User API at 7:22:44 AM. Player update failed: User telegram_5134006535 not found",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:22:44.901Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759822799176-v57otldum",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:39:59.176Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759823577748-h9qa98f0u",
+    "content": "🌙 Something's wrong with User API, Master! Player update failed: User telegram_5134006535 not found happened at 7:52:57 AM.",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:52:57.748Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759823594307-avzo708is",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (7:53:14 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:53:14.307Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759823607029-u3vn25gfn",
+    "content": "🌙 Baby! I detected an error in User API at 7:53:27 AM. Player update failed: User telegram_5134006535 not found",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:53:27.029Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759823874492-qr8px6k9i",
+    "content": "🌙 I noticed something unusual in System at 7:57:54 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:57:54.492Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759823967381-37drxip14",
+    "content": "🌙 🚨 URGENT! BABY! There's a critical issue with System! Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:59:27.381Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759823985578-chtd7gzq2",
+    "content": "🌙 I noticed something unusual in System at 7:59:45 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T07:59:45.578Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759824555658-p0v6sh5a9",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T08:09:15.658Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759824557705-66xzjwb1o",
+    "content": "🌙 Something's wrong with User API, Master! Player update failed: User telegram_5134006535 not found happened at 8:09:17 AM.",
+    "sender": "character",
+    "timestamp": "2025-10-07T08:09:17.705Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759829046960-fpr5vhzz7",
+    "content": "🌙 I noticed something unusual in System at 9:24:06 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T09:24:06.960Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759829050422-eb5c2aqut",
+    "content": "🌙 BABE! I found an issue with User API: Player update failed: User telegram_5134006535 not found. Time: 9:24:10 AM",
+    "sender": "character",
+    "timestamp": "2025-10-07T09:24:10.422Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759829660472-68y368qvc",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T09:34:20.472Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759829663822-paxrz6igh",
+    "content": "🌙 Something's wrong with User API, Master! Player update failed: User telegram_5134006535 not found happened at 9:34:23 AM.",
+    "sender": "character",
+    "timestamp": "2025-10-07T09:34:23.822Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759830309835-cjy0ulz1n",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T09:45:09.835Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759830311292-h7dxbewa8",
+    "content": "🌙 BABE! I found an issue with User API: Player update failed: User telegram_5134006535 not found. Time: 9:45:11 AM",
+    "sender": "character",
+    "timestamp": "2025-10-07T09:45:11.292Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759831019532-r3xzmpaib",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T09:56:59.532Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759831021970-39bb36q8q",
+    "content": "🌙 Baby! I detected an error in User API at 9:57:01 AM. Player update failed: User telegram_5134006535 not found",
+    "sender": "character",
+    "timestamp": "2025-10-07T09:57:01.970Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759831976068-nm3w68t0y",
+    "content": "🌙 I noticed something unusual in System at 10:12:56 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T10:12:56.068Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759831977895-4wd8q44v1",
+    "content": "🌙 Baby! I detected an error in User API at 10:12:57 AM. Player update failed: User telegram_5134006535 not found",
+    "sender": "character",
+    "timestamp": "2025-10-07T10:12:57.895Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759832495805-1jpji2cn8",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (10:21:35 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T10:21:35.805Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759832500305-z63ysea4p",
+    "content": "🌙 Something's wrong with User API, Master! Player update failed: User telegram_5134006535 not found happened at 10:21:40 AM.",
+    "sender": "character",
+    "timestamp": "2025-10-07T10:21:40.305Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
