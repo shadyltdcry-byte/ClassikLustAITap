@@ -32,21 +32,21 @@ export const characters = pgTable("characters", {
   description: text("description"), // For AI system prompts with variables like {characterName}, {mood}
   backstory: text("backstory"),
   mood: text("mood").notNull().default("neutral"),
-  isNsfw: boolean("is_nsfw").notNull().default(false),
-  isVip: boolean("is_vip").notNull().default(false),
-  isEvent: boolean("is_event").notNull().default(false),
-  levelRequirement: integer("level_requirement").notNull().default(1),
-  isEnabled: boolean("is_enabled").notNull().default(true),
-  customTriggers: jsonb("custom_triggers").default(sql`'[]'::jsonb`),
-  avatarPath: text("avatar_path"),
-  imageUrl: text("image_url"),
-  avatarUrl: text("avatar_url"),
-  chatStyle: text("chat_style").default("casual"),
+  isNsfw: boolean("isNsfw").notNull().default(false),
+  isVip: boolean("isVip").notNull().default(false),
+  isEvent: boolean("isEvent").notNull().default(false),
+  levelRequirement: integer("levelRequirement").notNull().default(1),
+  isEnabled: boolean("isEnabled").notNull().default(true),
+  customTriggers: jsonb("customTriggers").default(sql`'[]'::jsonb`),
+  avatarPath: text("avatarPath"),
+  imageUrl: text("imageUrl"),
+  avatarUrl: text("avatarUrl"),
+  chatStyle: text("chatStyle").default("casual"),
   likes: text("likes"),
   dislikes: text("dislikes"),
-  responseTimeMin: integer("response_time_min").default(1),
-  responseTimeMax: integer("response_time_max").default(3),
-  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  responseTimeMin: integer("responseTimeMin").default(1),
+  responseTimeMax: integer("responseTimeMax").default(3),
+  createdAt: timestamp("createdAt").notNull().default(sql`now()`),
 });
 
 export const userCharacters = pgTable("userCharacters", {
@@ -61,7 +61,7 @@ export const userCharacters = pgTable("userCharacters", {
 
 export const mediaFiles = pgTable("mediaFiles", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  character_id: uuid("character_id").references(() => characters.id, { onDelete: "cascade" }),
+  characterId: uuid("characterId").references(() => characters.id, { onDelete: "cascade" }),
   fileName: text("fileName").notNull(),
   filePath: text("filePath").notNull(),
   fileType: text("fileType").notNull(), // image, video, gif
@@ -71,12 +71,12 @@ export const mediaFiles = pgTable("mediaFiles", {
   isNsfw: boolean("isNsfw").notNull().default(false),
   isVip: boolean("isVip").notNull().default(false),
   isEvent: boolean("isEvent").notNull().default(false),
-  random_send_chance: integer("random_send_chance").notNull().default(5),
-  required_level: integer("required_level").notNull().default(1),
+  randomSendChance: integer("randomSendChance").notNull().default(5),
+  requiredLevel: integer("requiredLevel").notNull().default(1),
   category: text("category").default("Character"), // Character, Avatar, Misc, Event, Other
-  enabled_for_chat: boolean("enabled_for_chat").notNull().default(true), // Toggle for AI chat usage
-  auto_organized: boolean("auto_organized").notNull().default(false), // Track if file is auto-organized
-  created_at: timestamp("created_at").notNull().default(sql`now()`),
+  enabledForChat: boolean("enabledForChat").notNull().default(true), // Toggle for AI chat usage
+  autoOrganized: boolean("autoOrganized").notNull().default(false), // Track if file is auto-organized
+  createdAt: timestamp("createdAt").notNull().default(sql`now()`),
 });
 
 export const upgrades = pgTable("upgrades", {
@@ -84,79 +84,79 @@ export const upgrades = pgTable("upgrades", {
   name: text("name").notNull(),
   description: text("description"),
   category: text("category").notNull(), // lpPerHour, energy, lpPerTap
-  baseCost: integer("base_cost").notNull(),
-  baseEffect: real("base_effect").notNull(),
-  costMultiplier: real("cost_multiplier").notNull().default(1.3),
-  effectMultiplier: real("effect_multiplier").notNull().default(1.15),
-  maxLevel: integer("max_level"),
-  levelRequirement: integer("level_requirement").notNull().default(1),
+  baseCost: integer("baseCost").notNull(),
+  baseEffect: real("baseEffect").notNull(),
+  costMultiplier: real("costMultiplier").notNull().default(1.3),
+  effectMultiplier: real("effectMultiplier").notNull().default(1.15),
+  maxLevel: integer("maxLevel"),
+  levelRequirement: integer("levelRequirement").notNull().default(1),
 });
 
 export const userUpgrades = pgTable("user_upgrades", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  upgradeId: uuid("upgrade_id").notNull().references(() => upgrades.id, { onDelete: "cascade" }),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  upgradeId: uuid("upgradeId").notNull().references(() => upgrades.id, { onDelete: "cascade" }),
   level: integer("level").notNull().default(0),
-  purchasedAt: timestamp("purchased_at").notNull().default(sql`now()`),
+  purchasedAt: timestamp("purchasedAt").notNull().default(sql`now()`),
 });
 
 export const boosters = pgTable("boosters", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   type: text("type").notNull(), // lp_multiplier, energy_regen, etc.
   multiplier: real("multiplier").notNull(),
   duration: integer("duration").notNull(), // in minutes
-  activatedAt: timestamp("activated_at").notNull().default(sql`now()`),
-  expiresAt: timestamp("expires_at").notNull(),
+  activatedAt: timestamp("activateAt").notNull().default(sql`now()`),
+  expiresAt: timestamp("expiresAt").notNull(),
 });
 
-export const wheelRewards = pgTable("wheel_rewards", {
+export const wheelRewards = pgTable("wheelRewards", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   reward: text("reward").notNull(),
   amount: integer("amount").notNull(),
-  spunAt: timestamp("spun_at").notNull().default(sql`now()`),
+  spunAt: timestamp("spunAt").notNull().default(sql`now()`),
 });
 
 export const gameStats = pgTable("game_stats", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  totalTaps: integer("total_taps").notNull().default(0),
-  totalLpEarned: integer("total_lp_earned").notNull().default(0),
-  totalEnergyUsed: integer("total_energy_used").notNull().default(0),
-  sessionsPlayed: integer("sessions_played").notNull().default(0),
-  lastUpdated: timestamp("last_updated").notNull().default(sql`now()`),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  totalTaps: integer("totalTaps").notNull().default(0),
+  totalLpEarned: integer("totalLpEarned").notNull().default(0),
+  totalEnergyUsed: integer("totalEnergyUsed").notNull().default(0),
+  sessionsPlayed: integer("sessionPlayed").notNull().default(0),
+  lastUpdated: timestamp("lastUpdated").notNull().default(sql`now()`),
 });
 
 export const chatMessages = pgTable("chat_messages", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  characterId: uuid("character_id").notNull().references(() => characters.id, { onDelete: "cascade" }),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  characterId: uuid("characterId").notNull().references(() => characters.id, { onDelete: "cascade" }),
   message: text("message").notNull(),
   response: text("response"),
-  charismaGained: integer("charisma_gained").notNull().default(0),
-  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  charismaGained: integer("charismaGained").notNull().default(0),
+  createdAt: timestamp("createdAt").notNull().default(sql`now()`),
 });
 
 export const bonuses = pgTable("bonuses", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   type: text("type").notNull(), // level_up, achievement, wheel, ai_gift
   source: text("source").notNull(),
   reward: text("reward").notNull(),
   amount: integer("amount").notNull(),
-  claimedAt: timestamp("claimed_at").notNull().default(sql`now()`),
+  claimedAt: timestamp("claimedAt").notNull().default(sql`now()`),
 });
 
-export const levelRequirements = pgTable("level_requirements", {
+export const levelRequirements = pgTable("levelRequirements", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   level: integer("level").notNull().unique(),
-  lpRequired: integer("lp_required").notNull(),
+  lpRequired: integer("lpRequired").notNull(),
   description: text("description"),
-  unlockRewards: jsonb("unlock_rewards").default(sql`'[]'::jsonb`), // Array of rewards {type, amount}
+  unlockRewards: jsonb("unlockRewards").default(sql`'[]'::jsonb`), // Array of rewards {type, amount}
   functions: jsonb("functions").default(sql`'[]'::jsonb`), // Multiple functions for level
-  upgradeRequirements: jsonb("upgrade_requirements").default(sql`'[]'::jsonb`), // Array of {upgradeId, requiredLevel}
-  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  upgradeRequirements: jsonb("upgradeRequirements").default(sql`'[]'::jsonb`), // Array of {upgradeId, requiredLevel}
+  createdAt: timestamp("createAt").notNull().default(sql`now()`),
 });
 
 export const achievements = pgTable("achievements", {
@@ -164,26 +164,26 @@ export const achievements = pgTable("achievements", {
   name: text("name").notNull(),
   description: text("description"),
   category: text("category").notNull(), // tapping, chatting, progression, special
-  baseRequirement: jsonb("base_requirement").notNull(), // {type: "total_taps", baseTarget: 10, multiplier: 2}
+  baseRequirement: jsonb("baseRequirement").notNull(), // {type: "total_taps", baseTarget: 10, multiplier: 2}
   levels: jsonb("levels").notNull().default(sql`'[]'::jsonb`), // [{level: 1, target: 10, reward: {type: "lp", amount: 100}}, {level: 2, target: 20, reward: {type: "lp", amount: 200}}]
-  maxLevel: integer("max_level").notNull().default(30),
+  maxLevel: integer("maxLevel").notNull().default(30),
   icon: text("icon"),
   isHidden: boolean("isHidden").notNull().default(false),
   isEnabled: boolean("isEnabled").notNull().default(true),
-  sortOrder: integer("sort_order").notNull().default(0),
-  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  sortOrder: integer("sortOrder").notNull().default(0),
+  createdAt: timestamp("createdAt").notNull().default(sql`now()`),
 });
 
-export const userAchievements = pgTable("user_achievements", {
+export const userAchievements = pgTable("userAchievements", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  achievementId: uuid("achievement_id").notNull().references(() => achievements.id, { onDelete: "cascade" }),
-  currentLevel: integer("current_level").notNull().default(1),
+  userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  achievementId: uuid("achievementId").notNull().references(() => achievements.id, { onDelete: "cascade" }),
+  currentLevel: integer("currentLevel").notNull().default(1),
   progress: integer("progress").notNull().default(0),
   completed: boolean("completed").notNull().default(false), // True when max level reached
-  lastClaimedLevel: integer("last_claimed_level").notNull().default(0),
-  completedAt: timestamp("completed_at"),
-  updatedAt: timestamp("updated_at").notNull().default(sql`now()`),
+  lastClaimedLevel: integer("lastClaimedLevel").notNull().default(0),
+  completedAt: timestamp("completedAt"),
+  updatedAt: timestamp("updatedAt").notNull().default(sql`now()`),
 });
 
 // Relations
@@ -286,14 +286,14 @@ export const insertUserAchievementSchema = createInsertSchema(userAchievements).
 });
 
 // Temporary auth tokens table for Telegram authentication
-export const telegramAuthTokens = pgTable("telegram_auth_tokens", {
+export const telegramAuthTokens = pgTable("telegramAuthTokens", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  telegramId: varchar("telegram_id").notNull(),
+  telegramId: varchar("telegramId").notNull(),
   username: varchar("username"),
   token: varchar("token").notNull(),
-  expiresAt: timestamp("expires_at").notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
   used: boolean("used").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
+  createdAt: timestamp("createdAt").defaultNow(),
 });
 
 // Types
