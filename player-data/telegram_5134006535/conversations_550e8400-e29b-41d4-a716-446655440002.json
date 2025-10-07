@@ -714,5 +714,29 @@
     "timestamp": "2025-10-07T05:37:56.665Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759815501396-lzkhav1yq",
+    "content": "🌙 Emergency alert! System has a critical error: Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:38:21.396Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759815509682-9xe5hy8oq",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:38:29.682Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759815559162-ran9b0byt",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:39:19.162Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
