@@ -28,6 +28,13 @@ class DatabasePlugin extends DebugPlugin {
         console.log(`[${this.name}] Reconnecting...`);
         this.connected = true;
         break;
+      case 'logError':
+        console.error(`[${this.name}] 🔴 ERROR DETECTED:`, data);
+        if (data?.message?.includes('avatarUrl') || data?.message?.includes('snake_case')) {
+          console.error(`[${this.name}] ⚠️ SNAKE_CASE/CAMELCASE MISMATCH DETECTED!`);
+          console.error(`[${this.name}] This is likely a database column naming issue`);
+        }
+        break;
       default:
         // Ignore unknown commands
         break;

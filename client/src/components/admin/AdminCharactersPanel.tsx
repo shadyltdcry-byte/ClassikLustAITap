@@ -283,24 +283,31 @@ export default function AdminCharactersPanel() {
 
       {/* Create Character Modal */}
       {showCreateCharacter && (
-        <CharacterCreation
-          isOpen={showCreateCharacter}
-          onSuccess={handleCreateSuccess}
-          onCancel={() => setShowCreateCharacter(false)}
-        />
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="w-full h-full max-w-4xl max-h-[95vh] overflow-auto bg-gray-900 rounded-lg">
+            <CharacterCreation
+              onSuccess={handleCreateSuccess}
+              onCancel={() => setShowCreateCharacter(false)}
+            />
+          </div>
+        </div>
       )}
 
       {/* Edit Character Modal */}
       {showEditCharacter && selectedCharacter && (
-        <CharacterEditor
-          isOpen={showEditCharacter}
-          character={selectedCharacter}
-          onSuccess={handleEditSuccess}
-          onCancel={() => {
-            setShowEditCharacter(false);
-            setSelectedCharacter(null);
-          }}
-        />
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="w-full h-full max-w-4xl max-h-[95vh] overflow-auto bg-gray-900 rounded-lg">
+            <CharacterEditor
+              character={selectedCharacter}
+              isEditing={true}
+              onSuccess={handleEditSuccess}
+              onCancel={() => {
+                setShowEditCharacter(false);
+                setSelectedCharacter(null);
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
