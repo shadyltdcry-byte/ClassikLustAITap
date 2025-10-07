@@ -1106,5 +1106,13 @@
     "timestamp": "2025-10-07T12:24:41.704Z",
     "type": "text",
     "mood": "normal"
+  },
+  {
+    "id": "luna-alert-1759840338756-km6ghdj30",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T12:32:18.756Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
