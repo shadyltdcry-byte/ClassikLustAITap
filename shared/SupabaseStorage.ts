@@ -651,7 +651,24 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching all media:', error);
       return [];
     }
-    return data || [];
+    
+    // Map snake_case database columns to camelCase
+    return (data || []).map(file => ({
+      ...file,
+      characterId: file.character_id,
+      fileName: file.file_name,
+      filePath: file.file_path,
+      fileType: file.file_type,
+      animationSequence: file.animation_sequence,
+      isNsfw: file.is_nsfw,
+      isVip: file.is_vip,
+      isEvent: file.is_event,
+      randomSendChance: file.random_send_chance,
+      requiredLevel: file.required_level,
+      enabledForChat: file.enabled_for_chat,
+      autoOrganized: file.auto_organized,
+      createdAt: file.created_at
+    }));
   }
 
   async getMediaFiles(characterId?: string): Promise<MediaFile[]> {
@@ -667,7 +684,28 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching media files:', error);
       return [];
     }
-    return data || [];
+    
+    // Map snake_case to camelCase
+    return (data || []).map(file => ({
+      ...file,
+      characterId: file.character_id,
+      fileName: file.file_name,
+      filePath: file.file_path,
+      fileType: file.file_type,
+      animationSequence: file.animation_sequence,
+      isNsfw: file.is_nsfw,
+      isVip: file.is_vip,
+      isEvent: file.is_event,
+      randomSendChance: file.random_send_chance,
+      requiredLevel: file.required_level,
+      enabledForChat: file.enabled_for_chat,
+      autoOrganized: file.auto_organized,
+      createdAt: file.created_at
+    }));
+  }
+
+  async getMediaByCharacter(characterId: string): Promise<MediaFile[]> {
+    return this.getMediaFiles(characterId);
   }
 
   async getMediaFile(id: string): Promise<MediaFile | undefined> {
@@ -688,19 +726,21 @@ export class SupabaseStorage implements IStorage {
     // Map the file object to match database schema
     const dbFile = {
       id: file.id,
-      character_id: file.characterId,
-      file_name: file.fileName,
-      file_path: file.filePath,
+      character_id: file.characterId || null,
+      file_name: file.fileName || '',
+      file_path: file.filePath || '',
       file_type: file.fileType || 'image',
-      mood: file.mood,
-      pose: file.pose,
-      animation_sequence: file.animationSequence,
-      is_nsfw: file.is_nsfw || false,
-      is_vip: file.is_vip || false,
-      is_event: file.is_event || false,
+      mood: file.mood || null,
+      pose: file.pose || null,
+      animation_sequence: file.animationSequence || null,
+      is_nsfw: file.isNsfw || false,
+      is_vip: file.isVip || false,
+      is_event: file.isEvent || false,
       random_send_chance: file.randomSendChance || 5,
       required_level: file.requiredLevel || 1,
       enabled_for_chat: file.enabledForChat !== false,
+      category: file.category || 'Character',
+      auto_organized: file.autoOrganized || false,
       created_at: file.createdAt || new Date().toISOString()
     };
 
@@ -714,7 +754,24 @@ export class SupabaseStorage implements IStorage {
       console.error('Database insert error:', error);
       throw error;
     }
-    return data;
+    
+    // Map back to camelCase for return
+    return {
+      ...data,
+      characterId: data.character_id,
+      fileName: data.file_name,
+      filePath: data.file_path,
+      fileType: data.file_type,
+      animationSequence: data.animation_sequence,
+      isNsfw: data.is_nsfw,
+      isVip: data.is_vip,
+      isEvent: data.is_event,
+      randomSendChance: data.random_send_chance,
+      requiredLevel: data.required_level,
+      enabledForChat: data.enabled_for_chat,
+      autoOrganized: data.auto_organized,
+      createdAt: data.created_at
+    };
   }
 
   async uploadMedia(file: any): Promise<MediaFile> {

@@ -22,7 +22,7 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
   const { data: userData, isLoading: userLoading } = useQuery({
     queryKey: ['/api/user/telegram_8276164651'],
   });
-  
+
   const { data: userStats, isLoading: statsLoading } = useQuery({
     queryKey: ['/api/stats/telegram_8276164651'],
   });
@@ -131,12 +131,14 @@ export default function TasksPanel({ claimingRewards, onClaimReward }: TasksPane
                       </span>
                       <Button
                         size="sm"
-                        disabled={task.status !== 'completed' || claimingRewards.has(task.id)}
-                        onClick={() => onClaimReward(task.id, 'task')}
-                        className="bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1"
+                        onClick={() => {
+                          console.log('Claiming task:', task.id);
+                          onClaimReward(task.id, 'task');
+                        }}
+                        disabled={claimingRewards.has(task.id) || task.status !== 'completed'}
+                        className="bg-purple-600 hover:bg-purple-700 text-xs px-3 py-1 disabled:opacity-50"
                       >
-                        {claimingRewards.has(task.id) ? 'Claiming...' : 
-                         task.status === 'completed' ? 'Claim' : 'In Progress'}
+                        {claimingRewards.has(task.id) ? 'Claiming...' : task.status === 'completed' ? 'Claim' : 'In Progress'}
                       </Button>
                     </div>
                   </CardContent>

@@ -638,6 +638,63 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
+  // Character management endpoints
+  app.get('/api/admin/characters', async (req: Request, res: Response) => {
+    try {
+      const characters = await storage.getAllCharacters();
+      res.json(characters);
+    } catch (error) {
+      console.error('Error fetching characters:', error);
+      res.status(500).json(createErrorResponse('Failed to fetch characters'));
+    }
+  });
+
+  app.post('/api/admin/characters', async (req: Request, res: Response) => {
+    try {
+      const characterData = req.body;
+      const newCharacter = await storage.createCharacter(characterData);
+      res.json(createSuccessResponse(newCharacter));
+    } catch (error) {
+      console.error('Error creating character:', error);
+      res.status(500).json(createErrorResponse('Failed to create character'));
+    }
+  });
+
+  app.put('/api/admin/characters/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+
+      console.log(`Updating character ${id} with:`, updates);
+
+      // Update character in storage
+      const updatedCharacter = await storage.updateCharacter(id, updates);
+
+      if (!updatedCharacter) {
+        return res.status(404).json(createErrorResponse('Character not found'));
+      }
+
+      res.json(createSuccessResponse({
+        ...updatedCharacter,
+        updatedAt: new Date().toISOString()
+      }));
+    } catch (error) {
+      console.error('Error updating character:', error);
+      res.status(500).json(createErrorResponse(`Failed to update character: ${error instanceof Error ? error.message : 'Unknown error'}`));
+    }
+  });
+
+  app.delete('/api/admin/characters/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCharacter(id);
+      res.json(createSuccessResponse({ message: 'Character deleted successfully' }));
+    } catch (error) {
+      console.error('Error deleting character:', error);
+      res.status(500).json(createErrorResponse('Failed to delete character'));
+    }
+  });
+
   // Debug endpoints
   // Mock debug endpoints removed - using real database operations instead
 

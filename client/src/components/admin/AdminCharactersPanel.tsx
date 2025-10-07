@@ -163,17 +163,27 @@ export default function AdminCharactersPanel() {
         [field]: value
       });
       if (!response.ok) {
-        throw new Error(`Failed to update character`);
+        const errorText = await response.text();
+        console.error('Character update error:', errorText);
+        throw new Error(`Failed to update character: ${errorText}`);
       }
       return response.json();
     },
-    onSuccess: () => {
-      toast.success("Character updated!");
+    onSuccess: (data, variables) => {
+      const fieldName = variables.field === 'isVip' ? 'VIP' : 
+                       variables.field === 'isNsfw' ? 'NSFW' : 
+                       variables.field === 'isEnabled' ? 'enabled' :
+                       variables.field === 'isEvent' ? 'event' : 'property';
+      toast.success(`Character ${fieldName} status updated!`);
+      
+      // Invalidate all character-related queries
       queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
       queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/character/selected"] });
     },
-    onError: () => {
-      toast.error("Failed to update character");
+    onError: (error: any) => {
+      console.error('Toggle character error:', error);
+      toast.error(error.message || "Failed to update character");
     },
   });
 

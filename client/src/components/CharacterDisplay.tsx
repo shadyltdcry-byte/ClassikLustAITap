@@ -76,14 +76,15 @@ export default function CharacterDisplay({
   };
 
   const handleAvatarClick = (event: React.MouseEvent) => {
-    // Right-click or ctrl+click opens gallery, normal click taps
-    if (event.button === 2 || event.ctrlKey || event.metaKey) {
-      event.preventDefault();
-      if (onAvatarClick) {
-        onAvatarClick();
-      }
+    event.preventDefault();
+    
+    // Always open gallery on click if onAvatarClick is provided
+    if (onAvatarClick) {
+      onAvatarClick();
       return;
     }
+    
+    // Otherwise tap
     handleTap(event);
   };
 

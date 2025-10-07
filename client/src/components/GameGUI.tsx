@@ -479,7 +479,12 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
       {guiState.showCharacterGallery && (
         <CharacterGallery 
           isOpen={guiState.showCharacterGallery}
-          onClose={() => updateGUIState({ showCharacterGallery: false })}
+          onClose={() => {
+            updateGUIState({ showCharacterGallery: false });
+            // Refresh character data when closing gallery
+            queryClient.invalidateQueries({ queryKey: ['/api/character/selected'] });
+            queryClient.invalidateQueries({ queryKey: ['/api/characters'] });
+          }}
           userId={userId || playerData?.id || ''}
           currentCharacterId={selectedCharacter?.id !== 'no-character-selected' ? selectedCharacter?.id : undefined}
           onCharacterSelected={(characterId) => {
