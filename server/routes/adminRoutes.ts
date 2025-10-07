@@ -468,32 +468,25 @@ export function registerAdminRoutes(app: Express) {
       
       for (const file of files) {
         const mediaEntry = {
-          id: `upload-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           mood: null,
           isNsfw: req.body.isNsfw === 'true' || false,
           isVip: req.body.isVip === 'true' || false,
-          isEvent: false,
-          createdAt: new Date(),
+          isEvent: req.body.isEvent === 'true' || false,
           characterId: req.body.characterId || null,
           fileName: file.originalname,
           filePath: `/uploads/${file.filename}`,
-          fileType: file.mimetype?.startsWith('image/') ? 'image' : 'file',
+          fileType: file.mimetype?.startsWith('image/') ? 'image' : file.mimetype?.startsWith('video/') ? 'video' : 'file',
           pose: null,
           animationSequence: null,
-          randomSendChance: 5,
-          requiredLevel: 1,
+          randomSendChance: parseInt(req.body.randomSendChance) || 5,
+          requiredLevel: parseInt(req.body.requiredLevel) || 1,
           enabledForChat: true,
           autoOrganized: false,
-          category: null
+          category: req.body.category || null
         };
         
-        try {
-          const created = await storage.createMedia(mediaEntry);
-          uploadedFiles.push(created);
-        } catch (dbError) {
-          console.warn('Could not save media to database:', dbError);
-          uploadedFiles.push(mediaEntry);
-        }
+        const created = await storage.createMedia(mediaEntry);
+        uploadedFiles.push(created);
       }
       
       res.json(createSuccessResponse({
@@ -511,35 +504,22 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { id } = req.params;
       const updates = req.body;
-      
-      // Try to update media using storage, fallback to mock response
-      try {
-        const updatedMedia = await storage.updateMedia(id, updates);
-        res.json(createSuccessResponse(updatedMedia));
-      } catch (storageError) {
-        console.log('Media update requested for ID:', id.slice(0, 8) + '...'); // Sanitize logged ID
-        res.json(createSuccessResponse({ id, ...updates }));
-      }
+      const updatedMedia = await storage.updateMedia(id, updates);
+      res.json(createSuccessResponse(updatedMedia));
     } catch (error) {
       console.error('Error updating media:', error);
-      res.status(500).json(createErrorResponse('Failed to update media'));
+      res.status(500).json(createErrorResponse(`Failed to update media: ${error instanceof Error ? error.message : 'Unknown error'}`));
     }
   });
 
   app.delete('/api/media/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      // Try to delete media using storage, fallback to mock response
-      try {
-        await storage.deleteMedia(id);
-        res.json(createSuccessResponse({ message: 'Media deleted successfully' }));
-      } catch (storageError) {
-        console.log('Media delete requested for ID:', id.slice(0, 8) + '...'); // Sanitize logged ID
-        res.json(createSuccessResponse({ message: 'Media deleted successfully' }));
-      }
+      await storage.deleteMedia(id);
+      res.json(createSuccessResponse({ message: 'Media deleted successfully' }));
     } catch (error) {
       console.error('Error deleting media:', error);
-      res.status(500).json(createErrorResponse('Failed to delete media'));
+      res.status(500).json(createErrorResponse(`Failed to delete media: ${error instanceof Error ? error.message : 'Unknown error'}`));
     }
   });
 

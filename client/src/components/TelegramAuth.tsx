@@ -87,13 +87,13 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
               Start the game by opening it through our Telegram bot: 
               <br />
               <span className="font-mono bg-gray-800/50 px-2 py-1 rounded text-blue-400 mt-1 inline-block">
-                @ClassikLoyalty_Bot
+                @ClassikLust_Bot
               </span>
             </p>
 
             <div className="space-y-3">
               <Button
-                onClick={() => window.open("https://t.me/ClassikLoyalty_Bot", "_blank")}
+                onClick={() => window.open("https://t.me/ClassikLust_Bot", "_blank")}
                 className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-lg py-3"
                 disabled={isLoading}
               >

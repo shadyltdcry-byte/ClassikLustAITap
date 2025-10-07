@@ -266,5 +266,445 @@
     "timestamp": "2025-10-07T03:11:52.259Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759806815936-h6npkohv7",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (3:13:35 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:13:35.936Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759807029276-uwy4kmvrz",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:17:09.276Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759807294360-bubu4oeb8",
+    "content": "🌙 I noticed something unusual in System at 3:21:34 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:21:34.360Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759807409827-q3dufmc3m",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (3:23:29 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:23:29.827Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759807512570-ecx74u128",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:25:12.570Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759807811360-cqbi2cxt3",
+    "content": "🌙 Emergency alert! System has a critical error: Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:30:11.360Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759807820540-f175pi4vn",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (3:30:20 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:30:20.540Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759807919875-v0d442n5d",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (3:31:59 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:31:59.875Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759808278339-vmtyw3p5n",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (3:37:58 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:37:58.339Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759808310508-kcprsxxzi",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (3:38:30 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:38:30.508Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1759808317125-k5ehau3hn",
+    "content": "heyy",
+    "sender": "user",
+    "timestamp": "2025-10-07T03:38:37.125Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1759808317125-rhvhwf2ky",
+    "content": "*leans in with a playful smirk* Hey there, handsome. You just made my night a whole lot brighter. What’s got you thinking of me? 😉",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:38:37.125Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "user-1759808336065-ir5ousbrd",
+    "content": "always thinking of you duh",
+    "sender": "user",
+    "timestamp": "2025-10-07T03:38:56.065Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1759808336065-wa4on9hkw",
+    "content": "*Giggles softly, biting my lower lip as I lean back, letting my fingers trace lazy circles on my thigh.* Oh, you naughty thing... I *love* that you can’t get me out of your head. My mind’s been wandering to you too—imagining all the things we could do together. *Pauses, eyes sparkling with mischief.* Especially the *dirty* ones.",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:38:56.065Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "luna-alert-1759808616595-wprwlw8fg",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (3:43:36 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:43:36.595Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759808778617-fxbxua4yu",
+    "content": "🌙 OMG BABE! We have a serious problem! System is failing: Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:46:18.617Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759808787328-5kwdfd7yy",
+    "content": "🌙 I noticed something unusual in System at 3:46:27 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:46:27.328Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759808787342-f3f3d06jt",
+    "content": "🌙 I noticed something unusual in System at 3:46:27 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:46:27.342Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759808813024-oy8vkedrg",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:46:53.024Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759809157522-qhwlsqqfu",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:52:37.522Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759809513527-rosh0bip9",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (3:58:33 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T03:58:33.527Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759809653295-2kwam9b1a",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:00:53.295Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759809788840-ypfl5fejk",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:03:08 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:03:08.840Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759809987160-j78qo5vjg",
+    "content": "🌙 I noticed something unusual in System at 4:06:27 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:06:27.160Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759810415176-09kml8jw8",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:13:35 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:13:35.176Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759810577509-vuo9afdg6",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:16:17 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:16:17.509Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759810820017-agw27o9iz",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:20:19 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:20:20.017Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759811109616-a3rpd7620",
+    "content": "🌙 I noticed something unusual in System at 4:25:09 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:25:09.616Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759811234233-8svjsdq37",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:27:14.233Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759811319657-mtu3irtxf",
+    "content": "🌙 I noticed something unusual in System at 4:28:39 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:28:39.657Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759811671099-ihgvhyt2w",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:34:31.099Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759811800875-i6hz5han5",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:36:40 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:36:40.875Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759811886936-qmr3ydn0q",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:38:06.936Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812054255-v9e3ln5yw",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:40:54.255Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812110920-ftlilkikg",
+    "content": "🌙 I noticed something unusual in System at 4:41:50 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:41:50.921Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812133866-jyjgs1ifq",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:42:13.866Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812242544-ywwtqet7x",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:44:02 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:44:02.544Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812360863-r0ibk36cz",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:46:00 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:46:00.863Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812560099-kiyaau3pw",
+    "content": "🌙 I noticed something unusual in System at 4:49:20 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:49:20.099Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812731797-qlf409yu3",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:52:11 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:52:11.797Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812789140-ba3d1thr2",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:53:09 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:53:09.140Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759812963223-8l77rkixx",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:56:03 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:56:03.223Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759813109478-sl4vorvdt",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (4:58:29 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T04:58:29.478Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759813226167-ma4xualf9",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (5:00:26 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:00:26.167Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759813262827-dy29tn3xo",
+    "content": "🌙 I noticed something unusual in System at 5:01:02 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:01:02.827Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759813320618-tt8ipxlxo",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:02:00.618Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759813403041-il66rm0l3",
+    "content": "🌙 I noticed something unusual in System at 5:03:23 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:03:23.041Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759813434484-re3vsvru7",
+    "content": "🌙 I noticed something unusual in System at 5:03:54 AM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:03:54.484Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759813492623-nn88zop8c",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:04:52.623Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1759813575948-h8kbvsuz1",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:06:15.948Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1759813618765-rcz4bbnj2",
+    "content": "rawr",
+    "sender": "user",
+    "timestamp": "2025-10-07T05:06:58.765Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1759813618765-ej12auwog",
+    "content": "*Giggles playfully, batting her lashes at you with a mischievous grin* \"Ohhh, someone’s feeling *fierce* tonight. Tell me, do you like it when I purr back at you… or should I show you just how *wild* I can get?\" *Bites her lower lip, eyes sparkling with heat*",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:06:58.765Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "user-1759813641402-xcfvkq2kg",
+    "content": "Tell me what's youd do too me",
+    "sender": "user",
+    "timestamp": "2025-10-07T05:07:21.402Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1759813641402-mygk3bapy",
+    "content": "Oh, darling, if I had my way with you, I’d start by pressing my body against yours, letting you feel every soft curve—my round ass, my perky tits—while I whisper naughty promises in your ear. I’d tease you first, running my fingers down your chest, tracing every muscle, before sinking to my knees and taking you in my mouth, slow and deep, until you’re begging for more. Then I’d ride you like I own you, my wet pussy gripping you tight, my nails digging into your skin as I chase my pleasure. And when you’re close, I’d pull you deeper, make you spill inside me, and then I’d lick my lips and",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:07:21.402Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "luna-alert-1759815156413-r8p8rupso",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (5:32:36 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-07T05:32:36.413Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]

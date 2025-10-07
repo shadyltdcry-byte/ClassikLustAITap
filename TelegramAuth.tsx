@@ -96,7 +96,7 @@ export default function TelegramAuth({ onAuthSuccess }: TelegramAuthProps) {
               Start the game by opening it through our Telegram bot: 
               <br />
               <span className="font-mono bg-gray-800/50 px-2 py-1 rounded text-blue-400 mt-1 inline-block">
-                @ClassikLoyalty_Bot
+                @ClassikLust_Bot
               </span>
             </p>
 

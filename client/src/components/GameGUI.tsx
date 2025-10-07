@@ -96,7 +96,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
             <h3 className="text-xl font-semibold mb-4">How to Login:</h3>
             <ol className="text-left space-y-2 text-purple-200">
               <li>1. Open Telegram</li>
-              <li>2. Find @ClassikLoyalty_Bot</li>
+              <li>2. Find @ClassikLust_Bot</li>
               <li>3. Send /login command</li>
               <li>4. Click the game link directly</li>
               <li className="text-yellow-300 font-semibold">⚠️ Don't copy/paste the URL</li>
