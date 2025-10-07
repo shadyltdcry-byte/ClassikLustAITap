@@ -182,8 +182,17 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   // Fixed image URL handling using correct MediaFile schema fields
   const getImageUrl = (media: MediaFile) => {
-    if (media.filePath) return media.filePath.startsWith('/') ? media.filePath : `/uploads/${media.filePath}`;
-    return media.fileName ? `/uploads/${media.fileName}` : '/uploads/placeholder-character.jpg';
+    // Try filePath first
+    if (media.filePath) {
+      const path = media.filePath.startsWith('/') ? media.filePath : `/${media.filePath}`;
+      return path.startsWith('/uploads/') ? path : `/uploads/${media.filePath}`;
+    }
+    // Fallback to fileName
+    if (media.fileName) {
+      return media.fileName.startsWith('/') ? media.fileName : `/uploads/${media.fileName}`;
+    }
+    // Last resort placeholder
+    return '/uploads/placeholder-character.jpg';
   };
 
   const getCurrentImage = () => {

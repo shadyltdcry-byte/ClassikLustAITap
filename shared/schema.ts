@@ -59,22 +59,22 @@ export const userCharacters = pgTable("user_characters", {
 
 export const mediaFiles = pgTable("media_files", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  characterId: uuid("character_id").references(() => characters.id, { onDelete: "cascade" }),
-  fileName: text("file_name").notNull(),
-  filePath: text("file_path").notNull(),
-  fileType: text("file_type").notNull(), // image, video, gif
+  character_id: uuid("character_id").references(() => characters.id, { onDelete: "cascade" }),
+  file_name: text("file_name").notNull(),
+  file_path: text("file_path").notNull(),
+  file_type: text("file_type").notNull(), // image, video, gif
   mood: text("mood"),
   pose: text("pose"),
-  animationSequence: integer("animation_sequence"),
+  animation_sequence: integer("animation_sequence"),
   is_nsfw: boolean("is_nsfw").notNull().default(false),
   is_vip: boolean("is_vip").notNull().default(false),
   is_event: boolean("is_event").notNull().default(false),
-  randomSendChance: integer("random_send_chance").notNull().default(5),
-  requiredLevel: integer("required_level").notNull().default(1),
+  random_send_chance: integer("random_send_chance").notNull().default(5),
+  required_level: integer("required_level").notNull().default(1),
   category: text("category").default("Character"), // Character, Avatar, Misc, Event, Other
-  enabledForChat: boolean("enabled_for_chat").notNull().default(true), // Toggle for AI chat usage
-  autoOrganized: boolean("auto_organized").notNull().default(false), // Track if file is auto-organized
-  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  enabled_for_chat: boolean("enabled_for_chat").notNull().default(true), // Toggle for AI chat usage
+  auto_organized: boolean("auto_organized").notNull().default(false), // Track if file is auto-organized
+  created_at: timestamp("created_at").notNull().default(sql`now()`),
 });
 
 export const upgrades = pgTable("upgrades", {

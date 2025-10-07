@@ -793,9 +793,28 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateMediaFile(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
+    // Map camelCase to snake_case for database
+    const dbUpdates: any = {};
+    
+    if (updates.characterId !== undefined) dbUpdates.character_id = updates.characterId;
+    if (updates.fileName !== undefined) dbUpdates.file_name = updates.fileName;
+    if (updates.filePath !== undefined) dbUpdates.file_path = updates.filePath;
+    if (updates.fileType !== undefined) dbUpdates.file_type = updates.fileType;
+    if (updates.mood !== undefined) dbUpdates.mood = updates.mood;
+    if (updates.pose !== undefined) dbUpdates.pose = updates.pose;
+    if (updates.animationSequence !== undefined) dbUpdates.animation_sequence = updates.animationSequence;
+    if (updates.isNsfw !== undefined) dbUpdates.is_nsfw = updates.isNsfw;
+    if (updates.isVip !== undefined) dbUpdates.is_vip = updates.isVip;
+    if (updates.isEvent !== undefined) dbUpdates.is_event = updates.isEvent;
+    if (updates.randomSendChance !== undefined) dbUpdates.random_send_chance = updates.randomSendChance;
+    if (updates.requiredLevel !== undefined) dbUpdates.required_level = updates.requiredLevel;
+    if (updates.category !== undefined) dbUpdates.category = updates.category;
+    if (updates.enabledForChat !== undefined) dbUpdates.enabled_for_chat = updates.enabledForChat;
+    if (updates.autoOrganized !== undefined) dbUpdates.auto_organized = updates.autoOrganized;
+    
     const { data, error } = await this.supabase
       .from('media_files')
-      .update(updates)
+      .update(dbUpdates)
       .eq('id', id)
       .select()
       .single();
@@ -804,7 +823,24 @@ export class SupabaseStorage implements IStorage {
       console.error('Error updating media file:', error);
       return undefined;
     }
-    return data;
+    
+    // Map back to camelCase
+    return {
+      ...data,
+      characterId: data.character_id,
+      fileName: data.file_name,
+      filePath: data.file_path,
+      fileType: data.file_type,
+      animationSequence: data.animation_sequence,
+      isNsfw: data.is_nsfw,
+      isVip: data.is_vip,
+      isEvent: data.is_event,
+      randomSendChance: data.random_send_chance,
+      requiredLevel: data.required_level,
+      enabledForChat: data.enabled_for_chat,
+      autoOrganized: data.auto_organized,
+      createdAt: data.created_at
+    };
   }
 
   async deleteMediaFile(id: string): Promise<void> {

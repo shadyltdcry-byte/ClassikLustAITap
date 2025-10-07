@@ -470,9 +470,9 @@ export function registerAdminRoutes(app: Express) {
       for (const file of files) {
         const mediaEntry = {
           mood: null,
-          is_nsfw: req.body.isNsfw === 'true' || false,
-          is_vip: req.body.isVip === 'true' || false,
-          is_event: req.body.isEvent === 'true' || false,
+          isNsfw: req.body.isNsfw === 'true' || false,
+          isVip: req.body.isVip === 'true' || false,
+          isEvent: req.body.isEvent === 'true' || false,
           characterId: req.body.characterId || null,
           fileName: file.originalname,
           filePath: `/uploads/${file.filename}`,
