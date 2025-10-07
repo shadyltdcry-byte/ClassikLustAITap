@@ -41,12 +41,20 @@ export class SupabaseStorage implements IStorage {
   public get supabase() { return this.supabaseClient; }
 
   constructor() {
-    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-    const supabaseKey = process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
+    let supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Missing Supabase environment variables");
     }
+
+    // Ensure URL is properly formatted
+    if (!supabaseUrl.startsWith('http://') && !supabaseUrl.startsWith('https://')) {
+      // If it's just a project ID, construct the full URL
+      supabaseUrl = `https://${supabaseUrl}.supabase.co`;
+    }
+
+    console.log('[SupabaseStorage] Connecting to Supabase:', supabaseUrl);
 
     this.supabaseClient = createClient(supabaseUrl, supabaseKey, {
       auth: {
