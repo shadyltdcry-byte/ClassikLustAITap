@@ -448,6 +448,10 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           onOpenWheel={() => updateGUIState({ showWheelGame: true })}
           onOpenVIP={() => updateGUIState({ showVIP: true })}
           onOpenAdmin={() => updateGUIState({ showAdminMenu: true })}
+          onOpenGallery={() => {
+            console.log('Gallery button clicked');
+            updateGUIState({ showCharacterGallery: true });
+          }}
         />
       )}
 

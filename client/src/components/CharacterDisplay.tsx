@@ -1,6 +1,3 @@
-
-
-
 import { useState } from "react";
 //import { Button } from "@/components/ui/button";
 import type { Character, User, GameStats } from "@shared/schema";
@@ -52,7 +49,7 @@ export default function CharacterDisplay({
   userId,
 }: CharacterDisplayProps) {
   const [tapEffect, setTapEffect] = useState(false);
-  
+
   // Luna's notification system - Luna's ID is "550e8400-e29b-41d4-a716-446655440002"
   const isLuna = character?.id === "550e8400-e29b-41d4-a716-446655440002";
   const { unreadCount } = useChatNotifications(userId || null);
@@ -77,13 +74,13 @@ export default function CharacterDisplay({
 
   const handleAvatarClick = (event: React.MouseEvent) => {
     event.preventDefault();
-    
+
     // Always open gallery on click if onAvatarClick is provided
     if (onAvatarClick) {
       onAvatarClick();
       return;
     }
-    
+
     // Otherwise tap
     handleTap(event);
   };
@@ -118,7 +115,7 @@ export default function CharacterDisplay({
                 'https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤'
               }
               alt={character?.name || "Player"}
-              onClick={shouldOpenGallery ? onAvatarClick : handleAvatarClick}
+              onClick={shouldOpenGallery ? onAvatarClick : handleTap}
               onContextMenu={handleAvatarClick}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
@@ -152,7 +149,7 @@ export default function CharacterDisplay({
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>
                 </div>
-                
+
                 {/* Heart 2 - Top Right with Emoji Heart */}
                 <div className="absolute top-1/3 right-1/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.2s' }}>
                   <span className="text-red-400 text-xl">❤️</span>
@@ -160,7 +157,7 @@ export default function CharacterDisplay({
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>
                 </div>
-                
+
                 {/* Heart 3 - Center with Different Emoji */}
                 <div className="absolute top-1/2 left-1/2 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.4s' }}>
                   <span className="text-pink-400 text-xl">💕</span>
@@ -168,7 +165,7 @@ export default function CharacterDisplay({
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>
                 </div>
-                
+
                 {/* Heart 4 - Bottom with Custom Image */}
                 <div className="absolute top-2/3 left-2/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.6s' }}>
                   <img src="/uploads/floatinghearts.png" alt="hearts" className="w-5 h-5" />
@@ -176,7 +173,7 @@ export default function CharacterDisplay({
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>
                 </div>
-                
+
                 {/* Heart 5 - Another Emoji Heart */}
                 <div className="absolute top-3/4 left-1/4 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.8s' }}>
                   <span className="text-red-500 text-xl">💖</span>

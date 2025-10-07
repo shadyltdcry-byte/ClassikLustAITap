@@ -1,21 +1,34 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { Activity, Crown, Settings } from "lucide-react";
+import { Activity, Crown, Settings, Image } from "lucide-react";
 
 interface FloatingActionIconsProps {
   onOpenWheel: () => void;
   onOpenVIP: () => void;
   onOpenAdmin: () => void;
+  onOpenGallery: () => void;
 }
 
 export default function FloatingActionIcons({
   onOpenWheel,
   onOpenVIP,
-  onOpenAdmin
+  onOpenAdmin,
+  onOpenGallery
 }: FloatingActionIconsProps) {
   return (
     <div className="fixed right-4 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-50">
-      {/* Wheel Game Icon */}
+      {/* Character Gallery */}
+      {onOpenGallery && (
+        <button
+          onClick={onOpenGallery}
+          className="bg-purple-600 hover:bg-purple-700 p-3 rounded-full shadow-lg transition-all hover:scale-110"
+          title="Character Gallery"
+        >
+          <Image className="w-5 h-5 text-white" />
+        </button>
+      )}
+
+      {/* Wheel of Fortune */}
       <Button
         variant="default"
         size="icon"

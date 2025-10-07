@@ -182,14 +182,22 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   // Fixed image URL handling using correct MediaFile schema fields
   const getImageUrl = (media: MediaFile) => {
-    // Try filePath first
+    // Use filePath if available (this is the main storage path)
     if (media.filePath) {
-      const path = media.filePath.startsWith('/') ? media.filePath : `/${media.filePath}`;
-      return path.startsWith('/uploads/') ? path : `/uploads/${media.filePath}`;
+      // If filePath already starts with /uploads/, use it directly
+      if (media.filePath.startsWith('/uploads/')) {
+        return media.filePath;
+      }
+      // If it starts with /, check if it needs /uploads/ prefix
+      if (media.filePath.startsWith('/')) {
+        return media.filePath;
+      }
+      // Otherwise, add /uploads/ prefix
+      return `/uploads/${media.filePath}`;
     }
     // Fallback to fileName
     if (media.fileName) {
-      return media.fileName.startsWith('/') ? media.fileName : `/uploads/${media.fileName}`;
+      return `/uploads/${media.fileName}`;
     }
     // Last resort placeholder
     return '/uploads/placeholder-character.jpg';
@@ -269,7 +277,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                       <CardContent className="p-3 flex items-center gap-3">
                         <div className="relative">
                           <img
-                            src={char.avatarUrl?.startsWith('/') ? char.avatarUrl : `/uploads/${char.avatarUrl}` || char.imageUrl || '/uploads/placeholder-avatar.jpg'}
+                            src={char.avatarUrl || char.imageUrl || '/uploads/placeholder-avatar.jpg'}
                             alt={char.name}
                             className="w-12 h-12 rounded-full object-cover"
                             onError={(e) => {
@@ -404,7 +412,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                         <div className="text-center text-gray-400">
                           <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center">
                             <img
-                              src={selectedCharacter.imageUrl?.startsWith('/') ? selectedCharacter.imageUrl : `/uploads/${selectedCharacter.imageUrl}` || '/uploads/placeholder-character.jpg'}
+                              src={selectedCharacter.imageUrl || selectedCharacter.avatarUrl || '/uploads/placeholder-character.jpg'}
                               alt={selectedCharacter.name}
                               className="w-12 h-12 rounded-full object-cover"
                               onError={(e) => {

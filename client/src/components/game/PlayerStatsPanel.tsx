@@ -7,28 +7,30 @@ interface PlayerStatsPanelProps {
   playerData?: any;
   selectedCharacter?: any;
   onAvatarClick: () => void;
+  onOpenGallery: () => void; // New prop for opening gallery
 }
 
-export default function PlayerStatsPanel({ 
-  user, 
-  playerData, 
-  selectedCharacter, 
-  onAvatarClick 
+export default function PlayerStatsPanel({
+  user,
+  playerData,
+  selectedCharacter,
+  onAvatarClick,
+  onOpenGallery // Destructure new prop
 }: PlayerStatsPanelProps) {
   return (
     <div className="flex justify-between items-center p-2 bg-gradient-to-r from-purple-900/40 via-pink-900/30 to-red-900/40 border-b-2 border-gradient-to-r from-pink-500/50 via-purple-500/50 to-red-500/50 flex-shrink-0 backdrop-blur-md relative overflow-hidden">
       {/* Animated Background Glow */}
       <div className="absolute inset-0 bg-gradient-to-r from-pink-500/5 via-purple-500/10 to-blue-500/5 animate-pulse"></div>
       <div className="absolute inset-0 bg-gradient-to-l from-red-500/5 via-pink-500/10 to-purple-500/5 animate-pulse" style={{animationDelay: '1s'}}></div>
-      
+
       {/* Left Section: Avatar + Username + Level */}
       <div className="flex items-center gap-0.5">
         <div className="flex flex-col items-center gap-0.5">
           <p className="text-transparent bg-gradient-to-r from-pink-200 via-purple-200 to-blue-200 bg-clip-text text-xs font-bold text-center tracking-wider drop-shadow-lg">{playerData?.username?.replace('Player', '') || playerData?.name || "ShadyLTDx"}</p>
-          <div 
+          <div
             className="cursor-pointer hover:scale-105 transition-transform duration-200"
-            onClick={onAvatarClick}
-            title="Click to open Character Gallery"
+            onClick={onAvatarClick} // Keep this for viewing/chatting
+            title="Click to view/chat with character"
           >
             <img
               src={selectedCharacter?.avatarUrl || selectedCharacter?.imageUrl || selectedCharacter?.avatarPath || "https://via.placeholder.com/64x64/1a1a1a/ff1493?text=👤"}
@@ -114,8 +116,8 @@ export default function PlayerStatsPanel({
       <div className="flex flex-col gap-0.5">
         {/* Energy Frame - ULTRA ENHANCED */}
         <div className={`relative px-3 py-2 bg-gradient-to-br from-blue-600/30 via-cyan-500/25 to-sky-500/30 border-2 border-blue-400/50 rounded-xl shadow-2xl backdrop-blur-md hover:shadow-blue-500/40 hover:shadow-2xl transition-all duration-500 group overflow-hidden ${
-          ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95 
-            ? 'animate-pulse shadow-blue-400/60 shadow-2xl ring-2 ring-blue-400/60' 
+          ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95
+            ? 'animate-pulse shadow-blue-400/60 shadow-2xl ring-2 ring-blue-400/60'
             : ''
         }`}>
           {/* Multi-layer glow effects */}
@@ -124,14 +126,14 @@ export default function PlayerStatsPanel({
           <div className="relative flex flex-col items-center gap-0.5">
             <div className="flex items-center gap-0.5">
               <Zap className={`w-4 h-4 text-blue-300 drop-shadow-lg ${
-                ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95 
-                  ? 'animate-pulse text-blue-200' 
+                ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95
+                  ? 'animate-pulse text-blue-200'
                   : 'animate-pulse'
               }`} />
               <span className="text-transparent bg-gradient-to-r from-blue-100 via-cyan-100 to-sky-100 bg-clip-text text-sm font-black tracking-wider drop-shadow-lg">Energy</span>
                             <Zap className={`w-4 h-4 text-blue-300 drop-shadow-lg ${
-                ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95 
-                  ? 'animate-pulse text-blue-200' 
+                ((user?.energy || playerData?.energy || 0) / (user?.maxEnergy || playerData?.maxEnergy || 1000)) > 0.95
+                  ? 'animate-pulse text-blue-200'
                   : 'animate-pulse'
               }`} />
             </div>
@@ -163,6 +165,14 @@ export default function PlayerStatsPanel({
           </div>
         </div>
       </div>
+      {/* Dedicated Gallery Button */}
+      <button
+        onClick={onOpenGallery}
+        className="ml-4 px-3 py-2 bg-gradient-to-br from-purple-700/50 via-pink-700/50 to-red-700/50 border-2 border-purple-500/70 rounded-lg shadow-xl backdrop-blur-md hover:shadow-purple-500/50 hover:shadow-2xl transition-all duration-500 hover:scale-105"
+        title="Open Character Gallery"
+      >
+        <Sparkles className="w-5 h-5 text-purple-300 animate-pulse" />
+      </button>
     </div>
   );
 }
