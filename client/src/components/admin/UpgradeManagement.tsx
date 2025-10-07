@@ -54,10 +54,11 @@ export default function UpgradeManagement() {
 
   const createMutation = useMutation({
     mutationFn: async (data: Upgrade) => {
-      return await apiRequest('/api/admin/upgrades', {
-        method: 'POST',
-        body: JSON.stringify(data)
-      });
+      const response = await apiRequest('POST', '/api/admin/upgrades', data);
+      if (!response.ok) {
+        throw new Error('Failed to create upgrade');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/upgrades'] });
@@ -70,10 +71,11 @@ export default function UpgradeManagement() {
 
   const updateMutation = useMutation({
     mutationFn: async (data: Upgrade) => {
-      return await apiRequest(`/api/admin/upgrades/${data.id}`, {
-        method: 'PUT',
-        body: JSON.stringify(data)
-      });
+      const response = await apiRequest('PUT', `/api/admin/upgrades/${data.id}`, data);
+      if (!response.ok) {
+        throw new Error('Failed to update upgrade');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/upgrades'] });
@@ -86,9 +88,11 @@ export default function UpgradeManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/admin/upgrades/${id}`, {
-        method: 'DELETE'
-      });
+      const response = await apiRequest('DELETE', `/api/admin/upgrades/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to delete upgrade');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/upgrades'] });

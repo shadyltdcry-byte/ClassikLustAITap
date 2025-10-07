@@ -103,7 +103,16 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
 
   const getFilteredUpgrades = () => {
     if (activeTab === "all") return upgrades;
-    return upgrades.filter((upgrade: Upgrade) => upgrade.category === activeTab);
+    
+    // Filter by category, including "energy" and other categories as "special"
+    return upgrades.filter((upgrade: Upgrade) => {
+      if (activeTab === "special") {
+        // Special includes energy and any other non-standard categories
+        return upgrade.category === "special" || upgrade.category === "energy" || 
+               (upgrade.category !== "lp_per_hour" && upgrade.category !== "lp_per_tap");
+      }
+      return upgrade.category === activeTab;
+    });
   };
 
   const canAffordUpgrade = (cost: number) => {
@@ -115,9 +124,9 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col pt-2 pb-4">
       {/* Header */}
-      <div className="p-4 bg-black/30 border-b border-purple-500/30">
+      <div className="p-4 bg-black/30 border-b border-purple-500/30 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
             <Star className="w-6 h-6 text-white" />
@@ -136,7 +145,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
       </div>
 
       {/* Upgrade Tabs - Fixed Responsive Layout */}
-      <div className="p-3 bg-black/20">
+      <div className="p-3 bg-black/20 flex-shrink-0">
         <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
           <div className="flex gap-1 min-w-max">
             <Button 
@@ -146,16 +155,16 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
               ⭐ All
             </Button>
             <Button 
-              onClick={() => setActiveTab("lpPerHour")}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+              onClick={() => setActiveTab("lp_per_hour")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lp_per_hour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
             >
-              💰 LP/Hr
+              💰 LP/Hour
             </Button>
             <Button 
-              onClick={() => setActiveTab("energy")}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "energy" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+              onClick={() => setActiveTab("lp_per_tap")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lp_per_tap" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
             >
-              ⚡ Energy
+              👆 LP/Tap
             </Button>
             <Button 
               onClick={() => setActiveTab("special")}

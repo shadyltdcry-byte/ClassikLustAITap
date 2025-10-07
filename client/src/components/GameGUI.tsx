@@ -233,7 +233,14 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   
   const claimReward = async (id: string, type: 'task' | 'achievement') => {
     // Prevent multiple claims of the same reward
-    if (claimingRewards.has(id)) return;
+    if (claimingRewards.has(id)) {
+      toast({
+        title: "Already Claiming",
+        description: "Please wait for the previous claim to complete",
+        variant: "destructive",
+      });
+      return;
+    }
     
     setClaimingRewards(prev => new Set(prev).add(id));
     
@@ -257,6 +264,8 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         // Invalidate relevant queries to refresh data
         queryClient.invalidateQueries({ queryKey: ['/api/user'] });
         queryClient.invalidateQueries({ queryKey: ['/api/stats'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/tasks'] });
+        queryClient.invalidateQueries({ queryKey: ['/api/admin/achievements'] });
       } else {
         throw new Error('Failed to claim reward');
       }
@@ -267,15 +276,21 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         description: `Unable to claim ${type} reward. Please try again.`,
         variant: "destructive",
       });
+      // Remove from set immediately on error
+      setClaimingRewards(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(id);
+        return newSet;
+      });
     } finally {
-      // Remove from claiming set after a longer delay to prevent spam
+      // Keep in claiming set for 5 seconds to prevent rapid re-claiming
       setTimeout(() => {
         setClaimingRewards(prev => {
           const newSet = new Set(prev);
           newSet.delete(id);
           return newSet;
         });
-      }, 3000); // Increased to 3 seconds to prevent spam clicking
+      }, 5000);
     }
   };
 
@@ -427,12 +442,14 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         onPluginChange={(plugin) => updateGUIState({ activePlugin: plugin })}
       />
 
-      {/* Floating Action Icons */}
-      <FloatingActionIcons
-        onOpenWheel={() => updateGUIState({ showWheelGame: true })}
-        onOpenVIP={() => updateGUIState({ showVIP: true })}
-        onOpenAdmin={() => updateGUIState({ showAdminMenu: true })}
-      />
+      {/* Floating Action Icons - Hide on certain screens */}
+      {guiState.activePlugin === 'main' && (
+        <FloatingActionIcons
+          onOpenWheel={() => updateGUIState({ showWheelGame: true })}
+          onOpenVIP={() => updateGUIState({ showVIP: true })}
+          onOpenAdmin={() => updateGUIState({ showAdminMenu: true })}
+        />
+      )}
 
 
       {/* Admin Menu Modal */}

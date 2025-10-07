@@ -18,6 +18,7 @@ interface CharacterCardProps {
   onToggleVip: (id: string, current: boolean) => void;
   onToggleNsfw: (id: string, current: boolean) => void;
   onToggleEnabled: (id: string, current: boolean) => void;
+  onToggleEvent: (id: string, current: boolean) => void; // Added for event toggle
   isUpdating: boolean;
 }
 
@@ -28,6 +29,7 @@ const CharacterCard = ({
   onToggleVip, 
   onToggleNsfw, 
   onToggleEnabled, 
+  onToggleEvent, // Added for event toggle
   isUpdating 
 }: CharacterCardProps) => (
   <Card className="bg-gray-800 border-gray-700">
@@ -43,30 +45,39 @@ const CharacterCard = ({
         <div>Bond: {character.bondLevel || 0}</div>
         <div>Affection: {character.affectionLevel || 0}</div>
       </div>
-      
+
       <div className="flex gap-2">
         <Button
           size="sm"
           variant={character.isVip ? "default" : "outline"}
           onClick={() => onToggleVip(character.id, character.isVip || false)}
           disabled={isUpdating}
-          className="flex-1 h-8"
+          className={character.isVip ? "bg-yellow-600 hover:bg-yellow-700" : "border-yellow-600 text-yellow-600 hover:bg-yellow-600/20"}
         >
           <Crown className="w-3 h-3 mr-1" />
-          VIP
+          {character.isVip ? "VIP" : "VIP"}
         </Button>
         <Button
           size="sm"
           variant={character.isNsfw ? "destructive" : "outline"}
           onClick={() => onToggleNsfw(character.id, character.isNsfw || false)}
           disabled={isUpdating}
-          className="flex-1 h-8"
+          className={character.isNsfw ? "bg-red-600 hover:bg-red-700" : "border-red-600 text-red-600 hover:bg-red-600/20"}
         >
-          {character.isNsfw ? <EyeOff className="w-3 h-3 mr-1" /> : <Eye className="w-3 h-3 mr-1" />}
+          {character.isNsfw ? "🔞" : "🔞"}
           NSFW
         </Button>
+        <Button
+          size="sm"
+          variant={character.isEvent ? "default" : "outline"}
+          onClick={() => onToggleEvent(character.id, character.isEvent || false)}
+          disabled={isUpdating}
+          className={character.isEvent ? "bg-purple-600 hover:bg-purple-700" : "border-purple-600 text-purple-600 hover:bg-purple-600/20"}
+        >
+          ✨ Event
+        </Button>
       </div>
-      
+
       <div className="flex gap-2 pt-1">
         <Button
           size="sm"
@@ -189,6 +200,10 @@ export default function AdminCharactersPanel() {
     toggleCharacterMutation.mutate({ characterId: id, field: "isEnabled", value: !current });
   }, [toggleCharacterMutation]);
 
+  const handleToggleEvent = useCallback((id: string, current: boolean) => { // Added handler for event toggle
+    toggleCharacterMutation.mutate({ characterId: id, field: "isEvent", value: !current });
+  }, [toggleCharacterMutation]);
+
   const handleCreateSuccess = useCallback(() => {
     setShowCreateCharacter(false);
     queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
@@ -248,6 +263,7 @@ export default function AdminCharactersPanel() {
                 onToggleVip={handleToggleVip}
                 onToggleNsfw={handleToggleNsfw}
                 onToggleEnabled={handleToggleEnabled}
+                onToggleEvent={handleToggleEvent} // Pass the new handler
                 isUpdating={toggleCharacterMutation.isPending || deleteCharacterMutation.isPending}
               />
             ))}

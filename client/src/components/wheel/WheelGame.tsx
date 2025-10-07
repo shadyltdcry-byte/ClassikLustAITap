@@ -283,7 +283,7 @@ export default function WheelGame({ isOpen, onClose, userId }: WheelGameProps) {
               <WheelDisplay />
               
               {/* Spin Status */}
-              {!timeLeft && (
+              {canSpin && (
                 <div className="text-center bg-gradient-to-r from-green-600/20 to-emerald-600/20 border border-green-500/50 rounded-lg p-6 backdrop-blur-sm">
                   <div className="flex items-center justify-center gap-3 mb-3">
                     <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
@@ -295,7 +295,7 @@ export default function WheelGame({ isOpen, onClose, userId }: WheelGameProps) {
                 </div>
               )}
               
-              {timeLeft && (
+              {!canSpin && timeLeft && (
                 <div className="text-center bg-gradient-to-r from-purple-900/30 to-indigo-900/30 border border-purple-500/50 rounded-lg p-6 backdrop-blur-sm">
                   <div className="flex items-center justify-center gap-3 mb-4">
                     <div className="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center">

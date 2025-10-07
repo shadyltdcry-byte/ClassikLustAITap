@@ -58,6 +58,12 @@ export default function CharacterDisplay({
   const { unreadCount } = useChatNotifications(userId || null);
 
   const handleTap = (event: React.MouseEvent) => {
+    // If this is the default "Select Character" state, open gallery instead of tapping
+    if (character?.id === "no-character-selected" && onAvatarClick) {
+      onAvatarClick();
+      return;
+    }
+
     if (user.energy <= 0 || isTapping) return;
 
     setTapEffect(true);
@@ -69,7 +75,6 @@ export default function CharacterDisplay({
     }, 80);
   };
 
-  // If this is the default "Select Character" state, should open gallery, not tap
   const shouldOpenGallery = character?.id === "no-character-selected";
 
   return (

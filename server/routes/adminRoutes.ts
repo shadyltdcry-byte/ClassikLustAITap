@@ -9,6 +9,7 @@ import type { Express, Request, Response } from "express";
 import path from 'path';
 import fs from 'fs';
 import multer from 'multer';
+import crypto from 'crypto'; // Import crypto module
 import { SupabaseStorage } from '../../shared/SupabaseStorage';
 import { 
   createSuccessResponse, 
@@ -368,7 +369,7 @@ export function registerAdminRoutes(app: Express) {
         { id: 3, name: 'Chat Master', description: 'Send 50 messages', reward: '5 Gems' },
         { id: 4, name: 'Level Up', description: 'Reach level 5', reward: '500 LP' }
       ];
-      
+
       console.log('Seeded default achievements');
       res.json(createSuccessResponse({
         message: 'Default achievements seeded successfully',
@@ -385,22 +386,22 @@ export function registerAdminRoutes(app: Express) {
     try {
       // Get media from database
       const mediaFiles = await storage.getAllMedia();
-      
+
       if (!mediaFiles || mediaFiles.length === 0) {
         // Auto-import from filesystem if no media in database
         const __dirname = path.dirname(new URL(import.meta.url).pathname);
         const uploadsDir = path.join(__dirname, '../../public/uploads');
-        
+
         if (fs.existsSync(uploadsDir)) {
           const files = fs.readdirSync(uploadsDir);
           console.log(`Found ${files.length} files in uploads directory`);
-          
+
           const importedFiles = [];
           for (const file of files) {
             try {
               const filePath = path.join(uploadsDir, file);
               const stats = fs.statSync(filePath);
-              
+
               if (stats.isFile()) {
                 console.log(`Attempting to import: ${file}`);
                 const ext = getFileExtension(file);
@@ -410,9 +411,9 @@ export function registerAdminRoutes(app: Express) {
                                ext === 'webp' ? 'image/webp' :
                                ext === 'mp4' ? 'video/mp4' :
                                ext === 'webm' ? 'video/webm' : 'application/octet-stream';
-                
+
                 const mediaEntry = {
-                  id: `import-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                  id: crypto.randomUUID(), // Use crypto.randomUUID() for proper UUID generation
                   mood: null,
                   isNsfw: file.includes('nsfw'),
                   isVip: false,
@@ -430,7 +431,7 @@ export function registerAdminRoutes(app: Express) {
                   autoOrganized: true,
                   category: null
                 };
-                
+
                 try {
                   const created = await storage.createMedia(mediaEntry);
                   importedFiles.push(created);
@@ -444,11 +445,11 @@ export function registerAdminRoutes(app: Express) {
               console.warn(`Error processing file ${file}:`, fileError);
             }
           }
-          
+
           return res.json(importedFiles);
         }
       }
-      
+
       res.json(mediaFiles || []);
     } catch (error) {
       console.error('Error fetching media:', error);
@@ -459,13 +460,13 @@ export function registerAdminRoutes(app: Express) {
   app.post('/api/media/upload', upload.array('files'), async (req: Request, res: Response) => {
     try {
       const files = req.files as Express.Multer.File[];
-      
+
       if (!files || files.length === 0) {
         return res.status(400).json(createErrorResponse('No files uploaded'));
       }
-      
+
       const uploadedFiles = [];
-      
+
       for (const file of files) {
         const mediaEntry = {
           mood: null,
@@ -484,16 +485,16 @@ export function registerAdminRoutes(app: Express) {
           autoOrganized: false,
           category: req.body.category || null
         };
-        
+
         const created = await storage.createMedia(mediaEntry);
         uploadedFiles.push(created);
       }
-      
+
       res.json(createSuccessResponse({
         message: `Successfully uploaded ${uploadedFiles.length} files`,
         files: uploadedFiles
       }));
-      
+
     } catch (error) {
       console.error('Error uploading files:', error);
       res.status(500).json(createErrorResponse('Failed to upload files'));
@@ -538,7 +539,7 @@ export function registerAdminRoutes(app: Express) {
         orphanedFiles: allMedia.filter((m: any) => !m.characterId).length,
         duplicates: 0 // Could implement duplicate detection if needed
       };
-      
+
       res.json(mediaStats);
     } catch (error) {
       console.error('Error fetching media stats:', error);
@@ -564,7 +565,7 @@ export function registerAdminRoutes(app: Express) {
       const allMedia = await storage.getAllMedia();
       const duplicates: any[] = [];
       const seen = new Map();
-      
+
       for (const media of allMedia) {
         const key = media.fileName || media.filePath;
         if (key && seen.has(key)) {
@@ -573,7 +574,7 @@ export function registerAdminRoutes(app: Express) {
           seen.set(key, media);
         }
       }
-      
+
       res.json(duplicates);
     } catch (error) {
       console.error('Error fetching duplicate media:', error);
@@ -585,14 +586,14 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { ids, fileIds } = req.body; // Accept both 'ids' and 'fileIds' for compatibility
       const filesToDelete = ids || fileIds;
-      
+
       if (!filesToDelete || !Array.isArray(filesToDelete)) {
         return res.status(400).json(createErrorResponse('File IDs array is required'));
       }
-      
+
       let deletedCount = 0;
       const errors: string[] = [];
-      
+
       for (const fileId of filesToDelete) {
         try {
           await storage.deleteMedia(fileId);
@@ -603,7 +604,7 @@ export function registerAdminRoutes(app: Express) {
           errors.push(errorMsg);
         }
       }
-      
+
       res.json(createSuccessResponse({
         message: 'Successfully deleted ' + deletedCount + ' of ' + filesToDelete.length + ' files',
         deletedCount,
@@ -619,10 +620,10 @@ export function registerAdminRoutes(app: Express) {
   app.post('/api/admin/player/:playerId/level-up', async (req: Request, res: Response) => {
     try {
       const { playerId } = req.params;
-      
+
       // Mock level up for now
       console.log('Admin level up for player:', playerId);
-      
+
       res.json(createSuccessResponse({
         message: 'Player leveled up successfully',
         newLevel: 2,
