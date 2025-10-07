@@ -84,17 +84,23 @@ export default function DebuggerConsole({ isOpen = true, onClose }: DebuggerCons
     // Execute debugger commands
     if (typeof window !== 'undefined' && (window as any).debuggerCore) {
       try {
-        const parts = command.split(' ');
-        const cmd = parts[0];
+        const parts = command.trim().split(' ');
+        const cmd = parts[0].toLowerCase();
         const data = parts.slice(1).join(' ');
 
-        await (window as any).debuggerCore.runCommand(cmd, data);
-        addLog('success', 'Debugger', `Command executed: ${cmd}`);
+        // Execute the command
+        const result = await (window as any).debuggerCore.runCommand(cmd, data);
+        
+        if (result !== undefined && result !== null) {
+          addLog('success', 'Debugger', `${cmd}: ${JSON.stringify(result)}`);
+        } else {
+          addLog('success', 'Debugger', `Command executed: ${cmd}`);
+        }
       } catch (error: any) {
-        addLog('error', 'Debugger', error.message);
+        addLog('error', 'Debugger', error?.message || 'Command execution failed');
       }
     } else {
-      addLog('warn', 'Debugger', 'Debugger Core not available');
+      addLog('error', 'Debugger', 'Debugger Core not initialized. Please refresh the page.');
     }
 
     setCommand('');

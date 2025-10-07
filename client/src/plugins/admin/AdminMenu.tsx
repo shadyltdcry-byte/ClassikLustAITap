@@ -7,7 +7,6 @@ import AdminCharactersPanel from "@/components/admin/AdminCharactersPanel";
 import AdminGameplayPanel from "@/components/admin/AdminGameplayPanel";
 import AdminDebugPanel from "@/components/admin/AdminDebugPanel";
 import AdminSystemPanel from "@/components/admin/AdminSystemPanel";
-import DebuggerConsole from "@/components/debug/DebuggerConsole"; // Import DebuggerConsole component
 
 interface AdminMenuProps {
   onClose?: () => void;
@@ -32,8 +31,6 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
     );
   }
   const [activeTab, setActiveTab] = useState("characters");
-  const [showDebugger, setShowDebugger] = useState(false); // State to control debugger visibility
-  // const queryClient = useQueryClient(); // This was in the original changes but not in the provided original code. Assuming it's not needed here.
 
   return (
     <Dialog open={true} onOpenChange={() => onClose?.()}>
@@ -62,48 +59,52 @@ export default function AdminMenu({ onClose }: AdminMenuProps) {
 
         <div className="flex-1 overflow-hidden">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full flex flex-col">
-            <TabsList className="grid w-full grid-cols-7 bg-gray-800/50"> {/* Increased columns to 7 */}
-              <TabsTrigger value="characters" className="data-[state=active]:bg-purple-600">
+            <TabsList className="grid w-full grid-cols-4 gap-2 bg-transparent p-2">
+              <TabsTrigger 
+                value="characters" 
+                className="bg-gray-800 border border-gray-700 text-white hover:bg-gray-700 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:border-purple-500 rounded-lg transition-all shadow-sm"
+              >
                 <Users className="w-4 h-4 mr-2" />
                 Characters
               </TabsTrigger>
-              <TabsTrigger value="gameplay" className="data-[state=active]:bg-purple-600">
+              <TabsTrigger 
+                value="gameplay" 
+                className="bg-gray-800 border border-gray-700 text-white hover:bg-gray-700 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:border-purple-500 rounded-lg transition-all shadow-sm"
+              >
                 <Zap className="w-4 h-4 mr-2" />
                 Gameplay
               </TabsTrigger>
-              <TabsTrigger value="debug" className="data-[state=active]:bg-purple-600">
+              <TabsTrigger 
+                value="debug" 
+                className="bg-gray-800 border border-gray-700 text-white hover:bg-gray-700 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:border-purple-500 rounded-lg transition-all shadow-sm"
+              >
                 <Bug className="w-4 h-4 mr-2" />
                 Debug Tools
               </TabsTrigger>
-              <TabsTrigger value="system" className="data-[state=active]:bg-purple-600">
+              <TabsTrigger 
+                value="system" 
+                className="bg-gray-800 border border-gray-700 text-white hover:bg-gray-700 data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:border-purple-500 rounded-lg transition-all shadow-sm"
+              >
                 <Database className="w-4 h-4 mr-2" />
                 System
               </TabsTrigger>
-              {/* Removed "chaos tracker" references based on user message */}
-              <TabsTrigger value="debugger" className="data-[state=active]:bg-purple-600"> {/* Added Debugger Tab */}
-                🔧 Debugger
-              </TabsTrigger>
             </TabsList>
 
-            <div className="flex-1 overflow-hidden">
-              <TabsContent value="characters" className="h-full overflow-y-auto">
+            <div className="flex-1 overflow-hidden mt-4">
+              <TabsContent value="characters" className="h-full overflow-y-auto m-0">
                 <AdminCharactersPanel />
               </TabsContent>
 
-              <TabsContent value="gameplay" className="h-full overflow-y-auto">
+              <TabsContent value="gameplay" className="h-full overflow-y-auto m-0">
                 <AdminGameplayPanel />
               </TabsContent>
 
-              <TabsContent value="debug" className="h-full overflow-y-auto">
+              <TabsContent value="debug" className="h-full overflow-y-auto m-0">
                 <AdminDebugPanel />
               </TabsContent>
 
-              <TabsContent value="system" className="h-full overflow-y-auto">
+              <TabsContent value="system" className="h-full overflow-y-auto m-0">
                 <AdminSystemPanel />
-              </TabsContent>
-
-              <TabsContent value="debugger" className="h-full overflow-y-auto"> {/* Added Debugger Tab Content */}
-                <DebuggerConsole isOpen={true} />
               </TabsContent>
             </div>
           </Tabs>

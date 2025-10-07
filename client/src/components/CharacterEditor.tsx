@@ -130,8 +130,8 @@ export default function CharacterEditor({
       console.log("[CharacterEditor] Save successful:", result);
       return result;
     },
-    onSuccess: (data) => {
-      console.log("[CharacterEditor] Mutation success, invalidating queries");
+    onSuccess: async (data) => {
+      console.log("[CharacterEditor] Mutation success, invalidating queries and reloading data");
       toast.success(
         isEditing
           ? "Character updated successfully!"
@@ -139,9 +139,35 @@ export default function CharacterEditor({
       );
       
       // Invalidate all character-related queries
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/character/selected"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
+      await queryClient.invalidateQueries({ queryKey: ["/api/character/selected"] });
+      
+      // Refetch media files to ensure dropdowns are updated
+      await queryClient.invalidateQueries({ queryKey: ["/api/media"] });
+      
+      // If editing, force reload the character data
+      if (isEditing && character?.id) {
+        const updatedCharacter = data?.data || data;
+        if (updatedCharacter) {
+          form.reset({
+            name: updatedCharacter.name ?? "",
+            bio: updatedCharacter.bio ?? "",
+            description: updatedCharacter.description ?? "",
+            imageUrl: updatedCharacter.imageUrl ?? "",
+            avatarUrl: updatedCharacter.avatarUrl ?? "",
+            personality: updatedCharacter.personality ?? "friendly",
+            chatStyle: updatedCharacter.chatStyle ?? "casual",
+            likes: updatedCharacter.likes ?? "",
+            dislikes: updatedCharacter.dislikes ?? "",
+            levelRequirement: updatedCharacter.levelRequirement ?? 1,
+            isNsfw: updatedCharacter.isNsfw ?? false,
+            isVip: updatedCharacter.isVip ?? false,
+            responseTimeMin: updatedCharacter.responseTimeMin ?? 1,
+            responseTimeMax: updatedCharacter.responseTimeMax ?? 3,
+          });
+        }
+      }
       
       if (onSuccess) onSuccess();
       if (!isEditing) form.reset();

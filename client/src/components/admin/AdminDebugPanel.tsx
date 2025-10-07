@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Terminal, Bug, Code, Activity, Monitor } from "lucide-react";
 import { GameDebugger } from "@/components/debug";
 import { useGameDebugger } from "@/hooks/useGameDebugger";
-import ChaosLog from "@/components/debug/ChaosLog";
+import DebuggerConsole from "@/components/debug/DebuggerConsole";
 
 // Backend Debugger Component
 const AdminBackendDebugger = ({ gameDebugger }: { gameDebugger: any }) => {
@@ -167,30 +167,23 @@ export default function AdminDebugPanel() {
         </Card>
       </div>
 
-      {/* Agent Chaos Tracker */}
-      <div className="mb-6">
-        <Card className="bg-gradient-to-br from-red-900/20 to-orange-900/20 border-red-500/30 hover:border-red-500/70 transition-colors shadow-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-white flex items-center gap-2">
-              <Bug className="w-5 h-5 text-red-400" />
-              😈 Agent Chaos Tracker
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-300 text-sm font-medium">🔥 Track agent-induced chaos, broken states, and Shady's sanity levels</p>
-            <div className="mt-2 flex gap-2">
-              <Badge variant="secondary" className="text-xs bg-red-500/20 text-red-300">Chaos Mode</Badge>
-              <Badge variant="secondary" className="text-xs bg-orange-500/20 text-orange-300">Agent Mayhem</Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Backend Debugger */}
       <AdminBackendDebugger gameDebugger={reactDebugger} />
 
-      {/* Chaos Log Component */}
-      <ChaosLog />
+      {/* Debugger Console */}
+      <div className="mb-6">
+        <Card className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border-blue-500/30 shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-white flex items-center gap-2">
+              <Terminal className="w-5 h-5 text-blue-400" />
+              🔧 Debugger Console
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DebuggerConsole isOpen={true} />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* React State Debugger Modal */}
       {showReactDebugger && (
