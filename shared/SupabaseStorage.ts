@@ -764,6 +764,10 @@ export class SupabaseStorage implements IStorage {
     return this.saveMediaFile(file);
   }
 
+  async updateMedia(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
+    return this.updateMediaFile(id, updates);
+  }
+
   async deleteMedia(id: string): Promise<void> {
     return this.deleteMediaFile(id);
   }

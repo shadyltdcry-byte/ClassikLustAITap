@@ -75,6 +75,18 @@ export default function CharacterDisplay({
     }, 80);
   };
 
+  const handleAvatarClick = (event: React.MouseEvent) => {
+    // Right-click or ctrl+click opens gallery, normal click taps
+    if (event.button === 2 || event.ctrlKey || event.metaKey) {
+      event.preventDefault();
+      if (onAvatarClick) {
+        onAvatarClick();
+      }
+      return;
+    }
+    handleTap(event);
+  };
+
   const shouldOpenGallery = character?.id === "no-character-selected";
 
   return (
@@ -105,7 +117,8 @@ export default function CharacterDisplay({
                 'https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤'
               }
               alt={character?.name || "Player"}
-              onClick={shouldOpenGallery ? onAvatarClick : handleTap}
+              onClick={shouldOpenGallery ? onAvatarClick : handleAvatarClick}
+              onContextMenu={handleAvatarClick}
               onError={(e) => {
                 const target = e.target as HTMLImageElement;
                 if (target.src !== 'https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤') {
@@ -118,6 +131,7 @@ export default function CharacterDisplay({
               style={{
                 filter: user.energy <= 0 ? 'grayscale(100%)' : 'none'
               }}
+              title="Right-click or Ctrl+Click to open gallery"
             />
 
             {/* Tap Effect Overlay */}
