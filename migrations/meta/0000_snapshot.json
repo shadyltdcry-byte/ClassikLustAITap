@@ -15,8 +15,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -45,8 +45,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "claimed_at": {
-          "name": "claimed_at",
+        "claimedAt": {
+          "name": "claimedAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -55,12 +55,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "bonuses_user_id_users_id_fk": {
-          "name": "bonuses_user_id_users_id_fk",
+        "bonuses_userId_usersIdFk": {
+          "name": "bonuses_userId_usersIdFk",
           "tableFrom": "bonuses",
           "tableTo": "users",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
@@ -86,8 +86,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -110,15 +110,14 @@
           "primaryKey": false,
           "notNull": true
         },
-        "activated_at": {
-          "name": "activated_at",
-          "type": "timestamp",
-          "primaryKey": false,
+        "activatedAt": {
+          "name": "activatedAt",
+          "type": "tibonuses_userId_usersIdFkmaryKey": false,
           "notNull": true,
           "default": "now()"
         },
-        "expires_at": {
-          "name": "expires_at",
+        "expiresAt": {
+          "name": "expiresAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
@@ -126,12 +125,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "boosters_user_id_users_id_fk": {
-          "name": "boosters_user_id_users_id_fk",
+        "boosters_userId_usersIdFk": {
+          "name": "boosters_userId_usersIdFk",
           "tableFrom": "boosters",
           "tableTo": "users",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
@@ -203,22 +202,29 @@
           "notNull": true,
           "default": false
         },
-        "level_requirement": {
-          "name": "level_requirement",
+         "isEvent": {
+          "name": "isEvent",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "levelRequirement": {
+          "name": "levelRequirement",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 1
         },
-        "custom_triggers": {
-          "name": "custom_triggers",
+        "customTriggers": {
+          "name": "customTriggers",
           "type": "jsonb",
           "primaryKey": false,
           "notNull": false,
           "default": "'[]'::jsonb"
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -233,9 +239,9 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "chat_messages": {
-      "name": "chat_messages",
-      "schema": "",
+    "chatMessages": {
+      "name": "chatMessages",
+      "schema": "", 
       "columns": {
         "id": {
           "name": "id",
@@ -244,14 +250,14 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "character_id": {
-          "name": "character_id",
+        "characterId": {
+          "name": "characterId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -268,15 +274,15 @@
           "primaryKey": false,
           "notNull": false
         },
-        "charisma_gained": {
-          "name": "charisma_gained",
+        "charismaGained": {
+          "name": "charismaGained",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -285,12 +291,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "chat_messages_user_id_users_id_fk": {
-          "name": "chat_messages_user_id_users_id_fk",
-          "tableFrom": "chat_messages",
+        "chatMessages_userId_usersIdFk": {
+          "name": "chatMessages_userId_usersIdFk",
+          "tableFrom": "chatMessages",
           "tableTo": "users",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
@@ -298,12 +304,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "chat_messages_character_id_characters_id_fk": {
-          "name": "chat_messages_character_id_characters_id_fk",
-          "tableFrom": "chat_messages",
+        "chatMessages_characterId_charactersIdFk": {
+          "name": "chatMessages_characterId_charactersIdFk",
+          "tableFrom": "chatMessages",
           "tableTo": "characters",
           "columnsFrom": [
-            "character_id"
+            "characterId"
           ],
           "columnsTo": [
             "id"
@@ -318,8 +324,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.game_stats": {
-      "name": "game_stats",
+    "public.gameStats": {
+      "name": "gameStats",
       "schema": "",
       "columns": {
         "id": {
@@ -329,42 +335,42 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "total_taps": {
-          "name": "total_taps",
+        "totalTaps": {
+          "name": "totalTaps",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
-        "total_lp_earned": {
-          "name": "total_lp_earned",
+        "totalLpEarned": {
+          "name": "totalLpEarned",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
-        "total_energy_used": {
-          "name": "total_energy_used",
+        "totalEenergyUsed": {
+          "name": "totalEnergyUsed",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
-        "sessions_played": {
-          "name": "sessions_played",
+        "sessionsPlayed": {
+          "name": "sessionsPlayed",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 0
         },
-        "last_updated": {
-          "name": "last_updated",
+        "lastUpdated": {
+          "name": "lastUpdated",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -373,12 +379,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "game_stats_user_id_users_id_fk": {
-          "name": "game_stats_user_id_users_id_fk",
-          "tableFrom": "game_stats",
+        "gameStats_userId_usersIdFk": {
+          "name": "gameStats_userId_usersIdFk",
+          "tableFrom": "gameStats",
           "tableTo": "users",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
@@ -393,8 +399,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.media_files": {
-      "name": "media_files",
+    "public.mediaFiles": {
+      "name": "mediaFiles",
       "schema": "",
       "columns": {
         "id": {
@@ -404,8 +410,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "character_id": {
-          "name": "character_id",
+        "characterId": {
+          "name": "characterId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -467,8 +473,8 @@
           "notNull": true,
           "default": false
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -477,12 +483,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "media_files_character_id_characters_id_fk": {
-          "name": "media_files_character_id_characters_id_fk",
-          "tableFrom": "media_files",
+        "mediaFiles_characterId_charactersIdFk": {
+          "name": "mediaFiles_characterId_charactersIdFk",
+          "tableFrom": "mediaFiles",
           "tableTo": "characters",
           "columnsFrom": [
-            "character_id"
+            "characterId"
           ],
           "columnsTo": [
             "id"
@@ -526,40 +532,40 @@
           "primaryKey": false,
           "notNull": true
         },
-        "base_cost": {
-          "name": "base_cost",
+        "baseCost": {
+          "name": "baseCost",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "base_effect": {
-          "name": "base_effect",
+        "baseEffect": {
+          "name": "baseEffect",
           "type": "real",
           "primaryKey": false,
           "notNull": true
         },
-        "cost_multiplier": {
-          "name": "cost_multiplier",
+        "costMultiplier": {
+          "name": "costMultiplier",
           "type": "real",
           "primaryKey": false,
           "notNull": true,
           "default": 1.3
         },
-        "effect_multiplier": {
-          "name": "effect_multiplier",
+        "effectMultiplier": {
+          "name": "effectMultiplier",
           "type": "real",
           "primaryKey": false,
           "notNull": true,
           "default": 1.15
         },
-        "max_level": {
-          "name": "max_level",
+        "maxLevel": {
+          "name": "maxLevel",
           "type": "integer",
           "primaryKey": false,
           "notNull": false
         },
-        "level_requirement": {
-          "name": "level_requirement",
+        "levelRequirement": {
+          "name": "levelRequirement",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -574,8 +580,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user_characters": {
-      "name": "user_characters",
+    "public.userCharacters": {
+      "name": "userCharacters",
       "schema": "",
       "columns": {
         "id": {
@@ -585,20 +591,20 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "character_id": {
-          "name": "character_id",
+        "characterId": {
+          "name": "characterId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "charisma_points": {
-          "name": "charisma_points",
+        "charismaPoints": {
+          "name": "charismaPoints",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -611,15 +617,15 @@
           "notNull": true,
           "default": 0
         },
-        "bond_level": {
-          "name": "bond_level",
+        "bondLevel": {
+          "name": "bondLevel",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "default": 1
         },
-        "unlocked_at": {
-          "name": "unlocked_at",
+        "unlockedAt": {
+          "name": "unlockedAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -628,12 +634,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_characters_user_id_users_id_fk": {
-          "name": "user_characters_user_id_users_id_fk",
-          "tableFrom": "user_characters",
+        "userCharacters_userId_usersIdFk": {
+          "name": "userCharacters_userId_usersIdFk",
+          "tableFrom": "userCharacters",
           "tableTo": "users",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
@@ -641,12 +647,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "user_characters_character_id_characters_id_fk": {
-          "name": "user_characters_character_id_characters_id_fk",
-          "tableFrom": "user_characters",
+        "userCharacters_characterId_charactersIdFk": {
+          "name": "userCharacters_characterId_charactersIdFk",
+          "tableFrom": "userCharacters",
           "tableTo": "characters",
           "columnsFrom": [
-            "character_id"
+            "characterId" 
           ],
           "columnsTo": [
             "id"
@@ -661,8 +667,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user_upgrades": {
-      "name": "user_upgrades",
+    "public.userUpgrades": {
+      "name": "userUpgrades",
       "schema": "",
       "columns": {
         "id": {
@@ -672,14 +678,14 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
-        "upgrade_id": {
-          "name": "upgrade_id",
+        "upgradeId": {
+          "name": "upgradeId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -691,8 +697,8 @@
           "notNull": true,
           "default": 0
         },
-        "purchased_at": {
-          "name": "purchased_at",
+        "purchasedAt": {
+          "name": "purchasedAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -701,12 +707,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_upgrades_user_id_users_id_fk": {
-          "name": "user_upgrades_user_id_users_id_fk",
-          "tableFrom": "user_upgrades",
+        "userUpgrades_userId_usersIdFk": {
+          "name": "userUpgrades_userId_usersIdFk",
+          "tableFrom": "userUpgrades",
           "tableTo": "users",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"
@@ -714,12 +720,12 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "user_upgrades_upgrade_id_upgrades_id_fk": {
-          "name": "user_upgrades_upgrade_id_upgrades_id_fk",
-          "tableFrom": "user_upgrades",
+        "userUpgrades_upgradeId_upgradesIdFk": {
+          "name": "userUpgrades_upgradeId_upgradesIdFk",
+          "tableFrom": "userUpgrades",
           "tableTo": "upgrades",
           "columnsFrom": [
-            "upgrade_id"
+            "upgradeId"
           ],
           "columnsTo": [
             "id"
@@ -778,8 +784,8 @@
           "notNull": true,
           "default": 1000
         },
-        "max_energy": {
-          "name": "max_energy",
+        "maxEnergy": {
+          "name": "maxEnergy",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
@@ -827,8 +833,8 @@
           "notNull": true,
           "default": "now()"
         },
-        "created_at": {
-          "name": "created_at",
+        "createdAt": {
+          "name": "createdAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -839,8 +845,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "users_username_unique": {
-          "name": "users_username_unique",
+        "usersUsernameUnique": {
+          "name": "usersUsernameUnique",
           "nullsNotDistinct": false,
           "columns": [
             "username"
@@ -851,8 +857,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.wheel_rewards": {
-      "name": "wheel_rewards",
+    "public.wheelRewards": {
+      "name": "wheelRewards",
       "schema": "",
       "columns": {
         "id": {
@@ -862,8 +868,8 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
-        "user_id": {
-          "name": "user_id",
+        "userId": {
+          "name": "userId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -880,8 +886,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "spun_at": {
-          "name": "spun_at",
+        "spunAt": {
+          "name": "spunAt",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -890,12 +896,12 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "wheel_rewards_user_id_users_id_fk": {
-          "name": "wheel_rewards_user_id_users_id_fk",
-          "tableFrom": "wheel_rewards",
+        "wheelRewards_userId_usersIdFk": {
+          "name": "wheelRewards_userId_usersIdFk",
+          "tableFrom": "wheelRewards",
           "tableTo": "users",
           "columnsFrom": [
-            "user_id"
+            "userId"
           ],
           "columnsTo": [
             "id"

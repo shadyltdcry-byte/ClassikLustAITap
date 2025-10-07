@@ -84,6 +84,7 @@ export default function CharacterEditor({
       levelRequirement: character?.levelRequirement ?? 1,
       isNsfw: character?.isNsfw ?? false,
       isVip: character?.isVip ?? false,
+      isEvent: character?.isEvent ?? false,
       responseTimeMin: character?.responseTimeMin ?? 1,
       responseTimeMax: character?.responseTimeMax ?? 3,
     },
@@ -104,6 +105,7 @@ export default function CharacterEditor({
         levelRequirement: character.levelRequirement ?? 1,
         isNsfw: character.isNsfw ?? false,
         isVip: character.isVip ?? false,
+        isEvent: character?.isEvent ?? false,
         responseTimeMin: character.responseTimeMin ?? 1,
         responseTimeMax: character.responseTimeMax ?? 3,
       });
@@ -163,6 +165,7 @@ export default function CharacterEditor({
             levelRequirement: updatedCharacter.levelRequirement ?? 1,
             isNsfw: updatedCharacter.isNsfw ?? false,
             isVip: updatedCharacter.isVip ?? false,
+            isEvent: updatedCharacter.isEvent ?? false,
             responseTimeMin: updatedCharacter.responseTimeMin ?? 1,
             responseTimeMax: updatedCharacter.responseTimeMax ?? 3,
           });
@@ -548,6 +551,11 @@ export default function CharacterEditor({
                     <Switch
                       checked={form.watch("isNsfw")}
                       onCheckedChange={v => form.setValue("isNsfw", v)}
+                    />
+                    <Label className="text-white">NSFW</Label>
+                    <Switch
+                      checked={form.watch("isEvent")}
+                      onCheckedChange={v => form.setValue("isEvent", v)}
                     />
                     <Label className="text-white">NSFW</Label>
                   </div>

@@ -115,7 +115,7 @@ export function validateAuthToken(token: string, telegramId: string): boolean {
   }
   
   if (tokenData.telegramId !== telegramId) {
-    console.log(`Token ${token} telegram_id mismatch`);
+    console.log(`Token ${token} telegramId mismatch`);
     return false;
   }
   
@@ -165,7 +165,7 @@ if (token && !telegramBotInitialized) {
     bot.on('message', async (msg: any) => {
       const chatId = msg.chat.id;
       const messageText = msg.text;
-      const telegram_id = msg.from.id.toString();
+      const telegramId = msg.from.id.toString();
       const username = msg.from.username;
       const timestamp = new Date().toISOString();
 
@@ -175,11 +175,11 @@ if (token && !telegramBotInitialized) {
       }
 
       try {
-        console.log(`[${timestamp}] Telegram auth initiated for user: ${telegram_id} (${username}) with command: ${messageText}`);
+        console.log(`[${timestamp}] Telegram auth initiated for user: ${telegramId} (${username}) with command: ${messageText}`);
         
         // 1. Generate temporary authentication token
-        const token = storeAuthToken(telegram_id, username);
-        console.log(`[${timestamp}] Generated token: ${token} for telegram_id: ${telegram_id}`);
+        const token = storeAuthToken(telegramId, username);
+        console.log(`[${timestamp}] Generated token: ${token} for telegramId: ${telegramId}`);
         
         // 2. POST to game backend auth endpoint with token
         const authResponse = await fetch('http://localhost:5000/api/auth/telegram', {
@@ -188,7 +188,7 @@ if (token && !telegramBotInitialized) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            telegram_id,
+            telegramId,
             username,
             token
           })
@@ -196,20 +196,20 @@ if (token && !telegramBotInitialized) {
 
         // 3. Wait for backend response and log it
         const responseData = await authResponse.json();
-        console.log(`[${timestamp}] Backend response for ${telegram_id}: ${authResponse.status} - ${JSON.stringify(responseData)}`);
+        console.log(`[${timestamp}] Backend response for ${telegramId}: ${authResponse.status} - ${JSON.stringify(responseData)}`);
 
         if (authResponse.ok) {
           // 4. Send success confirmation message with game link
-          const gameUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}?telegram_id=${telegram_id}`;
+          const gameUrl = `https://${process.env.REPLIT_DOMAINS?.split(',')[0] || 'localhost:5000'}?telegramId=${telegramId}`;
           bot.sendMessage(chatId, `You're logged in! 🎮\n\nClick here to play: ${gameUrl}`);
-          console.log(`[${timestamp}] Success message sent to ${telegram_id} with game link: ${gameUrl}`);
+          console.log(`[${timestamp}] Success message sent to ${telegramId} with game link: ${gameUrl}`);
         } else {
           // 5. Send failure message
           bot.sendMessage(chatId, 'Authentication failed. Please try again.');
-          console.log(`[${timestamp}] Failure message sent to ${telegram_id}`);
+          console.log(`[${timestamp}] Failure message sent to ${telegramId}`);
         }
       } catch (error) {
-        console.error(`[${timestamp}] Bot auth error for ${telegram_id}:`, error);
+        console.error(`[${timestamp}] Bot auth error for ${telegramId}:`, error);
         bot.sendMessage(chatId, 'Service temporarily unavailable.');
       }
     });

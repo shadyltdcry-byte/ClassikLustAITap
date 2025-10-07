@@ -102,7 +102,7 @@ export function registerUserRoutes(app: Express) {
               const newUser = await storage.createUser({
                 telegramId: telegramId,
                 username: `Player${telegramId}`,
-                password: 'telegram_auth',
+                password: 'telegramAuth',
                 level: 1,
                 lp: 5000,
                 lpPerHour: 250,
@@ -133,7 +133,7 @@ export function registerUserRoutes(app: Express) {
         // Create default user if not exists - using timestamp-based username to avoid duplicates
         user = await storage.createUser({
           username: `Player${Date.now()}`,
-          password: 'telegram_auth',
+          password: 'telegramAuth',
           level: 1,
           lp: 5000,
           lpPerHour: 250,
@@ -202,8 +202,8 @@ export function registerUserRoutes(app: Express) {
   });
 
   // Telegram authentication status check
-  app.get('/api/auth/telegram/status/:telegram_id', async (req: Request, res: Response) => {
-    const telegramId = req.params.telegram_id;
+  app.get('/api/auth/telegram/status/:telegramId', async (req: Request, res: Response) => {
+    const telegramId = req.params.telegramId;
     
     try {
       // Check cache first to avoid repeated database calls
@@ -226,7 +226,7 @@ export function registerUserRoutes(app: Express) {
         global.recentTelegramAuth?.set(telegramId, {
           user: {
             id: `telegram_${telegramId}`,
-            telegram_id: telegramId,
+            telegramId: telegramId,
             username: user.username || `User${telegramId}`,
             name: user.username || `User${telegramId}`
           },
@@ -238,7 +238,7 @@ export function registerUserRoutes(app: Express) {
           authenticated: true,
           user: {
             id: `telegram_${telegramId}`,
-            telegram_id: telegramId,
+            telegramId: telegramId,
             username: user.username || `User${telegramId}`,
             name: user.username || `User${telegramId}`
           },
@@ -259,7 +259,7 @@ export function registerUserRoutes(app: Express) {
       const telegramData = req.body;
       
       // For development, we'll create a simple auth without full verification
-      const telegramId = telegramData.id || telegramData.telegram_id;
+      const telegramId = telegramData.id || telegramData.telegramId;
       const username = telegramData.username || `User${telegramId}`;
       
       if (!telegramId) {
@@ -274,7 +274,7 @@ export function registerUserRoutes(app: Express) {
         user = await storage.createUser({
           telegramId: String(telegramId),
           username: username,
-          password: 'telegram_auth',
+          password: 'telegramAuth',
           level: 1,
           lp: 5000,
           lpPerHour: 250,
@@ -293,7 +293,7 @@ export function registerUserRoutes(app: Express) {
       global.recentTelegramAuth?.set(String(telegramId), {
         user: {
           id: `telegram_${telegramId}`,
-          telegram_id: String(telegramId),
+          telegramId: String(telegramId),
           username: user.username,
           name: user.username
         },
@@ -304,7 +304,7 @@ export function registerUserRoutes(app: Express) {
       res.json(createSuccessResponse({
         user: {
           id: `telegram_${telegramId}`,
-          telegram_id: String(telegramId),
+          telegramId: String(telegramId),
           username: user.username,
           name: user.username
         },

@@ -108,11 +108,11 @@ const generateUUID = () => {
 
 // Check for existing Telegram auth token
 const getStoredAuthToken = () => {
-  return localStorage.getItem('telegram_auth_token');
+  return localStorage.getItem('telegramAuthToken');
 };
 
 const getStoredUserId = () => {
-  return localStorage.getItem('telegram_user_id') || generateUUID();
+  return localStorage.getItem('telegramUserId') || generateUUID();
 };
 
 const initialPlayerData: PlayerData = {

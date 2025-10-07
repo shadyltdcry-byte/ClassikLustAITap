@@ -11,7 +11,7 @@ export interface AuthRequest extends Request {
  */
 export function requireAuthenticatedUser(allowGuests = false) {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
-    const userId = req.body?.userId || req.params?.userId || req.body?.user_id;
+    const userId = req.body?.userId || req.params?.userId || req.body?.userId;
     
     if (!userId) {
       return res.status(400).json({
@@ -47,7 +47,7 @@ export function requireAuthenticatedUser(allowGuests = false) {
  */
 export function logUserAccess() {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
-    const userId = req.body?.userId || req.params?.userId || req.body?.user_id || req.query?.userId;
+    const userId = req.body?.userId || req.params?.userId || req.body?.userId || req.query?.userId;
     
     if (userId) {
       const isGuest = userId.startsWith('guest_');
@@ -66,7 +66,7 @@ export function logUserAccess() {
  */
 export function requireTelegramAuth() {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
-    const userId = req.body?.userId || req.params?.userId || req.body?.user_id;
+    const userId = req.body?.userId || req.params?.userId || req.body?.userId;
     
     if (!userId) {
       return res.status(401).json({
@@ -113,7 +113,7 @@ export function isValidUserId(userId: string): boolean {
  */
 export function validateUserId() {
   return (req: AuthRequest, res: Response, next: NextFunction) => {
-    const userId = req.body?.userId || req.params?.userId || req.body?.user_id;
+    const userId = req.body?.userId || req.params?.userId || req.body?.userId;
     
     if (userId && !isValidUserId(userId)) {
       return res.status(400).json({

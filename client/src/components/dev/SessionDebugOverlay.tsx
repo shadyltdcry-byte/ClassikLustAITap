@@ -168,7 +168,7 @@ export default function SessionDebugOverlay({
           {/* Storage Info */}
           <div className="border-t border-gray-700 pt-2 space-y-1">
             <div className="text-gray-400 text-xs">LocalStorage:</div>
-            {['telegram_auth_token', 'telegram_user_id', 'guest_user_id'].map(key => {
+            {['telegramAuthToken', 'telegramUserId', 'guestUserId'].map(key => {
               const value = localStorage.getItem(key);
               return (
                 <div key={key} className="flex justify-between text-xs">

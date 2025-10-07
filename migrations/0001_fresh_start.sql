@@ -1,11 +1,11 @@
 
 -- Drop all tables if they exist (cascade to handle foreign keys)
-DROP TABLE IF EXISTS wheel_rewards CASCADE;
-DROP TABLE IF EXISTS user_upgrades CASCADE;
-DROP TABLE IF EXISTS user_characters CASCADE;
-DROP TABLE IF EXISTS media_files CASCADE;
-DROP TABLE IF EXISTS game_stats CASCADE;
-DROP TABLE IF EXISTS chat_messages CASCADE;
+DROP TABLE IF EXISTS wheelRewards CASCADE;
+DROP TABLE IF EXISTS userUpgrades CASCADE;
+DROP TABLE IF EXISTS userCharacters CASCADE;
+DROP TABLE IF EXISTS mediaFiles CASCADE;
+DROP TABLE IF EXISTS gameStats CASCADE;
+DROP TABLE IF EXISTS chatMe seessages CASCADE;
 DROP TABLE IF EXISTS bonuses CASCADE;
 DROP TABLE IF EXISTS boosters CASCADE;
 DROP TABLE IF EXISTS characters CASCADE;
@@ -21,17 +21,17 @@ CREATE TABLE users (
     lpPerHour INTEGER NOT NULL DEFAULT 250,
     lpPerTap REAL NOT NULL DEFAULT 1.5,
     energy INTEGER NOT NULL DEFAULT 1000,
-    max_energy INTEGER NOT NULL DEFAULT 1000,
+    maxEnergy INTEGER NOT NULL DEFAULT 1000,
     coins INTEGER NOT NULL DEFAULT 0,
     xp INTEGER NOT NULL DEFAULT 0,
-    xp_to_next INTEGER NOT NULL DEFAULT 100,
+    xpToNext INTEGER NOT NULL DEFAULT 100,
     isVip BOOLEAN NOT NULL DEFAULT false,
-    nsfw_enabled BOOLEAN NOT NULL DEFAULT false,
-    charisma_points INTEGER NOT NULL DEFAULT 0,
+    nsfwEnabled BOOLEAN NOT NULL DEFAULT false,
+    charismaPoints INTEGER NOT NULL DEFAULT 0,
     vipStatus BOOLEAN NOT NULL DEFAULT false,
-    nsfw_consent BOOLEAN NOT NULL DEFAULT false,
+    nsfwConsent BOOLEAN NOT NULL DEFAULT false,
     charisma INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    createdAt TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- Create characters table with all needed columns
@@ -42,22 +42,22 @@ CREATE TABLE characters (
     backstory TEXT,
     mood TEXT DEFAULT 'neutral' NOT NULL,
     level INTEGER DEFAULT 1 NOT NULL,
-    bond_level INTEGER DEFAULT 1 NOT NULL,
+    bondLevel INTEGER DEFAULT 1 NOT NULL,
     affection INTEGER DEFAULT 0 NOT NULL,
-    unlock_level INTEGER DEFAULT 1 NOT NULL,
+    unlockLevel INTEGER DEFAULT 1 NOT NULL,
     isUnlocked BOOLEAN DEFAULT true NOT NULL,
     isNsfw BOOLEAN DEFAULT false NOT NULL,
     isVip BOOLEAN DEFAULT false NOT NULL,
-    nsfw_enabled BOOLEAN DEFAULT false NOT NULL,
-    level_requirement INTEGER DEFAULT 1 NOT NULL,
-    custom_triggers JSONB DEFAULT '[]'::jsonb,
-    created_at TIMESTAMP DEFAULT NOW() NOT NULL
+    nsfwEnabled BOOLEAN DEFAULT false NOT NULL,
+    levelRequirement INTEGER DEFAULT 1 NOT NULL,
+    customTriggers JSONB DEFAULT '[]'::jsonb,
+    createdAt TIMESTAMP DEFAULT NOW() NOT NULL
 );
 
 -- Create media_files table with pose column
-CREATE TABLE media_files (
+CREATE TABLE mediaFiles (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    character_id UUID REFERENCES characters(id) ON DELETE CASCADE,
+    characterId UUID REFERENCES characters(id) ON DELETE CASCADE,
     fileName TEXT NOT NULL,
     filePath TEXT NOT NULL,
     fileType TEXT NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE media_files (
     animationSequence INTEGER,
     isNsfw BOOLEAN NOT NULL DEFAULT false,
     isVip BOOLEAN NOT NULL DEFAULT false,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    createdAt TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 -- Create upgrades table
@@ -75,78 +75,78 @@ CREATE TABLE upgrades (
     name TEXT NOT NULL,
     description TEXT,
     category TEXT NOT NULL,
-    base_cost INTEGER NOT NULL,
-    base_effect REAL NOT NULL,
-    cost_multiplier REAL NOT NULL DEFAULT 1.3,
-    effect_multiplier REAL NOT NULL DEFAULT 1.15,
-    max_level INTEGER,
-    level_requirement INTEGER NOT NULL DEFAULT 1,
-    unlock_level INTEGER DEFAULT 1 NOT NULL
+    baseCost INTEGER NOT NULL,
+    baseEffect REAL NOT NULL,
+    costMultiplier REAL NOT NULL DEFAULT 1.3,
+    effectMultiplier REAL NOT NULL DEFAULT 1.15,
+    maxLevel INTEGER,
+    levelRequirement INTEGER NOT NULL DEFAULT 1,
+    unlockLevel INTEGER DEFAULT 1 NOT NULL
 );
 
 -- Create other tables
-CREATE TABLE user_characters (
+CREATE TABLE userCharacters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    character_id UUID NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
-    charisma_points INTEGER NOT NULL DEFAULT 0,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    characterId UUID NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    charismaPoints INTEGER NOT NULL DEFAULT 0,
     affection INTEGER NOT NULL DEFAULT 0,
-    bond_level INTEGER NOT NULL DEFAULT 1,
-    unlocked_at TIMESTAMP NOT NULL DEFAULT NOW()
+    bondLevel INTEGER NOT NULL DEFAULT 1,
+    unlockedAt TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE user_upgrades (
+CREATE TABLE userUpgrades (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    upgrade_id UUID NOT NULL REFERENCES upgrades(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    upgradeId UUID NOT NULL REFERENCES upgrades(id) ON DELETE CASCADE,
     level INTEGER NOT NULL DEFAULT 0,
-    purchased_at TIMESTAMP NOT NULL DEFAULT NOW()
+    purchasedAt TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE boosters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type TEXT NOT NULL,
     multiplier REAL NOT NULL,
     duration INTEGER NOT NULL,
-    activated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    expires_at TIMESTAMP NOT NULL
+    activatedAt TIMESTAMP NOT NULL DEFAULT NOW(),
+    expiresAt TIMESTAMP NOT NULL
 );
 
-CREATE TABLE wheel_rewards (
+CREATE TABLE wheelRewards (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     reward TEXT NOT NULL,
     amount INTEGER NOT NULL,
-    spun_at TIMESTAMP NOT NULL DEFAULT NOW()
+    spunAt TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE game_stats (
+CREATE TABLE gameStats (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    total_taps INTEGER NOT NULL DEFAULT 0,
-    total_lp_earned INTEGER NOT NULL DEFAULT 0,
-    total_energy_used INTEGER NOT NULL DEFAULT 0,
-    sessions_played INTEGER NOT NULL DEFAULT 0,
-    last_updated TIMESTAMP NOT NULL DEFAULT NOW()
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    totalTaps INTEGER NOT NULL DEFAULT 0,
+    totalLpEarned INTEGER NOT NULL DEFAULT 0,
+    totalEnergyUsed INTEGER NOT NULL DEFAULT 0,
+    sessionsPlayed INTEGER NOT NULL DEFAULT 0,
+    lastUpdated TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE chat_messages (
+CREATE TABLE chatMessages (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    character_id UUID NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    characterId UUID NOT NULL REFERENCES characters(id) ON DELETE CASCADE,
     message TEXT NOT NULL,
     response TEXT,
-    charisma_gained INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    charismaGained INTEGER NOT NULL DEFAULT 0,
+    createdAt TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE bonuses (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     type TEXT NOT NULL,
     source TEXT NOT NULL,
     reward TEXT NOT NULL,
     amount INTEGER NOT NULL,
-    claimed_at TIMESTAMP NOT NULL DEFAULT NOW()
+    claimedAt TIMESTAMP NOT NULL DEFAULT NOW()
 );

@@ -45,7 +45,7 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
     if (!authState.isAuthenticated) return;
     
     const interval = setInterval(() => {
-      const loginTime = localStorage.getItem('login_timestamp');
+      const loginTime = localStorage.getItem('loginTimestamp');
       if (loginTime) {
         const ageMinutes = Math.floor((Date.now() - parseInt(loginTime)) / 60000);
         setAuthState(prev => ({ ...prev, sessionAge: ageMinutes }));
@@ -137,9 +137,9 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
   const checkTelegramAuth = async (): Promise<AuthState | null> => {
     try {
       // STEP 1: Check stored auth FIRST (this fixes persistence!)
-      const storedToken = localStorage.getItem('telegram_auth_token');
-      const storedUserId = localStorage.getItem('telegram_user_id');
-      const storedTelegramId = localStorage.getItem('telegram_id');
+      const storedToken = localStorage.getItem('telegramAuthToken');
+      const storedUserId = localStorage.getItem('telegramUserId');
+      const storedTelegramId = localStorage.getItem('telegramId');
       
       if (storedToken && storedUserId && storedTelegramId) {
         if (finalConfig.debug) {
@@ -157,7 +157,7 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
             const data = await response.json();
             
             if (data.authenticated) {
-              const loginTime = localStorage.getItem('login_timestamp');
+              const loginTime = localStorage.getItem('loginTimestamp');
               const sessionAge = loginTime ? 
                 Math.floor((Date.now() - parseInt(loginTime)) / 60000) : 0;
               
@@ -169,7 +169,7 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
                 userId: storedUserId,
                 authSource: 'telegram' as const,
                 sessionAge,
-                lastLoginMethod: 'telegram_stored',
+                lastLoginMethod: 'telegramStored',
                 isAuthenticated: true,
                 isLoading: false,
                 error: null
@@ -180,16 +180,16 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
           if (finalConfig.debug) {
             console.log('[useAuthFlow] Stored auth validation failed, clearing storage');
           }
-          localStorage.removeItem('telegram_auth_token');
-          localStorage.removeItem('telegram_user_id'); 
-          localStorage.removeItem('telegram_id');
-          localStorage.removeItem('login_timestamp');
+          localStorage.removeItem('telegramAuthToken');
+          localStorage.removeItem('telegramUserId'); 
+          localStorage.removeItem('telegramId');
+          localStorage.removeItem('loginTimestamp');
         }
       }
 
       // STEP 2: Check URL params (for initial login)
       const urlParams = new URLSearchParams(window.location.search);
-      const telegramId = urlParams.get('telegram_id');
+      const telegramId = urlParams.get('telegramId');
       
       if (finalConfig.debug) {
         console.log('[useAuthFlow] No stored auth, checking URL params:', { telegramId, fullURL: window.location.href });
@@ -197,7 +197,7 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
       
       if (telegramId) {
         if (finalConfig.debug) {
-          console.log('[useAuthFlow] Found telegram_id in URL, checking auth status...');
+          console.log('[useAuthFlow] Found telegramId in URL, checking auth status...');
         }
         
         const response = await deDupeFetch(`/api/auth/telegram/status/${telegramId}`);
@@ -217,10 +217,10 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
         
         if (data.authenticated && data.user && data.user.id) {
           try {
-            localStorage.setItem('telegram_auth_token', data.token || 'no-token');
-            localStorage.setItem('telegram_user_id', data.user.id);
-            localStorage.setItem('telegram_id', telegramId);
-            localStorage.setItem('login_timestamp', Date.now().toString());
+            localStorage.setItem('telegramAuthToken', data.token || 'no-token');
+            localStorage.setItem('telegramUserId', data.user.id);
+            localStorage.setItem('telegramId', telegramId);
+            localStorage.setItem('loginTimestamp', Date.now().toString());
             
             if (finalConfig.debug) {
               console.log('[useAuthFlow] Telegram auth successful, cleaning URL...');
@@ -234,7 +234,7 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
               userId: data.user.id,
               authSource: 'telegram' as const,
               sessionAge: 0,
-              lastLoginMethod: 'telegram_url',
+              lastLoginMethod: 'telegramUrl',
               isAuthenticated: true,
               isLoading: false,
               error: null
@@ -277,18 +277,18 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
 
   // Create guest session
   const createGuestSession = (): AuthState => {
-    let guestId = localStorage.getItem('guest_user_id');
+    let guestId = localStorage.getItem('guestUserId');
     if (!guestId) {
       guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
-      localStorage.setItem('guest_user_id', guestId);
+      localStorage.setItem('guestUserId', guestId);
     }
-    localStorage.setItem('login_timestamp', Date.now().toString());
+    localStorage.setItem('loginTimestamp', Date.now().toString());
 
     return {
       userId: guestId,
       authSource: 'guest',
       sessionAge: 0,
-      lastLoginMethod: 'guest_fallback',
+      lastLoginMethod: 'guestFallback',
       isAuthenticated: true,
       isLoading: false,
       error: null
@@ -304,11 +304,11 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
 
   // Logout function
   const logout = () => {
-    localStorage.removeItem('telegram_auth_token');
-    localStorage.removeItem('telegram_user_id');
-    localStorage.removeItem('telegram_id');
-    localStorage.removeItem('guest_user_id');
-    localStorage.removeItem('login_timestamp');
+    localStorage.removeItem('telegramAuthToken');
+    localStorage.removeItem('telegramUserId');
+    localStorage.removeItem('telegramId');
+    localStorage.removeItem('guestUserId');
+    localStorage.removeItem('loginTimestamp');
     
     setAuthState({
       userId: null,
@@ -323,18 +323,18 @@ export function useAuthFlow(config: Partial<AuthFlowConfig> = {}) {
 
   // Login function (for external auth success)
   const login = (userId: string, authSource: 'telegram' | 'supabase' | 'guest', userData?: any) => {
-    localStorage.setItem('login_timestamp', Date.now().toString());
+    localStorage.setItem('loginTimestamp', Date.now().toString());
     
     if (authSource === 'telegram') {
-      localStorage.setItem('telegram_user_id', userId);
+      localStorage.setItem('telegramUserId', userId);
       if (userData?.token) {
-        localStorage.setItem('telegram_auth_token', userData.token);
+        localStorage.setItem('telegramAuthToken', userData.token);
       }
       if (userData?.telegramId) {
-        localStorage.setItem('telegram_id', userData.telegramId);
+        localStorage.setItem('telegramId', userData.telegramId);
       }
     } else if (authSource === 'guest') {
-      localStorage.setItem('guest_user_id', userId);
+      localStorage.setItem('guestUserId', userId);
     }
 
     setAuthState({

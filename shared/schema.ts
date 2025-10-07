@@ -92,7 +92,7 @@ export const upgrades = pgTable("upgrades", {
   levelRequirement: integer("levelRequirement").notNull().default(1),
 });
 
-export const userUpgrades = pgTable("user_upgrades", {
+export const userUpgrades = pgTable("userUpgrades", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   upgradeId: uuid("upgradeId").notNull().references(() => upgrades.id, { onDelete: "cascade" }),

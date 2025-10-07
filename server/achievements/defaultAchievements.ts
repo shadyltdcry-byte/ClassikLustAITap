@@ -33,7 +33,7 @@ export const DEFAULT_ACHIEVEMENTS: LeveledAchievement[] = [
     description: "Tap a character to start your journey",
     category: "tapping",
     baseRequirement: {
-      type: "total_taps",
+      type: "totalTaps",
       baseTarget: 1,
       multiplier: 5
     },
@@ -59,7 +59,7 @@ export const DEFAULT_ACHIEVEMENTS: LeveledAchievement[] = [
     description: "Level up to increase your power",
     category: "progression",
     baseRequirement: {
-      type: "user_level",
+      type: "userLevel",
       baseTarget: 2,
       multiplier: 2
     },
@@ -85,7 +85,7 @@ export const DEFAULT_ACHIEVEMENTS: LeveledAchievement[] = [
     description: "Accumulate Lust Points through gameplay",
     category: "progression",
     baseRequirement: {
-      type: "total_lp_earned",
+      type: "totalLpEarned",
       baseTarget: 1000,
       multiplier: 10
     },
@@ -111,7 +111,7 @@ export const DEFAULT_ACHIEVEMENTS: LeveledAchievement[] = [
     description: "Send messages to characters",
     category: "chatting",
     baseRequirement: {
-      type: "chat_messages_sent",
+      type: "chatMessagesSent",
       baseTarget: 1,
       multiplier: 3
     },
@@ -137,7 +137,7 @@ export const DEFAULT_ACHIEVEMENTS: LeveledAchievement[] = [
     description: "Use energy through gameplay",
     category: "interaction",
     baseRequirement: {
-      type: "total_energy_used",
+      type: "totalEnergyUsed",
       baseTarget: 100,
       multiplier: 5
     },

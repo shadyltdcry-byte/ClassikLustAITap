@@ -46,11 +46,11 @@ const achievementCategories = [
 ];
 
 const requirementTypes = [
-  { value: 'total_taps', label: 'Total Taps' },
-  { value: 'total_lp_earned', label: 'Total LP Earned' },
-  { value: 'level_reached', label: 'Level Reached' },
-  { value: 'chat_messages', label: 'Chat Messages' },
-  { value: 'characters_unlocked', label: 'Characters Unlocked' }
+  { value: 'totalTaps', label: 'Total Taps' },
+  { value: 'totalLpEarned', label: 'Total LP Earned' },
+  { value: 'levelReached', label: 'Level Reached' },
+  { value: 'chatMessages', label: 'Chat Messages' },
+  { value: 'charactersUnlocked', label: 'Characters Unlocked' }
 ];
 
 const rewardTypes = [
@@ -66,7 +66,7 @@ export default function AchievementManagement() {
     name: '',
     description: '',
     category: 'tapping',
-    baseRequirement: { type: 'total_taps', baseTarget: 10, multiplier: 2 },
+    baseRequirement: { type: 'totalTaps', baseTarget: 10, multiplier: 2 },
     levels: [
       { level: 1, target: 10, reward: { type: 'lp', amount: 100 } },
       { level: 2, target: 20, reward: { type: 'lp', amount: 200 } },
@@ -135,7 +135,7 @@ export default function AchievementManagement() {
       name: '',
       description: '',
       category: 'tapping',
-      requirement: { type: 'total_taps', target: 100 },
+      requirement: { type: 'totalTaps', target: 100 },
       reward: { type: 'lp', amount: 500 },
       icon: '',
       isHidden: false,
