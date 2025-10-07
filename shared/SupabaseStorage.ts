@@ -176,14 +176,24 @@ export class SupabaseStorage implements IStorage {
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
     const safeUpdates = { ...updates };
+    
+    // Remove any undefined or null values
+    Object.keys(safeUpdates).forEach(key => {
+      if (safeUpdates[key] === undefined || safeUpdates[key] === null) {
+        delete safeUpdates[key];
+      }
+    });
+
+    // Convert to snake_case for database
+    const dbUpdates = mapToSnakeCase(safeUpdates);
 
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
       const telegramId = id.replace('telegram_', '');
       const { data, error } = await this.supabase
         .from('users')
-        .update(mapToSnakeCase(safeUpdates))
-        .eq('telegramId', telegramId)
+        .update(dbUpdates)
+        .eq('telegram_id', telegramId)
         .select()
         .single();
 
@@ -200,7 +210,7 @@ export class SupabaseStorage implements IStorage {
       // Regular UUID update
       const { data, error } = await this.supabase
         .from('users')
-        .update(mapToSnakeCase(safeUpdates))
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single();

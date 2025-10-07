@@ -479,27 +479,31 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
         />
       )}
 
-      {/* Character Gallery Modal */}
+      {/* Character Gallery Modal - Fixed z-index to appear above everything */}
       {guiState.showCharacterGallery && (
-        <CharacterGallery 
-          isOpen={guiState.showCharacterGallery}
-          onClose={() => {
-            updateGUIState({ showCharacterGallery: false });
-            // Refresh character data when closing gallery
-            queryClient.invalidateQueries({ queryKey: ['/api/character/selected'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/characters'] });
-          }}
-          userId={userId || playerData?.id || ''}
-          currentCharacterId={selectedCharacter?.id !== 'no-character-selected' ? selectedCharacter?.id : undefined}
-          onCharacterSelected={(characterId) => {
-            console.log('Character selected:', characterId, 'for user:', userId);
-            // Invalidate all related queries to refresh character data
-            queryClient.invalidateQueries({ queryKey: ['/api/character/selected'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/player'] });
-            queryClient.invalidateQueries({ queryKey: ['/api/characters'] });
-            updateGUIState({ showCharacterGallery: false });
-          }}
-        />
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm">
+          <div className="w-full h-full max-w-7xl max-h-[95vh] overflow-hidden">
+            <CharacterGallery 
+              isOpen={guiState.showCharacterGallery}
+              onClose={() => {
+                updateGUIState({ showCharacterGallery: false });
+                // Refresh character data when closing gallery
+                queryClient.invalidateQueries({ queryKey: ['/api/character/selected'] });
+                queryClient.invalidateQueries({ queryKey: ['/api/characters'] });
+              }}
+              userId={userId || playerData?.id || ''}
+              currentCharacterId={selectedCharacter?.id !== 'no-character-selected' ? selectedCharacter?.id : undefined}
+              onCharacterSelected={(characterId) => {
+                console.log('Character selected:', characterId, 'for user:', userId);
+                // Invalidate all related queries to refresh character data
+                queryClient.invalidateQueries({ queryKey: ['/api/character/selected'] });
+                queryClient.invalidateQueries({ queryKey: ['/api/player'] });
+                queryClient.invalidateQueries({ queryKey: ['/api/characters'] });
+                updateGUIState({ showCharacterGallery: false });
+              }}
+            />
+          </div>
+        </div>
       )}
 
     </div>

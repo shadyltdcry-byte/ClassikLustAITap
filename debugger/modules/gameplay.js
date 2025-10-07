@@ -1,21 +1,44 @@
-import DebugPlugin from "../DebugPlugin.js";
 
-/**
- * GameplayModule
- * Handles rules, mechanics, and flow
- */
-export class GameplayModule extends DebugPlugin {
+import DebugPlugin from '../DebugPlugin.js';
+
+class GameplayPlugin extends DebugPlugin {
   constructor() {
-    super("Gameplay");
+    super('Gameplay');
+    this.gameState = { running: false };
   }
 
   async init(context) {
-    context.gameplay = { running: false };
-    console.log("[Gameplay] Systems initialized");
+    console.log(`[${this.name}] Initializing gameplay systems...`);
+    context.gameplay = this;
+    return true;
   }
 
-  async start() {
-    context.gameplay.running = true;
-    console.log("[Gameplay] Game loop started");
+  async run(command, data) {
+    switch(command) {
+      case 'start':
+        console.log(`[${this.name}] Starting game...`);
+        this.gameState.running = true;
+        break;
+      case 'pause':
+        console.log(`[${this.name}] Pausing game...`);
+        this.gameState.running = false;
+        break;
+      case 'status':
+        console.log(`[${this.name}] Game running:`, this.gameState.running);
+        break;
+      case 'clearCache':
+        console.log(`[${this.name}] Clearing gameplay cache...`);
+        this.gameState = { running: false };
+        break;
+      default:
+        break;
+    }
+  }
+
+  async stop() {
+    console.log(`[${this.name}] Stopping gameplay...`);
+    this.gameState.running = false;
   }
 }
+
+export default GameplayPlugin;
