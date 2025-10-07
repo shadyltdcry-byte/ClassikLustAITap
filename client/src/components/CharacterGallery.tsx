@@ -28,9 +28,10 @@ interface CharacterGalleryProps {
   onClose: () => void;
   userId: string;
   onCharacterSelected?: (characterId: string) => void;
+  currentCharacterId?: string; // The currently active character to show photos for
 }
 
-export default function CharacterGallery({ isOpen, onClose, userId, onCharacterSelected }: CharacterGalleryProps) {
+export default function CharacterGallery({ isOpen, onClose, userId, onCharacterSelected, currentCharacterId }: CharacterGalleryProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSlideshow, setIsSlideshow] = useState(false);
@@ -49,6 +50,17 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
     },
     enabled: isOpen
   });
+  
+  // If a current character is provided, show their photos directly
+  useEffect(() => {
+    if (currentCharacterId && isOpen && characters.length > 0) {
+      // Find the current character and set it as selected
+      const char = characters.find((c: Character) => c.id === currentCharacterId);
+      if (char) {
+        setSelectedCharacter(char);
+      }
+    }
+  }, [currentCharacterId, isOpen, characters]);
 
   // Fetch character images - using correct endpoint and field names
   const { data: characterImages = [], isLoading: imagesLoading } = useQuery({

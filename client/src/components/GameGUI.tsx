@@ -464,6 +464,7 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
           isOpen={guiState.showCharacterGallery}
           onClose={() => updateGUIState({ showCharacterGallery: false })}
           userId={userId || playerData?.id || ''}
+          currentCharacterId={selectedCharacter?.id !== 'no-character-selected' ? selectedCharacter?.id : undefined}
           onCharacterSelected={(characterId) => {
             console.log('Character selected:', characterId, 'for user:', userId);
             // Invalidate all related queries to refresh character data
