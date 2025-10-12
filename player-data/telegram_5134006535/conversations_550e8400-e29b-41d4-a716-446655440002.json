@@ -1730,5 +1730,61 @@
     "timestamp": "2025-10-12T22:53:39.777Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760309694432-mr4ip9xpw",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (10:54:54 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:54:54.432Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1760309772599-d201ng8wh",
+    "content": "Test",
+    "sender": "user",
+    "timestamp": "2025-10-12T22:56:12.599Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760309772599-xbqbalzia",
+    "content": "Oh, hello there! *giggles* Looks like you’re testing the waters, huh? Well, I’m all wet and ready for you—*winks*—so let’s make this fun. What’s on your mind, baby? I’m all ears… and other things. 😉",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:56:12.599Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "user-1760309923571-ota6l5jtu",
+    "content": "Picture send?",
+    "sender": "user",
+    "timestamp": "2025-10-12T22:58:43.571Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760309923571-59gm1qyfz",
+    "content": "Oh, you naughty thing! *giggles* I’d love to send you a little tease, but I’m afraid I can’t share pictures here. But hey, you can always imagine me in something tight and lacey, or maybe just a little *less*… *winks*\n\nTell me, what’s your favorite fantasy? I’m all ears—and other things. 😉",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:58:43.571Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "user-1760309940748-pnsmrk51g",
+    "content": "Hmm..",
+    "sender": "user",
+    "timestamp": "2025-10-12T22:59:00.748Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760309940748-6ejnjlms3",
+    "content": "*Playfully tilts my head, letting my long blonde hair cascade over my shoulder as I bite my lower lip* Hmm? Did I do something naughty to make you go all quiet on me? Or are you just imagining what you’d do to me if I were right there with you? *Giggles softly, my blue eyes sparkling with mischief* I bet you’re thinking something *very* dirty right now.",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:59:00.748Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
