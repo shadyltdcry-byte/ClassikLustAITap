@@ -429,7 +429,7 @@ export function registerAdminRoutes(app: Express) {
                   requiredLevel: 1,
                   enabledForChat: true,
                   autoOrganized: true,
-                  category: null
+                  category: 'Character' // Default to 'Character' for auto-imported files
                 };
 
                 try {
@@ -438,7 +438,9 @@ export function registerAdminRoutes(app: Express) {
                   console.log(`Auto-imported filesystem file: ${file}`);
                 } catch (dbError) {
                   console.warn(`Could not import ${file} to database:`, dbError);
-                  importedFiles.push(mediaEntry); // Add to response anyway
+                  // If creation fails due to constraint, push the entry with the default category anyway
+                  // The caller might handle this or log it.
+                  importedFiles.push(mediaEntry);
                 }
               }
             } catch (fileError) {
@@ -483,7 +485,7 @@ export function registerAdminRoutes(app: Express) {
           requiredLevel: parseInt(req.body.requiredLevel) || 1,
           enabledForChat: true,
           autoOrganized: false,
-          category: req.body.category || null
+          category: req.body.category || 'Character' // Default to 'Character' if not provided
         };
 
         const created = await storage.createMedia(mediaEntry);
