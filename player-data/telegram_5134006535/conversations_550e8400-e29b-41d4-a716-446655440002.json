@@ -1442,5 +1442,45 @@
     "timestamp": "2025-10-12T21:00:01.659Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760303049577-8p3jhlihl",
+    "content": "🌙 🚨 URGENT! BABY! There's a critical issue with System! Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-12T21:04:09.577Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760303066095-pc437axcu",
+    "content": "🌙 I noticed something unusual in System at 9:04:26 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T21:04:26.095Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760304016430-jjiyge72a",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (9:20:16 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-12T21:20:16.430Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1760304410986-sy6r8pq76",
+    "content": "Heyyy",
+    "sender": "user",
+    "timestamp": "2025-10-12T21:26:50.986Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760304410986-xb0yga7so",
+    "content": "*Giggles softly, twirling a lock of blonde hair around her finger as she leans in slightly*\n\n\"Hey there, handsome... or should I say *handsome*? 😉 I was just thinking about how much fun we could have together... *winks* Tell me, what’s got you all worked up tonight?\"",
+    "sender": "character",
+    "timestamp": "2025-10-12T21:26:50.986Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
