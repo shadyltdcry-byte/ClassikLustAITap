@@ -240,27 +240,27 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
     // Handle both old and new file data formats
     const fileName = file.fileName || (file as any).filename || '';
-    
+
     // Handle both old and new file path formats
     const filePath = file.filePath || (file as any).filepath || (file as any).url;
-    const fileUrl = filePath?.startsWith('http') 
+    const fileUrl = filePath?.startsWith('http')
       ? filePath // External URL (e.g., Supabase storage)
-      : filePath?.startsWith('/api/') 
+      : filePath?.startsWith('/api/')
         ? filePath // Already an API path
-        : filePath?.startsWith('/') 
-          ? filePath 
-          : filePath 
+        : filePath?.startsWith('/')
+          ? filePath
+          : filePath
             ? `/api/media/file/${filePath}` // Use API endpoint for file serving
-            : fileName 
-              ? `/api/media/file/${fileName}` 
+            : fileName
+              ? `/api/media/file/${fileName}`
               : '/uploads/placeholder-character.jpg';
     const fileExt = fileName.toLowerCase().split('.').pop() || '';
-    
+
     // Better file type detection - check fileType field and filename extension
-    const isImage = file.fileType === 'image' || 
-                   file.fileType === 'gif' || 
+    const isImage = file.fileType === 'image' ||
+                   file.fileType === 'gif' ||
                    ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'].includes(fileExt);
-    const isVideo = file.fileType === 'video' || 
+    const isVideo = file.fileType === 'video' ||
                    ['mp4', 'webm', 'mov', 'avi', 'mkv', 'flv'].includes(fileExt);
 
     if (isImage) {
@@ -306,6 +306,38 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       });
     }
   };
+
+  const handleSaveMetadata = async () => {
+    if (!editingFile) return;
+
+    try {
+      console.log('[FileManagerCore] Saving metadata for:', editingFile.id);
+
+      // Map camelCase to snake_case for database
+      const updates = {
+        characterid: editingFile.characterId,
+        mood: editingFile.mood,
+        pose: editingFile.pose,
+        category: editingFile.category,
+        isnsfw: editingFile.isNsfw,
+        isvip: editingFile.isVip,
+        enabledforchat: editingFile.enabledForChat,
+        randomsendchance: editingFile.randomSendChance,
+      };
+
+      console.log('[FileManagerCore] Sending updates:', updates);
+
+      await updateFileMutation.mutateAsync({ // Changed to use updateFileMutation
+        id: editingFile.id,
+        updates
+      });
+
+      setEditingFile(null);
+    } catch (error) {
+      console.error('[FileManagerCore] Failed to save metadata:', error);
+    }
+  };
+
 
   if (filesLoading) {
     return <div className="flex justify-center p-8">Loading media files...</div>;
@@ -440,7 +472,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
             {/* Professional Settings Panel */}
             <div className="bg-gray-800/80 border border-gray-600 rounded-lg p-4">
               <h3 className="text-white text-sm font-semibold mb-3 text-gray-300">Upload Settings</h3>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded border border-gray-600">
                   <div>
@@ -722,7 +754,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                   </div>
                 </div>
                 <p className="text-xs text-gray-400">Allow AI to send this image during conversations</p>
-                
+
                 <div>
                   <Label className="text-white">Chat Send Chance (%)</Label>
                   <Input
@@ -751,7 +783,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                   Cancel
                 </Button>
                 <Button
-                  onClick={() => handleFileUpdate(editingFile)}
+                  onClick={handleSaveMetadata} // Changed to call handleSaveMetadata
                   className="bg-purple-600 hover:bg-purple-700"
                   disabled={updateFileMutation.isPending}
                 >

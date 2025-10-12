@@ -272,6 +272,8 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
   });
 
   // Send message with Mistral AI
+  const [pendingImage, setPendingImage] = useState<{url: string, id: string} | null>(null);
+
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
       // Add user message immediately to UI
@@ -286,8 +288,6 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
       setMessages(prev => [...prev, userMessage]);
       setNewMessage("");
 
-      // Skip saving user message to reduce packet issues - AI will save both messages
-
       // Show typing indicator
       setTypingIndicator(true);
       
@@ -297,7 +297,6 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
 
       try {
         // Generate AI response using Mistral
-        // Use more conversation history for better memory (last 10 messages or all if fewer)
         const allMessages = [...messages, userMessage];
         const conversationHistory = allMessages.slice(-10).map(m => ({
           role: m.sender === 'user' ? 'user' : 'assistant',
@@ -325,7 +324,6 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
         return { result, originalMessage: message };
       } catch (error) {
         console.error("Mistral API failed, using fallback:", error);
-        // Use a more character-specific fallback that indicates the issue
         return { 
           result: { 
             response: `*Luna looks a bit confused* Sorry, I'm having trouble thinking clearly right now... Can you try asking me again? 💕`,
@@ -341,24 +339,38 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
       // Hide typing indicator
       setTypingIndicator(false);
       
-      // Fixed response handling - server returns {success: true, data: {response: "..."}}
       console.log('[AIChat] Full response object:', result);
       
       let aiResponse;
       if (result.success && result.data && result.data.response) {
-        // Server format: {success: true, data: {response: "..."}}
         aiResponse = result.data.response;
       } else if (result.response) {
-        // Direct response format
         aiResponse = result.response;
       } else {
-        // Fallback
         aiResponse = "I'm having a wonderful time chatting with you! How are you feeling today? ✨";
         console.log('[AIChat] Using fallback response, received:', result);
       }
       
       const aiMood = result.data?.mood || result.mood || getRandomMood();
       const randomImage = result.data?.image || result.image;
+      
+      // If AI is sending a picture, show notification with thumbnail
+      if (randomImage) {
+        console.log('📸 AI sent a random image:', randomImage.url);
+        
+        // Add notification message
+        const notificationMessage: ChatMessage = {
+          id: `notification-${Date.now()}`,
+          content: `${character.name} has sent you a picture 📷`,
+          sender: 'character',
+          timestamp: new Date(),
+          type: 'text',
+          mood: aiMood,
+        };
+        
+        setMessages(prev => [...prev, notificationMessage]);
+        setPendingImage({ url: randomImage.url, id: randomImage.id });
+      }
       
       // Add AI response to UI
       const aiMessage: ChatMessage = {
@@ -374,12 +386,6 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
 
       setMessages(prev => [...prev, aiMessage]);
       setCharacterMood(aiMessage.mood || 'normal');
-      
-      if (randomImage) {
-        console.log('📸 AI sent a random image:', randomImage.url);
-      }
-      
-      // Skip saving AI message here to reduce packet issues - server handles saving
     },
     onError: (error: any) => {
       console.error("AI Chat error:", error);
@@ -483,37 +489,35 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
   return (
     <div className="h-full flex flex-col">
       {/* Chat Header */}
-      <div className="p-4 bg-black/30 border-b border-purple-500/30">
-        <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12">
-            <AvatarFallback className="bg-purple-600 text-white">
-              {character.name[0]}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold text-white">{character.name}</h3>
-              <Badge variant="secondary" className={`capitalize ${getMoodInfo(characterMood).color} text-white`}>
-                {getMoodInfo(characterMood).emoji}
-              </Badge>
+      <div className="p-3 bg-black/30 border-b border-purple-500/30">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <Avatar className="h-10 w-10">
+              <AvatarFallback className="bg-purple-600 text-white text-sm">
+                {character.name[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-semibold text-white">{character.name}</h3>
+                <Badge variant="secondary" className={`capitalize ${getMoodInfo(characterMood).color} text-white text-xs`}>
+                  {getMoodInfo(characterMood).emoji}
+                </Badge>
+              </div>
+              <p className="text-xs text-gray-400">Online • Loves to chat</p>
             </div>
-            <p className="text-sm text-gray-400">Online • Loves to chat</p>
-            <p className="text-xs text-purple-300">Have conversations with your favorite character.</p>
+          </div>
+          
+          {/* Mood and Gift buttons moved to the right */}
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" className="border-yellow-500 text-yellow-400 text-xs px-3 py-1 rounded-full">
+              😊
+            </Button>
+            <Button variant="outline" size="sm" className="border-red-500 text-red-400 text-xs px-3 py-1 rounded-full">
+              🎁
+            </Button>
           </div>
         </div>
-      </div>
-
-      {/* Chat Tabs */}
-      <div className="flex gap-2 p-4 bg-black/20">
-        <Button className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-full">
-          💬 Chat
-        </Button>
-        <Button variant="outline" className="border-yellow-500 text-yellow-400 px-6 py-2 rounded-full">
-          😊 Moods
-        </Button>
-        <Button variant="outline" className="border-red-500 text-red-400 px-6 py-2 rounded-full">
-          🎁 Gifts
-        </Button>
       </div>
 
       {/* Chat Messages */}
@@ -528,7 +532,7 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
                 >
                   <div className={`max-w-[80%] ${message.sender === 'user' ? 'order-2' : 'order-1'}`}>
                     <div
-                      className={`rounded-lg p-3 ${
+                      className={`rounded-lg p-2 ${
                         message.sender === 'user'
                           ? 'bg-purple-600 text-white'
                           : 'bg-gray-700 text-white'
@@ -536,18 +540,39 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
                     >
                       {message.type === 'image' && message.imageUrl && (
                         <div className="mb-2">
-                          <img 
-                            src={message.imageUrl} 
-                            alt="Shared image" 
-                            className="rounded-lg max-w-full max-h-64 object-cover"
-                            onError={(e) => {
-                              console.error('Failed to load image:', message.imageUrl);
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
+                          {pendingImage?.url === message.imageUrl ? (
+                            <button
+                              onClick={() => {
+                                setPendingImage(null);
+                                // Image will display after clicking
+                              }}
+                              className="relative w-full"
+                            >
+                              <img 
+                                src={message.imageUrl} 
+                                alt="Thumbnail" 
+                                className="rounded-lg max-w-full h-24 object-cover blur-sm"
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center">
+                                <span className="bg-black/70 px-3 py-1 rounded-full text-xs">
+                                  Tap to view 👁️
+                                </span>
+                              </div>
+                            </button>
+                          ) : (
+                            <img 
+                              src={message.imageUrl} 
+                              alt="Shared image" 
+                              className="rounded-lg max-w-full max-h-48 object-cover"
+                              onError={(e) => {
+                                console.error('Failed to load image:', message.imageUrl);
+                                e.currentTarget.style.display = 'none';
+                              }}
+                            />
+                          )}
                         </div>
                       )}
-                      <p>{message.content}</p>
+                      <p className="text-sm">{message.content}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs opacity-75">
                           {formatTime(message.timestamp)}
@@ -562,11 +587,11 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
                   </div>
                   <Avatar className={`w-8 h-8 ${message.sender === 'user' ? 'order-1' : 'order-2'}`}>
                     {message.sender === 'user' ? (
-                      <AvatarFallback className="bg-purple-600">U</AvatarFallback>
+                      <AvatarFallback className="bg-purple-600 text-xs">U</AvatarFallback>
                     ) : (
                       <>
                         <AvatarImage src={character.avatarUrl || character.imageUrl || character.avatarPath} alt={character.name} />
-                        <AvatarFallback className="bg-gray-600">{character.name[0]}</AvatarFallback>
+                        <AvatarFallback className="bg-gray-600 text-xs">{character.name[0]}</AvatarFallback>
                       </>
                     )}
                   </Avatar>

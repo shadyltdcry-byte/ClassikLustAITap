@@ -5,8 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Terminal, Bug, Code, Activity, Monitor } from "lucide-react";
-import { GameDebugger } from "@/components/debug";
-import { useGameDebugger } from "@/hooks/useGameDebugger";
+import { GameDebugger } from "@/hooks/useGameDebugger";
 import DebuggerConsole from "@/components/debug/DebuggerConsole";
 
 // Backend Debugger Component
@@ -21,7 +20,7 @@ const AdminBackendDebugger = ({ gameDebugger }: { gameDebugger: any }) => {
     }
 
     setCommandOutput("Executing command...");
-    
+
     try {
       // Real backend debugging commands
       switch (commandInput.toLowerCase().trim()) {
@@ -30,17 +29,17 @@ const AdminBackendDebugger = ({ gameDebugger }: { gameDebugger: any }) => {
           const healthData = await healthResponse.json();
           setCommandOutput(`🚀 SERVER STATUS:\n${JSON.stringify(healthData, null, 2)}`);
           break;
-          
+
         case 'stats':
           const userResponse = await fetch('/api/user/telegram_8276164651');
           const userData = await userResponse.json();
           setCommandOutput(`📊 USER STATS:\nLP: ${userData.lp}\nEnergy: ${userData.energy}\nLevel: ${userData.level || 1}`);
           break;
-          
+
         case 'performance':
           setCommandOutput(`⚡ PERFORMANCE METRICS:\nRender Count: ${gameDebugger.debugState.renderCount}\nAPI Calls: ${gameDebugger.debugState.apiCalls}\nLast Update: ${new Date(gameDebugger.debugState.lastUpdate).toLocaleTimeString()}`);
           break;
-          
+
         case 'memory':
           if ('memory' in performance) {
             const mem = (performance as any).memory;
@@ -49,19 +48,19 @@ const AdminBackendDebugger = ({ gameDebugger }: { gameDebugger: any }) => {
             setCommandOutput("Memory info not available");
           }
           break;
-          
+
         case 'clear':
           setCommandOutput("");
           break;
-          
+
         case 'help':
           setCommandOutput(`🔧 AVAILABLE COMMANDS:\n• status - Server health check\n• stats - User statistics\n• performance - Performance metrics\n• memory - Memory usage\n• clear - Clear output\n• help - Show this help`);
           break;
-          
+
         default:
           setCommandOutput(`❌ Unknown command: "${commandInput}"\nType 'help' for available commands.`);
       }
-      
+
       setCommandInput("");
     } catch (error: any) {
       setCommandOutput(`💥 ERROR: ${error.message}`);
@@ -111,10 +110,10 @@ const AdminBackendDebugger = ({ gameDebugger }: { gameDebugger: any }) => {
 
 export default function AdminDebugPanel() {
   const [showReactDebugger, setShowReactDebugger] = useState(false);
-  
+
   // Initialize React debugger for admin use
   const reactDebugger = useGameDebugger();
-  
+
   // Make trackApiCall globally available for API monitoring
   useEffect(() => {
     if (typeof window !== 'undefined') {

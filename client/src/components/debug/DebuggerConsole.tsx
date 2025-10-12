@@ -27,6 +27,40 @@ export default function DebuggerConsole({ isOpen = true, onClose }: DebuggerCons
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Initialize DebuggerCore if not already loaded
+    const initDebugger = async () => {
+      if (typeof window !== 'undefined' && !(window as any).debuggerCore) {
+        try {
+          // Dynamically import and initialize DebuggerCore
+          const DebuggerCore = (await import('../../../debugger/DebuggerCore.js')).default;
+          const core = new DebuggerCore();
+          (window as any).debuggerCore = core;
+          
+          // Load and register modules
+          const modules = [
+            (await import('../../../debugger/modules/database.js')).default,
+            (await import('../../../debugger/modules/character.js')).default,
+            (await import('../../../debugger/modules/aichat.js')).default,
+            (await import('../../../debugger/modules/gameplay.js')).default,
+          ];
+          
+          modules.forEach(ModuleClass => {
+            const instance = new ModuleClass();
+            core.register(instance);
+          });
+          
+          await core.initAll();
+          addLog('success', 'Debugger', 'Debugger Core initialized successfully');
+        } catch (error) {
+          addLog('error', 'Debugger', `Failed to initialize: ${error}`);
+        }
+      } else if ((window as any).debuggerCore) {
+        addLog('success', 'Debugger', 'Debugger Core already connected');
+      }
+    };
+
+    initDebugger();
+
     // Capture console logs
     const originalLog = console.log;
     const originalWarn = console.warn;
@@ -46,11 +80,6 @@ export default function DebuggerConsole({ isOpen = true, onClose }: DebuggerCons
       originalError(...args);
       addLog('error', 'System', args.join(' '));
     };
-
-    // Listen to debugger core events
-    if (typeof window !== 'undefined' && (window as any).debuggerCore) {
-      addLog('success', 'Debugger', 'Debugger Core connected');
-    }
 
     return () => {
       console.log = originalLog;

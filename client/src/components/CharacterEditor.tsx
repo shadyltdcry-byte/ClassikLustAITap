@@ -132,6 +132,10 @@ export default function CharacterEditor({
       
       const result = await response.json();
       console.log("[CharacterEditor] Save successful:", result);
+      
+      // Force reload character data to ensure UI updates
+      await queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
+      
       return result;
     },
     onSuccess: async (data) => {
