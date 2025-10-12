@@ -424,6 +424,40 @@ export function registerChatRoutes(app: Express) {
         enhancedResponse = "*bounces excitedly* " + enhancedResponse;
       }
 
+      // Check for random picture sending
+      let imageToSend = null;
+      if (characterId) {
+        try {
+          // Get all chat-enabled media for this character
+          const allMedia = await storage.getMediaByCharacter(characterId);
+          const chatEnabledMedia = allMedia.filter((m: any) => 
+            m.enabledForChat === true || m.enabledForChat === 'true'
+          );
+          
+          if (chatEnabledMedia.length > 0) {
+            // Check each image's send chance
+            for (const media of chatEnabledMedia) {
+              const sendChance = media.randomSendChance || 5; // Default 5% chance
+              const roll = Math.random() * 100;
+              
+              if (roll < sendChance) {
+                imageToSend = {
+                  id: media.id,
+                  url: media.filePath || media.filepath,
+                  mood: media.mood,
+                  isNsfw: media.isNsfw || media.isnsfw
+                };
+                console.log(`📸 AI sending random image: ${media.fileName || media.filename} (${sendChance}% chance, rolled ${roll.toFixed(2)})`);
+                break; // Send only one image per response
+              }
+            }
+          }
+        } catch (mediaError) {
+          console.error('Error checking for random media:', mediaError);
+          // Don't fail the request if media check fails
+        }
+      }
+
       // Save conversation to JSON files for history persistence
       if (userId && characterId && isValidUserId(userId)) {
         try {
@@ -459,8 +493,10 @@ export function registerChatRoutes(app: Express) {
             content: enhancedResponse,
             sender: 'character',
             timestamp: new Date().toISOString(),
-            type: 'text',
-            mood: characterMood || 'normal'
+            type: imageToSend ? 'image' : 'text',
+            mood: characterMood || 'normal',
+            imageUrl: imageToSend?.url,
+            imageId: imageToSend?.id
           };
           
           conversations.push(userMessage, aiMessage);
@@ -479,7 +515,8 @@ export function registerChatRoutes(app: Express) {
       res.json(createSuccessResponse({
         response: enhancedResponse,
         characterPersonality,
-        characterMood
+        characterMood,
+        image: imageToSend
       }));
       
     } catch (error) {

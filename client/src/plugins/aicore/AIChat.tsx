@@ -28,6 +28,7 @@ interface ChatMessage {
   type: 'text' | 'image' | 'gift';
   mood?: string;
   reactionScore?: number;
+  imageUrl?: string;
 }
 
 interface Character {
@@ -357,6 +358,7 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
       }
       
       const aiMood = result.data?.mood || result.mood || getRandomMood();
+      const randomImage = result.data?.image || result.image;
       
       // Add AI response to UI
       const aiMessage: ChatMessage = {
@@ -364,13 +366,18 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
         content: aiResponse,
         sender: 'character',
         timestamp: new Date(),
-        type: 'text',
+        type: randomImage ? 'image' : 'text',
         mood: aiMood,
         reactionScore: Math.floor(Math.random() * 10) + 1,
+        imageUrl: randomImage?.url,
       };
 
       setMessages(prev => [...prev, aiMessage]);
       setCharacterMood(aiMessage.mood || 'normal');
+      
+      if (randomImage) {
+        console.log('📸 AI sent a random image:', randomImage.url);
+      }
       
       // Skip saving AI message here to reduce packet issues - server handles saving
     },
@@ -527,6 +534,19 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
                           : 'bg-gray-700 text-white'
                       }`}
                     >
+                      {message.type === 'image' && message.imageUrl && (
+                        <div className="mb-2">
+                          <img 
+                            src={message.imageUrl} 
+                            alt="Shared image" 
+                            className="rounded-lg max-w-full max-h-64 object-cover"
+                            onError={(e) => {
+                              console.error('Failed to load image:', message.imageUrl);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        </div>
+                      )}
                       <p>{message.content}</p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs opacity-75">

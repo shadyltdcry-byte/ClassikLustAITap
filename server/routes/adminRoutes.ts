@@ -503,15 +503,30 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  app.put('/api/media/:id', async (req: Request, res: Response) => {
+  // Update media file
+  app.put("/api/media/:id", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const updates = req.body;
-      const updatedMedia = await storage.updateMedia(id, updates);
-      res.json(createSuccessResponse(updatedMedia));
+
+      // If updating characterId, verify the character exists first
+      if (updates.characterId) {
+        const character = await storage.getCharacterById(updates.characterId);
+        if (!character) {
+          return res.status(400).json(createErrorResponse('Character not found - cannot assign media to non-existent character'));
+        }
+      }
+
+      const updated = await storage.updateMedia(id, updates);
+
+      if (!updated) {
+        return res.status(404).json(createErrorResponse('Media file not found'));
+      }
+
+      res.json(createSuccessResponse(updated));
     } catch (error) {
       console.error('Error updating media:', error);
-      res.status(500).json(createErrorResponse(`Failed to update media: ${error instanceof Error ? error.message : 'Unknown error'}`));
+      res.status(500).json(createErrorResponse('Failed to update media'));
     }
   });
 
