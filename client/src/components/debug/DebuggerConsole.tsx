@@ -32,16 +32,16 @@ export default function DebuggerConsole({ isOpen = true, onClose }: DebuggerCons
       if (typeof window !== 'undefined' && !(window as any).debuggerCore) {
         try {
           // Dynamically import and initialize DebuggerCore
-          const DebuggerCore = (await import('/debugger/DebuggerCore.js')).default;
+          const DebuggerCore = (await import('@/debugger/DebuggerCore.js')).default;
           const core = new DebuggerCore();
           (window as any).debuggerCore = core;
           
           // Load and register modules
           const modules = [
-            (await import('/debugger/modules/database.js')).default,
-            (await import('/debugger/modules/character.js')).default,
-            (await import('/debugger/modules/aichat.js')).default,
-            (await import('/debugger/modules/gameplay.js')).default,
+            (await import('@/debugger/modules/database.js')).default,
+            (await import('@/debugger/modules/character.js')).default,
+            (await import('@/debugger/modules/aichat.js')).default,
+            (await import('@/debugger/modules/gameplay.js')).default,
           ];
           
           modules.forEach(ModuleClass => {
