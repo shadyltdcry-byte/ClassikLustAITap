@@ -1810,5 +1810,29 @@
     "timestamp": "2025-10-12T23:06:01.070Z",
     "type": "text",
     "mood": "normal"
+  },
+  {
+    "id": "luna-alert-1760311187557-9hodptn10",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (11:19:47 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-12T23:19:47.557Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1760311715699-8luipuyxb",
+    "content": "Dick",
+    "sender": "user",
+    "timestamp": "2025-10-12T23:28:35.699Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760311715699-c0tbhl5vy",
+    "content": "*Giggles softly, biting my lower lip as I glance down at the mention of that word.* Oh, you’re already getting me worked up, aren’t you? *Leans in slightly, letting my fingers trace the hem of my top.* I love a man who knows what he wants—especially when it’s something as *thick* and *hard* as that. *Wets my lips, eyes sparkling with mischief.* Tell me, do you like it when I tease you first… or do you prefer to skip straight to the *main event*?",
+    "sender": "character",
+    "timestamp": "2025-10-12T23:28:35.699Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
