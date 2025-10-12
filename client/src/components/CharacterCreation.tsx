@@ -379,15 +379,27 @@ export default function CharacterCreation({
                               </SelectTrigger>
                               <SelectContent className="bg-gray-700 border-gray-600">
                                 <SelectItem value="" className="text-white">No image</SelectItem>
-                                {(mediaFiles as any[]).map((file: any) => (
-                                  <SelectItem
-                                    key={file.id}
-                                    value={file.filePath || `/uploads/${file.fileName}`}
-                                    className="text-white"
-                                  >
-                                    {file.fileName || `File ${file.id.slice(0, 8)}`}
-                                  </SelectItem>
-                                ))}
+                                {(mediaFiles as any[])
+                                  .filter((file: any) => {
+                                    // Include files that have either fileName or filePath set
+                                    const hasFileName = file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '';
+                                    const hasFilePath = file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined');
+                                    return hasFileName || hasFilePath;
+                                  })
+                                  .map((file: any) => {
+                                    const displayName = file.fileName || file.filePath?.split('/').pop() || `File ${file.id.slice(0, 8)}`;
+                                    const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                    
+                                    return (
+                                      <SelectItem
+                                        key={file.id}
+                                        value={filePath}
+                                        className="text-white"
+                                      >
+                                        {displayName}
+                                      </SelectItem>
+                                    );
+                                  })}
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -409,15 +421,26 @@ export default function CharacterCreation({
                               </SelectTrigger>
                               <SelectContent className="bg-gray-700 border-gray-600">
                                 <SelectItem value="" className="text-white">No avatar</SelectItem>
-                                {(mediaFiles as any[]).map((file: any) => (
-                                  <SelectItem
-                                    key={file.id}
-                                    value={file.filePath || `/uploads/${file.fileName}`}
-                                    className="text-white"
-                                  >
-                                    {file.fileName || `File ${file.id.slice(0, 8)}`}
-                                  </SelectItem>
-                                ))}
+                                {(mediaFiles as any[])
+                                  .filter((file: any) => {
+                                    const hasFileName = file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '';
+                                    const hasFilePath = file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined');
+                                    return hasFileName || hasFilePath;
+                                  })
+                                  .map((file: any) => {
+                                    const displayName = file.fileName || file.filePath?.split('/').pop() || `File ${file.id.slice(0, 8)}`;
+                                    const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                    
+                                    return (
+                                      <SelectItem
+                                        key={file.id}
+                                        value={filePath}
+                                        className="text-white"
+                                      >
+                                        {displayName}
+                                      </SelectItem>
+                                    );
+                                  })}
                               </SelectContent>
                             </Select>
                           </FormControl>

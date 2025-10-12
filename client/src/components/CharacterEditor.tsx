@@ -445,10 +445,11 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {(mediaFiles as any[]).filter((file: any) => 
-                                  (file.fileName && file.fileName !== 'undefined' && file.fileName !== '') || 
-                                  (file.filePath && file.filePath !== '' && !file.filePath.includes('undefined'))
-                                ).map((file: any, index: number) => {
+                                {(mediaFiles as any[]).filter((file: any) => {
+                                  const hasFileName = file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '';
+                                  const hasFilePath = file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined');
+                                  return hasFileName || hasFilePath;
+                                }).map((file: any, index: number) => {
                                   const displayName = file.fileName || file.filePath?.split('/').pop() || `File ${index + 1}`;
                                   const filePath = file.filePath || `/uploads/${file.fileName}`;
                                   
@@ -484,10 +485,11 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {(mediaFiles as any[]).filter((file: any) => 
-                                  (file.fileName && file.fileName !== 'undefined' && file.fileName !== '') || 
-                                  (file.filePath && file.filePath !== '' && !file.filePath.includes('undefined'))
-                                ).map((file: any, index: number) => {
+                                {(mediaFiles as any[]).filter((file: any) => {
+                                  const hasFileName = file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '';
+                                  const hasFilePath = file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined');
+                                  return hasFileName || hasFilePath;
+                                }).map((file: any, index: number) => {
                                   const displayName = file.fileName || file.filePath?.split('/').pop() || `File ${index + 1}`;
                                   const filePath = file.filePath || `/uploads/${file.fileName}`;
                                   
