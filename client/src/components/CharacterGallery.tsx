@@ -182,32 +182,17 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   // Fixed image URL handling using correct MediaFile schema fields
   const getImageUrl = (media: MediaFile) => {
-    console.log('[CharacterGallery] Processing media for display:', media);
+    // Priority: filePath > filepath > fileName
+    const path = media.filePath || (media as any).filepath || (media.fileName ? `/uploads/${media.fileName}` : null);
     
-    // Try filePath first (main storage path)
-    if (media.filePath) {
-      const url = media.filePath.startsWith('/') ? media.filePath : `/${media.filePath}`;
-      console.log('[CharacterGallery] Using filePath:', url);
-      return url;
+    if (!path) {
+      console.warn('[CharacterGallery] No valid image path found for media:', media.id);
+      return '/uploads/placeholder-character.jpg';
     }
     
-    // Try filepath (alternative field)
-    if ((media as any).filepath) {
-      const url = (media as any).filepath.startsWith('/') ? (media as any).filepath : `/${(media as any).filepath}`;
-      console.log('[CharacterGallery] Using filepath:', url);
-      return url;
-    }
-    
-    // Try fileName
-    if (media.fileName) {
-      const url = `/uploads/${media.fileName}`;
-      console.log('[CharacterGallery] Using fileName:', url);
-      return url;
-    }
-    
-    // Last resort placeholder
-    console.warn('[CharacterGallery] No valid image path found, using placeholder');
-    return '/uploads/placeholder-character.jpg';
+    // Ensure path starts with /
+    const url = path.startsWith('/') ? path : `/${path}`;
+    return url;
   };
 
   const getCurrentImage = () => {

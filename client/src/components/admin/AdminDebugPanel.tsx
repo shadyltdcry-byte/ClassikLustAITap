@@ -169,20 +169,18 @@ export default function AdminDebugPanel() {
       {/* Backend Debugger */}
       <AdminBackendDebugger gameDebugger={reactDebugger} />
 
-      {/* Debugger Console */}
-      <div className="mb-6">
-        <Card className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border-blue-500/30 shadow-lg">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-white flex items-center gap-2">
-              <Terminal className="w-5 h-5 text-blue-400" />
-              🔧 Debugger Console
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DebuggerConsole isOpen={true} />
-          </CardContent>
-        </Card>
-      </div>
+      {/* Debugger Console - Embedded Static Version */}
+      <Card className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border-blue-500/30 shadow-lg">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-white flex items-center gap-2">
+            <Terminal className="w-5 h-5 text-blue-400" />
+            🔧 Debugger Console
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <DebuggerConsole isOpen={true} isEmbedded={true} />
+        </CardContent>
+      </Card>
 
       {/* React State Debugger Modal */}
       {showReactDebugger && (

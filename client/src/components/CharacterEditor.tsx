@@ -529,6 +529,7 @@ export default function CharacterEditor({
                             alt="Main Preview"
                             className="w-full h-40 object-contain rounded"
                             onError={e => {
+                              console.error('[CharacterEditor] Failed to load image:', form.watch("imageUrl"));
                               (e.target as HTMLImageElement).src = "https://via.placeholder.com/300x400/1a1a1a/ff1493?text=👤";
                             }}
                           />

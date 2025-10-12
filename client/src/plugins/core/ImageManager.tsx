@@ -63,7 +63,7 @@ export default function ImageManager({
   const [formFields, setFormFields] = useState({
     pose: "",
     levelRequirement: 1,
-    chatSendChance: 5,
+    randomSendChance: 5,
     isNsfw: false,
     isVipOnly: false,
     isEvent: false,
@@ -113,7 +113,13 @@ export default function ImageManager({
         characterId: selectedCharacter,
         folderPath,
         imageType,
-        ...formFields
+        pose: formFields.pose,
+        levelRequirement: formFields.levelRequirement,
+        randomSendChance: formFields.randomSendChance,
+        isNsfw: formFields.isNsfw,
+        isVipOnly: formFields.isVipOnly,
+        isEvent: formFields.isEvent,
+        isWheelReward: formFields.isWheelReward,
       }));
 
       const response = await fetch("/api/media/upload", {
@@ -208,24 +214,29 @@ export default function ImageManager({
 
     const img = new window.Image();
     img.onload = () => {
-      // Set canvas size
+      // Set canvas size to 512x512
       canvas.width = 512;
       canvas.height = 512;
 
-      // Calculate crop dimensions
-      const scale = cropScale;
-      const sourceWidth = img.width * scale;
-      const sourceHeight = img.height * scale;
-      const sourceX = (img.width - sourceWidth) / 2 + cropPosition.x;
-      const sourceY = (img.height - sourceHeight) / 2 + cropPosition.y;
+      // Clear canvas
+      ctx.clearRect(0, 0, 512, 512);
 
-      // Draw cropped image
+      // Calculate dimensions
+      const imgAspect = img.width / img.height;
+      let drawWidth = img.width / cropScale;
+      let drawHeight = img.height / cropScale;
+      
+      // Center the crop
+      const drawX = (img.width - drawWidth) / 2 - cropPosition.x;
+      const drawY = (img.height - drawHeight) / 2 - cropPosition.y;
+
+      // Draw the cropped section scaled to 512x512
       ctx.drawImage(
         img,
-        sourceX,
-        sourceY,
-        sourceWidth,
-        sourceHeight,
+        drawX,
+        drawY,
+        drawWidth,
+        drawHeight,
         0,
         0,
         512,
@@ -525,12 +536,15 @@ export default function ImageManager({
                         )}
                       </div>
 
-                      <div className="text-gray-400 text-xs">
-                        {file.characterId && (
-                          <span>
-                            Character: {characters.find((c: any) => c.id === file.characterId)?.name || "Unknown"}
-                          </span>
+                      <div className="text-gray-400 text-xs space-y-1">
+                        {file.characterId ? (
+                          <div>📷 Character: {characters.find((c: any) => c.id === file.characterId)?.name || "Unknown"}</div>
+                        ) : (
+                          <div>📷 Character: Unassigned</div>
                         )}
+                        <div>🎲 AI Chat: {file.randomSendChance || 5}%</div>
+                        {file.pose && <div>🎭 Pose: {file.pose}</div>}
+                        {file.category && <div>📁 Category: {file.category}</div>}
                       </div>
                     </div>
                   </CardContent>
@@ -582,6 +596,31 @@ export default function ImageManager({
                   step={0.1}
                   className="mt-2"
                 />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-white text-sm">Pan X: {cropPosition.x}</Label>
+                  <Slider
+                    value={[cropPosition.x]}
+                    onValueChange={([val]) => setCropPosition(prev => ({ ...prev, x: val }))}
+                    min={-200}
+                    max={200}
+                    step={1}
+                    className="mt-2"
+                  />
+                </div>
+                <div>
+                  <Label className="text-white text-sm">Pan Y: {cropPosition.y}</Label>
+                  <Slider
+                    value={[cropPosition.y]}
+                    onValueChange={([val]) => setCropPosition(prev => ({ ...prev, y: val }))}
+                    min={-200}
+                    max={200}
+                    step={1}
+                    className="mt-2"
+                  />
+                </div>
               </div>
             </div>
 

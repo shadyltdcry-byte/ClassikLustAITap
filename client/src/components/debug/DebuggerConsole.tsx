@@ -18,9 +18,10 @@ interface DebugLog {
 interface DebuggerConsoleProps {
   isOpen?: boolean;
   onClose?: () => void;
+  isEmbedded?: boolean;
 }
 
-export default function DebuggerConsole({ isOpen = true, onClose }: DebuggerConsoleProps) {
+export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = false }: DebuggerConsoleProps) {
   const [logs, setLogs] = useState<DebugLog[]>([]);
   const [command, setCommand] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
@@ -160,6 +161,47 @@ export default function DebuggerConsole({ isOpen = true, onClose }: DebuggerCons
 
   if (!isOpen) return null;
 
+  // Embedded mode - render without fixed positioning
+  if (isEmbedded) {
+    return (
+      <div className="w-full">
+        <div className="space-y-2">
+          <ScrollArea className="h-64 bg-black/30 rounded p-2" ref={scrollRef}>
+            {logs.map(log => (
+              <div key={log.id} className="flex items-start gap-2 mb-1 text-xs">
+                <Badge variant="outline" className={getLevelColor(log.level)}>
+                  {log.level}
+                </Badge>
+                <span className="text-gray-400">{log.timestamp}</span>
+                <span className="text-purple-400">[{log.module}]</span>
+                <span className="text-gray-300 flex-1">{log.message}</span>
+              </div>
+            ))}
+          </ScrollArea>
+
+          <div className="flex gap-2">
+            <Input
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleCommand()}
+              placeholder="Enter command... (e.g., status, clearCache)"
+              className="bg-black/30 border-purple-500/30 text-white"
+            />
+            <Button onClick={handleCommand} size="sm">Run</Button>
+            <Button size="sm" variant="ghost" onClick={clearLogs}>
+              <Trash2 className="w-3 h-3" />
+            </Button>
+          </div>
+
+          <div className="text-xs text-gray-400">
+            Available: status, clearCache, reconnect, list, add, chat, clearHistory
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Floating mode - original behavior
   return (
     <div className="fixed bottom-4 right-4 z-50 w-96">
       <Card className="bg-gray-900/95 border-purple-500/30 backdrop-blur-sm">
