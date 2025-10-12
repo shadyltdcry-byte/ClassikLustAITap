@@ -1346,5 +1346,21 @@
     "timestamp": "2025-10-12T20:09:55.687Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760300152442-q2yrt8ffv",
+    "content": "🌙 I noticed something unusual in System at 8:15:52 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T20:15:52.442Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760300534805-ego0d0s40",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T20:22:14.805Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
