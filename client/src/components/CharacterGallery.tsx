@@ -66,10 +66,16 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
   const { data: characterImages = [], isLoading: imagesLoading } = useQuery({
     queryKey: ['/api/media/character', selectedCharacter?.id],
     queryFn: async () => {
+      console.log('[CharacterGallery] Fetching images for character:', selectedCharacter?.id);
       const response = await apiRequest('GET', `/api/media/character/${selectedCharacter?.id}`);
-      return await response.json();
+      const images = await response.json();
+      console.log('[CharacterGallery] Received images:', images);
+      return images;
     },
-    enabled: isOpen && !!selectedCharacter
+    enabled: isOpen && !!selectedCharacter,
+    staleTime: 0, // Always fetch fresh data
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
 
   // Character selection mutation

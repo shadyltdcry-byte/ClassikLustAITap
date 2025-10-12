@@ -137,7 +137,11 @@ export default function ImageManager({
         title: "Upload successful",
         description: "Files have been uploaded successfully",
       });
+      // Invalidate both media and character-specific queries
       queryClient.invalidateQueries({ queryKey: ["/api/media"] });
+      if (selectedCharacter) {
+        queryClient.invalidateQueries({ queryKey: ['/api/media/character', selectedCharacter] });
+      }
       setSelectedFiles(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
@@ -206,13 +210,15 @@ export default function ImageManager({
   };
 
   const handleCropComplete = useCallback(async () => {
-    if (!canvasRef.current || !cropImage) return;
+    if (!canvasRef.current || !cropImage || !cropFile) return;
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     const img = new window.Image();
+    img.crossOrigin = 'anonymous';
+    
     img.onload = () => {
       // Set canvas size to 512x512
       canvas.width = 512;
@@ -221,22 +227,21 @@ export default function ImageManager({
       // Clear canvas
       ctx.clearRect(0, 0, 512, 512);
 
-      // Calculate dimensions
-      const imgAspect = img.width / img.height;
-      let drawWidth = img.width / cropScale;
-      let drawHeight = img.height / cropScale;
+      // Calculate the source dimensions based on zoom
+      const sourceWidth = img.width / cropScale;
+      const sourceHeight = img.height / cropScale;
       
-      // Center the crop
-      const drawX = (img.width - drawWidth) / 2 - cropPosition.x;
-      const drawY = (img.height - drawHeight) / 2 - cropPosition.y;
+      // Calculate source position (centered + pan offset)
+      const sourceX = Math.max(0, Math.min((img.width - sourceWidth) / 2 + cropPosition.x, img.width - sourceWidth));
+      const sourceY = Math.max(0, Math.min((img.height - sourceHeight) / 2 + cropPosition.y, img.height - sourceHeight));
 
-      // Draw the cropped section scaled to 512x512
+      // Draw the cropped and scaled image
       ctx.drawImage(
         img,
-        drawX,
-        drawY,
-        drawWidth,
-        drawHeight,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
         0,
         0,
         512,
@@ -245,9 +250,9 @@ export default function ImageManager({
 
       // Convert to blob
       canvas.toBlob((blob) => {
-        if (blob && cropFile) {
+        if (blob) {
           const croppedFile = new File([blob], cropFile.name, {
-            type: cropFile.type,
+            type: 'image/jpeg',
             lastModified: Date.now()
           });
           const dataTransfer = new DataTransfer();
@@ -258,11 +263,25 @@ export default function ImageManager({
           setCropFile(null);
           setCropScale(1);
           setCropPosition({ x: 0, y: 0 });
+          
+          toast({
+            title: "Image Cropped",
+            description: "Image has been cropped to 512x512. Ready to upload.",
+          });
         }
-      }, cropFile.type);
+      }, 'image/jpeg', 0.95);
     };
+    
+    img.onerror = () => {
+      toast({
+        variant: "destructive",
+        title: "Crop Failed",
+        description: "Failed to load image for cropping",
+      });
+    };
+    
     img.src = cropImage;
-  }, [cropImage, cropFile, cropScale, cropPosition]);
+  }, [cropImage, cropFile, cropScale, cropPosition, toast]);
 
   const handleUpload = async () => {
     if (!selectedFiles || selectedFiles.length === 0) {
@@ -508,44 +527,87 @@ export default function ImageManager({
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {filteredFiles.map((file: any) => (
-                <Card key={file.id} className="bg-black/40 border-gray-600">
-                  <CardContent className="p-4">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
+                <Card key={file.id} className="bg-black/40 border-gray-600 overflow-hidden">
+                  <CardContent className="p-4 space-y-3">
+                    {/* File Header with Actions */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
                         {getFileIcon(file)}
                         <span className="text-white text-sm truncate">
                           {file.originalName || file.filename}
                         </span>
                       </div>
-
-                      <div className="flex flex-wrap gap-1">
-                        {file.mood && (
-                          <Badge variant="secondary" className="text-xs">
-                            {file.mood}
-                          </Badge>
-                        )}
-                        {file.isNsfw && (
-                          <Badge variant="destructive" className="text-xs">
-                            NSFW
-                          </Badge>
-                        )}
-                        {file.isVipOnly && (
-                          <Badge variant="outline" className="text-xs">
-                            VIP
-                          </Badge>
-                        )}
+                      <div className="flex gap-1 flex-shrink-0">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            console.log('[ImageManager] Edit file:', file);
+                            // Add edit functionality here
+                          }}
+                        >
+                          <Edit3 className="w-3 h-3 text-blue-400" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 w-7 p-0"
+                          onClick={() => {
+                            if (confirm('Delete this file?')) {
+                              // Add delete functionality here
+                              console.log('[ImageManager] Delete file:', file.id);
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-3 h-3 text-red-400" />
+                        </Button>
                       </div>
+                    </div>
 
-                      <div className="text-gray-400 text-xs space-y-1">
-                        {file.characterId ? (
-                          <div>📷 Character: {characters.find((c: any) => c.id === file.characterId)?.name || "Unknown"}</div>
-                        ) : (
-                          <div>📷 Character: Unassigned</div>
-                        )}
-                        <div>🎲 AI Chat: {file.randomSendChance || 5}%</div>
-                        {file.pose && <div>🎭 Pose: {file.pose}</div>}
-                        {file.category && <div>📁 Category: {file.category}</div>}
+                    {/* Image Preview */}
+                    {file.filePath && (
+                      <div className="w-full h-32 bg-gray-900 rounded overflow-hidden">
+                        <img
+                          src={file.filePath}
+                          alt={file.filename}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg';
+                          }}
+                        />
                       </div>
+                    )}
+
+                    {/* Badges */}
+                    <div className="flex flex-wrap gap-1">
+                      {file.mood && (
+                        <Badge variant="secondary" className="text-xs">
+                          {file.mood}
+                        </Badge>
+                      )}
+                      {file.isNsfw && (
+                        <Badge variant="destructive" className="text-xs">
+                          NSFW
+                        </Badge>
+                      )}
+                      {file.isVipOnly && (
+                        <Badge variant="outline" className="text-xs">
+                          VIP
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Metadata */}
+                    <div className="text-gray-400 text-xs space-y-1">
+                      {file.characterId ? (
+                        <div>📷 {characters.find((c: any) => c.id === file.characterId)?.name || "Unknown"}</div>
+                      ) : (
+                        <div>📷 Unassigned</div>
+                      )}
+                      <div>🎲 AI Chat: {file.randomSendChance || 5}%</div>
+                      {file.pose && <div>🎭 {file.pose}</div>}
+                      {file.category && <div>📁 {file.category}</div>}
                     </div>
                   </CardContent>
                 </Card>

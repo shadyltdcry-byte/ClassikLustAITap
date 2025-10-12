@@ -30,8 +30,23 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
   useEffect(() => {
     // Initialize DebuggerCore if not already loaded
     const initDebugger = async () => {
-      if (typeof window !== 'undefined' && !(window as any).debuggerCore) {
+      if (typeof window !== 'undefined') {
+        // Check if already initialized
+        if ((window as any).debuggerCore) {
+          if (!(window as any).debuggerInitialized) {
+            addLog('success', 'Debugger', 'Debugger Core already connected');
+            (window as any).debuggerInitialized = true;
+          }
+          return;
+        }
+
         try {
+          // Mark as initializing to prevent race conditions
+          if ((window as any).debuggerInitializing) {
+            return;
+          }
+          (window as any).debuggerInitializing = true;
+
           // Dynamically import and initialize DebuggerCore
           const DebuggerCore = (await import('@/debugger/DebuggerCore.js')).default;
           const core = new DebuggerCore();
@@ -51,16 +66,20 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
           });
           
           await core.initAll();
+          (window as any).debuggerInitialized = true;
+          (window as any).debuggerInitializing = false;
           addLog('success', 'Debugger', 'Debugger Core initialized successfully');
         } catch (error) {
+          (window as any).debuggerInitializing = false;
           addLog('error', 'Debugger', `Failed to initialize: ${error}`);
         }
-      } else if ((window as any).debuggerCore) {
-        addLog('success', 'Debugger', 'Debugger Core already connected');
       }
     };
 
-    initDebugger();
+    // Only initialize once when component mounts
+    if (!isEmbedded || isOpen) {
+      initDebugger();
+    }
 
     // Capture console logs
     const originalLog = console.log;
