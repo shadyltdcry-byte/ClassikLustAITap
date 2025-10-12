@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 
 export function useGameDebugger() {
@@ -8,5 +9,8 @@ export function useGameDebugger() {
     }
   }, []);
 }
+
+// Re-export GameDebugger component from the correct location
+export { default as GameDebugger } from '@/components/debug/GameDebugger';
 
 export default useGameDebugger;
