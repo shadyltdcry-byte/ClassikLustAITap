@@ -1,4 +1,3 @@
-
 /**
  * ImageManager.tsx - Fixed Media Upload Component
  * Last Edited: 2025-08-21 by Assistant
@@ -18,14 +17,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { 
-  Upload, 
-  Image, 
-  Video, 
-  Music, 
-  File, 
-  Trash2, 
-  Edit3, 
+import {
+  Upload,
+  Image,
+  Video,
+  Music,
+  File,
+  Trash2,
+  Edit3,
   Filter,
   X,
   CheckCircle
@@ -84,81 +83,71 @@ export default function ImageManager({
 
   // Upload mutation with proper form data handling
   const uploadMutation = useMutation({
-    mutationFn: async (files: FileList) => {
-      const formData = new FormData();
-      
-      // Add all selected files
-      Array.from(files).forEach((file, index) => {
-        formData.append(`files`, file);
-      });
-      
-      // Add metadata
-      formData.append('characterId', selectedCharacter);
-      formData.append('imageType', imageType);
-      formData.append('pose', formFields.pose);
-      formData.append('levelRequirement', formFields.levelRequirement.toString());
-      formData.append('chatSendChance', formFields.chatSendChance.toString());
-      formData.append('isNsfw', formFields.isNsfw.toString());
-      formData.append('isVipOnly', formFields.isVipOnly.toString());
-      formData.append('isEventOnly', formFields.isEventOnly.toString());
-      formData.append('isWheelReward', formFields.isWheelReward.toString());
-
+    mutationFn: async (formData: FormData) => {
       const response = await fetch("/api/media/upload", {
         method: "POST",
         body: formData,
       });
-      
       if (!response.ok) {
-        const error = await response.json().catch(() => ({ error: "Upload failed" }));
-        throw new Error(error.error || "Upload failed");
+        const error = await response.text();
+        throw new Error(error || "Upload failed");
       }
-      
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/media"] });
       toast({
-        title: "Success",
-        description: "Files uploaded successfully!",
-        style: {
-          backgroundColor: "#374151",
-          color: "white",
-          border: "1px solid #6b7280",
-        },
+        title: "Upload successful",
+        description: "Files have been uploaded successfully",
       });
-      
-      // Reset form
+      queryClient.invalidateQueries({ queryKey: ["/api/media"] });
       setSelectedFiles(null);
-      setSelectedCharacter("");
-      setImageType("character");
-      setFormFields({
-        pose: "",
-        levelRequirement: 1,
-        chatSendChance: 5,
-        isNsfw: false,
-        isVipOnly: false,
-        isEventOnly: false,
-        isWheelReward: false,
-      });
-      
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
     },
     onError: (error: any) => {
-      console.error("Upload error:", error);
       toast({
-        title: "Upload Failed",
-        description: error.message || "Failed to upload files",
         variant: "destructive",
-        style: {
-          backgroundColor: "#dc2626",
-          color: "white",
-          border: "1px solid #ef4444",
-        },
+        title: "Upload failed",
+        description: error.message || "Failed to upload files",
       });
     },
   });
+
+  // Update mutation for editing media metadata
+  const updateMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
+      console.log('[ImageManager] Updating media', id, 'with:', updates);
+      const response = await fetch(`/api/media/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('[ImageManager] Update failed:', error);
+        throw new Error(error || "Update failed");
+      }
+      return response.json();
+    },
+    onSuccess: (data) => {
+      console.log('[ImageManager] Update successful:', data);
+      toast({
+        title: "Update successful",
+        description: "Media file has been updated",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/media"] });
+    },
+    onError: (error: any) => {
+      console.error('[ImageManager] Update error:', error);
+      toast({
+        variant: "destructive",
+        title: "Update failed",
+        description: error.message || "Failed to update media file",
+      });
+    },
+  });
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -180,7 +169,7 @@ export default function ImageManager({
     // Validate file types
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
     const invalidFiles = Array.from(selectedFiles).filter(file => !validTypes.includes(file.type));
-    
+
     if (invalidFiles.length > 0) {
       toast({
         title: "Invalid File Types",
@@ -391,7 +380,7 @@ export default function ImageManager({
             </Select>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           {isLoading ? (
             <div className="text-center text-gray-400 py-8">Loading media files...</div>
@@ -411,7 +400,7 @@ export default function ImageManager({
                           {file.originalName || file.filename}
                         </span>
                       </div>
-                      
+
                       <div className="flex flex-wrap gap-1">
                         {file.mood && (
                           <Badge variant="secondary" className="text-xs">
@@ -429,7 +418,7 @@ export default function ImageManager({
                           </Badge>
                         )}
                       </div>
-                      
+
                       <div className="text-gray-400 text-xs">
                         {file.characterId && (
                           <span>

@@ -65,7 +65,9 @@ export default function CharacterEditor({
     queryFn: async () => {
       const response = await fetch("/api/media");
       if (!response.ok) throw new Error("Failed to fetch media files");
-      return response.json();
+      const data = await response.json();
+      console.log('[CharacterEditor] Fetched media files:', data);
+      return data;
     },
   });
 
@@ -445,25 +447,20 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {Array.isArray(mediaFiles) && mediaFiles
-                                  .filter((file: any) => {
-                                    // More lenient filtering - just check if file has a path
-                                    return file && (file.filePath || file.fileName);
-                                  })
-                                  .map((file: any, index: number) => {
-                                    const displayName = file.fileName || file.filePath?.split('/').pop() || `Image ${index + 1}`;
-                                    const filePath = file.filePath || `/uploads/${file.fileName}`;
-                                    
-                                    return (
-                                      <SelectItem
-                                        key={`main-image-${file.id || index}`}
-                                        value={filePath}
-                                        className="text-white hover:bg-gray-600"
-                                      >
-                                        📷 {displayName}
-                                      </SelectItem>
-                                    );
-                                  })}
+                                {Array.isArray(mediaFiles) && mediaFiles.map((file: any, index: number) => {
+                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `Image ${index + 1}`;
+                                  const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                  
+                                  return (
+                                    <SelectItem
+                                      key={`main-image-${file.id || index}`}
+                                      value={filePath}
+                                      className="text-white hover:bg-gray-600"
+                                    >
+                                      📷 {displayName}
+                                    </SelectItem>
+                                  );
+                                })}
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -486,25 +483,20 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {Array.isArray(mediaFiles) && mediaFiles
-                                  .filter((file: any) => {
-                                    // More lenient filtering - just check if file has a path
-                                    return file && (file.filePath || file.fileName);
-                                  })
-                                  .map((file: any, index: number) => {
-                                    const displayName = file.fileName || file.filePath?.split('/').pop() || `Avatar ${index + 1}`;
-                                    const filePath = file.filePath || `/uploads/${file.fileName}`;
-                                    
-                                    return (
-                                      <SelectItem
-                                        key={`avatar-image-${file.id || index}`}
-                                        value={filePath}
-                                        className="text-white hover:bg-gray-600"
-                                      >
-                                        👤 {displayName}
-                                      </SelectItem>
-                                    );
-                                  })}
+                                {Array.isArray(mediaFiles) && mediaFiles.map((file: any, index: number) => {
+                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `Avatar ${index + 1}`;
+                                  const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                  
+                                  return (
+                                    <SelectItem
+                                      key={`avatar-image-${file.id || index}`}
+                                      value={filePath}
+                                      className="text-white hover:bg-gray-600"
+                                    >
+                                      👤 {displayName}
+                                    </SelectItem>
+                                  );
+                                })}
                               </SelectContent>
                             </Select>
                           </FormControl>

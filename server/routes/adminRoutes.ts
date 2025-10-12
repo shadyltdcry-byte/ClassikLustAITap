@@ -509,6 +509,8 @@ export function registerAdminRoutes(app: Express) {
       const { id } = req.params;
       const updates = req.body;
 
+      console.log('[Media Update] Received updates for', id, ':', updates);
+
       // If updating characterId, verify the character exists in database
       if (updates.characterId) {
         const { data: charCheck } = await storage.supabase
@@ -518,41 +520,68 @@ export function registerAdminRoutes(app: Express) {
           .single();
         
         if (!charCheck) {
+          console.error('[Media Update] Character not found:', updates.characterId);
           return res.status(400).json(createErrorResponse('Character not found in database - cannot assign media'));
         }
       }
 
-      // Update using lowercase column names
+      // Build update object with lowercase column names
+      const dbUpdates: any = {};
+      
+      if (updates.characterId !== undefined) dbUpdates.characterid = updates.characterId;
+      if (updates.fileName !== undefined) dbUpdates.filename = updates.fileName;
+      if (updates.filePath !== undefined) dbUpdates.filepath = updates.filePath;
+      if (updates.fileType !== undefined) dbUpdates.filetype = updates.fileType;
+      if (updates.mood !== undefined) dbUpdates.mood = updates.mood;
+      if (updates.pose !== undefined) dbUpdates.pose = updates.pose;
+      if (updates.animationSequence !== undefined) dbUpdates.animationsequence = updates.animationSequence;
+      if (updates.isNsfw !== undefined) dbUpdates.isnsfw = updates.isNsfw;
+      if (updates.isVip !== undefined) dbUpdates.isvip = updates.isVip;
+      if (updates.isEvent !== undefined) dbUpdates.isevent = updates.isEvent;
+      if (updates.randomSendChance !== undefined) dbUpdates.randomsendchance = updates.randomSendChance;
+      if (updates.requiredLevel !== undefined) dbUpdates.requiredlevel = updates.requiredLevel;
+      if (updates.enabledForChat !== undefined) dbUpdates.enabledforchat = updates.enabledForChat;
+      if (updates.category !== undefined) dbUpdates.category = updates.category;
+
+      console.log('[Media Update] Database updates:', dbUpdates);
+
       const { data, error } = await storage.supabase
         .from('mediaFiles')
-        .update({
-          characterid: updates.characterId,
-          filename: updates.fileName,
-          filepath: updates.filePath,
-          filetype: updates.fileType,
-          mood: updates.mood,
-          pose: updates.pose,
-          animationsequence: updates.animationSequence,
-          isnsfw: updates.isNsfw,
-          isvip: updates.isVip,
-          isevent: updates.isEvent,
-          randomsendchance: updates.randomSendChance,
-          requiredlevel: updates.requiredLevel,
-          enabledforchat: updates.enabledForChat,
-          category: updates.category
-        })
+        .update(dbUpdates)
         .eq('id', id)
         .select()
         .single();
 
       if (error) {
-        console.error('Media update error:', error);
+        console.error('[Media Update] Database error:', error);
         return res.status(404).json(createErrorResponse('Media file not found'));
       }
 
-      res.json(createSuccessResponse(data));
+      // Map response to camelCase
+      const mappedData = {
+        id: data.id,
+        characterId: data.characterid,
+        fileName: data.filename,
+        filePath: data.filepath,
+        fileType: data.filetype,
+        mood: data.mood,
+        pose: data.pose,
+        animationSequence: data.animationsequence,
+        isNsfw: data.isnsfw,
+        isVip: data.isvip,
+        isEvent: data.isevent,
+        randomSendChance: data.randomsendchance,
+        requiredLevel: data.requiredlevel,
+        enabledForChat: data.enabledforchat,
+        category: data.category,
+        createdAt: data.createdat,
+        updatedAt: data.updatedat
+      };
+
+      console.log('[Media Update] Success, returning:', mappedData);
+      res.json(createSuccessResponse(mappedData));
     } catch (error) {
-      console.error('Error updating media:', error);
+      console.error('[Media Update] Error:', error);
       res.status(500).json(createErrorResponse('Failed to update media'));
     }
   });
