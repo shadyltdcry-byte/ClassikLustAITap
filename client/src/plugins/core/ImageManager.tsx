@@ -57,6 +57,7 @@ export default function ImageManager({
   const [cropFile, setCropFile] = useState<File | null>(null);
   const [cropScale, setCropScale] = useState(1);
   const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
+  const [editingFile, setEditingFile] = useState<any | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Form fields state
@@ -160,10 +161,26 @@ export default function ImageManager({
   const updateMutation = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
       console.log('[ImageManager] Updating media', id, 'with:', updates);
+      
+      // Map camelCase to snake_case for database
+      const dbUpdates = {
+        characterid: updates.characterId,
+        mood: updates.mood,
+        pose: updates.pose,
+        category: updates.category,
+        isnsfw: updates.isNsfw,
+        isvip: updates.isVip,
+        isevent: updates.isEvent,
+        iswheelreward: updates.isWheelReward,
+        enabledforchat: updates.enabledForChat,
+        randomsendchance: updates.randomSendChance,
+        requiredlevel: updates.levelRequirement,
+      };
+      
       const response = await fetch(`/api/media/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updates),
+        body: JSON.stringify(dbUpdates),
       });
       if (!response.ok) {
         const error = await response.text();
@@ -209,7 +226,7 @@ export default function ImageManager({
     }
   };
 
-  const handleCropComplete = useCallback(async () => {
+  const handleCropComplete = useCallback(() => {
     if (!canvasRef.current || !cropImage || !cropFile) return;
 
     const canvas = canvasRef.current;
@@ -217,7 +234,6 @@ export default function ImageManager({
     if (!ctx) return;
 
     const img = new window.Image();
-    img.crossOrigin = 'anonymous';
     
     img.onload = () => {
       // Set canvas size to 512x512
@@ -227,13 +243,14 @@ export default function ImageManager({
       // Clear canvas
       ctx.clearRect(0, 0, 512, 512);
 
-      // Calculate the source dimensions based on zoom
-      const sourceWidth = img.width / cropScale;
-      const sourceHeight = img.height / cropScale;
+      // Calculate dimensions for cropping
+      const scale = cropScale;
+      const sourceWidth = img.width / scale;
+      const sourceHeight = img.height / scale;
       
-      // Calculate source position (centered + pan offset)
-      const sourceX = Math.max(0, Math.min((img.width - sourceWidth) / 2 + cropPosition.x, img.width - sourceWidth));
-      const sourceY = Math.max(0, Math.min((img.height - sourceHeight) / 2 + cropPosition.y, img.height - sourceHeight));
+      // Calculate source position with pan offset
+      const sourceX = Math.max(0, Math.min((img.width - sourceWidth) / 2 - cropPosition.x, img.width - sourceWidth));
+      const sourceY = Math.max(0, Math.min((img.height - sourceHeight) / 2 - cropPosition.y, img.height - sourceHeight));
 
       // Draw the cropped and scaled image
       ctx.drawImage(
@@ -526,39 +543,60 @@ export default function ImageManager({
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredFiles.map((file: any) => (
-                <Card key={file.id} className="bg-black/40 border-gray-600 overflow-hidden">
+              {filteredFiles.map((file: any, index: number) => (
+                <Card key={`media-${file.id}-${index}`} className="bg-black/40 border-gray-600 overflow-hidden">
                   <CardContent className="p-4 space-y-3">
                     {/* File Header with Actions */}
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {getFileIcon(file)}
                         <span className="text-white text-sm truncate">
-                          {file.originalName || file.filename}
+                          {file.fileName || file.filename || file.originalName}
                         </span>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0"
-                          onClick={() => {
-                            console.log('[ImageManager] Edit file:', file);
-                            // Add edit functionality here
+                          className="h-7 w-7 p-0 hover:bg-blue-600/20"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setEditingFile(file);
                           }}
+                          title="Edit metadata"
                         >
                           <Edit3 className="w-3 h-3 text-blue-400" />
                         </Button>
                         <Button
                           size="sm"
                           variant="ghost"
-                          className="h-7 w-7 p-0"
-                          onClick={() => {
-                            if (confirm('Delete this file?')) {
-                              // Add delete functionality here
-                              console.log('[ImageManager] Delete file:', file.id);
+                          className="h-7 w-7 p-0 hover:bg-red-600/20"
+                          onClick={async (e) => {
+                            e.stopPropagation();
+                            if (confirm('Delete this file permanently?')) {
+                              try {
+                                const response = await fetch(`/api/media/${file.id}`, {
+                                  method: 'DELETE',
+                                });
+                                if (response.ok) {
+                                  toast({
+                                    title: "File deleted",
+                                    description: "Media file has been deleted",
+                                  });
+                                  queryClient.invalidateQueries({ queryKey: ["/api/media"] });
+                                } else {
+                                  throw new Error('Delete failed');
+                                }
+                              } catch (error) {
+                                toast({
+                                  variant: "destructive",
+                                  title: "Delete failed",
+                                  description: "Failed to delete media file",
+                                });
+                              }
                             }
                           }}
+                          title="Delete file"
                         >
                           <Trash2 className="w-3 h-3 text-red-400" />
                         </Button>
@@ -570,7 +608,7 @@ export default function ImageManager({
                       <div className="w-full h-32 bg-gray-900 rounded overflow-hidden">
                         <img
                           src={file.filePath}
-                          alt={file.filename}
+                          alt={file.fileName || file.filename}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg';
@@ -710,6 +748,104 @@ export default function ImageManager({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Metadata Dialog */}
+      {editingFile && (
+        <Dialog open={!!editingFile} onOpenChange={() => setEditingFile(null)}>
+          <DialogContent className="max-w-2xl bg-gray-900 border-purple-500/30">
+            <DialogHeader>
+              <DialogTitle className="text-white">Edit Media Metadata</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              {/* Image Preview */}
+              {editingFile.filePath && (
+                <div className="w-full h-48 bg-gray-800 rounded overflow-hidden">
+                  <img
+                    src={editingFile.filePath}
+                    alt="Preview"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              )}
+              
+              {/* Character Assignment */}
+              <div>
+                <Label className="text-white">Assign to Character</Label>
+                <Select
+                  value={editingFile.characterId || ""}
+                  onValueChange={(value) => setEditingFile({ ...editingFile, characterId: value })}
+                >
+                  <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
+                    <SelectValue placeholder="Select character" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-700 border-gray-600">
+                    <SelectItem value="">Unassigned</SelectItem>
+                    {characters.map((char: any) => (
+                      <SelectItem key={char.id} value={char.id} className="text-white">
+                        {char.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Pose */}
+              <div>
+                <Label className="text-white">Pose</Label>
+                <Input
+                  value={editingFile.pose || ""}
+                  onChange={(e) => setEditingFile({ ...editingFile, pose: e.target.value })}
+                  placeholder="e.g., standing, sitting"
+                  className="bg-gray-700 border-gray-600 text-white"
+                />
+              </div>
+
+              {/* Settings Toggles */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={editingFile.isNsfw || false}
+                    onCheckedChange={(checked) => setEditingFile({ ...editingFile, isNsfw: checked })}
+                  />
+                  <Label className="text-white">NSFW</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={editingFile.isVipOnly || false}
+                    onCheckedChange={(checked) => setEditingFile({ ...editingFile, isVipOnly: checked })}
+                  />
+                  <Label className="text-white">VIP Only</Label>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => setEditingFile(null)}
+                  variant="outline"
+                  className="border-white/20 text-white"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => {
+                    updateMutation.mutate({
+                      id: editingFile.id,
+                      updates: editingFile,
+                    });
+                    setEditingFile(null);
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700"
+                  disabled={updateMutation.isPending}
+                >
+                  {updateMutation.isPending ? "Saving..." : "Save Changes"}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Close button */}
       {onClose && (
