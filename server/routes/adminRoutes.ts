@@ -511,7 +511,7 @@ export function registerAdminRoutes(app: Express) {
 
       // If updating characterId, verify the character exists first
       if (updates.characterId) {
-        const character = await storage.getCharacterById(updates.characterId);
+        const character = await storage.getCharacter(updates.characterId);
         if (!character) {
           return res.status(400).json(createErrorResponse('Character not found - cannot assign media to non-existent character'));
         }

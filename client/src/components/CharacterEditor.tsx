@@ -441,25 +441,29 @@ export default function CharacterEditor({
                               <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                                 <SelectValue placeholder="Select main image" />
                               </SelectTrigger>
-                              <SelectContent className="bg-gray-700 border-gray-600">
+                              <SelectContent className="bg-gray-700 border-gray-600 max-h-[300px] overflow-y-auto">
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {(mediaFiles as any[]).filter((file: any) => {
-                                  const hasFileName = file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '';
-                                  const hasFilePath = file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined');
-                                  return hasFileName || hasFilePath;
+                                {Array.isArray(mediaFiles) && mediaFiles.filter((file: any) => {
+                                  // Filter for valid image files only
+                                  const isValidFile = file && (
+                                    (file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '') ||
+                                    (file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined'))
+                                  );
+                                  const isImageType = file.fileType?.includes('image') || file.category === 'Character' || file.category === 'Avatar';
+                                  return isValidFile && isImageType;
                                 }).map((file: any, index: number) => {
-                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `File ${index + 1}`;
+                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `Image ${index + 1}`;
                                   const filePath = file.filePath || `/uploads/${file.fileName}`;
                                   
                                   return (
                                     <SelectItem
                                       key={`main-image-${file.id || index}`}
                                       value={filePath}
-                                      className="text-white"
+                                      className="text-white hover:bg-gray-600"
                                     >
-                                      {displayName}
+                                      📷 {displayName}
                                     </SelectItem>
                                   );
                                 })}
@@ -481,25 +485,29 @@ export default function CharacterEditor({
                               <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                                 <SelectValue placeholder="Select avatar image" />
                               </SelectTrigger>
-                              <SelectContent className="bg-gray-700 border-gray-600">
+                              <SelectContent className="bg-gray-700 border-gray-600 max-h-[300px] overflow-y-auto">
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {(mediaFiles as any[]).filter((file: any) => {
-                                  const hasFileName = file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '';
-                                  const hasFilePath = file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined');
-                                  return hasFileName || hasFilePath;
+                                {Array.isArray(mediaFiles) && mediaFiles.filter((file: any) => {
+                                  // Filter for valid image files only
+                                  const isValidFile = file && (
+                                    (file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '') ||
+                                    (file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined'))
+                                  );
+                                  const isImageType = file.fileType?.includes('image') || file.category === 'Avatar' || file.category === 'Character';
+                                  return isValidFile && isImageType;
                                 }).map((file: any, index: number) => {
-                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `File ${index + 1}`;
+                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `Avatar ${index + 1}`;
                                   const filePath = file.filePath || `/uploads/${file.fileName}`;
                                   
                                   return (
                                     <SelectItem
                                       key={`avatar-image-${file.id || index}`}
                                       value={filePath}
-                                      className="text-white"
+                                      className="text-white hover:bg-gray-600"
                                     >
-                                      {displayName}
+                                      👤 {displayName}
                                     </SelectItem>
                                   );
                                 })}
