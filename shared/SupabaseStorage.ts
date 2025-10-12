@@ -42,9 +42,10 @@ function toCamelCase(str: string): string {
   return str.replace(/([_][a-z])/g, (group) => group.toUpperCase().replace('_', ''));
 }
 
-// Helper function to convert camelCase to snake_case
+// Helper function to convert camelCase to lowercase (PostgreSQL default)
 function toSnakeCase(str: string): string {
-  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+  // PostgreSQL converts unquoted identifiers to lowercase, no underscores
+  return str.toLowerCase();
 }
 
 // Universal mapper function for database operations (results from DB)
