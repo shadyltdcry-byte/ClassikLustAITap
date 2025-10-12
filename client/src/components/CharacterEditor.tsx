@@ -448,8 +448,9 @@ export default function CharacterEditor({
                                   No image selected
                                 </SelectItem>
                                 {Array.isArray(mediaFiles) && mediaFiles.map((file: any, index: number) => {
-                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `Image ${index + 1}`;
-                                  const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                  // Extract filename from filePath or fileName
+                                  const filename = file.fileName || file.filePath?.split('/').pop() || file.filename || `Image ${index + 1}`;
+                                  const filePath = file.filePath || file.filepath || `/uploads/${file.fileName || file.filename}`;
                                   
                                   return (
                                     <SelectItem
@@ -457,7 +458,7 @@ export default function CharacterEditor({
                                       value={filePath}
                                       className="text-white hover:bg-gray-600"
                                     >
-                                      📷 {displayName}
+                                      📷 {filename}
                                     </SelectItem>
                                   );
                                 })}
@@ -484,8 +485,9 @@ export default function CharacterEditor({
                                   No image selected
                                 </SelectItem>
                                 {Array.isArray(mediaFiles) && mediaFiles.map((file: any, index: number) => {
-                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `Avatar ${index + 1}`;
-                                  const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                  // Extract filename from filePath or fileName
+                                  const filename = file.fileName || file.filePath?.split('/').pop() || file.filename || `Avatar ${index + 1}`;
+                                  const filePath = file.filePath || file.filepath || `/uploads/${file.fileName || file.filename}`;
                                   
                                   return (
                                     <SelectItem
@@ -493,7 +495,7 @@ export default function CharacterEditor({
                                       value={filePath}
                                       className="text-white hover:bg-gray-600"
                                     >
-                                      👤 {displayName}
+                                      👤 {filename}
                                     </SelectItem>
                                   );
                                 })}

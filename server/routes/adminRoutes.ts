@@ -511,20 +511,6 @@ export function registerAdminRoutes(app: Express) {
 
       console.log('[Media Update] Received updates for', id, ':', updates);
 
-      // If updating characterId, verify the character exists in database
-      if (updates.characterId) {
-        const { data: charCheck } = await storage.supabase
-          .from('characters')
-          .select('id')
-          .eq('id', updates.characterId)
-          .single();
-        
-        if (!charCheck) {
-          console.error('[Media Update] Character not found:', updates.characterId);
-          return res.status(400).json(createErrorResponse('Character not found in database - cannot assign media'));
-        }
-      }
-
       // Build update object with lowercase column names
       const dbUpdates: any = {};
       
