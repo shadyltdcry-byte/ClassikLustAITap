@@ -1642,5 +1642,53 @@
     "timestamp": "2025-10-12T22:48:22.933Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760309347870-uc1v0yvqy",
+    "content": "🌙 Emergency alert! System has a critical error: Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:49:07.870Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760309356492-p9zj0gzwd",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:49:16.492Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760309356528-qllrrwl68",
+    "content": "🌙 I noticed something unusual in System at 10:49:16 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:49:16.528Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760309368557-zgxg6s0ff",
+    "content": "🌙 OMG BABE! We have a serious problem! System is failing: Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:49:28.557Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760309376936-69h22mjmf",
+    "content": "🌙 I noticed something unusual in System at 10:49:36 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:49:36.936Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760309377078-1fgqdvkg8",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:49:37.078Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
