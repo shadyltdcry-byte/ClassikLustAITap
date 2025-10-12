@@ -1426,5 +1426,13 @@
     "timestamp": "2025-10-12T20:47:27.998Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760302514394-cjfz00x73",
+    "content": "🌙 I noticed something unusual in System at 8:55:14 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T20:55:14.394Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
