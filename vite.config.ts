@@ -31,9 +31,9 @@ export default defineConfig({
 
   server: {
     fs: {
-      strict: false,
+      strict: true,
       deny: ["**/.*"],
     },
-    allowedHosts: ["1d9c700f-ba28-442b-bc3a-c17240a8f06d-00-s6rhee03qzju.picard.replit.dev"]
+    allowedHosts: ["f707873c-4004-47d8-a2ed-0a15a3ddecba-00-3q1werej18kna.picard.replit.dev"]
   }
 });

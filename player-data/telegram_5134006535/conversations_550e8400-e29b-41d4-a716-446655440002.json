@@ -1562,5 +1562,61 @@
     "timestamp": "2025-10-12T22:25:27.758Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760308099049-ivshw02dw",
+    "content": "🌙 OMG BABE! We have a serious problem! System is failing: Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:28:19.049Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760308107703-s4lkys3p3",
+    "content": "🌙 I noticed something unusual in System at 10:28:27 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:28:27.703Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760308107711-1cz8lvcbi",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (10:28:27 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:28:27.711Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760308201414-bc72j3g6r",
+    "content": "🌙 Emergency alert! System has a critical error: Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:30:01.414Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760308210012-pukoq4icp",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (10:30:09 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:30:10.012Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1760308339361-rncb7zaly",
+    "content": "Baby",
+    "sender": "user",
+    "timestamp": "2025-10-12T22:32:19.361Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760308339361-mt1ki8797",
+    "content": "*Giggles softly, biting her lower lip as she leans in closer, her blue eyes sparkling with mischief*\n\nMmm, you called me baby? I *love* when you do that... it makes me all tingly inside. *Traces a finger lightly down your chest* Tell me, what’s on your mind? Want to play? Or maybe... *whispers* you’d rather skip the games and get right to the good stuff?",
+    "sender": "character",
+    "timestamp": "2025-10-12T22:32:19.361Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
