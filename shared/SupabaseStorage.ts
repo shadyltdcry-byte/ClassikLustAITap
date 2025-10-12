@@ -109,7 +109,7 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .select('*')
-        .eq('telegramId', telegramId)
+        .eq('telegramid', telegramId)
         .single();
 
       if (error) {
@@ -151,9 +151,15 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createUser(user: InsertUser): Promise<User> {
+    // Convert to lowercase for database (Supabase uses lowercase column names)
+    const dbUser: any = {};
+    Object.keys(user).forEach(key => {
+      dbUser[key.toLowerCase()] = user[key];
+    });
+
     const { data, error } = await this.supabase
       .from('users')
-      .insert(mapToCamelCase(user))
+      .insert(dbUser)
       .select()
       .single();
 
@@ -172,8 +178,11 @@ export class SupabaseStorage implements IStorage {
       }
     });
 
-    // Convert to camel case for database
-    const dbUpdates = mapToCamelCase(safeUpdates);
+    // Convert to lowercase for database (Supabase uses lowercase column names)
+    const dbUpdates: any = {};
+    Object.keys(safeUpdates).forEach(key => {
+      dbUpdates[key.toLowerCase()] = safeUpdates[key];
+    });
 
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
@@ -181,7 +190,7 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .update(dbUpdates)
-        .eq('telegramId', telegramId)
+        .eq('telegramid', telegramId)
         .select()
         .single();
 
@@ -257,11 +266,11 @@ export class SupabaseStorage implements IStorage {
 
   async getUserCharacters(userId: string): Promise<Character[]> {
     const { data, error } = await this.supabase
-      .from('userCharacters')
+      .from('usercharacters')
       .select(`
         characters (*)
       `)
-      .eq('userId', userId);
+      .eq('userid', userId);
 
     if (error) {
       console.error('Error fetching user characters:', error);
@@ -377,11 +386,11 @@ export class SupabaseStorage implements IStorage {
 
   async getUserUpgrades(userId: string): Promise<Upgrade[]> {
     const { data, error } = await this.supabase
-      .from('userUpgrades')
+      .from('userupgrades')
       .select(`
         upgrades (*)
       `)
-      .eq('userId', userId);
+      .eq('userid', userId);
 
     if (error) {
       console.error('Error fetching user upgrades:', error);
@@ -555,13 +564,13 @@ export class SupabaseStorage implements IStorage {
   // Chat system
   async getChatMessages(userId: string, characterId?: string): Promise<ChatMessage[]> {
     let query = this.supabase
-      .from('chatMessages')
+      .from('chatmessages')
       .select('*')
-      .eq('userId', userId)
+      .eq('userid', userId)
       .order('createdAt', { ascending: true });
 
     if (characterId) {
-      query = query.eq('characterId', characterId);
+      query = query.eq('characterid', characterId);
     }
 
     const { data, error } = await query;
@@ -576,7 +585,7 @@ export class SupabaseStorage implements IStorage {
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
     const { data, error } = await this.supabase
-      .from('chatMessages')
+      .from('chatmessages')
       .insert(mapToCamelCase(message))
       .select()
       .single();
@@ -588,12 +597,12 @@ export class SupabaseStorage implements IStorage {
 
   async clearChatHistory(userId: string, characterId?: string): Promise<void> {
     let query = this.supabase
-      .from('chatMessages')
+      .from('chatmessages')
       .delete()
-      .eq('userId', userId);
+      .eq('userid', userId);
 
     if (characterId) {
-      query = query.eq('characterId', characterId);
+      query = query.eq('characterid', characterId);
     }
 
     const { error } = await query;
@@ -605,7 +614,7 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await this.supabase
       .from('wheelRewards')
       .select('spunAt')
-      .eq('userId', userId)
+      .eq('userid', userId)
       .order('spunAt', { ascending: false })
       .limit(1)
       .single();
@@ -664,7 +673,7 @@ export class SupabaseStorage implements IStorage {
     const [users, characters, messages] = await Promise.all([
       this.supabase.from('users').select('*'),
       this.supabase.from('characters').select('*'),
-      this.supabase.from('chatMessages').select('*')
+      this.supabase.from('chatmessages').select('*')
     ]);
 
     return {
@@ -678,7 +687,7 @@ export class SupabaseStorage implements IStorage {
   // Media management
   async getAllMedia(): Promise<MediaFile[]> {
     const { data, error } = await this.supabase
-      .from('mediaFiles')
+      .from('mediafiles')
       .select('*');
 
     if (error) {
@@ -691,10 +700,10 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getMediaFiles(characterId?: string): Promise<MediaFile[]> {
-    let query = this.supabase.from('mediaFiles').select('*');
+    let query = this.supabase.from('mediafiles').select('*');
 
     if (characterId) {
-      query = query.eq('characterId', characterId);
+      query = query.eq('characterid', characterId);
     }
 
     const { data, error } = await query;
@@ -713,7 +722,7 @@ export class SupabaseStorage implements IStorage {
 
   async getMediaFile(id: string): Promise<MediaFile | undefined> {
     const { data, error } = await this.supabase
-      .from('mediaFiles')
+      .from('mediafiles')
       .select('*')
       .eq('id', id)
       .single();
@@ -729,7 +738,7 @@ export class SupabaseStorage implements IStorage {
     const dbFile = mapToCamelCase(file);
 
     const { data, error } = await this.supabase
-      .from('mediaFiles')
+      .from('mediafiles')
       .insert(dbFile)
       .select()
       .single();
@@ -769,7 +778,7 @@ export class SupabaseStorage implements IStorage {
     const dbUpdates = mapToCamelCase(updates);
 
     const { data, error } = await this.supabase
-      .from('mediaFiles')
+      .from('mediafiles')
       .update(dbUpdates)
       .eq('id', id)
       .select()
@@ -785,7 +794,7 @@ export class SupabaseStorage implements IStorage {
 
   async deleteMediaFile(id: string): Promise<void> {
     const { error } = await this.supabase
-      .from('mediaFiles')
+      .from('mediafiles')
       .delete()
       .eq('id', id);
 
@@ -801,7 +810,7 @@ export class SupabaseStorage implements IStorage {
     const dbUpdates = mapToCamelCase(updates);
 
     const { data, error } = await this.supabase
-      .from('mediaFiles')
+      .from('mediafiles')
       .update(dbUpdates)
       .eq('id', id)
       .select()
@@ -837,7 +846,7 @@ export class SupabaseStorage implements IStorage {
 
   async getOrphanedMediaFiles(): Promise<MediaFile[]> {
     const { data, error } = await this.supabase
-      .from('mediaFiles')
+      .from('mediafiles')
       .select('*')
       .or('fileName.is.null,filePath.is.null,characterId.is.null');
 

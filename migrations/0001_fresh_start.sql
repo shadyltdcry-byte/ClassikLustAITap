@@ -1,16 +1,5 @@
 
--- Drop all tables if they exist (cascade to handle foreign keys)
-DROP TABLE IF EXISTS wheelRewards CASCADE;
-DROP TABLE IF EXISTS userUpgrades CASCADE;
-DROP TABLE IF EXISTS userCharacters CASCADE;
-DROP TABLE IF EXISTS mediaFiles CASCADE;
-DROP TABLE IF EXISTS gameStats CASCADE;
-DROP TABLE IF EXISTS chatMe seessages CASCADE;
-DROP TABLE IF EXISTS bonuses CASCADE;
-DROP TABLE IF EXISTS boosters CASCADE;
-DROP TABLE IF EXISTS characters CASCADE;
-DROP TABLE IF EXISTS upgrades CASCADE;
-DROP TABLE IF EXISTS users CASCADE;
+
 
 -- Create users table
 CREATE TABLE users (

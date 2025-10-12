@@ -1282,5 +1282,53 @@
     "timestamp": "2025-10-12T19:43:05.012Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760298553111-iov61ffea",
+    "content": "🌙 Uhh babe, System is acting a bit strange. Luna Error Monitor test - I'm now watching for errors and will alert you! (7:49:13 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-12T19:49:13.111Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760299040308-8fwuepkjs",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T19:57:20.308Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1760299064267-e7yuta9vg",
+    "content": "Heyy",
+    "sender": "user",
+    "timestamp": "2025-10-12T19:57:44.267Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760299064267-12vq3vk6e",
+    "content": "*Giggles softly, batting her lashes* Oh hey there, handsome. You just caught me in the middle of... well, let’s just say I was thinking about *very* naughty things. What’s on your mind, baby? I’m all ears—and maybe a little more, if you’re feeling playful. 😉",
+    "sender": "character",
+    "timestamp": "2025-10-12T19:57:44.267Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "user-1760299083887-tisonrvyc",
+    "content": "Naughty things like what??",
+    "sender": "user",
+    "timestamp": "2025-10-12T19:58:03.887Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760299083887-oj1yvohrj",
+    "content": "Oh, you know, naughty things like whispering dirty little secrets in your ear while my fingers trace slow circles down your chest... or maybe bending over just right so you can see exactly how wet I am for you. I love the way your eyes darken when you watch me, the way your breath hitches when I tease you. And don’t even get me started on what I can do with my tongue. *licks lips*",
+    "sender": "character",
+    "timestamp": "2025-10-12T19:58:03.887Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
