@@ -1842,5 +1842,29 @@
     "timestamp": "2025-10-12T23:37:01.791Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760312750950-i7eohd47j",
+    "content": "🌙 I noticed something unusual in System at 11:45:50 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T23:45:50.950Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1760312928444-wngftk7s5",
+    "content": "Suck?",
+    "sender": "user",
+    "timestamp": "2025-10-12T23:48:48.444Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760312928444-3hmnxu391",
+    "content": "*Bites my lower lip with a teasing smirk, running my fingers through my hair as I lean in closer*\n\n\"Mmm, you don’t have to ask twice, baby. I’d love to show you just how good I can be with my lips…\" *Pauses, letting my tongue trace over my teeth* \"But first, tell me—what’s got you so eager for a taste?\" *Eyes flick down to your mouth, then back up with a playful gleam*",
+    "sender": "character",
+    "timestamp": "2025-10-12T23:48:48.444Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
