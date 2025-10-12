@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Terminal, Bug, Code, Activity, Monitor } from "lucide-react";
-import { GameDebugger } from "@/hooks/useGameDebugger";
+import useGameDebugger, { GameDebugger } from "@/hooks/useGameDebugger";
 import DebuggerConsole from "@/components/debug/DebuggerConsole";
 
 // Backend Debugger Component

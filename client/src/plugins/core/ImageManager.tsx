@@ -6,7 +6,7 @@
  * proper form data handling, and improved error handling
  */
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 import {
   Upload,
   Image,
@@ -27,7 +29,10 @@ import {
   Edit3,
   Filter,
   X,
-  CheckCircle
+  CheckCircle,
+  Crop,
+  ZoomIn,
+  ZoomOut
 } from "lucide-react";
 
 interface ImageManagerProps {
@@ -45,6 +50,14 @@ export default function ImageManager({
   const [uploadCategory, setUploadCategory] = useState<string>("character");
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterCharacter, setFilterCharacter] = useState<string>("all");
+
+  // Cropping state
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [cropImage, setCropImage] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropScale, setCropScale] = useState(1);
+  const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Form fields state
   const [formFields, setFormFields] = useState({
@@ -81,9 +94,28 @@ export default function ImageManager({
     },
   });
 
-  // Upload mutation with proper form data handling
+  // Upload mutation with auto-folder organization
   const uploadMutation = useMutation({
-    mutationFn: async (formData: FormData) => {
+    mutationFn: async (files: FileList) => {
+      const formData = new FormData();
+      
+      // Auto-organize into folders: charactername/sfw-or-nsfw/imagetype
+      const character = characters.find((c: any) => c.id === selectedCharacter);
+      const characterName = character?.name || 'misc';
+      const nsfwFolder = formFields.isNsfw ? 'nsfw' : 'sfw';
+      const folderPath = `${characterName}/${nsfwFolder}/${imageType}`;
+      
+      Array.from(files).forEach((file) => {
+        formData.append('files', file);
+      });
+      
+      formData.append('config', JSON.stringify({
+        characterId: selectedCharacter,
+        folderPath,
+        imageType,
+        ...formFields
+      }));
+
       const response = await fetch("/api/media/upload", {
         method: "POST",
         body: formData,
@@ -152,9 +184,74 @@ export default function ImageManager({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (files && files.length > 0) {
-      setSelectedFiles(files);
+      // Show crop dialog for first image
+      if (files[0].type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setCropImage(e.target?.result as string);
+          setCropFile(files[0]);
+          setShowCropDialog(true);
+        };
+        reader.readAsDataURL(files[0]);
+      } else {
+        setSelectedFiles(files);
+      }
     }
   };
+
+  const handleCropComplete = useCallback(async () => {
+    if (!canvasRef.current || !cropImage) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = new window.Image();
+    img.onload = () => {
+      // Set canvas size
+      canvas.width = 512;
+      canvas.height = 512;
+
+      // Calculate crop dimensions
+      const scale = cropScale;
+      const sourceWidth = img.width * scale;
+      const sourceHeight = img.height * scale;
+      const sourceX = (img.width - sourceWidth) / 2 + cropPosition.x;
+      const sourceY = (img.height - sourceHeight) / 2 + cropPosition.y;
+
+      // Draw cropped image
+      ctx.drawImage(
+        img,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        512,
+        512
+      );
+
+      // Convert to blob
+      canvas.toBlob((blob) => {
+        if (blob && cropFile) {
+          const croppedFile = new File([blob], cropFile.name, {
+            type: cropFile.type,
+            lastModified: Date.now()
+          });
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(croppedFile);
+          setSelectedFiles(dataTransfer.files);
+          setShowCropDialog(false);
+          setCropImage(null);
+          setCropFile(null);
+          setCropScale(1);
+          setCropPosition({ x: 0, y: 0 });
+        }
+      }, cropFile.type);
+    };
+    img.src = cropImage;
+  }, [cropImage, cropFile, cropScale, cropPosition]);
 
   const handleUpload = async () => {
     if (!selectedFiles || selectedFiles.length === 0) {
@@ -174,6 +271,15 @@ export default function ImageManager({
       toast({
         title: "Invalid File Types",
         description: `Please only upload image files (JPG, PNG, GIF, WebP)`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedCharacter) {
+      toast({
+        title: "No Character Selected",
+        description: "Please select a character for organization",
         variant: "destructive",
       });
       return;
@@ -434,6 +540,75 @@ export default function ImageManager({
           )}
         </CardContent>
       </Card>
+
+      {/* Crop Dialog */}
+      <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
+        <DialogContent className="max-w-2xl bg-gray-900 border-purple-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-white flex items-center gap-2">
+              <Crop className="w-5 h-5" />
+              Crop Image
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            {/* Canvas Preview */}
+            <div className="relative bg-black/50 rounded-lg overflow-hidden" style={{ height: '400px' }}>
+              {cropImage && (
+                <img 
+                  src={cropImage} 
+                  alt="Crop preview" 
+                  className="absolute inset-0 w-full h-full object-contain"
+                  style={{
+                    transform: `scale(${cropScale}) translate(${cropPosition.x}px, ${cropPosition.y}px)`
+                  }}
+                />
+              )}
+              <canvas ref={canvasRef} className="hidden" />
+            </div>
+
+            {/* Crop Controls */}
+            <div className="space-y-3">
+              <div>
+                <Label className="text-white flex items-center gap-2">
+                  <ZoomIn className="w-4 h-4" />
+                  Zoom: {cropScale.toFixed(1)}x
+                </Label>
+                <Slider
+                  value={[cropScale]}
+                  onValueChange={([val]) => setCropScale(val)}
+                  min={0.5}
+                  max={3}
+                  step={0.1}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 justify-end">
+              <Button
+                onClick={() => {
+                  setShowCropDialog(false);
+                  setCropImage(null);
+                  setCropFile(null);
+                }}
+                variant="outline"
+                className="border-white/20 text-white"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCropComplete}
+                className="bg-purple-600 hover:bg-purple-700"
+              >
+                <CheckCircle className="w-4 h-4 mr-2" />
+                Apply Crop
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Close button */}
       {onClose && (

@@ -402,9 +402,16 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
   };
 
   // Handle offline income claim
-  const handleClaimOfflineIncome = () => {
-    claimOfflineIncome();
-    setShowOfflineDialog(false);
+  const handleClaimOfflineIncome = async () => {
+    try {
+      await claimOfflineIncome();
+      setShowOfflineDialog(false);
+      // Force refresh user data to show updated LP
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/player'] });
+    } catch (error) {
+      console.error('Failed to claim offline income:', error);
+    }
   };
 
   return (
