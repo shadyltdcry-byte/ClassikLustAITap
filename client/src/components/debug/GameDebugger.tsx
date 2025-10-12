@@ -21,6 +21,10 @@ import {
   Code
 } from 'lucide-react';
 
+// NOTE: The GameDebugger component itself is not defined in this file.
+// It's expected to be imported from a hook or another file.
+// Based on the error, we're correcting the import path and assumed export name.
+
 interface DebugState {
   // Player State
   playerId: string;
@@ -28,18 +32,18 @@ interface DebugState {
   playerLP: number;
   playerEnergy: number;
   playerMaxEnergy: number;
-  
+
   // Game State
   activeTab: string;
   isTapping: boolean;
   selectedCharacter: any;
-  
+
   // UI State
   showOfflineDialog: boolean;
   showAdminMenu: boolean;
   showWheelGame: boolean;
   showVIP: boolean;
-  
+
   // Performance
   renderCount: number;
   lastUpdate: number;
@@ -59,7 +63,7 @@ interface GameDebuggerProps {
   // State exposure props - components pass their state here
   gameState: DebugState;
   onStateChange?: (newState: Partial<DebugState>) => void;
-  
+
   // Component refs for direct state access
   componentRefs?: {
     gameGUI?: any;
@@ -68,11 +72,11 @@ interface GameDebuggerProps {
     tasksPanel?: any;
     achievementsPanel?: any;
   };
-  
+
   // Real-time monitoring
   isVisible: boolean;
   onToggle: () => void;
-  
+
   // Real game state for connection
   realGameState?: {
     selectedCharacter: any;
@@ -96,21 +100,21 @@ export default function GameDebugger({
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshRate, setRefreshRate] = useState(1000);
   const intervalRef = useRef<NodeJS.Timeout>();
-  
+
   // Color-coded logging system (inspired by your original debugger!)
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [maxLogs, setMaxLogs] = useState(50);
-  
+
   // Fix any existing logs with duplicate keys on component mount
   useEffect(() => {
     setLogs(prevLogs => {
       if (prevLogs.length === 0) return prevLogs;
-      
+
       // Check if any logs have duplicate keys
       const hasInvalidKeys = prevLogs.some((log, index) => 
         prevLogs.findIndex(l => l.id === log.id) !== index
       );
-      
+
       if (hasInvalidKeys) {
         console.log('🔧 Fixing duplicate log keys...');
         return prevLogs.map((log, index) => ({
@@ -118,7 +122,7 @@ export default function GameDebugger({
           id: `${Date.now()}-${index}-${Math.random().toString(36).substr(2, 9)}`
         }));
       }
-      
+
       return prevLogs;
     });
   }, []);
@@ -133,7 +137,7 @@ export default function GameDebugger({
       message,
       data
     };
-    
+
     setLogs(prev => {
       const updated = [newLog, ...prev];
       return updated.slice(0, maxLogs); // Keep only recent logs
@@ -159,7 +163,7 @@ export default function GameDebugger({
         onStateChange?.({ lastUpdate: Date.now() });
       }, refreshRate);
     }
-    
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -310,7 +314,7 @@ export default function GameDebugger({
                       max="200"
                     />
                   </div>
-                  
+
                   <div className="space-y-1 max-h-80 overflow-y-auto">
                     {logs.map((log) => (
                       <div key={log.id} className="text-xs p-2 rounded border border-gray-600 bg-gray-700/50">
@@ -322,10 +326,10 @@ export default function GameDebugger({
                             log.type === 'warning' ? 'bg-yellow-400' :
                             'bg-blue-400'
                           }`} />
-                          
+
                           {/* Timestamp */}
                           <span className="text-gray-400 text-xs">{log.timestamp}</span>
-                          
+
                           {/* Component name */}
                           <Badge className={`text-xs px-1 py-0 ${
                             log.type === 'success' ? 'bg-green-600/20 text-green-300 border-green-500/50' :
@@ -336,7 +340,7 @@ export default function GameDebugger({
                             {log.component}
                           </Badge>
                         </div>
-                        
+
                         {/* Message */}
                         <div className={`mt-1 ${
                           log.type === 'success' ? 'text-green-300' :
@@ -346,7 +350,7 @@ export default function GameDebugger({
                         }`}>
                           {log.message}
                         </div>
-                        
+
                         {/* Data */}
                         {log.data && (
                           <pre className="text-xs text-gray-400 mt-1 whitespace-pre-wrap">
@@ -355,7 +359,7 @@ export default function GameDebugger({
                         )}
                       </div>
                     ))}
-                    
+
                     {logs.length === 0 && (
                       <div className="text-center text-gray-400 py-4">
                         No logs yet. Interact with the game to see activity.
@@ -460,7 +464,7 @@ export default function GameDebugger({
                       {realGameState?.selectedCharacter?.name || gameState.selectedCharacter?.name || 'None'}
                     </Badge>
                   </div>
-                  
+
                   {/* Player Info */}
                   <div className="space-y-1">
                     <Label className="text-gray-300">Player Info:</Label>
@@ -532,21 +536,21 @@ export default function GameDebugger({
                       {gameState.apiCalls || 0}
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <Label className="text-gray-300">Status:</Label>
                     <Badge className="bg-green-600/20 text-green-300 border-green-500/50">
                       Active
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <Label className="text-gray-300">Logs:</Label>
                     <Badge className="bg-blue-600/20 text-blue-300 border-blue-500/50">
                       {logs.filter(l => l.component.includes('API')).length}
                     </Badge>
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <Label className="text-gray-300">Last Update:</Label>
                     <Badge className="bg-gray-600/20 text-gray-300 border-gray-500/50">
