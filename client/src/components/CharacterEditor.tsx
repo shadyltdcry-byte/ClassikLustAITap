@@ -445,28 +445,25 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {Array.isArray(mediaFiles) && mediaFiles.filter((file: any) => {
-                                  // Filter for valid image files only
-                                  const isValidFile = file && (
-                                    (file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '') ||
-                                    (file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined'))
-                                  );
-                                  const isImageType = file.fileType?.includes('image') || file.category === 'Character' || file.category === 'Avatar';
-                                  return isValidFile && isImageType;
-                                }).map((file: any, index: number) => {
-                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `Image ${index + 1}`;
-                                  const filePath = file.filePath || `/uploads/${file.fileName}`;
-                                  
-                                  return (
-                                    <SelectItem
-                                      key={`main-image-${file.id || index}`}
-                                      value={filePath}
-                                      className="text-white hover:bg-gray-600"
-                                    >
-                                      📷 {displayName}
-                                    </SelectItem>
-                                  );
-                                })}
+                                {Array.isArray(mediaFiles) && mediaFiles
+                                  .filter((file: any) => {
+                                    // More lenient filtering - just check if file has a path
+                                    return file && (file.filePath || file.fileName);
+                                  })
+                                  .map((file: any, index: number) => {
+                                    const displayName = file.fileName || file.filePath?.split('/').pop() || `Image ${index + 1}`;
+                                    const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                    
+                                    return (
+                                      <SelectItem
+                                        key={`main-image-${file.id || index}`}
+                                        value={filePath}
+                                        className="text-white hover:bg-gray-600"
+                                      >
+                                        📷 {displayName}
+                                      </SelectItem>
+                                    );
+                                  })}
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -489,28 +486,25 @@ export default function CharacterEditor({
                                 <SelectItem value="" className="text-white">
                                   No image selected
                                 </SelectItem>
-                                {Array.isArray(mediaFiles) && mediaFiles.filter((file: any) => {
-                                  // Filter for valid image files only
-                                  const isValidFile = file && (
-                                    (file.fileName && file.fileName !== 'undefined' && file.fileName.trim() !== '') ||
-                                    (file.filePath && file.filePath !== 'undefined' && !file.filePath.includes('undefined'))
-                                  );
-                                  const isImageType = file.fileType?.includes('image') || file.category === 'Avatar' || file.category === 'Character';
-                                  return isValidFile && isImageType;
-                                }).map((file: any, index: number) => {
-                                  const displayName = file.fileName || file.filePath?.split('/').pop() || `Avatar ${index + 1}`;
-                                  const filePath = file.filePath || `/uploads/${file.fileName}`;
-                                  
-                                  return (
-                                    <SelectItem
-                                      key={`avatar-image-${file.id || index}`}
-                                      value={filePath}
-                                      className="text-white hover:bg-gray-600"
-                                    >
-                                      👤 {displayName}
-                                    </SelectItem>
-                                  );
-                                })}
+                                {Array.isArray(mediaFiles) && mediaFiles
+                                  .filter((file: any) => {
+                                    // More lenient filtering - just check if file has a path
+                                    return file && (file.filePath || file.fileName);
+                                  })
+                                  .map((file: any, index: number) => {
+                                    const displayName = file.fileName || file.filePath?.split('/').pop() || `Avatar ${index + 1}`;
+                                    const filePath = file.filePath || `/uploads/${file.fileName}`;
+                                    
+                                    return (
+                                      <SelectItem
+                                        key={`avatar-image-${file.id || index}`}
+                                        value={filePath}
+                                        className="text-white hover:bg-gray-600"
+                                      >
+                                        👤 {displayName}
+                                      </SelectItem>
+                                    );
+                                  })}
                               </SelectContent>
                             </Select>
                           </FormControl>
@@ -567,7 +561,7 @@ export default function CharacterEditor({
                       checked={form.watch("isEvent")}
                       onCheckedChange={v => form.setValue("isEvent", v)}
                     />
-                    <Label className="text-white">NSFW</Label>
+                    <Label className="text-white">Event</Label>
                   </div>
                 </CardContent>
               </Card>

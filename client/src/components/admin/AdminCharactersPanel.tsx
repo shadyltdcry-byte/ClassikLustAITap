@@ -22,15 +22,15 @@ interface CharacterCardProps {
   isUpdating: boolean;
 }
 
-const CharacterCard = ({ 
-  character, 
-  onEdit, 
-  onDelete, 
-  onToggleVip, 
-  onToggleNsfw, 
-  onToggleEnabled, 
+const CharacterCard = ({
+  character,
+  onEdit,
+  onDelete,
+  onToggleVip,
+  onToggleNsfw,
+  onToggleEnabled,
   onToggleEvent, // Added for event toggle
-  isUpdating 
+  isUpdating
 }: CharacterCardProps) => (
   <Card className="bg-gray-800 border-gray-700">
     <CardHeader className="pb-2">
@@ -154,35 +154,46 @@ export default function AdminCharactersPanel() {
 
   // Toggle character mutation
   const toggleCharacterMutation = useMutation({
-    mutationFn: async ({ characterId, field, value }: {
-      characterId: string;
-      field: string;
-      value: boolean;
-    }) => {
+    mutationFn: async ({ characterId, field, value }: { characterId: string; field: string; value: boolean }) => {
+      // Get full character data first
+      const charResponse = await fetch(`/api/admin/characters`);
+      const characters = await charResponse.json();
+      const character = characters.find((c: any) => c.id === characterId);
+
+      if (!character) throw new Error("Character not found");
+
+      // Send complete update with all fields
       const response = await apiRequest("PUT", `/api/admin/characters/${characterId}`, {
-        [field]: value
+        name: character.name,
+        personality: character.personality,
+        chatStyle: character.chatStyle,
+        bio: character.bio,
+        description: character.description,
+        imageUrl: character.imageUrl,
+        avatarUrl: character.avatarUrl,
+        levelRequirement: character.levelRequirement,
+        isNsfw: field === "isNsfw" ? value : character.isNsfw,
+        isVip: field === "isVip" ? value : character.isVip,
+        isEvent: field === "isEvent" ? value : character.isEvent,
+        likes: character.likes,
+        dislikes: character.dislikes,
+        responseTimeMin: character.responseTimeMin,
+        responseTimeMax: character.responseTimeMax
       });
+
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Character update error:', errorText);
-        throw new Error(`Failed to update character: ${errorText}`);
+        const error = await response.json();
+        throw new Error(error.error || "Failed to toggle character field");
       }
       return response.json();
     },
-    onSuccess: (data, variables) => {
-      const fieldName = variables.field === 'isVip' ? 'VIP' : 
-                       variables.field === 'isNsfw' ? 'NSFW' : 
-                       variables.field === 'isEnabled' ? 'enabled' :
-                       variables.field === 'isEvent' ? 'event' : 'property';
-      toast.success(`Character ${fieldName} status updated!`);
-      
-      // Invalidate all character-related queries
-      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/characters"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/character/selected"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/characters"] });
+      toast.success("Character updated!");
     },
     onError: (error: any) => {
-      console.error('Toggle character error:', error);
+      console.error("Toggle error:", error);
       toast.error(error.message || "Failed to update character");
     },
   });
@@ -248,7 +259,7 @@ export default function AdminCharactersPanel() {
           <h2 className="text-2xl font-bold text-white">Character Management</h2>
           <p className="text-gray-400">Create and manage AI characters</p>
         </div>
-        <Button 
+        <Button
           onClick={() => setShowCreateCharacter(true)}
           className="bg-green-600 hover:bg-green-700"
         >

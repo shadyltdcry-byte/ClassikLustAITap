@@ -509,21 +509,48 @@ export function registerAdminRoutes(app: Express) {
       const { id } = req.params;
       const updates = req.body;
 
-      // If updating characterId, verify the character exists first
+      // If updating characterId, verify the character exists in database
       if (updates.characterId) {
-        const character = await storage.getCharacter(updates.characterId);
-        if (!character) {
-          return res.status(400).json(createErrorResponse('Character not found - cannot assign media to non-existent character'));
+        const { data: charCheck } = await storage.supabase
+          .from('characters')
+          .select('id')
+          .eq('id', updates.characterId)
+          .single();
+        
+        if (!charCheck) {
+          return res.status(400).json(createErrorResponse('Character not found in database - cannot assign media'));
         }
       }
 
-      const updated = await storage.updateMedia(id, updates);
+      // Update using lowercase column names
+      const { data, error } = await storage.supabase
+        .from('mediaFiles')
+        .update({
+          characterid: updates.characterId,
+          filename: updates.fileName,
+          filepath: updates.filePath,
+          filetype: updates.fileType,
+          mood: updates.mood,
+          pose: updates.pose,
+          animationsequence: updates.animationSequence,
+          isnsfw: updates.isNsfw,
+          isvip: updates.isVip,
+          isevent: updates.isEvent,
+          randomsendchance: updates.randomSendChance,
+          requiredlevel: updates.requiredLevel,
+          enabledforchat: updates.enabledForChat,
+          category: updates.category
+        })
+        .eq('id', id)
+        .select()
+        .single();
 
-      if (!updated) {
+      if (error) {
+        console.error('Media update error:', error);
         return res.status(404).json(createErrorResponse('Media file not found'));
       }
 
-      res.json(createSuccessResponse(updated));
+      res.json(createSuccessResponse(data));
     } catch (error) {
       console.error('Error updating media:', error);
       res.status(500).json(createErrorResponse('Failed to update media'));
@@ -670,8 +697,37 @@ export function registerAdminRoutes(app: Express) {
   app.post('/api/admin/characters', async (req: Request, res: Response) => {
     try {
       const characterData = req.body;
-      const newCharacter = await storage.createCharacter(characterData);
-      res.json(createSuccessResponse(newCharacter));
+      
+      // First create in database
+      const { data: dbChar, error } = await storage.supabase
+        .from('characters')
+        .insert({
+          id: characterData.id || crypto.randomUUID(),
+          name: characterData.name,
+          personality: characterData.personality,
+          chatstyle: characterData.chatStyle,
+          backstory: characterData.backstory,
+          bio: characterData.bio,
+          description: characterData.description,
+          mood: characterData.mood,
+          imageurl: characterData.imageUrl,
+          avatarurl: characterData.avatarUrl,
+          levelrequirement: characterData.levelRequirement || 1,
+          isnsfw: characterData.isNsfw || false,
+          isvip: characterData.isVip || false,
+          isevent: characterData.isEvent || false,
+          isenabled: true,
+          likes: characterData.likes,
+          dislikes: characterData.dislikes,
+          responsetimemin: characterData.responseTimeMin || 1,
+          responsetimemax: characterData.responseTimeMax || 3
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      res.json(createSuccessResponse(dbChar));
     } catch (error) {
       console.error('Error creating character:', error);
       res.status(500).json(createErrorResponse('Failed to create character'));
@@ -685,17 +741,39 @@ export function registerAdminRoutes(app: Express) {
 
       console.log(`Updating character ${id} with:`, updates);
 
-      // Update character in storage
-      const updatedCharacter = await storage.updateCharacter(id, updates);
+      // Update in database
+      const { data: dbChar, error } = await storage.supabase
+        .from('characters')
+        .update({
+          name: updates.name,
+          personality: updates.personality,
+          chatstyle: updates.chatStyle,
+          backstory: updates.backstory,
+          bio: updates.bio,
+          description: updates.description,
+          mood: updates.mood,
+          imageurl: updates.imageUrl,
+          avatarurl: updates.avatarUrl,
+          levelrequirement: updates.levelRequirement,
+          isnsfw: updates.isNsfw,
+          isvip: updates.isVip,
+          isevent: updates.isEvent,
+          likes: updates.likes,
+          dislikes: updates.dislikes,
+          responsetimemin: updates.responseTimeMin,
+          responsetimemax: updates.responseTimeMax,
+          updatedat: new Date().toISOString()
+        })
+        .eq('id', id)
+        .select()
+        .single();
 
-      if (!updatedCharacter) {
-        return res.status(404).json(createErrorResponse('Character not found'));
+      if (error) {
+        console.error('Database update error:', error);
+        return res.status(404).json(createErrorResponse('Character not found in database'));
       }
 
-      res.json(createSuccessResponse({
-        ...updatedCharacter,
-        updatedAt: new Date().toISOString()
-      }));
+      res.json(createSuccessResponse(dbChar));
     } catch (error) {
       console.error('Error updating character:', error);
       res.status(500).json(createErrorResponse(`Failed to update character: ${error instanceof Error ? error.message : 'Unknown error'}`));
