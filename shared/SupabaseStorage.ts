@@ -101,47 +101,12 @@ export class SupabaseStorage implements IStorage {
     return SupabaseStorage.instance;
   }
 
-  // Convert camelCase to snake_case for database columns
-  private toSnakeCase(str: string): string {
-    return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
-  }
-
-  // Convert object keys from camelCase to snake_case
-  private convertKeysToSnakeCase(obj: any): any {
-    if (Array.isArray(obj)) {
-      return obj.map(item => this.convertKeysToSnakeCase(item));
-    }
-    if (obj !== null && typeof obj === 'object') {
-      return Object.keys(obj).reduce((result, key) => {
-        const snakeKey = this.toSnakeCase(key);
-        result[snakeKey] = this.convertKeysToSnakeCase(obj[key]);
-        return result;
-      }, {} as any);
-    }
-    return obj;
-  }
-
-  // Convert object keys from snake_case to camelCase
-  private convertKeysToCamelCase(obj: any): any {
-    if (Array.isArray(obj)) {
-      return obj.map(item => this.convertKeysToCamelCase(item));
-    }
-    if (obj !== null && typeof obj === 'object') {
-      return Object.keys(obj).reduce((result, key) => {
-        const camelKey = key.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
-        result[camelKey] = this.convertKeysToCamelCase(obj[key]);
-        return result;
-      }, {} as any);
-    }
-    return obj;
-  }
-
   // User management
   async getUser(id: string): Promise<User | undefined> {
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
       const telegramId = id.replace('telegram_', '');
-      const { data, error } = await this.supabaseClient
+      const { data, error } = await this.supabase
         .from('users')
         .select('*')
         .eq('telegramid', telegramId)
@@ -155,7 +120,7 @@ export class SupabaseStorage implements IStorage {
      return data ? mapToCamelCase(data) : undefined;
     } else {
       // Regular UUID lookup
-      const { data, error } = await this.supabaseClient
+      const { data, error } = await this.supabase
         .from('users')
         .select('*')
         .eq('id', id)
@@ -171,7 +136,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('users')
       .select('*')
       .eq('username', username)
@@ -192,7 +157,7 @@ export class SupabaseStorage implements IStorage {
       dbUser[key.toLowerCase()] = user[key];
     });
 
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('users')
       .insert(dbUser)
       .select()
@@ -205,7 +170,7 @@ export class SupabaseStorage implements IStorage {
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
     const safeUpdates = { ...updates };
-
+    
     // Remove any undefined or null values
     Object.keys(safeUpdates).forEach(key => {
       if (safeUpdates[key] === undefined || safeUpdates[key] === null) {
@@ -222,7 +187,7 @@ export class SupabaseStorage implements IStorage {
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
       const telegramId = id.replace('telegram_', '');
-      const { data, error } = await this.supabaseClient
+      const { data, error } = await this.supabase
         .from('users')
         .update(dbUpdates)
         .eq('telegramid', telegramId)
@@ -240,7 +205,7 @@ export class SupabaseStorage implements IStorage {
       return data ? mapToCamelCase(data) : undefined;
     } else {
       // Regular UUID update
-      const { data, error } = await this.supabaseClient
+      const { data, error } = await this.supabase
         .from('users')
         .update(dbUpdates)
         .eq('id', id)
@@ -300,7 +265,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getUserCharacters(userId: string): Promise<Character[]> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('usercharacters')
       .select(`
         characters (*)
@@ -362,7 +327,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createCharacter(character: InsertCharacter): Promise<Character> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('characters')
       .insert(mapToCamelCase(character))
       .select()
@@ -374,7 +339,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateCharacter(id: string, updates: Partial<Character>): Promise<Character | undefined> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('characters')
       .update(mapToCamelCase(updates))
       .eq('id', id)
@@ -390,7 +355,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteCharacter(id: string): Promise<void> {
-    const { error } = await this.supabaseClient
+    const { error } = await this.supabase
       .from('characters')
       .delete()
       .eq('id', id);
@@ -405,7 +370,7 @@ export class SupabaseStorage implements IStorage {
 
   // Upgrade management
   async getUpgrade(id: string): Promise<Upgrade | undefined> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('upgrades')
       .select('*')
       .eq('id', id)
@@ -420,7 +385,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getUserUpgrades(userId: string): Promise<Upgrade[]> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('userupgrades')
       .select(`
         upgrades (*)
@@ -436,7 +401,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getAllUpgrades(): Promise<Upgrade[]> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('upgrades')
       .select('*');
 
@@ -449,7 +414,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createUpgrade(upgrade: InsertUpgrade): Promise<Upgrade> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('upgrades')
       .insert(mapToCamelCase(upgrade))
       .select()
@@ -461,7 +426,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | undefined> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('upgrades')
       .update(mapToCamelCase(updates))
       .eq('id', id)
@@ -478,7 +443,7 @@ export class SupabaseStorage implements IStorage {
 
   async upgradeUserUpgrade(userId: string, upgradeId: string): Promise<Upgrade> {
     // Increment user's upgrade level
-    const { data, error } = await this.supabaseClient.rpc('increment_userUpgrade', {
+    const { data, error } = await this.supabase.rpc('increment_userUpgrade', {
       p_userId: userId,
       p_upgradeId: upgradeId
     });
@@ -489,7 +454,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteUpgrade(id: string): Promise<void> {
-    const { error } = await this.supabaseClient
+    const { error } = await this.supabase
       .from('upgrades')
       .delete()
       .eq('id', id);
@@ -503,7 +468,7 @@ export class SupabaseStorage implements IStorage {
       let realUserId = userId;
       if (userId.startsWith('telegram_')) {
         const telegramId = userId.replace('telegram_', '');
-        const { data: user } = await this.supabaseClient
+        const { data: user } = await this.supabase
           .from('users')
           .select('id')
           .eq('telegramId', telegramId)
@@ -522,7 +487,7 @@ export class SupabaseStorage implements IStorage {
         }
       }
 
-      const { data, error } = await this.supabaseClient
+      const { data, error } = await this.supabase
         .from('users')
         .select('*')
         .eq('id', realUserId)
@@ -542,7 +507,7 @@ export class SupabaseStorage implements IStorage {
           sessionsPlayed: 0
         };
 
-        const { data: newData, error: createError } = await this.supabaseClient
+        const { data: newData, error: createError } = await this.supabase
           .from('users')
           .insert(defaultStats)
           .select()
@@ -598,7 +563,7 @@ export class SupabaseStorage implements IStorage {
 
   // Chat system
   async getChatMessages(userId: string, characterId?: string): Promise<ChatMessage[]> {
-    let query = this.supabaseClient
+    let query = this.supabase
       .from('chatmessages')
       .select('*')
       .eq('userid', userId)
@@ -619,7 +584,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('chatmessages')
       .insert(mapToCamelCase(message))
       .select()
@@ -631,7 +596,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async clearChatHistory(userId: string, characterId?: string): Promise<void> {
-    let query = this.supabaseClient
+    let query = this.supabase
       .from('chatmessages')
       .delete()
       .eq('userid', userId);
@@ -646,7 +611,7 @@ export class SupabaseStorage implements IStorage {
 
   // Wheel system
   async getLastWheelSpin(userId: string): Promise<Date | null> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('wheelRewards')
       .select('spunAt')
       .eq('userid', userId)
@@ -659,7 +624,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async recordWheelSpin(userId: string, reward: string): Promise<void> {
-    const { error } = await this.supabaseClient
+    const { error } = await this.supabase
       .from('wheelRewards')
       .insert({
         userId: userId,
@@ -689,11 +654,11 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getSystemStats(): Promise<any> {
-    const { data: userCount } = await this.supabaseClient
+    const { data: userCount } = await this.supabase
       .from('users')
       .select('id', { count: 'exact', head: true });
 
-    const { data: characterCount } = await this.supabaseClient
+    const { data: characterCount } = await this.supabase
       .from('characters')
       .select('id', { count: 'exact', head: true });
 
@@ -706,9 +671,9 @@ export class SupabaseStorage implements IStorage {
 
   async exportAllData(): Promise<any> {
     const [users, characters, messages] = await Promise.all([
-      this.supabaseClient.from('users').select('*'),
-      this.supabaseClient.from('characters').select('*'),
-      this.supabaseClient.from('chatmessages').select('*')
+      this.supabase.from('users').select('*'),
+      this.supabase.from('characters').select('*'),
+      this.supabase.from('chatmessages').select('*')
     ]);
 
     return {
@@ -721,7 +686,7 @@ export class SupabaseStorage implements IStorage {
 
   // Media management
   async getAllMedia(): Promise<MediaFile[]> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('mediafiles')
       .select('*');
 
@@ -735,7 +700,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getMediaFiles(characterId?: string): Promise<MediaFile[]> {
-    let query = this.supabaseClient.from('mediafiles').select('*');
+    let query = this.supabase.from('mediafiles').select('*');
 
     if (characterId) {
       query = query.eq('characterid', characterId);
@@ -756,7 +721,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getMediaFile(id: string): Promise<MediaFile | undefined> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('mediafiles')
       .select('*')
       .eq('id', id)
@@ -772,7 +737,7 @@ export class SupabaseStorage implements IStorage {
   async saveMediaFile(file: MediaFile): Promise<MediaFile> {
     const dbFile = mapToCamelCase(file);
 
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('mediafiles')
       .insert(dbFile)
       .select()
@@ -812,7 +777,7 @@ export class SupabaseStorage implements IStorage {
   async updateMediaFile(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
     const dbUpdates = mapToCamelCase(updates);
 
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('mediafiles')
       .update(dbUpdates)
       .eq('id', id)
@@ -828,7 +793,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteMediaFile(id: string): Promise<void> {
-    const { error } = await this.supabaseClient
+    const { error } = await this.supabase
       .from('mediafiles')
       .delete()
       .eq('id', id);
@@ -844,7 +809,7 @@ export class SupabaseStorage implements IStorage {
   async updateMedia(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
     const dbUpdates = mapToCamelCase(updates);
 
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('mediafiles')
       .update(dbUpdates)
       .eq('id', id)
@@ -880,7 +845,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async getOrphanedMediaFiles(): Promise<MediaFile[]> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('mediafiles')
       .select('*')
       .or('fileName.is.null,filePath.is.null,characterId.is.null');
@@ -940,7 +905,7 @@ export class SupabaseStorage implements IStorage {
 
   // Missing admin methods for level requirements
   async getLevelRequirements(): Promise<any[]> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('levelRequirements')
       .select('*')
       .order('level');
@@ -953,7 +918,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createLevelRequirement(levelReq: any): Promise<any> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('levelRequirements')
       .insert(mapToCamelCase(levelReq))
       .select()
@@ -967,7 +932,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateLevelRequirement(id: string, updates: any): Promise<any> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('levelRequirements')
       .update(mapToCamelCase(updates))
       .eq('id', id)
@@ -982,7 +947,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteLevelRequirement(id: string): Promise<void> {
-    const { error } = await this.supabaseClient
+    const { error } = await this.supabase
       .from('levelRequirements')
       .delete()
       .eq('id', id);
@@ -995,7 +960,7 @@ export class SupabaseStorage implements IStorage {
 
   // Missing methods for upgrades management
   async getUpgrades(): Promise<any[]> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('upgrades')
       .select('*')
       .order('category, name');
@@ -1007,9 +972,9 @@ export class SupabaseStorage implements IStorage {
     return data ? mapArrayToCamelCase(data) : [];
   }
 
-  // Missing methods for achievements management
+  // Missing methods for achievements management  
   async getAchievements(): Promise<any[]> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('achievements')
       .select('*')
       .order('category, sortOrder');
@@ -1022,7 +987,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async createAchievement(achievement: any): Promise<any> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('achievements')
       .insert(mapToCamelCase(achievement))
       .select()
@@ -1036,7 +1001,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateAchievement(id: string, updates: any): Promise<any> {
-    const { data, error } = await this.supabaseClient
+    const { data, error } = await this.supabase
       .from('achievements')
       .update(mapToCamelCase(updates))
       .eq('id', id)
@@ -1051,7 +1016,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async deleteAchievement(id: string): Promise<void> {
-    const { error } = await this.supabaseClient
+    const { error } = await this.supabase
       .from('achievements')
       .delete()
       .eq('id', id);

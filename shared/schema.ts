@@ -6,21 +6,21 @@ import { z } from "zod";
 
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  telegramId: text("telegram_id").unique(),
+  telegramId: text("telegramId").unique(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
   level: integer("level").notNull().default(1),
   lp: real("lp").notNull().default(0), // Changed to real to support decimals like 1.5
   energy: integer("energy").notNull().default(1000),
-  maxEnergy: integer("max_energy").notNull().default(1000),
+  maxEnergy: integer("maxEnergy").notNull().default(1000),
   charisma: integer("charisma").notNull().default(0),
-  lpPerHour: integer("lp_per_hour").notNull().default(10),
-  lpPerTap: real("lp_per_tap").notNull().default(1.0),
-  vipStatus: boolean("vip_status").notNull().default(false),
-  nsfwConsent: boolean("nsfw_consent").notNull().default(false),
-  isEvent: boolean("is_event").notNull().default(false),
-  lastTick: timestamp("last_tick").notNull().default(sql`now()`),
-  lastWheelSpin: timestamp("last_wheel_spin"),
+  lpPerHour: integer("lpPerHour").notNull().default(10),
+  lpPerTap: real("lpPerTap").notNull().default(1.0),
+  vipStatus: boolean("vipStatus").notNull().default(false),
+  nsfwConsent: boolean("nsfwConsent").notNull().default(false),
+  isEvent: boolean("isEvent").notNull().default(false),
+  lastTick: timestamp("lastTick").notNull().default(sql`now()`),
+  lastWheelSpin: timestamp("lastWheelSpin"),
   createdAt: timestamp("created_at").notNull().default(sql`now()`),
 });
 
