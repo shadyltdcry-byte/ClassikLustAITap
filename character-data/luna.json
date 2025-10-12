@@ -1,3 +1,4 @@
+
 {
   "id": "550e8400-e29b-41d4-a716-446655440002",
   "name": "Luna",
@@ -12,8 +13,8 @@
   "isEnabled": true,
   "levelRequirement": 1,
   "customTriggers": [],
-  "avatarPath": "/uploads/default-character (copy).jpg",
-  "imageUrl": "/uploads/default-character (copy).jpg",
+  "imageUrl": "/uploads/uploaded_1760304312351_4kbh34rbn.webp",
+  "avatarPath": "/uploads/uploaded_1760304312351_4kbh34rbn.webp",
   "avatarUrl": "/uploads/default-avatar.jpg",
   "createdAt": "2025-08-26T10:00:00.000Z",
   "updatedAt": "2025-08-26T21:18:04.066Z",

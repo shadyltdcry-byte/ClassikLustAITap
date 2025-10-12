@@ -94,12 +94,13 @@ export default function CharacterEditor({
 
   useEffect(() => {
     if (character) {
+      console.log('[CharacterEditor] Loading character data:', character);
       form.reset({
         name: character.name ?? "",
         bio: character.bio ?? "",
         description: character.description ?? "",
-        imageUrl: character.imageUrl ?? "",
-        avatarUrl: character.avatarUrl ?? "",
+        imageUrl: character.imageUrl || character.avatarPath || "",
+        avatarUrl: character.avatarUrl || "",
         personality: character.personality ?? "friendly",
         chatStyle: character.chatStyle ?? "casual",
         likes: character.likes ?? "",
@@ -121,9 +122,15 @@ export default function CharacterEditor({
         ? `/api/admin/characters/${character?.id}`
         : "/api/admin/characters";
       
-      console.log(`[CharacterEditor] ${method} ${endpoint}`, data);
+      // Ensure avatarPath is set for backward compatibility
+      const characterData = {
+        ...data,
+        avatarPath: data.imageUrl || data.avatarUrl || ""
+      };
       
-      const response = await apiRequest(method, endpoint, data);
+      console.log(`[CharacterEditor] ${method} ${endpoint}`, characterData);
+      
+      const response = await apiRequest(method, endpoint, characterData);
       if (!response.ok) {
         const errorText = await response.text();
         console.error("[CharacterEditor] Save failed:", errorText);

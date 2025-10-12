@@ -128,13 +128,56 @@ export function registerCharacterRoutes(app: Express) {
       const { id } = req.params;
       const updates = req.body;
       
-      // Mock character update for now
       console.log(`Updating character ${id} with:`, updates);
       
+      // Update the JSON file for persistence
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      
+      // Try to find and update the character JSON file
+      const characterFiles = ['luna.json', 'zara.json']; // Add more as needed
+      let characterFilePath = '';
+      
+      for (const file of characterFiles) {
+        const filePath = path.join(process.cwd(), 'character-data', file);
+        try {
+          const content = await fs.readFile(filePath, 'utf-8');
+          const character = JSON.parse(content);
+          if (character.id === id) {
+            characterFilePath = filePath;
+            // Update the character with new data
+            const updatedCharacter = {
+              ...character,
+              ...updates,
+              // Ensure avatarPath is synced with imageUrl
+              avatarPath: updates.imageUrl || updates.avatarPath || character.avatarPath,
+              updatedAt: new Date().toISOString()
+            };
+            await fs.writeFile(filePath, JSON.stringify(updatedCharacter, null, 2));
+            console.log(`[CharacterRoutes] Updated character file: ${filePath}`);
+            
+            res.json(createSuccessResponse({
+              data: updatedCharacter
+            }));
+            return;
+          }
+        } catch (err) {
+          // File doesn't exist or isn't readable, continue
+          continue;
+        }
+      }
+      
+      // If no JSON file found, return the updates as-is
+      if (!characterFilePath) {
+        console.warn(`[CharacterRoutes] No JSON file found for character ${id}, returning updates only`);
+      }
+      
       res.json(createSuccessResponse({
-        id,
-        ...updates,
-        updatedAt: new Date().toISOString()
+        data: {
+          id,
+          ...updates,
+          updatedAt: new Date().toISOString()
+        }
       }));
     } catch (error) {
       console.error('Error updating character:', error);
