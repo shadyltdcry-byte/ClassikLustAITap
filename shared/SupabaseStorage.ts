@@ -42,12 +42,28 @@ function toCamelCase(str: string): string {
   return str.replace(/([_][a-z])/g, (group) => group.toUpperCase().replace('_', ''));
 }
 
-// Universal mapper function for database operations
+// Helper function to convert camelCase to snake_case
+function toSnakeCase(str: string): string {
+  return str.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+}
+
+// Universal mapper function for database operations (results from DB)
 function mapToCamelCase<T extends Record<string, any>>(obj: T): Record<string, any> {
   const newObj: Record<string, any> = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
       newObj[toCamelCase(key)] = obj[key];
+    }
+  }
+  return newObj;
+}
+
+// Convert camelCase to snake_case for database inserts/updates
+function mapToSnakeCase<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const newObj: Record<string, any> = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      newObj[toSnakeCase(key)] = obj[key];
     }
   }
   return newObj;
@@ -694,7 +710,7 @@ export class SupabaseStorage implements IStorage {
     let query = this.supabase.from('mediaFiles').select('*');
 
     if (characterId) {
-      query = query.eq('characterId', characterId);
+      query = query.eq('characterid', characterId); // Use lowercase to match database column
     }
 
     const { data, error } = await query;
@@ -726,7 +742,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async saveMediaFile(file: MediaFile): Promise<MediaFile> {
-    const dbFile = mapToCamelCase(file);
+    const dbFile = mapToSnakeCase(file);
 
     const { data, error } = await this.supabase
       .from('mediaFiles')
@@ -766,7 +782,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateMediaFile(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
-    const dbUpdates = mapToCamelCase(updates);
+    const dbUpdates = mapToSnakeCase(updates);
 
     const { data, error } = await this.supabase
       .from('mediaFiles')
@@ -798,7 +814,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateMedia(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
-    const dbUpdates = mapToCamelCase(updates);
+    const dbUpdates = mapToSnakeCase(updates);
 
     const { data, error } = await this.supabase
       .from('mediaFiles')
@@ -839,7 +855,7 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await this.supabase
       .from('mediaFiles')
       .select('*')
-      .or('fileName.is.null,filePath.is.null,characterId.is.null');
+      .or('filename.is.null,filepath.is.null,characterid.is.null');
 
     if (error) {
       console.error('Error finding orphaned media files:', error);
