@@ -1394,5 +1394,29 @@
     "timestamp": "2025-10-12T20:36:27.782Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760301610314-00mwavoec",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T20:40:10.314Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "user-1760301737608-8ia6g7vwy",
+    "content": "Baby",
+    "sender": "user",
+    "timestamp": "2025-10-12T20:42:17.608Z",
+    "type": "text",
+    "mood": "normal"
+  },
+  {
+    "id": "ai-1760301737608-qjnxnsx5r",
+    "content": "*giggles softly, running a hand through her long blonde hair* Oh, baby... you say that like you already know me. Maybe I *am* yours... for the right price. *bites her lip, eyes sparkling with mischief* You’ve got me curious now. What’s on your mind, handsome? Or should I just guess? *leans in slightly, letting her curves press against the air between you*",
+    "sender": "character",
+    "timestamp": "2025-10-12T20:42:17.608Z",
+    "type": "text",
+    "mood": "normal"
   }
 ]
