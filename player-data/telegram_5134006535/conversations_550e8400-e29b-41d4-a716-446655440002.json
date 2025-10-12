@@ -1242,5 +1242,21 @@
     "timestamp": "2025-10-12T19:34:27.497Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760297782776-pb8zphrdn",
+    "content": "🌙 OMG BABE! We have a serious problem! System is failing: Unhandled Promise Rejection: Error: Build failed with 1 error:\nvite.config.ts:40:0: ERROR: Expected \")\" but found \"}\"",
+    "sender": "character",
+    "timestamp": "2025-10-12T19:36:22.776Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1760297787877-zqtzt2bey",
+    "content": "🌙 I noticed something unusual in System at 7:36:27 PM. Luna Error Monitor test - I'm now watching for errors and will alert you!",
+    "sender": "character",
+    "timestamp": "2025-10-12T19:36:27.877Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
