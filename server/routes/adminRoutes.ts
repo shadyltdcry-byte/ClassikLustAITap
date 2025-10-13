@@ -33,8 +33,8 @@ const upload = multer({
     },
     filename: (req, file, cb) => {
       const ext = path.extname(file.originalname);
-      const filename = `uploaded_${Date.now()}_${Math.random().toString(36).substr(2, 9)}${ext}`;
-      cb(null, filename);
+      const fileName = `uploaded_${Date.now()}_${Math.random().toString(36).substr(2, 9)}${ext}`;
+      cb(null, fileName);
     }
   }),
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB
@@ -477,7 +477,7 @@ export function registerAdminRoutes(app: Express) {
           isEvent: req.body.isEvent === 'true' || false,
           characterId: req.body.characterId || null,
           fileName: file.originalname,
-          filePath: `/uploads/${file.filename}`,
+          filePath: `/uploads/${file.fileName}`,
           fileType: file.mimetype?.startsWith('image/') ? 'image' : file.mimetype?.startsWith('video/') ? 'video' : 'file',
           pose: null,
           animationSequence: null,

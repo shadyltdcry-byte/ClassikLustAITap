@@ -443,11 +443,11 @@ export function registerChatRoutes(app: Express) {
               if (roll < sendChance) {
                 imageToSend = {
                   id: media.id,
-                  url: media.filePath || media.filepath,
+                  url: media.filePath || media.filePath,
                   mood: media.mood,
-                  isNsfw: media.isNsfw || media.isnsfw
+                  isNsfw: media.isNsfw || media.isNsfw
                 };
-                console.log(`📸 AI sending random image: ${media.fileName || media.filename} (${sendChance}% chance, rolled ${roll.toFixed(2)})`);
+                console.log(`📸 AI sending random image: ${media.fileName || media.fileName} (${sendChance}% chance, rolled ${roll.toFixed(2)})`);
                 break; // Send only one image per response
               }
             }
@@ -487,8 +487,7 @@ export function registerChatRoutes(app: Express) {
             mood: 'normal'
           };
           
-          // Add AI response
-          const aiMessage = {
+          // Add AI responscharacterId}.json`aiMessage = {
             id: `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             content: enhancedResponse,
             sender: 'character',

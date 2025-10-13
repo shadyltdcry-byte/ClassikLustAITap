@@ -408,14 +408,14 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
       // Map camelCase to snake_case for database
       const updates = {
-        characterid: editingFile.characterId,
+        characterId: editingFile.characterId,
         mood: editingFile.mood,
         pose: editingFile.pose,
         category: editingFile.category,
-        isnsfw: editingFile.isNsfw,
-        isvip: editingFile.isVip,
-        enabledforchat: editingFile.enabledForChat,
-        randomsendchance: editingFile.randomSendChance,
+        isNsfw: editingFile.isNsfw,
+        isVip: editingFile.isVip,
+        enabledForChat: editingFile.enabledForChat,
+        randomSendChance: editingFile.randomSendChance,
       };
 
       console.log('[FileManagerCore] Sending updates:', updates);
@@ -802,6 +802,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 }</div>
                 <div>VIP: {selectedFile.isVip ? 'Yes' : 'No'}</div>
                 <div>NSFW: {selectedFile.isNsfw ? 'Yes' : 'No'}</div>
+                <div>Event: {selectedFile.isEvent ? 'Yes' : 'No'}</div>
               </div>
             </CardContent>
           </Card>
@@ -853,6 +854,13 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     onCheckedChange={(checked) => setEditingFile({...editingFile, isNsfw: checked})}
                   />
                   <Label className="text-white">NSFW Content</Label>
+                </div>
+                 <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={editingFile.isEvent || false}
+                    onCheckedChange={(checked) => setEditingFile({...editingFile, isEvent: checked})}
+                  />
+                  <Label className="text-white">Event Content</Label>
                 </div>
               </div>
 
