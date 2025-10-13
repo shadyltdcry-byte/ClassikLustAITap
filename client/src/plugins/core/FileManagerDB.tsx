@@ -8,7 +8,7 @@
  * ⚠️ DO NOT PUT UI LOGIC HERE - This is purely for DB operations
  */
 
-import { MediaFile, MediaFileDB } from '../utils/schema';
+import { MediaFile, MediaFileDB } from 'shared/schema';
 
 /**
  * Database operations for media file management
@@ -77,8 +77,9 @@ export class FileManagerDB {
     characterId?: string;
     mood?: string;
     type?: string;
-    isVIP?: boolean;
-    isNSFW?: boolean;
+    isVip?: boolean;
+    isNsfw?: boolean;
+    isEvent?: boolean;
     level?: number;
   }): Promise<MediaFile[]> {
     try {
@@ -336,6 +337,7 @@ export class FileManagerDB {
     byCharacter: Record<string, number>;
     vipCount: number;
     nsfwCount: number;
+    eventCount: number;
   }> {
     try {
       const response = await fetch(`${this.API_BASE_URL}/stats`, {
@@ -359,6 +361,7 @@ export class FileManagerDB {
         byCharacter: {},
         vipCount: 0,
         nsfwCount: 0,
+        eventCount: 0,
       };
     }
   }

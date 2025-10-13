@@ -514,7 +514,7 @@ export function registerAdminRoutes(app: Express) {
       // Build update object with lowercase column names
       const dbUpdates: any = {};
       
-      if (updates.characterId !== undefined) dbUpdates.characterid = updates.characterId;
+      if (updates.characterId !== undefined) dbUpdates.characterId = updates.characterId;
       if (updates.fileName !== undefined) dbUpdates.filename = updates.fileName;
       if (updates.filePath !== undefined) dbUpdates.filepath = updates.filePath;
       if (updates.fileType !== undefined) dbUpdates.filetype = updates.fileType;
@@ -546,7 +546,7 @@ export function registerAdminRoutes(app: Express) {
       // Map response to camelCase
       const mappedData = {
         id: data.id,
-        characterId: data.characterid,
+        characterId: data.characterId,
         fileName: data.filename,
         filePath: data.filepath,
         fileType: data.filetype,

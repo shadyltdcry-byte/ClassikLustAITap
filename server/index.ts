@@ -13,7 +13,7 @@ import path from "path";
 import { LunaErrorMonitor, setupLunaErrorHandlers } from './services/LunaErrorMonitor.js';
 import { registerRoutes } from "./routes";
 import { WebSocketServer } from 'ws';
-import { SupabaseStorage } from '../shared/SupabaseStorage';
+import { SupabaseStorage } from 'shared/SupabaseStorage';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 // Old adminAPI import removed - using React State Debugger instead
@@ -140,13 +140,13 @@ export function validateAuthToken(token: string, telegramId: string): boolean {
 const lunaMonitor = LunaErrorMonitor.getInstance();
 lunaMonitor.enableForAdmin('telegram_5134006535');
 setupLunaErrorHandlers();
-console.log('🌙 Luna Error Monitor enabled for admin');
+console.log('🌙 Luna Error Monitor Enabled.');
 
 // Send test notification after 10 seconds to confirm Luna is working
 setTimeout(async () => {
   try {
     const { reportToLuna } = await import('./services/LunaErrorMonitor.js');
-    reportToLuna('warning', 'System', 'Luna Error Monitor test - I\'m now watching for errors and will alert you!');
+    reportToLuna('warning', 'System', 'Luna Error Monitor - Watching for any errors.');
   } catch (error) {
     console.log('Luna test notification failed, but that\'s okay - she\'s still monitoring errors');
   }

@@ -66,7 +66,7 @@ export default function ImageManager({
     levelRequirement: 1,
     randomSendChance: 5,
     isNsfw: false,
-    isVipOnly: false,
+    isVip: false,
     isEvent: false,
     isWheelReward: false,
   });
@@ -118,7 +118,7 @@ export default function ImageManager({
         levelRequirement: formFields.levelRequirement,
         randomSendChance: formFields.randomSendChance,
         isNsfw: formFields.isNsfw,
-        isVipOnly: formFields.isVipOnly,
+        isVip: formFields.isVip,
         isEvent: formFields.isEvent,
         isWheelReward: formFields.isWheelReward,
       }));
@@ -164,17 +164,17 @@ export default function ImageManager({
       
       // Map camelCase to snake_case for database
       const dbUpdates = {
-        characterid: updates.characterId,
+        characterId: updates.characterId,
         mood: updates.mood,
         pose: updates.pose,
         category: updates.category,
-        isnsfw: updates.isNsfw,
-        isvip: updates.isVip,
-        isevent: updates.isEvent,
+        isNsfw: updates.isNsfw,
+        isVip: updates.isVip,
+        isEvent: updates.isEvent,
         iswheelreward: updates.isWheelReward,
-        enabledforchat: updates.enabledForChat,
-        randomsendchance: updates.randomSendChance,
-        requiredlevel: updates.levelRequirement,
+        enabledForChat: updates.enabledForChat,
+        randomSendChance: updates.randomSendChance,
+        levelRequirement: updates.levelRequirement,
       };
       
       const response = await fetch(`/api/media/${id}`, {
@@ -455,8 +455,8 @@ export default function ImageManager({
 
             <div className="flex items-center space-x-2">
               <Switch
-                checked={formFields.isVipOnly}
-                onCheckedChange={(checked) => setFormFields(prev => ({ ...prev, isVipOnly: checked }))}
+                checked={formFields.isVip}
+                onCheckedChange={(checked) => setFormFields(prev => ({ ...prev, isVip: checked }))}
               />
               <Label className="text-white">VIP Only</Label>
             </div>
@@ -551,7 +551,7 @@ export default function ImageManager({
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         {getFileIcon(file)}
                         <span className="text-white text-sm truncate">
-                          {file.fileName || file.filename || file.originalName}
+                          {file.fileName || file.fileName || file.originalName}
                         </span>
                       </div>
                       <div className="flex gap-1 flex-shrink-0">
@@ -608,7 +608,7 @@ export default function ImageManager({
                       <div className="w-full h-32 bg-gray-900 rounded overflow-hidden">
                         <img
                           src={file.filePath}
-                          alt={file.fileName || file.filename}
+                          alt={file.fileName || file.fileName}
                           className="w-full h-full object-cover"
                           onError={(e) => {
                             (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg';
@@ -629,9 +629,14 @@ export default function ImageManager({
                           NSFW
                         </Badge>
                       )}
-                      {file.isVipOnly && (
+                      {file.isVip && (
                         <Badge variant="outline" className="text-xs">
                           VIP
+                        </Badge>
+                      )}
+                     {file.isEvent && (
+                        <Badge variant="outline" className="text-xs">
+                          Event
                         </Badge>
                       )}
                     </div>
@@ -812,8 +817,8 @@ export default function ImageManager({
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
-                    checked={editingFile.isVipOnly || false}
-                    onCheckedChange={(checked) => setEditingFile({ ...editingFile, isVipOnly: checked })}
+                    checked={editingFile.isVip || false}
+                    onCheckedChange={(checked) => setEditingFile({ ...editingFile, isVip: checked })}
                   />
                   <Label className="text-white">VIP Only</Label>
                 </div>

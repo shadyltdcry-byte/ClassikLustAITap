@@ -3,7 +3,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { SupabaseStorage } from '@/lib/SupabaseStorage';
+import { SupabaseStorage } from 'shared/SupabaseStorage';
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -17,11 +17,11 @@ const storage = multer.diskStorage({
     
     cb(null, uploadsDir);
   },
-  filename: (req, file, cb) => {
+  fileName: (req, file, cb) => {
     // Generate unique filename with timestamp
     const ext = path.extname(file.originalname);
-    const filename = `uploaded_${Date.now()}_${uuidv4()}${ext}`;
-    cb(null, filename);
+    const fileName = `uploaded_${Date.now()}_${uuidv4()}${ext}`;
+    cb(null, fileName);
   }
 });
 
@@ -49,7 +49,6 @@ export const config = {
 };
 
 // Import shared storage instance instead of creating duplicate
-import { SupabaseStorage } from '../../../shared/SupabaseStorage';
 const supabase = new SupabaseStorage(); // TODO: Replace with singleton
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -113,19 +112,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
 
           // Move file to character folder
-          const newPath = path.join(characterFolder, file.filename);
+          const newPath = path.join(characterFolder, file.fileName);
           fs.renameSync(file.path, newPath);
           file.path = newPath;
         }
 
         // Create media file record with organized path
         const filePath = config.characterId 
-          ? `/uploads/characters/${config.characterId}/${file.filename}`
-          : `/uploads/${file.filename}`;
+          ? `/uploads/characters/${config.characterId}/${file.fileName}`
+          : `/uploads/${file.fileName}`;
 
         const mediaFileData = {
           id: uuidv4(),
-          fileName: file.filename,
+          fileName: file.fileName,
           filePath,
           fileType,
           characterId: config.characterId || null,
@@ -146,9 +145,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         
         if (savedFile) {
           uploadedFiles.push(savedFile);
-          console.log(`Successfully saved to database: ${file.filename}`);
+          console.log(`Successfully saved to database: ${file.fileName}`);
         } else {
-          console.error(`Failed to save ${file.filename} to database`);
+          console.error(`Failed to save ${file.fileName} to database`);
           // Clean up the uploaded file if database save failed
           try {
             fs.unlinkSync(file.path);
@@ -157,7 +156,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           }
         }
       } catch (fileError) {
-        console.error(`Error processing file ${file.filename}:`, fileError);
+        console.error(`Error processing file ${file.fileName}:`, fileError);
         // Clean up the uploaded file on error
         try {
           fs.unlinkSync(file.path);

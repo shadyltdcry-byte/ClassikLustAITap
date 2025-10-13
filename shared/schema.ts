@@ -21,7 +21,7 @@ export const users = pgTable("users", {
   isEvent: boolean("isEvent").notNull().default(false),
   lastTick: timestamp("lastTick").notNull().default(sql`now()`),
   lastWheelSpin: timestamp("lastWheelSpin"),
-  createdAt: timestamp("created_at").notNull().default(sql`now()`),
+  createdAt: timestamp("createdAt").notNull().default(sql`now()`),
 });
 
 export const characters = pgTable("characters", {
