@@ -5,14 +5,15 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Terminal, Trash2, RefreshCw, ChevronDown, ChevronUp } from 'lucide-react';
+import { Terminal, Trash2, RefreshCw, ChevronDown, ChevronUp, Download, Save } from 'lucide-react';
 
 interface DebugLog {
   id: string;
   timestamp: string;
-  level: 'info' | 'warn' | 'error' | 'success';
+  level: 'info' | 'warn' | 'error' | 'success' | 'critical';
   module: string;
   message: string;
+  stack?: string;
 }
 
 interface DebuggerConsoleProps {
@@ -25,7 +26,9 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
   const [logs, setLogs] = useState<DebugLog[]>([]);
   const [command, setCommand] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const errorLogBufferRef = useRef<DebugLog[]>([]);
 
   useEffect(() => {
     // Initialize DebuggerCore if not already loaded
@@ -98,13 +101,53 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
 
     console.error = (...args) => {
       originalError(...args);
-      addLog('error', 'System', args.join(' '));
+      const errorMessage = args.join(' ');
+      const stack = args.find(arg => arg instanceof Error)?.stack;
+      addLog('error', 'System', errorMessage, stack);
     };
+
+    // Capture uncaught errors
+    const handleError = (event: ErrorEvent) => {
+      const errorMsg = `${event.message} at ${event.filename}:${event.lineno}:${event.colno}`;
+      addLog('critical', 'Uncaught Error', errorMsg, event.error?.stack);
+      event.preventDefault(); // Prevent default browser error handling
+    };
+
+    // Capture unhandled promise rejections
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const reason = event.reason;
+      const message = reason instanceof Error ? reason.message : String(reason);
+      const stack = reason instanceof Error ? reason.stack : undefined;
+      addLog('critical', 'Unhandled Promise', message, stack);
+      event.preventDefault();
+    };
+
+    // Capture network errors (fetch failures)
+    const originalFetch = window.fetch;
+    window.fetch = async (...args) => {
+      try {
+        const response = await originalFetch(...args);
+        if (!response.ok) {
+          addLog('error', 'Network', `HTTP ${response.status} - ${args[0]}`);
+        }
+        return response;
+      } catch (error: any) {
+        addLog('critical', 'Network', `Fetch failed: ${args[0]} - ${error.message}`, error.stack);
+        throw error;
+      }
+    };
+
+    // Add event listeners
+    window.addEventListener('error', handleError);
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
 
     return () => {
       console.log = originalLog;
       console.warn = originalWarn;
       console.error = originalError;
+      window.fetch = originalFetch;
+      window.removeEventListener('error', handleError);
+      window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
   }, []);
 
@@ -114,15 +157,68 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     }
   }, [logs]);
 
-  const addLog = (level: DebugLog['level'], module: string, message: string) => {
+  const addLog = (level: DebugLog['level'], module: string, message: string, stack?: string) => {
     const newLog: DebugLog = {
       id: Date.now().toString(),
       timestamp: new Date().toLocaleTimeString(),
       level,
       module,
-      message
+      message,
+      stack
     };
     setLogs(prev => [...prev.slice(-99), newLog]); // Keep last 100 logs
+    
+    // Add to error buffer for auto-save
+    if (level === 'error' || level === 'critical') {
+      errorLogBufferRef.current.push(newLog);
+      
+      // Auto-save when buffer reaches 10 errors
+      if (autoSaveEnabled && errorLogBufferRef.current.length >= 10) {
+        saveLogsToFile(errorLogBufferRef.current, 'auto');
+        errorLogBufferRef.current = [];
+      }
+    }
+  };
+
+  const saveLogsToFile = (logsToSave: DebugLog[], type: 'auto' | 'manual' = 'manual') => {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `debugger-logs-${type}-${timestamp}.txt`;
+    
+    let logContent = `=== Debugger Logs (${type === 'auto' ? 'Auto-saved' : 'Manual Export'}) ===\n`;
+    logContent += `Generated: ${new Date().toLocaleString()}\n`;
+    logContent += `Total Logs: ${logsToSave.length}\n`;
+    logContent += '='.repeat(50) + '\n\n';
+    
+    logsToSave.forEach(log => {
+      logContent += `[${log.timestamp}] [${log.level.toUpperCase()}] [${log.module}]\n`;
+      logContent += `  ${log.message}\n`;
+      if (log.stack) {
+        logContent += `  Stack: ${log.stack}\n`;
+      }
+      logContent += '\n';
+    });
+    
+    const blob = new Blob([logContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    link.click();
+    URL.revokeObjectURL(url);
+    
+    if (type === 'auto') {
+      addLog('success', 'System', `Auto-saved ${logsToSave.length} error logs to ${filename}`);
+    } else {
+      addLog('success', 'System', `Exported ${logsToSave.length} logs to ${filename}`);
+    }
+  };
+
+  const exportAllLogs = () => {
+    if (logs.length === 0) {
+      addLog('warn', 'System', 'No logs to export');
+      return;
+    }
+    saveLogsToFile(logs, 'manual');
   };
 
   const handleCommand = async () => {

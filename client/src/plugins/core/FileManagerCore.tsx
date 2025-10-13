@@ -19,7 +19,7 @@
  * ⚠️ DO Not ADD LOGIC TO GAME.TSX
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MediaFile, Character } from '@shared/schema';
 import { apiRequest } from '@/lib/queryClient';
@@ -30,7 +30,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Slider } from '@/components/ui/slider';
 import { toast } from 'react-hot-toast';
+import { Crop, ZoomIn, ZoomOut } from 'lucide-react';
 
 interface FileManagerCoreProps {
   onClose?: () => void;
@@ -42,6 +45,14 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [editingFile, setEditingFile] = useState<MediaFile | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  
+  // Cropping state
+  const [showCropDialog, setShowCropDialog] = useState(false);
+  const [cropImage, setCropImage] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropScale, setCropScale] = useState(1);
+  const [cropPosition, setCropPosition] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   // Upload configuration state
   const [uploadConfig, setUploadConfig] = useState({
@@ -178,13 +189,95 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
   /**
    * Handles file upload with progress tracking
    * Supports multiple file selection and validation
+   * Shows crop dialog for images
    */
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
       const files = Array.from(event.target.files);
-      setSelectedFiles(files);
+      
+      // Show crop dialog for first image
+      if (files.length > 0 && files[0].type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setCropImage(e.target?.result as string);
+          setCropFile(files[0]);
+          setShowCropDialog(true);
+        };
+        reader.readAsDataURL(files[0]);
+      } else {
+        setSelectedFiles(files);
+      }
     }
   };
+
+  /**
+   * Handles cropping completion
+   * Converts canvas to blob and creates cropped file
+   */
+  const handleCropComplete = useCallback(() => {
+    if (!canvasRef.current || !cropImage || !cropFile) return;
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const img = new window.Image();
+    
+    img.onload = () => {
+      // Set canvas size to 512x512
+      canvas.width = 512;
+      canvas.height = 512;
+
+      // Clear canvas
+      ctx.clearRect(0, 0, 512, 512);
+
+      // Calculate dimensions for cropping
+      const scale = cropScale;
+      const sourceWidth = img.width / scale;
+      const sourceHeight = img.height / scale;
+      
+      // Calculate source position with pan offset
+      const sourceX = Math.max(0, Math.min((img.width - sourceWidth) / 2 - cropPosition.x, img.width - sourceWidth));
+      const sourceY = Math.max(0, Math.min((img.height - sourceHeight) / 2 - cropPosition.y, img.height - sourceHeight));
+
+      // Draw the cropped and scaled image
+      ctx.drawImage(
+        img,
+        sourceX,
+        sourceY,
+        sourceWidth,
+        sourceHeight,
+        0,
+        0,
+        512,
+        512
+      );
+
+      // Convert to blob
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const croppedFile = new File([blob], cropFile.name, {
+            type: 'image/jpeg',
+            lastModified: Date.now()
+          });
+          setSelectedFiles([croppedFile]);
+          setShowCropDialog(false);
+          setCropImage(null);
+          setCropFile(null);
+          setCropScale(1);
+          setCropPosition({ x: 0, y: 0 });
+          
+          toast.success('Image cropped successfully! Ready to upload.');
+        }
+      }, 'image/jpeg', 0.95);
+    };
+    
+    img.onerror = () => {
+      toast.error('Failed to load image for cropping');
+    };
+    
+    img.src = cropImage;
+  }, [cropImage, cropFile, cropScale, cropPosition]);
 
   const handleSubmitUpload = async () => {
     if (selectedFiles.length === 0) {
@@ -517,8 +610,26 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                       checked={uploadConfig.enabledForChat}
                       onChange={(e) => setUploadConfig(prev => ({ ...prev, enabledForChat: e.target.checked }))}
                       className="w-4 h-4 mr-2 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                      data-testid="checkbox-chat-sending"
                     />
                     <span className="text-sm text-gray-300">{uploadConfig.enabledForChat ? 'ON' : 'OFF'}</span>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded border border-gray-600">
+                  <div>
+                    <span className="text-white text-sm font-medium">⭐ Event Content</span>
+                    <p className="text-gray-400 text-xs">Special event media</p>
+                  </div>
+                  <label className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={uploadConfig.isEvent}
+                      onChange={(e) => setUploadConfig(prev => ({ ...prev, isEvent: e.target.checked }))}
+                      className="w-4 h-4 mr-2 text-yellow-600 bg-gray-700 border-gray-600 rounded focus:ring-yellow-500"
+                      data-testid="checkbox-event-content"
+                    />
+                    <span className="text-sm text-gray-300">{uploadConfig.isEvent ? 'ON' : 'OFF'}</span>
                   </label>
                 </div>
               </div>
@@ -644,17 +755,18 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
       {/* File Details Modal */}
       {selectedFile && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="bg-gray-800 border-gray-600 max-w-4xl w-full h-[90vh] flex flex-col">
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-white">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" data-testid="modal-file-details">
+          <Card className="bg-gray-800 border-gray-600 max-w-4xl w-full max-h-[90vh] flex flex-col">
+            <CardHeader className="pb-3 pt-6">
+              <div className="flex justify-between items-start gap-4">
+                <CardTitle className="text-white flex-1 min-w-0">
                   {selectedFile.fileName || 'Media File'}
                 </CardTitle>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-shrink-0">
                   <Button
                     onClick={() => setEditingFile(selectedFile)}
                     className="bg-purple-600 hover:bg-purple-700"
+                    data-testid="button-edit-file"
                   >
                     Edit
                   </Button>
@@ -662,6 +774,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     onClick={() => deleteMutation.mutate(selectedFile.id)}
                     variant="destructive"
                     disabled={deleteMutation.isPending}
+                    data-testid="button-delete-file"
                   >
                     Delete
                   </Button>
@@ -669,6 +782,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     onClick={() => setSelectedFile(null)}
                     variant="outline"
                     className="border-gray-600 text-white"
+                    data-testid="button-close-modal"
                   >
                     Close
                   </Button>
@@ -793,6 +907,83 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* Crop Dialog */}
+      {showCropDialog && cropImage && (
+        <Dialog open={showCropDialog} onOpenChange={setShowCropDialog}>
+          <DialogContent className="bg-gray-800 border-gray-600 max-w-3xl">
+            <DialogHeader>
+              <DialogTitle className="text-white flex items-center gap-2">
+                <Crop className="w-5 h-5" />
+                Crop Image (512x512)
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {/* Crop Preview */}
+              <div className="relative w-full h-96 bg-gray-900 rounded-lg overflow-hidden flex items-center justify-center">
+                <img
+                  src={cropImage}
+                  alt="Crop preview"
+                  style={{
+                    transform: `scale(${cropScale}) translate(${cropPosition.x}px, ${cropPosition.y}px)`,
+                    transformOrigin: 'center',
+                    maxWidth: '100%',
+                    maxHeight: '100%',
+                  }}
+                  className="object-contain"
+                  data-testid="img-crop-preview"
+                />
+              </div>
+
+              {/* Zoom Controls */}
+              <div className="space-y-2">
+                <Label className="text-white flex items-center gap-2">
+                  <ZoomIn className="w-4 h-4" />
+                  Zoom: {cropScale.toFixed(1)}x
+                </Label>
+                <Slider
+                  value={[cropScale]}
+                  onValueChange={([value]) => setCropScale(value)}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  className="w-full"
+                  data-testid="slider-crop-zoom"
+                />
+              </div>
+
+              {/* Hidden Canvas for Processing */}
+              <canvas ref={canvasRef} className="hidden" />
+
+              {/* Action Buttons */}
+              <div className="flex gap-2 justify-end">
+                <Button
+                  onClick={() => {
+                    setShowCropDialog(false);
+                    setCropImage(null);
+                    setCropFile(null);
+                    setCropScale(1);
+                    setCropPosition({ x: 0, y: 0 });
+                  }}
+                  variant="outline"
+                  className="border-gray-600 text-white"
+                  data-testid="button-cancel-crop"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleCropComplete}
+                  className="bg-purple-600 hover:bg-purple-700"
+                  data-testid="button-complete-crop"
+                >
+                  <Crop className="w-4 h-4 mr-2" />
+                  Crop & Continue
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
