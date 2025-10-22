@@ -63,44 +63,36 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
 
           addLog('info', 'Debugger', 'Starting debugger initialization...');
 
-          // Try to dynamically import DebuggerCore
-          let DebuggerCore;
-          try {
-            const module = await import('/client/src/debugger/DebuggerCore.js');
-            DebuggerCore = module.default;
-          } catch (importError) {
-            // Fallback import path
-            try {
-              const module = await import('../../../debugger/DebuggerCore.js');
-              DebuggerCore = module.default;
-            } catch (fallbackError) {
-              throw new Error(`Failed to import DebuggerCore: ${fallbackError}`);
-            }
-          }
-
+          // Import DebuggerCore using proper relative path
+          const { default: DebuggerCore } = await import('@/debugger/DebuggerCore.js');
           const core = new DebuggerCore();
           (window as any).debuggerCore = core;
           
           // Load and register modules with better error handling
-          const modulePromises = [
-            import('/client/src/debugger/modules/database.js').catch(() => null),
-            import('/client/src/debugger/modules/character.js').catch(() => null),
-            import('/client/src/debugger/modules/aichat.js').catch(() => null),
-            import('/client/src/debugger/modules/gameplay.js').catch(() => null),
-          ];
+          const moduleImports = await Promise.allSettled([
+            import('@/debugger/modules/database.js').catch(e => ({ error: 'database', message: e.message })),
+            import('@/debugger/modules/character.js').catch(e => ({ error: 'character', message: e.message })),
+            import('@/debugger/modules/aichat.js').catch(e => ({ error: 'aichat', message: e.message })),
+            import('@/debugger/modules/gameplay.js').catch(e => ({ error: 'gameplay', message: e.message })),
+          ]);
           
-          const modules = await Promise.all(modulePromises);
           let registeredCount = 0;
           
-          modules.forEach((moduleImport, index) => {
-            if (moduleImport && moduleImport.default) {
+          moduleImports.forEach((result, index) => {
+            const moduleNames = ['database', 'character', 'aichat', 'gameplay'];
+            const moduleName = moduleNames[index];
+            
+            if (result.status === 'fulfilled' && result.value.default) {
               try {
-                const instance = new moduleImport.default();
+                const instance = new result.value.default();
                 core.register(instance);
                 registeredCount++;
+                addLog('success', 'Debugger', `Module ${moduleName} registered`);
               } catch (error) {
-                addLog('warn', 'Debugger', `Failed to register module ${index}: ${error}`);
+                addLog('warn', 'Debugger', `Failed to register module ${moduleName}: ${error}`);
               }
+            } else {
+              addLog('warn', 'Debugger', `Module ${moduleName} not found or failed to load`);
             }
           });
           
@@ -108,7 +100,7 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
           (window as any).debuggerInitialized = true;
           (window as any).debuggerInitializing = false;
           setIsInitialized(true);
-          addLog('success', 'Debugger', `Debugger Core initialized with ${registeredCount} modules`);
+          addLog('success', 'Debugger', `Debugger Core initialized with ${registeredCount}/4 modules`);
         } catch (error) {
           (window as any).debuggerInitializing = false;
           setIsInitialized(false);
