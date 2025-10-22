@@ -1,9 +1,8 @@
-
 /**
- * Upgrades.tsx - Upgrade System Interface
- * Last Edited: 2025-08-19 by Assistant
+ * Upgrades.tsx - Upgrade System Interface with Plugin Debugging
+ * Last Edited: 2025-10-22 by Assistant
  * 
- * Complete upgrade interface with proper styling matching AI Chat
+ * Complete upgrade interface with proper styling and AI debugging
  */
 
 import React, { useState } from "react";
@@ -15,6 +14,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Star, Zap, Heart, Coins, TrendingUp, ShoppingCart } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { debugPlugin } from "@/lib/PluginDebugger";
+
+// One-line plugin debugging setup
+const debug = debugPlugin('UpgradeManager');
 
 interface Upgrade {
   id: string;
@@ -37,38 +40,92 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
   const [activeTab, setActiveTab] = useState("all");
   const queryClient = useQueryClient();
 
-  // Fetch upgrades
+  debug.setState({ activeTab, playerLP: playerData?.lp || 0 });
+
+  // Fetch upgrades with debugging
   const { data: upgrades = [], isLoading } = useQuery({
     queryKey: ["/api/upgrades"],
     queryFn: async () => {
-      const response = await apiRequest("GET", "/api/upgrades");
-      return await response.json();
+      debug.timeStart('fetch-upgrades');
+      debug.trace('fetch:start', { userId: playerData?.userId });
+      
+      const response = await apiRequest("GET", "/api/upgrades", null, {
+        'x-user-id': playerData?.userId || playerData?.id
+      });
+      
+      const data = await response.json();
+      const duration = debug.timeEnd('fetch-upgrades');
+      
+      debug.success('fetch:complete', { 
+        count: data.length, 
+        duration,
+        categories: [...new Set(data.map((u: any) => u.category))]
+      });
+      
+      return data;
     },
   });
 
-  // Purchase upgrade mutation
+  // Purchase upgrade mutation with debugging
   const purchaseUpgradeMutation = useMutation({
     mutationFn: async (upgradeId: string) => {
+      debug.timeStart('purchase');
+      debug.trace('purchase:start', { 
+        upgradeId, 
+        userId: playerData?.userId || playerData?.id,
+        currentLP: playerData?.lp || 0
+      });
+      
       const response = await apiRequest("POST", `/api/upgrades/${upgradeId}/purchase`, {
         userId: playerData?.userId || playerData?.id
       });
+      
       if (!response.ok) {
         const error = await response.json();
+        debug.error('purchase:failed', { 
+          status: response.status,
+          error: error.error,
+          upgradeId
+        });
         throw new Error(error.error || 'Purchase failed');
       }
-      return await response.json();
+      
+      const result = await response.json();
+      const duration = debug.timeEnd('purchase');
+      
+      debug.success('purchase:complete', {
+        upgradeId,
+        duration,
+        transaction: result.data?.transaction,
+        newLevel: result.data?.upgrade?.newLevel
+      });
+      
+      return result;
     },
-    onSuccess: () => {
-      toast.success("Upgrade purchased successfully!");
-      // Invalidate both upgrades and user data to sync LP balance
+    onSuccess: (result) => {
+      const transaction = result.data?.transaction;
+      const upgrade = result.data?.upgrade;
+      
+      toast.success(`${upgrade?.name || 'Upgrade'} purchased! Level ${upgrade?.newLevel || '?'}`);
+      
+      debug.success('ui:update', {
+        lpBefore: playerData?.lp,
+        lpAfter: transaction?.newLP,
+        levelAfter: upgrade?.newLevel,
+        costPaid: transaction?.costPaid
+      });
+      
+      // Invalidate queries to refresh UI
       queryClient.invalidateQueries({ queryKey: ["/api/upgrades"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/player"] });
+      
       if (onUpgradeAction) {
-        onUpgradeAction('purchase');
+        onUpgradeAction('purchase', result.data);
       }
     },
-    onError: (error: Error) => {
+    onError: (error: Error) {
+      debug.error('mutation:error', { message: error.message });
       toast.error(error.message || "Failed to purchase upgrade");
     },
   });
@@ -76,6 +133,8 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
   const getUpgradeIcon = (category: string) => {
     switch (category) {
       case "lp":
+      case "lpPerTap":
+      case "lpPerHour":
         return "💰";
       case "energy":
         return "⚡";
@@ -104,10 +163,8 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
   const getFilteredUpgrades = () => {
     if (activeTab === "all") return upgrades;
     
-    // Filter by category, including "energy" and other categories as "special"
     return upgrades.filter((upgrade: Upgrade) => {
       if (activeTab === "special") {
-        // Special includes energy and any other non-standard categories
         return upgrade.category === "special" || upgrade.category === "energy" || 
                (upgrade.category !== "lpPerHour" && upgrade.category !== "lpPerTap");
       }
@@ -120,8 +177,30 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
   };
 
   const handlePurchase = (upgradeId: string) => {
+    const upgrade = upgrades.find((u: Upgrade) => u.id === upgradeId);
+    debug.trace('purchase:trigger', {
+      upgradeId,
+      upgradeName: upgrade?.name,
+      cost: upgrade?.cost,
+      canAfford: canAffordUpgrade(upgrade?.cost || 0)
+    });
+    
     purchaseUpgradeMutation.mutate(upgradeId);
   };
+
+  // Tab change debugging
+  const handleTabChange = (tab: string) => {
+    debug.trace('tab:change', { from: activeTab, to: tab });
+    setActiveTab(tab);
+    debug.setState({ activeTab: tab });
+  };
+
+  debug.info('render', {
+    upgradeCount: upgrades.length,
+    activeTab,
+    playerLP: playerData?.lp || 0,
+    isLoading
+  });
 
   return (
     <div className="h-full flex flex-col pt-2 pb-4">
@@ -144,30 +223,30 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
         </div>
       </div>
 
-      {/* Upgrade Tabs - Fixed Responsive Layout */}
+      {/* Upgrade Tabs */}
       <div className="p-3 bg-black/20 flex-shrink-0">
         <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
           <div className="flex gap-1 min-w-max">
             <Button 
-              onClick={() => setActiveTab("all")}
+              onClick={() => handleTabChange("all")}
               className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
             >
               ⭐ All
             </Button>
             <Button 
-              onClick={() => setActiveTab("lpPerHour")}
+              onClick={() => handleTabChange("lpPerHour")}
               className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
             >
               💰 LP/Hour
             </Button>
             <Button 
-              onClick={() => setActiveTab("lpPerTap")}
+              onClick={() => handleTabChange("lpPerTap")}
               className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerTap" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
             >
               👆 LP/Tap
             </Button>
             <Button 
-              onClick={() => setActiveTab("special")}
+              onClick={() => handleTabChange("special")}
               className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
             >
               ✨ Special
@@ -201,7 +280,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
                       <div className="flex items-center gap-2 mb-2">
                         <h4 className="text-white font-semibold">{upgrade.name}</h4>
                         <Badge className={getCategoryColor(upgrade.category)}>
-{upgrade.category ? upgrade.category.toUpperCase() : 'MISC'}
+                          {upgrade.category ? upgrade.category.toUpperCase() : 'MISC'}
                         </Badge>
                         {upgrade.currentLevel > 0 && (
                           <Badge className="bg-green-500/20 text-green-400">
