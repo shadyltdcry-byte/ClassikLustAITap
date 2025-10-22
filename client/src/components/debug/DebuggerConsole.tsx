@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,61 +25,100 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
   const [logs, setLogs] = useState<DebugLog[]>([]);
   const [command, setCommand] = useState('');
   const [isMinimized, setIsMinimized] = useState(false);
-  const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
+  const [autoSaveEnabled, setAutoSaveEnabled] = useState(false); // Disabled by default to prevent spam
+  const [isInitialized, setIsInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const errorLogBufferRef = useRef<DebugLog[]>([]);
+  const autoSaveCooldownRef = useRef(false);
+  const hasAutoSavedThisSession = useRef(false);
+  const initializationAttemptedRef = useRef(false);
 
   useEffect(() => {
     // Initialize DebuggerCore if not already loaded
     const initDebugger = async () => {
       if (typeof window !== 'undefined') {
+        // Prevent multiple initialization attempts
+        if (initializationAttemptedRef.current) {
+          return;
+        }
+        initializationAttemptedRef.current = true;
+
         // Check if already initialized
         if ((window as any).debuggerCore) {
           if (!(window as any).debuggerInitialized) {
             addLog('success', 'Debugger', 'Debugger Core already connected');
             (window as any).debuggerInitialized = true;
           }
+          setIsInitialized(true);
           return;
         }
 
         try {
           // Mark as initializing to prevent race conditions
           if ((window as any).debuggerInitializing) {
+            addLog('warn', 'Debugger', 'Debugger initialization already in progress...');
             return;
           }
           (window as any).debuggerInitializing = true;
 
-          // Dynamically import and initialize DebuggerCore
-          const DebuggerCore = (await import('@/debugger/DebuggerCore.js')).default;
+          addLog('info', 'Debugger', 'Starting debugger initialization...');
+
+          // Try to dynamically import DebuggerCore
+          let DebuggerCore;
+          try {
+            const module = await import('/client/src/debugger/DebuggerCore.js');
+            DebuggerCore = module.default;
+          } catch (importError) {
+            // Fallback import path
+            try {
+              const module = await import('../../../debugger/DebuggerCore.js');
+              DebuggerCore = module.default;
+            } catch (fallbackError) {
+              throw new Error(`Failed to import DebuggerCore: ${fallbackError}`);
+            }
+          }
+
           const core = new DebuggerCore();
           (window as any).debuggerCore = core;
           
-          // Load and register modules
-          const modules = [
-            (await import('@/debugger/modules/database.js')).default,
-            (await import('@/debugger/modules/character.js')).default,
-            (await import('@/debugger/modules/aichat.js')).default,
-            (await import('@/debugger/modules/gameplay.js')).default,
+          // Load and register modules with better error handling
+          const modulePromises = [
+            import('/client/src/debugger/modules/database.js').catch(() => null),
+            import('/client/src/debugger/modules/character.js').catch(() => null),
+            import('/client/src/debugger/modules/aichat.js').catch(() => null),
+            import('/client/src/debugger/modules/gameplay.js').catch(() => null),
           ];
           
-          modules.forEach(ModuleClass => {
-            const instance = new ModuleClass();
-            core.register(instance);
+          const modules = await Promise.all(modulePromises);
+          let registeredCount = 0;
+          
+          modules.forEach((moduleImport, index) => {
+            if (moduleImport && moduleImport.default) {
+              try {
+                const instance = new moduleImport.default();
+                core.register(instance);
+                registeredCount++;
+              } catch (error) {
+                addLog('warn', 'Debugger', `Failed to register module ${index}: ${error}`);
+              }
+            }
           });
           
           await core.initAll();
           (window as any).debuggerInitialized = true;
           (window as any).debuggerInitializing = false;
-          addLog('success', 'Debugger', 'Debugger Core initialized successfully');
+          setIsInitialized(true);
+          addLog('success', 'Debugger', `Debugger Core initialized with ${registeredCount} modules`);
         } catch (error) {
           (window as any).debuggerInitializing = false;
+          setIsInitialized(false);
           addLog('error', 'Debugger', `Failed to initialize: ${error}`);
         }
       }
     };
 
-    // Only initialize once when component mounts
-    if (!isEmbedded || isOpen) {
+    // Only initialize once when component mounts and is open
+    if ((!isEmbedded || isOpen) && !isInitialized) {
       initDebugger();
     }
 
@@ -88,11 +126,14 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     const originalLog = console.log;
     const originalWarn = console.warn;
     const originalError = console.error;
-  
 
     console.log = (...args) => {
       originalLog(...args);
-      addLog('info', 'System', args.join(' '));
+      // Filter out excessive logging to prevent spam
+      const message = args.join(' ');
+      if (!message.includes('debugger-logs-') && !message.includes('Auto-saved')) {
+        addLog('info', 'System', message);
+      }
     };
 
     console.warn = (...args) => {
@@ -111,7 +152,7 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     const handleError = (event: ErrorEvent) => {
       const errorMsg = `${event.message} at ${event.filename}:${event.lineno}:${event.colno}`;
       addLog('critical', 'Uncaught Error', errorMsg, event.error?.stack);
-      event.preventDefault(); // Prevent default browser error handling
+      event.preventDefault();
     };
 
     // Capture unhandled promise rejections
@@ -128,12 +169,14 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     window.fetch = async (...args) => {
       try {
         const response = await originalFetch(...args);
-        if (!response.ok) {
+        if (!response.ok && !args[0].toString().includes('debugger')) {
           addLog('error', 'Network', `HTTP ${response.status} - ${args[0]}`);
         }
         return response;
       } catch (error: any) {
-        addLog('critical', 'Network', `Fetch failed: ${args[0]} - ${error.message}`, error.stack);
+        if (!args[0].toString().includes('debugger')) {
+          addLog('critical', 'Network', `Fetch failed: ${args[0]} - ${error.message}`, error.stack);
+        }
         throw error;
       }
     };
@@ -150,7 +193,7 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
       window.removeEventListener('error', handleError);
       window.removeEventListener('unhandledrejection', handleUnhandledRejection);
     };
-  }, []);
+  }, [isOpen, isEmbedded, isInitialized]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -158,8 +201,6 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     }
   }, [logs]);
 
-    const autoSaveCooldownRef = useRef(false);
-  
   const addLog = (level: DebugLog['level'], module: string, message: string, stack?: string) => {
     const newLog: DebugLog = {
       id: Date.now().toString(),
@@ -171,12 +212,11 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     };
     setLogs(prev => [...prev.slice(-99), newLog]); // Keep last 100 logs
     
-  // Place the buffer logic for throttled autosave here:
+    // Improved auto-save logic with proper session management
     if (level === 'error' || level === 'critical') {
       errorLogBufferRef.current.push(newLog);
-const hasAutoSavedThisSession = useRef(false);
-      // The new throttled auto-save:
-      // In addLog, after checking cooldown:
+      
+      // Only auto-save if explicitly enabled and conditions are met
       if (
         autoSaveEnabled &&
         errorLogBufferRef.current.length >= 25 &&
@@ -185,9 +225,12 @@ const hasAutoSavedThisSession = useRef(false);
       ) {
         hasAutoSavedThisSession.current = true;
         autoSaveCooldownRef.current = true;
-        saveLogsToFile(errorLogBufferRef.current, 'manual');
+        saveLogsToFile(errorLogBufferRef.current, 'auto');
         errorLogBufferRef.current = [];
-        setTimeout(() => { autoSaveCooldownRef.current = false; }, 3000);
+        // Longer cooldown to prevent spam
+        setTimeout(() => { 
+          autoSaveCooldownRef.current = false; 
+        }, 30000); // 30 second cooldown
       }
     }
   };
@@ -218,9 +261,7 @@ const hasAutoSavedThisSession = useRef(false);
     link.click();
     URL.revokeObjectURL(url);
     
-    if (type === 'auto') {
-      addLog('success', 'System', `Auto-saved ${logsToSave.length} error logs to ${filename}`);
-    } else {
+    if (type === 'manual') {
       addLog('success', 'System', `Exported ${logsToSave.length} logs to ${filename}`);
     }
   };
@@ -265,21 +306,35 @@ const hasAutoSavedThisSession = useRef(false);
 
   const clearLogs = () => {
     setLogs([]);
+    errorLogBufferRef.current = [];
+    hasAutoSavedThisSession.current = false;
     addLog('info', 'System', 'Logs cleared');
   };
 
   const reloadPlugins = async () => {
     addLog('info', 'System', 'Reloading plugins...');
     if (typeof window !== 'undefined' && (window as any).debuggerCore) {
-      await (window as any).debuggerCore.stopAll();
-      await (window as any).debuggerCore.initAll();
-      addLog('success', 'System', 'Plugins reloaded');
+      try {
+        await (window as any).debuggerCore.stopAll();
+        await (window as any).debuggerCore.initAll();
+        addLog('success', 'System', 'Plugins reloaded');
+      } catch (error) {
+        addLog('error', 'System', `Failed to reload plugins: ${error}`);
+      }
+    } else {
+      addLog('error', 'System', 'Debugger Core not available for reload');
     }
+  };
+
+  const toggleAutoSave = () => {
+    setAutoSaveEnabled(!autoSaveEnabled);
+    addLog('info', 'System', `Auto-save ${!autoSaveEnabled ? 'enabled' : 'disabled'}`);
   };
 
   const getLevelColor = (level: DebugLog['level']) => {
     switch (level) {
       case 'error': return 'bg-red-500/20 text-red-400 border-red-500/30';
+      case 'critical': return 'bg-red-800/30 text-red-300 border-red-700/50';
       case 'warn': return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
       case 'success': return 'bg-green-500/20 text-green-400 border-green-500/30';
       default: return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
@@ -293,17 +348,43 @@ const hasAutoSavedThisSession = useRef(false);
     return (
       <div className="w-full">
         <div className="space-y-2">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <Terminal className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-white">Debug Console</span>
+              <Badge variant="outline" className={isInitialized ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
+                {isInitialized ? 'Ready' : 'Initializing'}
+              </Badge>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button size="sm" variant="ghost" onClick={toggleAutoSave} className="text-xs">
+                <Save className="w-3 h-3" />
+                {autoSaveEnabled ? 'ON' : 'OFF'}
+              </Button>
+              <Button size="sm" variant="ghost" onClick={exportAllLogs}>
+                <Download className="w-3 h-3" />
+              </Button>
+              <Button size="sm" variant="ghost" onClick={clearLogs}>
+                <Trash2 className="w-3 h-3" />
+              </Button>
+            </div>
+          </div>
+
           <ScrollArea className="h-64 bg-black/30 rounded p-2" ref={scrollRef}>
-            {logs.map(log => (
-              <div key={log.id} className="flex items-start gap-2 mb-1 text-xs">
-                <Badge variant="outline" className={getLevelColor(log.level)}>
-                  {log.level}
-                </Badge>
-                <span className="text-gray-400">{log.timestamp}</span>
-                <span className="text-purple-400">[{log.module}]</span>
-                <span className="text-gray-300 flex-1">{log.message}</span>
-              </div>
-            ))}
+            {logs.length === 0 ? (
+              <div className="text-gray-500 text-xs text-center py-4">No logs yet...</div>
+            ) : (
+              logs.map(log => (
+                <div key={log.id} className="flex items-start gap-2 mb-1 text-xs">
+                  <Badge variant="outline" className={getLevelColor(log.level)}>
+                    {log.level}
+                  </Badge>
+                  <span className="text-gray-400">{log.timestamp}</span>
+                  <span className="text-purple-400">[{log.module}]</span>
+                  <span className="text-gray-300 flex-1">{log.message}</span>
+                </div>
+              ))
+            )}
           </ScrollArea>
 
           <div className="flex gap-2">
@@ -312,12 +393,10 @@ const hasAutoSavedThisSession = useRef(false);
               onChange={(e) => setCommand(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleCommand()}
               placeholder="Enter command... (e.g., status, clearCache)"
-              className="bg-black/30 border-purple-500/30 text-white"
+              className="bg-black/30 border-purple-500/30 text-white text-xs"
+              disabled={!isInitialized}
             />
-            <Button onClick={handleCommand} size="sm">Run</Button>
-            <Button size="sm" variant="ghost" onClick={clearLogs}>
-              <Trash2 className="w-3 h-3" />
-            </Button>
+            <Button onClick={handleCommand} size="sm" disabled={!isInitialized}>Run</Button>
           </div>
 
           <div className="text-xs text-gray-400">
@@ -337,8 +416,17 @@ const hasAutoSavedThisSession = useRef(false);
             <CardTitle className="text-white flex items-center gap-2">
               <Terminal className="w-4 h-4" />
               Debugger Console
+              <Badge variant="outline" className={isInitialized ? 'bg-green-500/20 text-green-400' : 'bg-yellow-500/20 text-yellow-400'}>
+                {isInitialized ? 'Ready' : 'Init'}
+              </Badge>
             </CardTitle>
             <div className="flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={toggleAutoSave}>
+                <Save className="w-3 h-3" />
+              </Button>
+              <Button size="sm" variant="ghost" onClick={exportAllLogs}>
+                <Download className="w-3 h-3" />
+              </Button>
               <Button size="sm" variant="ghost" onClick={reloadPlugins}>
                 <RefreshCw className="w-3 h-3" />
               </Button>
@@ -348,6 +436,11 @@ const hasAutoSavedThisSession = useRef(false);
               <Button size="sm" variant="ghost" onClick={() => setIsMinimized(!isMinimized)}>
                 {isMinimized ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
               </Button>
+              {onClose && (
+                <Button size="sm" variant="ghost" onClick={onClose}>
+                  ×
+                </Button>
+              )}
             </div>
           </div>
         </CardHeader>
@@ -355,16 +448,20 @@ const hasAutoSavedThisSession = useRef(false);
         {!isMinimized && (
           <CardContent className="space-y-2">
             <ScrollArea className="h-64 bg-black/30 rounded p-2" ref={scrollRef}>
-              {logs.map(log => (
-                <div key={log.id} className="flex items-start gap-2 mb-1 text-xs">
-                  <Badge variant="outline" className={getLevelColor(log.level)}>
-                    {log.level}
-                  </Badge>
-                  <span className="text-gray-400">{log.timestamp}</span>
-                  <span className="text-purple-400">[{log.module}]</span>
-                  <span className="text-gray-300 flex-1">{log.message}</span>
-                </div>
-              ))}
+              {logs.length === 0 ? (
+                <div className="text-gray-500 text-xs text-center py-4">No logs yet...</div>
+              ) : (
+                logs.map(log => (
+                  <div key={log.id} className="flex items-start gap-2 mb-1 text-xs">
+                    <Badge variant="outline" className={getLevelColor(log.level)}>
+                      {log.level}
+                    </Badge>
+                    <span className="text-gray-400">{log.timestamp}</span>
+                    <span className="text-purple-400">[{log.module}]</span>
+                    <span className="text-gray-300 flex-1">{log.message}</span>
+                  </div>
+                ))
+              )}
             </ScrollArea>
 
             <div className="flex gap-2">
@@ -374,12 +471,13 @@ const hasAutoSavedThisSession = useRef(false);
                 onKeyPress={(e) => e.key === 'Enter' && handleCommand()}
                 placeholder="Enter command... (e.g., status, clearCache)"
                 className="bg-black/30 border-purple-500/30 text-white"
+                disabled={!isInitialized}
               />
-              <Button onClick={handleCommand} size="sm">Run</Button>
+              <Button onClick={handleCommand} size="sm" disabled={!isInitialized}>Run</Button>
             </div>
 
             <div className="text-xs text-gray-400">
-              Available: status, clearCache, reconnect, list, add, chat, clearHistory
+              Status: {logs.length} logs | Auto-save: {autoSaveEnabled ? 'ON' : 'OFF'} | {isInitialized ? 'Ready' : 'Initializing...'}
             </div>
           </CardContent>
         )}
