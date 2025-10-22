@@ -35,7 +35,20 @@ interface GameSettings {
   [key: string]: any;
 }
 
+function toDBColumn(str: string): string {
+  if (str === "characterId") return "characterid";
+  return str.toLowerCase();
+}
 
+function mapToDBColumns<T extends Record<string, any>>(obj: T): Record<string, any> {
+  const newObj: Record<string, any> = {};
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+      newObj[toDBColumn(key)] = obj[key];
+    }
+  }
+  return newObj;
+}
 
 // Helper function to convert snake_case to camelCase
 function toCamelCase(str: string): string {
@@ -371,9 +384,9 @@ export class SupabaseStorage implements IStorage {
     if (error) throw error;
   }
 
-  async selectCharacter(userId: string, characterId: string): Promise<void> {
+  async selectCharacter(userId: string, characterid: string): Promise<void> {
     // For now, just store in memory - implement proper selection logic later
-    console.log(`User ${userId} selected character ${characterId}`);
+    console.log(`User ${userId} selected character ${characterid}`);
   }
 
   // Upgrade management
@@ -570,15 +583,15 @@ export class SupabaseStorage implements IStorage {
   }
 
   // Chat system
-  async getChatMessages(userId: string, characterId?: string): Promise<ChatMessage[]> {
+  async getChatMessages(userId: string, characterid?: string): Promise<ChatMessage[]> {
     let query = this.supabase
       .from('chatMessages')
       .select('*')
       .eq('userId', userId)
       .order('createdAt', { ascending: true });
 
-    if (characterId) {
-      query = query.eq('characterId', characterId);
+    if (characterid) {
+      query = query.eq('characterid', characterid);
     }
 
     const { data, error } = await query;
@@ -603,14 +616,14 @@ export class SupabaseStorage implements IStorage {
     return mapToCamelCase(data);
   }
 
-  async clearChatHistory(userId: string, characterId?: string): Promise<void> {
+  async clearChatHistory(userId: string, characterid?: string): Promise<void> {
     let query = this.supabase
       .from('chatMessages')
       .delete()
       .eq('userId', userId);
 
-    if (characterId) {
-      query = query.eq('characterId', characterId);
+    if (characterid) {
+      query = query.eq('characterId', characterid);
     }
 
     const { error } = await query;
@@ -707,62 +720,56 @@ export class SupabaseStorage implements IStorage {
     return data ? mapArrayToCamelCase(data) : [];
   }
 
-  async getMediaFiles(characterId?: string): Promise<MediaFile[]> {
+  async getMediaFiles(characterid?: string): Promise<MediaFile[]> {
     let query = this.supabase.from('mediaFiles').select('*');
-
-    if (characterId) {
-      query = query.eq('characterid', characterId); // Use lowercase to match database column
+    if (characterid) {
+      query = query.eq('characterid', characterid); // use "characterid" everywhere!
     }
-
     const { data, error } = await query;
-
     if (error) {
       console.error('Error fetching media files:', error);
       return [];
     }
-
     return data ? mapArrayToCamelCase(data) : [];
   }
 
-  async getMediaByCharacter(characterId: string): Promise<MediaFile[]> {
-    return this.getMediaFiles(characterId);
-  }
-
-  async getMediaFile(id: string): Promise<MediaFile | undefined> {
-    const { data, error } = await this.supabase
-      .from('mediaFiles')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      console.error('Error fetching media file:', error);
-      return undefined;
-    }
-    return data ? mapToCamelCase(data) : undefined;
+  async getMediaByCharacter(characterid: string): Promise<MediaFile[]> {
+    return this.getMediaFiles(characterid);
   }
 
   async saveMediaFile(file: MediaFile): Promise<MediaFile> {
-    const dbFile = mapToSnakeCase(file);
-
+    const dbFile = mapToDBColumns(file);
     const { data, error } = await this.supabase
       .from('mediaFiles')
       .insert(dbFile)
       .select()
       .single();
-
     if (error) {
       console.error('Database insert error:', error);
       throw error;
     }
-
     return mapToCamelCase(data);
+  }
+
+  async updateMediaFile(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
+    const dbUpdates = mapToDBColumns(updates);
+    const { data, error } = await this.supabase
+      .from('mediaFiles')
+      .update(dbUpdates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) {
+      console.error('Error updating media file:', error);
+      return undefined;
+    }
+    return data ? mapToCamelCase(data) : undefined;
   }
 
   async uploadMedia(file: any): Promise<MediaFile> {
     const mediaFile: MediaFile = {
-      characterId: file.characterId,
-      fileName: file.filename,
+      characterid: file.characterid,
+      fileName: file.fileName,
       filePath: file.url,
       fileType: file.type,
       mood: file.mood,
@@ -782,23 +789,7 @@ export class SupabaseStorage implements IStorage {
     return this.saveMediaFile(mediaFile);
   }
 
-  async updateMediaFile(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
-    const dbUpdates = mapToSnakeCase(updates);
-
-    const { data, error } = await this.supabase
-      .from('mediaFiles')
-      .update(dbUpdates)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Error updating media file:', error);
-      return undefined;
-    }
-
-    return data ? mapToCamelCase(data) : undefined;
-  }
+  
 
   async deleteMediaFile(id: string): Promise<void> {
     const { error } = await this.supabase
@@ -838,7 +829,7 @@ export class SupabaseStorage implements IStorage {
 
   // Bulk cleanup methods for ghost files
   async bulkDeleteMediaFiles(ids: string[]): Promise<{ deletedCount: number; errors: string[] }> {
-    const results = { deletedCount: 0, errors: [] as string[] };
+    const results = { throwedCount: 0, errors: [] as string[] };
 
     for (const id of ids) {
       try {
@@ -856,7 +847,7 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await this.supabase
       .from('mediaFiles')
       .select('*')
-      .or('filename.is.null,filepath.is.null,characterid.is.null');
+      .or('fileName.is.null,filePath.is.null,characterid.is.null');
 
     if (error) {
       console.error('Error finding orphaned media files:', error);
@@ -899,7 +890,7 @@ export class SupabaseStorage implements IStorage {
     const orphanedFiles = await this.getOrphanedMediaFiles();
     const { duplicates } = await this.getDuplicateMediaFiles();
 
-    const withoutCharacter = allFiles.filter(f => !f.characterId).length;
+    const withoutCharacter = allFiles.filter(f => !f.characterid).length;
     const withoutFileName = allFiles.filter(f => !f.fileName).length;
 
     return {
@@ -980,6 +971,7 @@ export class SupabaseStorage implements IStorage {
     return data ? mapArrayToCamelCase(data) : [];
   }
 
+
   // Missing methods for achievements management  
   async getAchievements(): Promise<any[]> {
     const { data, error } = await this.supabase
@@ -1036,7 +1028,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   // Missing method for character selection
-  async setSelectedCharacter(userId: string, characterId: string): Promise<void> {
-    await this.selectCharacter(userId, characterId);
+  async setSelectedCharacter(userId: string, characterid: string): Promise<void> {
+    await this.selectCharacter(userId, characterid);
   }
 }

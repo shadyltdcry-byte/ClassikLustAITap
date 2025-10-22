@@ -60,10 +60,10 @@ async function generateAIResponse(userMessage: string): Promise<string> {
             const { Mistral } = await import('@mistralai/mistralai');
             const client = new Mistral({ apiKey: apiKey });
             const response = await client.chat.complete({
-              model: 'mistral-small-2506',
+              model: 'open-mistral-7b',
               messages: [{ role: 'user', content: `${lunaPrompt}\n\nUser: ${userMessage}\nLuna:` }],
               maxTokens: 150,
-              temperature: 0.8
+              temperature: 0.92
             });
             const content = response.choices?.[0]?.message?.content;
             return typeof content === 'string' ? content.trim() : undefined;
@@ -443,11 +443,11 @@ export function registerChatRoutes(app: Express) {
               if (roll < sendChance) {
                 imageToSend = {
                   id: media.id,
-                  url: media.filePath || media.filePath,
+                  url: media.filePath || media.filepath,
                   mood: media.mood,
-                  isNsfw: media.isNsfw || media.isNsfw
+                  isNsfw: media.isNsfw || media.isnsfw
                 };
-                console.log(`📸 AI sending random image: ${media.fileName || media.fileName} (${sendChance}% chance, rolled ${roll.toFixed(2)})`);
+                console.log(`📸 AI sending random image: ${media.fileName || media.filename} (${sendChance}% chance, rolled ${roll.toFixed(2)})`);
                 break; // Send only one image per response
               }
             }
@@ -487,7 +487,8 @@ export function registerChatRoutes(app: Express) {
             mood: 'normal'
           };
           
-          // Add AI responscharacterId}.json`aiMessage = {
+          // Add AI response
+          const aiMessage = {
             id: `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
             content: enhancedResponse,
             sender: 'character',

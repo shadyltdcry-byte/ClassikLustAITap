@@ -97,7 +97,7 @@ export default function CharacterDisplay({
         </div>
 
         {/* Character Main Image Container */}
-        <div className="relative mx-auto max-w-[416px] mb-6">
+        <div className="relative mx-auto max-w-[516px] mb-6">
           <div className="relative">
             {/* Luna's Error Alert Notification Badge */}
             {isLuna && unreadCount > 0 && (
@@ -151,33 +151,33 @@ export default function CharacterDisplay({
                 </div>
 
                 {/* Heart 2 - Top Right with Emoji Heart */}
-                <div className="absolute top-1/3 right-1/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.2s' }}>
+                <div className="absolute top-1/3 right-1/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.4s' }}>
                   <span className="text-red-400 text-xl">❤️</span>
-                  <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.2s' }}>
-                    +{lpPerTap || user.lpPerTap || 1}
-                  </span>
-                </div>
-
-                {/* Heart 3 - Center with Different Emoji */}
-                <div className="absolute top-1/2 left-1/2 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.4s' }}>
-                  <span className="text-pink-400 text-xl">💕</span>
                   <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.4s' }}>
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>
                 </div>
 
-                {/* Heart 4 - Bottom with Custom Image */}
-                <div className="absolute top-2/3 left-2/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.6s' }}>
-                  <img src="/uploads/floatinghearts.png" alt="hearts" className="w-5 h-5" />
+                {/* Heart 3 - Center with Different Emoji */}
+                <div className="absolute top-1/2 left-1/2 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.6s' }}>
+                  <span className="text-pink-400 text-xl">💕</span>
                   <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.6s' }}>
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>
                 </div>
 
-                {/* Heart 5 - Another Emoji Heart */}
-                <div className="absolute top-3/4 left-1/4 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.8s' }}>
-                  <span className="text-red-500 text-xl">💖</span>
+                {/* Heart 4 - Bottom with Custom Image */}
+                <div className="absolute top-2/3 left-2/3 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.8s' }}>
+                  <img src="/uploads/floatinghearts.png" alt="hearts" className="w-5 h-5" />
                   <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.8s' }}>
+                    +{lpPerTap || user.lpPerTap || 1}
+                  </span>
+                </div>
+
+                {/* Heart 5 - Another Emoji Heart */}
+                <div className="absolute top-3/4 left-1/4 animate-float-up flex items-center gap-2" style={{ animationDelay: '0.9s' }}>
+                  <span className="text-red-500 text-xl">💖</span>
+                  <span className="text-pink-500 font-bold text-lg opacity-80 animate-fade-out" style={{ animationDelay: '0.9s' }}>
                     +{lpPerTap || user.lpPerTap || 1}
                   </span>
                 </div>

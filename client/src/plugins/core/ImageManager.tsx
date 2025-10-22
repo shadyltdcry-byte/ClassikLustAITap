@@ -111,7 +111,7 @@ export default function ImageManager({
       });
       
       formData.append('config', JSON.stringify({
-        characterId: selectedCharacter,
+        characterid: selectedCharacter,
         folderPath,
         imageType,
         pose: formFields.pose,
@@ -164,7 +164,7 @@ export default function ImageManager({
       
       // Map camelCase to snake_case for database
       const dbUpdates = {
-        characterId: updates.characterId,
+        characterid: updates.characterid,
         mood: updates.mood,
         pose: updates.pose,
         category: updates.category,
@@ -346,7 +346,7 @@ export default function ImageManager({
   // Filter media files
   const filteredFiles = mediaFiles.filter((file: any) => {
     if (filterCategory !== "all" && file.category !== filterCategory) return false;
-    if (filterCharacter !== "all" && file.characterId !== filterCharacter) return false;
+    if (filterCharacter !== "all" && file.characterid !== filterCharacter) return false;
     return true;
   });
 

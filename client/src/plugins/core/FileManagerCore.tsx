@@ -56,7 +56,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
   // Upload configuration state
   const [uploadConfig, setUploadConfig] = useState({
-    characterId: '',
+    characterid: '',
     mood: '',
     requiredLevel: 1,
     isVip: false,
@@ -176,13 +176,14 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
    */
   const getFolderName = (file: MediaFile): string => {
     const parts = [];
-    if (file.characterId) {
-      const character = characters.find((c: Character) => c.id === file.characterId);
-      parts.push(`Character_${character?.name || file.characterId}`);
+    if (file.characterid) {
+      const character = characters.find((c: Character) => c.id === file.characterid);
+      parts.push(`Character_${character?.name || file.characterid}`);
     }
     if (file.mood) parts.push(`Mood_${file.mood}`);
     if (file.isVip) parts.push('VIP');
     if (file.isNsfw) parts.push('NSFW');
+    if (file.isEvent) parts.push('Event');
     return parts.join('/') || 'Uncategorized';
   };
 
@@ -408,12 +409,13 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
       // Map camelCase to snake_case for database
       const updates = {
-        characterId: editingFile.characterId,
+        characterid: editingFile.characterid,
         mood: editingFile.mood,
         pose: editingFile.pose,
         category: editingFile.category,
         isNsfw: editingFile.isNsfw,
         isVip: editingFile.isVip,
+        isEvent: editingFile.isEvent,
         enabledForChat: editingFile.enabledForChat,
         randomSendChance: editingFile.randomSendChance,
       };
@@ -479,8 +481,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
               <div>
                 <Label className="text-white">Assign to Character</Label>
                 <Select
-                  value={uploadConfig.characterId}
-                  onValueChange={(value) => setUploadConfig(prev => ({ ...prev, characterId: value }))}
+                  value={uploadConfig.characterid}
+                  onValueChange={(value) => setUploadConfig(prev => ({ ...prev, characterid: value }))}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character (optional)" />
@@ -586,7 +588,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 <div className="flex items-center justify-between p-3 bg-gray-700/50 rounded border border-gray-600">
                   <div>
                     <span className="text-white text-sm font-medium">NSFW Content</span>
-                    <p className="text-gray-400 text-xs">18+ content</p>
+                    <p className="text-gray-400 text-xs">18+ Content</p>
                   </div>
                   <label className="flex items-center">
                     <input
@@ -796,8 +798,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
                 <div>Type: {selectedFile.fileType || 'N/A'}</div>
                 <div>Character: {
-                  selectedFile.characterId
-                    ? characters.find((c: Character) => c.id === selectedFile.characterId)?.name || 'Unknown'
+                  selectedFile.characterid
+                    ? characters.find((c: Character) => c.id === selectedFile.characterid)?.name || 'Unknown'
                     : 'Unassigned'
                 }</div>
                 <div>VIP: {selectedFile.isVip ? 'Yes' : 'No'}</div>
@@ -820,8 +822,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
               <div>
                 <Label className="text-white">Assign to Character</Label>
                 <Select
-                  value={editingFile.characterId || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, characterId: value || null})} // Ensure it's null if empty for backend
+                  value={editingFile.characterid || ''}
+                  onValueChange={(value) => setEditingFile({...editingFile, characterid: value || null})} // Ensure it's null if empty for backend
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character" />

@@ -30,12 +30,12 @@ interface Character {
 interface CharacterSelectionProps {
   isOpen: boolean;
   onClose: () => void;
-  onCharacterSelected: (characterId: string) => void;
+  onCharacterSelected: (characterid: string) => void;
   userId: string;
 }
 
 export function CharacterSelection({ isOpen, onClose, onCharacterSelected, userId }: CharacterSelectionProps) {
-  const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
+  const [selectedCharacterid, setSelectedCharacterid] = useState<string | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -52,22 +52,22 @@ export function CharacterSelection({ isOpen, onClose, onCharacterSelected, userI
   });
 
   const selectCharacterMutation = useMutation({
-    mutationFn: async (characterId: string) => {
+    mutationFn: async (characterid: string) => {
       const response = await apiRequest("POST", `/api/player/${userId}/select-character`, {
-        characterId
+        characterid
       });
       if (!response.ok) {
         throw new Error("Failed to select character");
       }
       return response.json();
     },
-    onSuccess: (data, characterId) => {
+    onSuccess: (data, characterid) => {
       toast({
         title: "Character Selected!",
-        description: `You've chosen ${characters.find(c => c.id === characterId)?.name}`,
+        description: `You've chosen ${characters.find(c => c.id === characterid)?.name}`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/character/selected", userId] });
-      onCharacterSelected(characterId);
+      onCharacterSelected(characterid);
       onClose();
     },
     onError: (error) => {
@@ -80,8 +80,8 @@ export function CharacterSelection({ isOpen, onClose, onCharacterSelected, userI
   });
 
   const handleSelectCharacter = () => {
-    if (selectedCharacterId) {
-      selectCharacterMutation.mutate(selectedCharacterId);
+    if (selectedCharacterid) {
+      selectCharacterMutation.mutate(selectedCharacterid);
     }
   };
 
@@ -114,11 +114,11 @@ export function CharacterSelection({ isOpen, onClose, onCharacterSelected, userI
                   <Card 
                     key={character.id}
                     className={`cursor-pointer transition-all hover:scale-105 ${
-                      selectedCharacterId === character.id 
+                      selectedCharacterid === character.id 
                         ? 'ring-2 ring-primary border-primary' 
                         : 'hover:border-primary/50'
                     }`}
-                    onClick={() => setSelectedCharacterId(character.id)}
+                    onClick={() => setSelectedCharacterid(character.id)}
                     data-testid={`character-card-${character.id}`}
                   >
                     <CardHeader className="pb-2">
@@ -177,7 +177,7 @@ export function CharacterSelection({ isOpen, onClose, onCharacterSelected, userI
                 </Button>
                 <Button 
                   onClick={handleSelectCharacter}
-                  disabled={!selectedCharacterId || selectCharacterMutation.isPending}
+                  disabled={!selectedCharacterid || selectCharacterMutation.isPending}
                   data-testid="button-confirm-selection"
                 >
                   {selectCharacterMutation.isPending ? "Selecting..." : "Confirm Selection"}

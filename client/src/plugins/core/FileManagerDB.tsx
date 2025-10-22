@@ -17,6 +17,7 @@ import { MediaFile, MediaFileDB } from 'shared/schema';
 export class FileManagerDB {
   private static readonly API_BASE_URL = '/api/media';
 
+
   /**
    * Creates a new media file entry in the database
    * @param mediaFile - The media file data to create
@@ -74,7 +75,7 @@ export class FileManagerDB {
    * @returns Promise with array of media files
    */
   static async fetchMediaFiles(filters?: {
-    characterId?: string;
+    characterid?: string;
     mood?: string;
     type?: string;
     isVip?: boolean;
@@ -261,8 +262,8 @@ export class FileManagerDB {
    * @param characterId - The character ID
    * @returns Promise with array of character's media files
    */
-  static async fetchCharacterMedia(characterId: string): Promise<MediaFile[]> {
-    return this.fetchMediaFiles({ characterId });
+  static async fetchCharacterMedia(characterid: string): Promise<MediaFile[]> {
+    return this.fetchMediaFiles({ characterid });
   }
 
   /**
@@ -279,7 +280,7 @@ export class FileManagerDB {
    * @returns Promise with array of VIP media files
    */
   static async fetchVIPMedia(): Promise<MediaFile[]> {
-    return this.fetchMediaFiles({ isVIP: true });
+    return this.fetchMediaFiles({ isVip: true });
   }
 
   /**
@@ -287,7 +288,7 @@ export class FileManagerDB {
    * @returns Promise with array of NSFW media files
    */
   static async fetchNSFWMedia(): Promise<MediaFile[]> {
-    return this.fetchMediaFiles({ isNSFW: true });
+    return this.fetchMediaFiles({ isNsfw: true });
   }
 
   /**
@@ -298,12 +299,12 @@ export class FileManagerDB {
    */
   static async assignMediaToCharacter(
     mediaIds: string[], 
-    characterId: string
+    characterid: string
   ): Promise<boolean> {
     try {
       const updates = mediaIds.map(id => ({
         id,
-        data: { characterId }
+        data: { characterid }
       }));
 
       const result = await this.bulkUpdateMediaFiles(updates);

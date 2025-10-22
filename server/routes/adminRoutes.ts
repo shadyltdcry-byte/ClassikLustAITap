@@ -419,7 +419,7 @@ export function registerAdminRoutes(app: Express) {
                   isVip: false,
                   isEvent: false,
                   createdAt: stats.birthtime,
-                  characterId: null,
+                  characterid: null,
                   fileName: file,
                   filePath: `/uploads/${file}`,
                   fileType: mimeType.startsWith('image/') ? 'image' : 'file',
@@ -475,9 +475,9 @@ export function registerAdminRoutes(app: Express) {
           isNsfw: req.body.isNsfw === 'true' || false,
           isVip: req.body.isVip === 'true' || false,
           isEvent: req.body.isEvent === 'true' || false,
-          characterId: req.body.characterId || null,
+          characterid: req.body.characterid || null,
           fileName: file.originalname,
-          filePath: `/uploads/${file.fileName}`,
+          filePath: `/uploads/${file.filename}`,
           fileType: file.mimetype?.startsWith('image/') ? 'image' : file.mimetype?.startsWith('video/') ? 'video' : 'file',
           pose: null,
           animationSequence: null,
@@ -596,7 +596,7 @@ export function registerAdminRoutes(app: Express) {
         nsfwFiles: allMedia.filter((m: any) => m.isfNsfw).length,
         vipFiles: allMedia.filter((m: any) => m.isVip).length,
         eventFiles: allMedia.filter((m: any) => m.isEvent).length,
-        orphanedFiles: allMedia.filter((m: any) => !m.characterId).length,
+        orphanedFiles: allMedia.filter((m: any) => !m.characterid).length,
         duplicates: 0 // Could implement duplicate detection if needed
       };
 

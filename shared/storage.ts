@@ -28,7 +28,7 @@ export interface IStorage {
   createCharacter(character: InsertCharacter): Promise<Character>;
   updateCharacter(id: string, updates: Partial<Character>): Promise<Character | undefined>;
   deleteCharacter(id: string): Promise<void>;
-  selectCharacter(userId: string, characterId: string): Promise<void>;
+  selectCharacter(userId: string, characterid: string): Promise<void>;
 
   // Upgrade management
   getUpgrade(id: string): Promise<Upgrade | undefined>;
@@ -46,9 +46,9 @@ export interface IStorage {
   deleteUpgrade(id: string): Promise<void>;
 
   // Chat system
-  getChatMessages(userId: string, characterId?: string): Promise<ChatMessage[]>;
+  getChatMessages(userId: string, characterid?: string): Promise<ChatMessage[]>;
   createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
-  clearChatHistory(userId: string, characterId?: string): Promise<void>;
+  clearChatHistory(userId: string, characterid?: string): Promise<void>;
 
   // Wheel system
   getLastWheelSpin(userId: string): Promise<Date | null>;
@@ -62,7 +62,7 @@ export interface IStorage {
 
   // Media management
   getAllMedia(): Promise<MediaFile[]>;
-  getMediaFiles(characterId?: string): Promise<MediaFile[]>;
+  getMediaFiles(characterid?: string): Promise<MediaFile[]>;
   getMediaFile(id: string): Promise<MediaFile | undefined>;
   saveMediaFile(file: MediaFile): Promise<MediaFile>;
   uploadMedia(file: any): Promise<MediaFile>;

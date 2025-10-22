@@ -41,9 +41,9 @@ const CharacterCard = ({
     </CardHeader>
     <CardContent className="space-y-2">
       <div className="text-xs text-gray-400 space-y-1">
-        <div>Creator: {character.creatorId || 'System'}</div>
-        <div>Bond: {character.bondLevel || 0}</div>
-        <div>Affection: {character.affectionLevel || 0}</div>
+        <div>Creator: Admin</div>
+        <div>Bond: 0</div>
+        <div>Affection: 0</div>
       </div>
 
       <div className="flex gap-2">
@@ -154,16 +154,16 @@ export default function AdminCharactersPanel() {
 
   // Toggle character mutation
   const toggleCharacterMutation = useMutation({
-    mutationFn: async ({ characterId, field, value }: { characterId: string; field: string; value: boolean }) => {
+    mutationFn: async ({ characterid, field, value }: { characterid: string; field: string; value: boolean }) => {
       // Get full character data first
       const charResponse = await fetch(`/api/admin/characters`);
       const characters = await charResponse.json();
-      const character = characters.find((c: any) => c.id === characterId);
+      const character = characters.find((c: any) => c.id === characterid);
 
       if (!character) throw new Error("Character not found");
 
       // Send complete update with all fields
-      const response = await apiRequest("PUT", `/api/admin/characters/${characterId}`, {
+      const response = await apiRequest("PUT", `/api/admin/characters/${characterid}`, {
         name: character.name,
         personality: character.personality,
         chatStyle: character.chatStyle,
@@ -210,19 +210,19 @@ export default function AdminCharactersPanel() {
   }, [deleteCharacterMutation]);
 
   const handleToggleVip = useCallback((id: string, current: boolean) => {
-    toggleCharacterMutation.mutate({ characterId: id, field: "isVip", value: !current });
+    toggleCharacterMutation.mutate({ characterid: id, field: "isVip", value: !current });
   }, [toggleCharacterMutation]);
 
   const handleToggleNsfw = useCallback((id: string, current: boolean) => {
-    toggleCharacterMutation.mutate({ characterId: id, field: "isNsfw", value: !current });
+    toggleCharacterMutation.mutate({ characterid: id, field: "isNsfw", value: !current });
   }, [toggleCharacterMutation]);
 
   const handleToggleEnabled = useCallback((id: string, current: boolean) => {
-    toggleCharacterMutation.mutate({ characterId: id, field: "isEnabled", value: !current });
+    toggleCharacterMutation.mutate({ characterid: id, field: "isEnabled", value: !current });
   }, [toggleCharacterMutation]);
 
   const handleToggleEvent = useCallback((id: string, current: boolean) => { // Added handler for event toggle
-    toggleCharacterMutation.mutate({ characterId: id, field: "isEvent", value: !current });
+    toggleCharacterMutation.mutate({ characterid: id, field: "isEvent", value: !current });
   }, [toggleCharacterMutation]);
 
   const handleCreateSuccess = useCallback(() => {

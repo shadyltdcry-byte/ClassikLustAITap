@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
   },
   fileName: (req, file, cb) => {
     // Generate unique filename with timestamp
-    const ext = path.extname(file.originalname);
+    const ext = path.extname(file.originalName);
     const fileName = `uploaded_${Date.now()}_${uuidv4()}${ext}`;
     cb(null, fileName);
   }
@@ -97,13 +97,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`File type determined: ${fileType} for ${file.mimetype}`);
 
         // Auto-create character folder structure
-        if (config.characterId) {
+        if (config.characterid) {
           const characterFolder = path.join(
             process.cwd(), 
             'public', 
             'uploads', 
             'characters',
-            config.characterId
+            config.characterid
           );
           
           if (!fs.existsSync(characterFolder)) {
@@ -118,8 +118,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // Create media file record with organized path
-        const filePath = config.characterId 
-          ? `/uploads/characters/${config.characterId}/${file.fileName}`
+        const filePath = config.characterid 
+          ? `/uploads/characters/${config.characterid}/${file.fileName}`
           : `/uploads/${file.fileName}`;
 
         const mediaFileData = {
@@ -127,7 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fileName: file.fileName,
           filePath,
           fileType,
-          characterId: config.characterId || null,
+          characterid: config.characterid || null,
           mood: config.mood || null,
           pose: config.pose || null,
           requiredLevel: config.requiredLevel || 1,

@@ -20,7 +20,7 @@ interface MediaFile {
   id: string;
   fileName?: string;
   filePath?: string;
-  characterId?: string;
+  characterid?: string;
   fileType?: string;
   createdAt?: string;
 }
@@ -205,7 +205,7 @@ export default function MediaFileCleanup() {
                     </div>
                     <div className="flex gap-2">
                       {!file.fileName && <Badge variant="destructive">No Name</Badge>}
-                      {!file.characterId && <Badge variant="outline">No Character</Badge>}
+                      {!file.characterid && <Badge variant="outline">No Character</Badge>}
                       {!file.filePath && <Badge variant="destructive">No Path</Badge>}
                     </div>
                   </div>
@@ -256,7 +256,7 @@ export default function MediaFileCleanup() {
                               </div>
                             </div>
                             <div className="text-xs text-gray-400">
-                              Character: {file.characterId?.substring(0, 8) || 'None'}
+                              Character: {file.characterid?.substring(0, 8) || 'None'}
                             </div>
                           </div>
                         ))}

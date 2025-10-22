@@ -27,11 +27,11 @@ interface CharacterGalleryProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
-  onCharacterSelected?: (characterId: string) => void;
-  currentCharacterId?: string; // The currently active character to show photos for
+  onCharacterSelected?: (characterid: string) => void;
+  currentCharacterid?: string; // The currently active character to show photos for
 }
 
-export default function CharacterGallery({ isOpen, onClose, userId, onCharacterSelected, currentCharacterId }: CharacterGalleryProps) {
+export default function CharacterGallery({ isOpen, onClose, userId, onCharacterSelected, currentCharacterid }: CharacterGalleryProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSlideshow, setIsSlideshow] = useState(false);
@@ -41,6 +41,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  
   // Fetch characters - using correct endpoint
   const { data: characters = [], isLoading: charactersLoading } = useQuery({
     queryKey: ['/api/characters', userId],
@@ -53,14 +54,14 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
   
   // If a current character is provided, show their photos directly
   useEffect(() => {
-    if (currentCharacterId && isOpen && characters.length > 0) {
+    if (currentCharacterid && isOpen && characters.length > 0) {
       // Find the current character and set it as selected
-      const char = characters.find((c: Character) => c.id === currentCharacterId);
+      const char = characters.find((c: Character) => c.id === currentCharacterid);
       if (char) {
         setSelectedCharacter(char);
       }
     }
-  }, [currentCharacterId, isOpen, characters]);
+  }, [currentCharacterid, isOpen, characters]);
 
   // Fetch character images - using correct endpoint and field names
   const { data: characterImages = [], isLoading: imagesLoading } = useQuery({
@@ -80,24 +81,24 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   // Character selection mutation
   const selectCharacterMutation = useMutation({
-    mutationFn: async (characterId: string) => {
+    mutationFn: async (characterid: string) => {
       const response = await apiRequest("POST", `/api/player/${userId}/select-character`, {
-        characterId
+        characterid
       });
       if (!response.ok) {
         throw new Error("Failed to select character");
       }
       return response.json();
     },
-    onSuccess: (data, characterId) => {
-      const character = characters.find((c: Character) => c.id === characterId);
+    onSuccess: (data, characterid) => {
+      const character = characters.find((c: Character) => c.id === characterid);
       toast({
         title: "Character Selected!",
         description: `You've chosen ${character?.name}`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/character/selected", userId] });
       if (onCharacterSelected) {
-        onCharacterSelected(characterId);
+        onCharacterSelected(characterid);
       }
     },
     onError: (error) => {
@@ -120,7 +121,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
     }
   });
 
-  const handleSelectCharacter = (characterId: string) => {
+  const handleSelectCharacter = (characterid: string) => {
     if (!userId || userId === 'undefined') {
       toast({
         title: "Authentication Required",
@@ -130,7 +131,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
       return;
     }
     
-    const character = characters.find((c: Character) => c.id === characterId);
+    const character = characters.find((c: Character) => c.id === characterid);
     if (!character?.isEnabled) {
       toast({
         title: "Character Locked",
@@ -139,7 +140,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
       });
       return;
     }
-    selectCharacterMutation.mutate(characterId);
+    selectCharacterMutation.mutate(characterid);
   };
 
   // Slideshow functionality
@@ -206,14 +207,24 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
     return characterImages[currentImageIndex];
   };
 
+  const visibleCount = 6;
+   let start = 0;
+    if (currentImageIndex > Math.floor(visibleCount / 2)) {
+  start = currentImageIndex - Math.floor(visibleCount / 2);
+}
+    if (start + visibleCount > characterImages.length) {
+  start = Math.max(0, characterImages.length - visibleCount);
+}
+   const thumbnailsToShow = characterImages.slice(start, start + visibleCount);
+  
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl w-[95vw] max-h-[85vh] bg-black/95 backdrop-blur-lg text-white border-pink-500/50 overflow-hidden shadow-2xl shadow-pink-500/20">
+      <DialogContent className="max-w-full max-h-[85vh] bg-black/95 backdrop-blur-lg text-white border-pink-500/50 overflow-hidden shadow-2xl shadow-pink-500/20">
         <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+          <DialogTitle className="text-sm font-bold text-center bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
             Character Gallery
           </DialogTitle>
-          <DialogDescription className="text-gray-300 text-center">
+          <DialogDescription className="text-gray-400 text-xs text-center">
             Select a character to interact with. Browse through available characters and choose your companion.
           </DialogDescription>
         </DialogHeader>
@@ -221,36 +232,36 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
         {charactersLoading ? (
           <div className="flex items-center justify-center h-96">
             <div className="text-center">
-              <div className="animate-spin w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-8 h-8 border-1 border-purple-400 border-t-transparent rounded-full mx-auto mb-2"></div>
               <p>Loading characters...</p>
             </div>
           </div>
         ) : (
-          <div className="flex gap-4 h-[70vh]">
+          <div className="flex gap-1 h-[70vh]">
             {/* Character List */}
-            <div className="w-64 space-y-4">
+            <div className="w-63 space-y-2">
               <Tabs value={filter} onValueChange={(v: any) => setFilter(v)}>
                 <TabsList className="grid grid-cols-3 w-full bg-black/80 border border-pink-500/30">
-                  <TabsTrigger value="all" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white">All</TabsTrigger>
-                  <TabsTrigger value="unlocked" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white">Unlocked</TabsTrigger>
-                  <TabsTrigger value="locked" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white">Locked</TabsTrigger>
+                  <TabsTrigger value="all" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white text-xs">All</TabsTrigger>
+                  <TabsTrigger value="unlocked" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white text-xs">Unlocked</TabsTrigger>
+                  <TabsTrigger value="locked" className="data-[state=active]:bg-pink-600 data-[state=active]:text-white text-xs">Locked</TabsTrigger>
                 </TabsList>
-                <div className="flex gap-1 mt-2">
+                <div className="text-xs flex gap-1 mt-1">
                   <Button 
                     size="sm" 
                     variant={filter === 'vip' ? 'default' : 'outline'}
                     onClick={() => setFilter('vip')}
-                    className="flex-1"
+                    className="flex-1 text-xs"
                   >
-                    <Crown className="w-3 h-3 mr-1" /> VIP
+                    <Crown className="text-xs w-3 h-3 mr-1" /> VIP
                   </Button>
                   <Button 
                     size="sm" 
                     variant={filter === 'event' ? 'default' : 'outline'}
                     onClick={() => setFilter('event')}
-                    className="flex-1"
+                    className="flex-1 text-xs"
                   >
-                    <Sparkles className="w-3 h-3 mr-1" /> Event
+                    <Sparkles className="text-xs w-3 h-3 mr-1" /> Event
                   </Button>
                 </div>
               </Tabs>
@@ -258,7 +269,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
               <div className="space-y-2 max-h-96 overflow-y-auto">
                 {filteredCharacters.length === 0 ? (
                   <div className="text-center text-gray-400 py-8">
-                    <ImageIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <ImageIcon className="w-12 h-12 mx-auto mb-1 opacity-50" />
                     <p>No characters found</p>
                   </div>
                 ) : (
@@ -272,7 +283,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                       }`}
                       onClick={() => setSelectedCharacter(char)}
                     >
-                      <CardContent className="p-3 flex items-center gap-3">
+                      <CardContent className="p-3 flex items-center gap-1">
                         <div className="relative">
                           <img
                             src={char.avatarUrl || char.imageUrl || '/uploads/placeholder-avatar.jpg'}
@@ -289,13 +300,13 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                           )}
                         </div>
 
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
+                        <div className="flex-1 min-w-1">
+                          <div className="flex items-center gap-1">
                             <h3 className="font-semibold truncate">{char.name}</h3>
                             {getCharacterIcon(char)}
                           </div>
-                          <div className="flex items-center gap-2 text-xs text-gray-300">
-                            <span>Req Level {char.levelRequirement || 1}</span>
+                          <div className="flex items-center gap-3 text-xs text-gray-300">
+                            <span>Level {char.levelRequirement || 1}</span>
                             {char.isEnabled ? (
                               <Badge variant="secondary" className="bg-green-600/20 text-green-400">
                                 <Unlock className="w-2 h-2 mr-1" /> Unlocked
@@ -319,13 +330,13 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
               {selectedCharacter ? (
                 <>
                   {/* Character Info */}
-                  <div className="bg-black/80 backdrop-blur-sm rounded-lg p-4 border border-pink-500/30">
+                  <div className="bg-black/80 backdrop-blur-sm rounded-lg p-3 border border-pink-500/30">
                     <div className="flex items-center justify-between mb-2">
-                      <h2 className="text-xl font-bold flex items-center gap-2">
+                      <h2 className="text-xs font-bold flex items-center gap-1">
                         {selectedCharacter.name}
                         {getCharacterIcon(selectedCharacter)}
                       </h2>
-                      <div className="flex gap-2">
+                      <div className="flex gap-1">
                         {selectedCharacter.isEnabled && onCharacterSelected && (
                           <Button
                             size="sm"
@@ -359,17 +370,17 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                         )}
                       </div>
                     </div>
-                    <p className="text-gray-300 text-sm capitalize">
-                      {selectedCharacter.personality} personality • 
+                    <p className="text-gray-300 text-xs capitalize">
+                     Collection •
                       {characterImages.length} image{characterImages.length !== 1 ? 's' : ''}
                     </p>
                   </div>
 
                   {/* Image Display */}
-                  <div className="relative bg-black/80 backdrop-blur-sm rounded-lg overflow-hidden border border-pink-500/30" style={{ height: '400px' }}>
+                  <div className="relative bg-black/80 backdrop-blur-sm rounded-lg overflow-hidden border border-pink-500/30" style={{ height: '450px' }}>
                     {imagesLoading ? (
                       <div className="flex items-center justify-center h-full">
-                        <div className="animate-spin w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full"></div>
+                        <div className="animate-spin w-9 h-9 border-2 border-purple-400 border-t-transparent rounded-full"></div>
                       </div>
                     ) : characterImages.length > 0 ? (
                       <>
@@ -408,55 +419,54 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
                     ) : (
                       <div className="flex items-center justify-center h-full">
                         <div className="text-center text-gray-400">
-                          <div className="w-16 h-16 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center">
+                          <div className="w-14 h-14 mx-auto mb-4 bg-gray-700 rounded-full flex items-center justify-center">
                             <img
                               src={selectedCharacter.imageUrl || selectedCharacter.avatarUrl || '/uploads/placeholder-character.jpg'}
                               alt={selectedCharacter.name}
-                              className="w-12 h-12 rounded-full object-cover"
+                              className="w-14 h-14 rounded-full object-cover"
                               onError={(e) => {
                                 (e.target as HTMLImageElement).src = '/uploads/placeholder-character.jpg';
                               }}
                             />
                           </div>
                           <p>No additional images available</p>
-                          <p className="text-sm">Using default character image</p>
+                          <p className="text-xs">Using default character image</p>
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Image Thumbnails */}
-                  {characterImages.length > 1 && (
-                    <div className="flex gap-2 overflow-x-auto pb-2">
-                      {characterImages.map((img: MediaFile, index: number) => (
-                        <button
-                          key={`thumbnail-${img.id}-${index}`}
-                          className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
-                            index === currentImageIndex 
-                              ? 'border-purple-400 ring-1 ring-purple-400' 
-                              : 'border-transparent hover:border-white/30'
-                          }`}
-                          onClick={() => setCurrentImageIndex(index)}
-                        >
-                          <img
-                            src={getImageUrl(img)}
-                            alt={`Thumbnail ${index + 1}`}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).src = '/uploads/placeholder-avatar.jpg';
-                            }}
-                          />
-                        </button>
-                      ))}
+                               
+              {/* Image Thumbnails */}
+                  <div className="flex gap-1 overflow-x-auto pb-2">
+                    {thumbnailsToShow.map((img: MediaFile, index: number) => (
+                      <button
+                        key={`thumbnail-${img.id}-${start + index}`}
+                        className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all ${
+                          start + index === currentImageIndex 
+                            ? 'border-purple-400 ring-1 ring-purple-400' 
+                            : 'border-transparent hover:border-white/30'
+                        }`}
+                        onClick={() => setCurrentImageIndex(start + index)}
+                      >
+                        <img
+                          src={getImageUrl(img)}
+                          alt={`Thumbnail ${start + index + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/uploads/placeholder-avatar.jpg';
+                          }}
+                        />
+                      </button>
+                    ))}
                     </div>
-                  )}
                 </>
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400">
                   <div className="text-center">
-                    <Heart className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                    <p className="text-xl">Select a character to view their gallery</p>
-                    <p className="text-sm">Unlock more characters by leveling up!</p>
+                    <Heart className="w-14 h-14 mx-auto mb-3 opacity-50" />
+                    <p className="text-xs">Select a character to view their gallery</p>
+                    <p className="text-xs">Unlock more characters by leveling up!</p>
                   </div>
                 </div>
               )}
