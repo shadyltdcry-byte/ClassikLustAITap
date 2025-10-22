@@ -1,6 +1,6 @@
 /** 
  * routes.ts - Modular Game Routes Orchestrator
- * Last Edited: 2025-08-28 by Assistant
+ * Last Edited: 2025-10-22 by Assistant
  * 
  * Coordinates all modular route files for the Character Tap Game
  */
@@ -22,6 +22,7 @@ import { registerStatsRoutes } from './routes/statsRoutes.js';
 import { registerAdminRoutes } from './routes/adminRoutes.js';
 import { registerWheelRoutes } from './routes/wheelRoutes.js';
 import { registerVipRoutes } from './routes/vipRoutes.js';
+import { registerUpgradeRoutes } from './routes/upgradeRoutes.js';
 //import { registerDebuggerRoutes } from './routes/debuggerRoutes.js';
 
 // ... inside registerRoutes()
@@ -64,6 +65,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Game features
   registerWheelRoutes(app);
   registerVipRoutes(app);
+  registerUpgradeRoutes(app);
 
   console.log('📡[SYSTEM] Modular Routing Architecture initialized SUCCESSFULLY.');
 
