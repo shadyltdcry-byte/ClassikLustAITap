@@ -53,16 +53,16 @@ export function registerAdminRoutes(app: Express) {
         {
           id: 'level_2',
           level: 2,
-          lpRequired: 1000,
+          lpRequired: 100,
           description: 'Unlock basic character creation',
-          unlockRewards: ['Character Gallery', 'Basic Customization'],
-          functions: ['character_creation'],
+          unlockRewards: ['Lust Points'],
+          functions: ['lust_points'],
           upgradeRequirements: [{ upgradeId: 'lp_hour_1', requiredLevel: 2 }]
         },
         {
           id: 'level_3',
           level: 3,
-          lpRequired: 2500,
+          lpRequired: 250,
           description: 'Unlock Wheel of Fortune',
           unlockRewards: ['Wheel Game', 'Spin Rewards'],
           functions: ['wheel_game'],
@@ -71,7 +71,7 @@ export function registerAdminRoutes(app: Express) {
         {
           id: 'level_4',
           level: 4,
-          lpRequired: 5000,
+          lpRequired: 500,
           description: 'Unlock Booster System',
           unlockRewards: ['Boosters', 'Temporary Upgrades'],
           functions: ['booster_system'],
@@ -129,36 +129,36 @@ export function registerAdminRoutes(app: Express) {
           name: 'Dexterity Lv. 1',
           description: 'Increase LP per tap',
           category: 'lpPerTap',
-          baseCost: 2500,
-          baseEffect: 1,
-          costMultiplier: 1.5,
-          effectMultiplier: 1.2,
-          maxLevel: 10,
-          levelRequirement: 1
+          basecost: 250,
+          baseeffect: 1,
+          costmultiplier: 1.5,
+          effectmultiplier: 1.2,
+          maxlevel: 10,
+          levelrequirement: 1
         },
         {
           id: 'lp_hour_1',
           name: 'Intellect Lv. 1',
           description: 'Increase LP per hour',
           category: 'lpPerHour',
-          baseCost: 1500,
-          baseEffect: 150,
-          costMultiplier: 1.3,
-          effectMultiplier: 1.15,
-          maxLevel: 20,
-          levelRequirement: 1
+          basecost: 150,
+          baseeffect: 150,
+          costmultiplier: 1.3,
+          effectmultiplier: 1.15,
+          maxlevel: 20,
+          levelrequirement: 1
         },
         {
           id: 'energy_1',
           name: 'Book Smarts Lv. 1',
           description: 'Increase maximum energy',
           category: 'energy',
-          baseCost: 1500,
-          baseEffect: 100,
-          costMultiplier: 1.4,
-          effectMultiplier: 1.1,
-          maxLevel: 15,
-          levelRequirement: 1
+          basecost: 150,
+          baseeffect: 100,
+          costmultiplier: 1.4,
+          effectmultiplier: 1.1,
+          maxlevel: 15,
+          levelrequirement: 1
         }
       ];
       res.json(adminUpgrades);
@@ -363,12 +363,6 @@ export function registerAdminRoutes(app: Express) {
   app.post('/api/admin/seed-achievements', async (req: Request, res: Response) => {
     try {
       // Mock seeding achievements
-      const seededAchievements = [
-        { id: 1, name: 'First Tap', description: 'Tap for the first time', reward: '10 LP' },
-        { id: 2, name: 'Hundred Taps', description: 'Tap 100 times', reward: '100 LP' },
-        { id: 3, name: 'Chat Master', description: 'Send 50 messages', reward: '5 Gems' },
-        { id: 4, name: 'Level Up', description: 'Reach level 5', reward: '500 LP' }
-      ];
 
       console.log('Seeded default achievements');
       res.json(createSuccessResponse({
@@ -514,7 +508,7 @@ export function registerAdminRoutes(app: Express) {
       // Build update object with lowercase column names
       const dbUpdates: any = {};
       
-      if (updates.characterId !== undefined) dbUpdates.characterId = updates.characterId;
+      if (updates.characterid !== undefined) dbUpdates.characterid = updates.characterid;
       if (updates.fileName !== undefined) dbUpdates.filename = updates.fileName;
       if (updates.filePath !== undefined) dbUpdates.filepath = updates.filePath;
       if (updates.fileType !== undefined) dbUpdates.filetype = updates.fileType;
@@ -546,7 +540,7 @@ export function registerAdminRoutes(app: Express) {
       // Map response to camelCase
       const mappedData = {
         id: data.id,
-        characterId: data.characterId,
+        characterid: data.characterid,
         fileName: data.filename,
         filePath: data.filepath,
         fileType: data.filetype,
@@ -611,7 +605,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       // Get real orphaned files (files not assigned to any character)
       const allMedia = await storage.getAllMedia();
-      const orphanedFiles = allMedia.filter((media: any) => !media.characterId);
+      const orphanedFiles = allMedia.filter((media: any) => !media.characterid);
       res.json(orphanedFiles);
     } catch (error) {
       console.error('Error fetching orphaned media:', error);
@@ -681,8 +675,6 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { playerId } = req.params;
 
-      // Mock level up for now
-      console.log('Admin level up for player:', playerId);
 
       res.json(createSuccessResponse({
         message: 'Player leveled up successfully',
@@ -731,7 +723,8 @@ export function registerAdminRoutes(app: Express) {
           isnsfw: characterData.isNsfw || false,
           isvip: characterData.isVip || false,
           isevent: characterData.isEvent || false,
-          isenabled: true,
+          enabledforchat: characterData.enabledForChat || true,
+          randomsendchance: characterData.randomSendChance || 1,
           likes: characterData.likes,
           dislikes: characterData.dislikes,
           responsetimemin: characterData.responseTimeMin || 1,
@@ -773,6 +766,8 @@ export function registerAdminRoutes(app: Express) {
           isnsfw: updates.isNsfw,
           isvip: updates.isVip,
           isevent: updates.isEvent,
+          enabledforchat: updates.enabledForChat,
+          randomsendchance: updates.randomSendChance,
           likes: updates.likes,
           dislikes: updates.dislikes,
           responsetimemin: updates.responseTimeMin,

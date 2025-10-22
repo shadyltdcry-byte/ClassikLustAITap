@@ -106,7 +106,6 @@ export default function AdminGameplayPanel() {
               <Button variant="ghost" onClick={() => setShowLevelUp(false)}>×</Button>
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <LevelUp />
               <LevelManagement />
             </div>
           </div>
@@ -153,7 +152,6 @@ export default function AdminGameplayPanel() {
               <Button variant="ghost" onClick={() => setShowAchievements(false)}>×</Button>
             </div>
             <div className="overflow-y-auto max-h-[calc(90vh-80px)]">
-              <Achievements />
               <AchievementManagement />
             </div>
           </div>

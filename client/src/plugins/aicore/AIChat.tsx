@@ -40,6 +40,7 @@ interface Character {
   level: number;
   isNsfw: boolean;
   isVip: boolean;
+  isEvent: boolean;
   levelRequirement: number;
   customTriggers: unknown;
   createdAt: Date;
@@ -47,7 +48,7 @@ interface Character {
 
 interface AIChatProps {
   userId?: string;
-  selectedCharacterId?: string;
+  selectedCharacterid?: string;
 }
 
 const MOODS = [
@@ -68,7 +69,7 @@ const QUICK_RESPONSES = [
   "Want to play a game?",
 ];
 
-export default function AIChat({ userId: propUserId, selectedCharacterId }: AIChatProps) {
+export default function AIChat({ userId: propUserId, selectedCharacterid }: AIChatProps) {
   const userId = propUserId;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -88,17 +89,17 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
       const response = await apiRequest("GET", `/api/character/selected/${userId}`);
       return response.json();
     },
-    enabled: !selectedCharacterId,
+    enabled: !selectedCharacterid,
   });
 
   // Fetch specific character if provided
   const { data: specificCharacter } = useQuery({
-    queryKey: ["/api/character", selectedCharacterId],
+    queryKey: ["/api/character", selectedCharacterid],
     queryFn: async () => {
-      const response = await apiRequest("GET", `/api/character/${selectedCharacterId}`);
+      const response = await apiRequest("GET", `/api/character/${selectedCharacterid}`);
       return response.json();
     },
-    enabled: !!selectedCharacterId,
+    enabled: !!selectedCharacterid,
   });
 
   const character = specificCharacter || selectedCharacter;
@@ -310,7 +311,7 @@ export default function AIChat({ userId: propUserId, selectedCharacterId }: AICh
           currentMood: characterMood,
           conversationHistory,
           userId: userId,
-          characterId: character?.id || "unknown"
+          characterid: character?.id || "unknown"
         });
         
         if (!response.ok) {

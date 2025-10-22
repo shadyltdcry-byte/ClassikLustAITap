@@ -6,7 +6,7 @@ interface ChatMessage {
   message: string;
   senderType: 'user' | 'assistant';
   timestamp: string;
-  characterId: string;
+  characterid: string;
 }
 
 export function useChatNotifications(userId: string | null) {

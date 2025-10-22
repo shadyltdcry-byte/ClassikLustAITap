@@ -84,12 +84,12 @@ export const upgrades = pgTable("upgrades", {
   name: text("name").notNull(),
   description: text("description"),
   category: text("category").notNull(), // lpPerHour, energy, lpPerTap
-  baseCost: integer("baseCost").notNull(),
-  baseEffect: real("baseEffect").notNull(),
-  costMultiplier: real("costMultiplier").notNull().default(1.3),
-  effectMultiplier: real("effectMultiplier").notNull().default(1.15),
-  maxLevel: integer("maxLevel"),
-  levelRequirement: integer("levelRequirement").notNull().default(1),
+  basecost: integer("basecost").notNull(),
+  baseeffect: real("baseeffect").notNull(),
+  costmultiplier: real("costmultiplier").notNull().default(1.3),
+  effectmultiplier: real("effectmultiplier").notNull().default(1.15),
+  maxlevel: integer("maxlevel"),
+  levelrequirement: integer("levelrequirement").notNull().default(1),
 });
 
 export const userUpgrades = pgTable("userUpgrades", {

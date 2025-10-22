@@ -56,19 +56,19 @@ const getIcon = (id: string) => {
   }
 };
 
-const calculateCost = (baseCost: number, level: number): number => {
+const calculateCost = (basecost: number, level: number): number => {
   // Cap the level to prevent exponential explosion
-  const cappedLevel = Math.min(level, 50);
+  const cappedlevel = Math.min(level, 50);
   // Use a more reasonable scaling factor
-  return Math.floor(baseCost * Math.pow(1.12, cappedLevel));
+  return Math.floor(basecost * Math.pow(1.12, cappedlevel));
 };
 
-const calculateHourlyBonus = (baseBonus: number, level: number): number => {
-  return Math.floor(baseBonus + (baseBonus * 0.1 * level));
+const calculateHourlyBonus = (basebonus: number, level: number): number => {
+  return Math.floor(basebonus + (basebonus * 0.1 * level));
 };
 
-const calculateTapBonus = (baseBonus: number, level: number): number => {
-  return Math.floor(baseBonus + (baseBonus * 0.1 * level));
+const calculateTapBonus = (basebonus: number, level: number): number => {
+  return Math.floor(basebonus + (basebonus * 0.1 * level));
 };
 
 export default function BoostersModal({ isOpen, onClose, user }: BoostersModalProps) {
@@ -76,11 +76,11 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
   const [newBooster, setNewBooster] = useState({
     name: "",
     description: "",
-    baseCost: 100,
-    hourlyBonus: 10,
-    tapBonus: 0,
-    maxLevel: 10,
-    requiredLevel: 1,
+    basecost: 100,
+    hourlybonus: 10,
+    tapbonus: 0,
+    maxlevel: 10,
+    requiredlevel: 1,
     icon: "zap"
   });
 
@@ -123,11 +123,11 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
       setNewBooster({
         name: "",
         description: "",
-        baseCost: 100,
-        hourlyBonus: 10,
-        tapBonus: 0,
-        maxLevel: 10,
-        requiredLevel: 1,
+        basecost: 100,
+        hourlybonus: 10,
+        tapbonus: 0,
+        maxlevel: 10,
+        requiredlevel: 1,
         icon: "zap"
       });
     },
@@ -152,12 +152,12 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
   });
 
   const canAfford = (booster: any) => {
-    const cost = calculateCost(booster.baseCost, booster.level);
+    const cost = calculateCost(booster.basecost, booster.level);
     return user?.points >= cost;
   };
 
-  const meetsRequirements = (booster: any) => {
-    return user?.level >= (booster.requiredLevel || 1);
+  const meetsrequirements = (booster: any) => {
+    return user?.level >= (booster.requiredlevel || 1);
   };
 
   const formatNumber = (num: number) => {
@@ -234,12 +234,12 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
 
                   {!isLoading && boosters.map((booster: any) => {
                     const Icon = getIcon(booster.id);
-                    const cost = calculateCost(booster.baseCost, booster.level || 0);
-                    const hourlyBonus = calculateHourlyBonus(booster.hourlyBonus, booster.level || 0);
-                    const tapBonus = calculateTapBonus(booster.tapBonus, booster.level || 0);
-                    const isMaxLevel = (booster.level || 0) >= (booster.maxLevel || 10);
+                    const cost = calculateCost(booster.basecost, booster.level || 0);
+                    const hourlybonus = calculateHourlyBonus(booster.hourlybonus, booster.level || 0);
+                    const tapbonus = calculateTapBonus(booster.tapbonus, booster.level || 0);
+                    const isMaxLevel = (booster.level || 0) >= (booster.maxlevel || 10);
                     const affordable = canAfford(booster);
-                    const meetsReqs = meetsRequirements(booster);
+                    const meetsReqs = meetsrequirements(booster);
 
                     return (
                       <Card
@@ -269,16 +269,16 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                           </div>
 
                           <div className="space-y-1 text-sm mb-3">
-                            {hourlyBonus > 0 && (
+                            {hourlybonus > 0 && (
                               <div className="flex justify-between">
                                 <span className="text-gray-300">LP per Hour:</span>
-                                <span className="text-green-400 font-bold">+{formatNumber(hourlyBonus)}</span>
+                                <span className="text-green-400 font-bold">+{formatNumber(hourlybonus)}</span>
                               </div>
                             )}
-                            {tapBonus > 0 && (
+                            {tapbonus > 0 && (
                               <div className="flex justify-between">
                                 <span className="text-gray-300">Tap Bonus:</span>
-                                <span className="text-blue-400 font-bold">+{formatNumber(tapBonus)}</span>
+                                <span className="text-blue-400 font-bold">+{formatNumber(tapbonus)}</span>
                               </div>
                             )}
                           </div>
@@ -305,7 +305,7 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                               </div>
                               {!meetsReqs && (
                                 <p className="text-xs text-red-400">
-                                  Requires Level {booster.requiredLevel || 1}
+                                  Requires Level {booster.requiredlevel || 1}
                                 </p>
                               )}
                             </div>
@@ -315,12 +315,12 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                           <div className="mt-3">
                             <div className="flex justify-between text-xs text-gray-400 mb-1">
                               <span>Progress</span>
-                              <span>{booster.level || 0}/{booster.maxLevel || 10}</span>
+                              <span>{booster.level || 0}/{booster.maxlevel || 10}</span>
                             </div>
                             <div className="w-full bg-gray-700 rounded-full h-2">
                               <div
                                 className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
-                                style={{ width: `${((booster.level || 0) / (booster.maxLevel || 10)) * 100}%` }}
+                                style={{ width: `${((booster.level || 0) / (booster.maxlevel || 10)) * 100}%` }}
                               />
                             </div>
                           </div>
@@ -383,8 +383,8 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                         <Input
                           id="base-cost"
                           type="number"
-                          value={newBooster.baseCost}
-                          onChange={(e) => setNewBooster({ ...newBooster, baseCost: parseInt(e.target.value) || 100 })}
+                          value={newBooster.basecost}
+                          onChange={(e) => setNewBooster({ ...newBooster, basecost: parseInt(e.target.value) || 100 })}
                         />
                       </div>
                       <div>
@@ -392,8 +392,8 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                         <Input
                           id="hourly-bonus"
                           type="number"
-                          value={newBooster.hourlyBonus}
-                          onChange={(e) => setNewBooster({ ...newBooster, hourlyBonus: parseInt(e.target.value) || 10 })}
+                          value={newBooster.hourlybonus}
+                          onChange={(e) => setNewBooster({ ...newBooster, hourlybonus: parseInt(e.target.value) || 10 })}
                         />
                       </div>
                       <div>
@@ -401,8 +401,8 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                         <Input
                           id="tap-bonus"
                           type="number"
-                          value={newBooster.tapBonus}
-                          onChange={(e) => setNewBooster({ ...newBooster, tapBonus: parseInt(e.target.value) || 0 })}
+                          value={newBooster.tapbonus}
+                          onChange={(e) => setNewBooster({ ...newBooster, tapbonus: parseInt(e.target.value) || 0 })}
                         />
                       </div>
                     </div>
@@ -413,8 +413,8 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                         <Input
                           id="max-level"
                           type="number"
-                          value={newBooster.maxLevel}
-                          onChange={(e) => setNewBooster({ ...newBooster, maxLevel: parseInt(e.target.value) || 10 })}
+                          value={newBooster.maxlevel}
+                          onChange={(e) => setNewBooster({ ...newBooster, maxlevel: parseInt(e.target.value) || 10 })}
                         />
                       </div>
                       <div>
@@ -422,8 +422,8 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                         <Input
                           id="required-level"
                           type="number"
-                          value={newBooster.requiredLevel}
-                          onChange={(e) => setNewBooster({ ...newBooster, requiredLevel: parseInt(e.target.value) || 1 })}
+                          value={newBooster.requiredlevel}
+                          onChange={(e) => setNewBooster({ ...newBooster, requiredlevel: parseInt(e.target.value) || 1 })}
                         />
                       </div>
                     </div>
@@ -456,7 +456,7 @@ export default function BoostersModal({ isOpen, onClose, user }: BoostersModalPr
                               <h4 className="font-semibold">{booster.name}</h4>
                               <p className="text-sm text-gray-400">{booster.description}</p>
                               <div className="text-xs text-gray-500 mt-1">
-                                Cost: {booster.baseCost} | Hourly: +{booster.hourlyBonus} | Max Lv: {booster.maxLevel}
+                                Cost: {booster.basecost} | Hourly: +{booster.hourlybonus} | Max Lv: {booster.maxlevel}
                               </div>
                             </div>
                             <Button

@@ -105,7 +105,7 @@ export function registerCharacterRoutes(app: Express) {
   });
 
   // Get media for specific character
-  app.get("/api/media/character/:characterId", async (req: Request, res: Response) => {
+  app.get("/api/media/character/:characterid", async (req: Request, res: Response) => {
     try {
       const { characterid } = req.params;
       const characterMedia = await storage.getMediaByCharacter(characterid);

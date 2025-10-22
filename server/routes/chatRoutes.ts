@@ -240,9 +240,9 @@ export function registerChatRoutes(app: Express) {
   });
 
   // Get chat messages - Using real database operations instead of mock data
-  app.get("/api/chat/:userId/:characterId", async (req: Request, res: Response) => {
+  app.get("/api/chat/:userId/:characterid", async (req: Request, res: Response) => {
     try {
-      const { userId, characterId } = req.params;
+      const { userId, characterid } = req.params;
       
       // Return empty chat messages - TODO: implement real chat storage
       res.json([]);
@@ -282,8 +282,8 @@ export function registerChatRoutes(app: Express) {
   });
 
   // Alternative chat endpoint
-  app.get("/api/chat/:userId/:characterId", (req: Request, res: Response) => {
-    const { userId, characterId } = req.params;
+  app.get("/api/chat/:userId/:characterid", (req: Request, res: Response) => {
+    const { userId, characterid } = req.params;
     
     // Mock conversation for now
     const mockConversation = [
@@ -311,9 +311,9 @@ export function registerChatRoutes(app: Express) {
   });
 
   // Save message to conversation history
-  app.post("/api/chat/:userId/:characterId", async (req: Request, res: Response) => {
+  app.post("/api/chat/:userId/:characterid", async (req: Request, res: Response) => {
     try {
-      const { userId, characterId } = req.params;
+      const { userId, characterid } = req.params;
       const { message, isFromUser, mood, type } = req.body;
       
       if (!isValidUserId(userId) && !userId.startsWith('guest_')) {
@@ -323,7 +323,7 @@ export function registerChatRoutes(app: Express) {
 
       const __dirname = path.dirname(new URL(import.meta.url).pathname);
       const playerFolder = path.join(__dirname, '..', '..', 'player-data', userId);
-      const conversationPath = path.join(playerFolder, `conversations_${characterId}.json`);
+      const conversationPath = path.join(playerFolder, `conversations_${characterid}.json`);
       
       // Ensure player folder exists
       if (!fs.existsSync(playerFolder)) {
@@ -352,7 +352,7 @@ export function registerChatRoutes(app: Express) {
       // Save back to file
       fs.writeFileSync(conversationPath, JSON.stringify(conversations, null, 2));
       
-      console.log(`💾 Message saved: ${userId} -> ${characterId}`);
+      console.log(`💾 Message saved: ${userId} -> ${characterid}`);
       
       res.json(createSuccessResponse({
         message: 'Message saved successfully',
@@ -368,9 +368,9 @@ export function registerChatRoutes(app: Express) {
   // Send message endpoint
   app.post("/api/chat/send", async (req: Request, res: Response) => {
     try {
-      const { userId, characterId, message } = req.body;
+      const { userId, characterid, message } = req.body;
       
-      if (!userId || !characterId || !message) {
+      if (!userId || !characterid || !message) {
         return res.status(400).json(createErrorResponse('Missing required fields'));
       }
       
@@ -402,14 +402,14 @@ export function registerChatRoutes(app: Express) {
   // Mistral AI chat endpoint with conversation saving
   app.post("/api/mistral/chat", async (req: Request, res: Response) => {
     try {
-      const { message, characterPersonality, characterMood, userId, characterId } = req.body;
+      const { message, characterPersonality, characterMood, userId, characterid } = req.body;
       
       if (!message) {
         return res.status(400).json(createErrorResponse('Message is required'));
       }
 
-      if (!userId || !characterId) {
-        console.warn('Missing userId or characterId - conversation will not be saved');
+      if (!userId || !characterid) {
+        console.warn('Missing userId or characterid - conversation will not be saved');
       }
       
       // Enhanced AI response with personality and mood
@@ -426,10 +426,10 @@ export function registerChatRoutes(app: Express) {
 
       // Check for random picture sending
       let imageToSend = null;
-      if (characterId) {
+      if (characterid) {
         try {
           // Get all chat-enabled media for this character
-          const allMedia = await storage.getMediaByCharacter(characterId);
+          const allMedia = await storage.getMediaByCharacter(characterid);
           const chatEnabledMedia = allMedia.filter((m: any) => 
             m.enabledForChat === true || m.enabledForChat === 'true'
           );
@@ -443,11 +443,11 @@ export function registerChatRoutes(app: Express) {
               if (roll < sendChance) {
                 imageToSend = {
                   id: media.id,
-                  url: media.filePath || media.filepath,
+                  url: media.filePath || media.filePath,
                   mood: media.mood,
-                  isNsfw: media.isNsfw || media.isnsfw
+                  isNsfw: media.isNsfw || media.isNsfw
                 };
-                console.log(`📸 AI sending random image: ${media.fileName || media.filename} (${sendChance}% chance, rolled ${roll.toFixed(2)})`);
+                console.log(`📸 AI sending random image: ${media.fileName || media.fileName} (${sendChance}% chance, rolled ${roll.toFixed(2)})`);
                 break; // Send only one image per response
               }
             }
@@ -459,11 +459,11 @@ export function registerChatRoutes(app: Express) {
       }
 
       // Save conversation to JSON files for history persistence
-      if (userId && characterId && isValidUserId(userId)) {
+      if (userId && characterid && isValidUserId(userId)) {
         try {
           const __dirname = path.dirname(new URL(import.meta.url).pathname);
           const playerFolder = path.join(__dirname, '..', '..', 'player-data', userId);
-          const conversationPath = path.join(playerFolder, `conversations_${characterId}.json`);
+          const conversationPath = path.join(playerFolder, `conversations_${characterid}.json`);
           
           // Ensure player folder exists
           if (!fs.existsSync(playerFolder)) {
@@ -504,7 +504,7 @@ export function registerChatRoutes(app: Express) {
           // Save back to file
           fs.writeFileSync(conversationPath, JSON.stringify(conversations, null, 2));
           
-          console.log(`💾 Conversation saved: ${userId} <-> ${characterId} (${conversations.length} total messages)`);
+          console.log(`💾 Conversation saved: ${userId} <-> ${characterid} (${conversations.length} total messages)`);
           
         } catch (saveError) {
           console.error('Failed to save conversation:', saveError);

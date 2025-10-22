@@ -11,18 +11,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Plus, Edit3, Trash2, TrendingUp } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { apiRequest } from '@/lib/queryClient';
+import { keysToCamel } from '@/utils/helperFunctions';
 
 interface Upgrade {
   id?: string;
   name: string;
   description?: string;
   category: string;
-  baseCost: number;
-  baseEffect: number;
-  costMultiplier: number;
-  effectMultiplier: number;
-  maxLevel?: number;
-  levelRequirement: number;
+  basecost: number;
+  baseeffect: number;
+  costmultiplier: number;
+  effectmultiplier: number;
+  maxlevel?: number;
+  levelrequirement: number;
 }
 
 const upgradeCategories = [
@@ -38,20 +39,22 @@ export default function UpgradeManagement() {
     name: '',
     description: '',
     category: 'lpPerHour',
-    baseCost: 100,
-    baseEffect: 1,
-    costMultiplier: 1.3,
-    effectMultiplier: 1.15,
-    maxLevel: 10,
-    levelRequirement: 1
+    basecost: 100,
+    baseeffect: 1,
+    costmultiplier: 1.3,
+    effectmultiplier: 1.15,
+    maxlevel: 10,
+    levelrequirement: 1
   });
 
   const queryClient = useQueryClient();
 
-  const { data: upgrades = [], isLoading } = useQuery({
+  const { data: rawUpgrades = [], isLoading } = useQuery({
     queryKey: ['/api/admin/upgrades'],
   });
 
+ const upgrades: Upgrade[] = rawUpgrades ? keysToCamel(rawUpgrades) : [];
+  
   const createMutation = useMutation({
     mutationFn: async (data: Upgrade) => {
       const response = await apiRequest('POST', '/api/admin/upgrades', data);
@@ -106,12 +109,12 @@ export default function UpgradeManagement() {
       name: '',
       description: '',
       category: 'lpPerHour',
-      baseCost: 100,
-      baseEffect: 1,
-      costMultiplier: 1.3,
-      effectMultiplier: 1.15,
-      maxLevel: 10,
-      levelRequirement: 1
+      basecost: 100,
+      baseeffect: 1,
+      costmultiplier: 1.3,
+      effectmultiplier: 1.15,
+      maxlevel: 10,
+      levelrequirement: 1
     });
     setEditingUpgrade(null);
   };
@@ -169,8 +172,8 @@ export default function UpgradeManagement() {
                     <div>
                       <h4 className="text-white font-medium">{upgrade.name}</h4>
                       <p className="text-gray-300">Category: {getCategoryLabel(upgrade.category)}</p>
-                      <p className="text-gray-300">Base Cost: {upgrade.baseCost} LP | Effect: +{upgrade.baseEffect}</p>
-                      <p className="text-gray-300">Level Required: {upgrade.levelRequirement}</p>
+                      <p className="text-gray-300">Base Cost: {upgrade.basecost} LP | Effect: +{upgrade.baseeffect}</p>
+                      <p className="text-gray-300">Level Required: {upgrade.levelrequirement}</p>
                       {upgrade.description && (
                         <p className="text-gray-400 text-sm mt-1">{upgrade.description}</p>
                       )}
@@ -234,24 +237,24 @@ export default function UpgradeManagement() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label htmlFor="baseCost">Base Cost</Label>
+                  <Label htmlFor="basecost">Base Cost</Label>
                   <Input
-                    id="baseCost"
+                    id="basecost"
                     type="number"
-                    value={formData.baseCost}
-                    onChange={(e) => setFormData({...formData, baseCost: parseFloat(e.target.value)})}
+                    value={formData.basecost}
+                    onChange={(e) => setFormData({...formData, basecost: parseFloat(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-base-cost"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="baseEffect">Base Effect</Label>
+                  <Label htmlFor="baseeffect">Base Effect</Label>
                   <Input
-                    id="baseEffect"
+                    id="baseeffect"
                     type="number"
                     step="0.1"
-                    value={formData.baseEffect}
-                    onChange={(e) => setFormData({...formData, baseEffect: parseFloat(e.target.value)})}
+                    value={formData.baseeffect}
+                    onChange={(e) => setFormData({...formData, baseeffect: parseFloat(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-base-effect"
                   />
@@ -259,25 +262,25 @@ export default function UpgradeManagement() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label htmlFor="costMultiplier">Cost Multiplier</Label>
+                  <Label htmlFor="costumltiplier">Cost Multiplier</Label>
                   <Input
-                    id="costMultiplier"
+                    id="costmultiplier"
                     type="number"
                     step="0.1"
-                    value={formData.costMultiplier}
-                    onChange={(e) => setFormData({...formData, costMultiplier: parseFloat(e.target.value)})}
+                    value={formData.costmultiplier}
+                    onChange={(e) => setFormData({...formData, costmultiplier: parseFloat(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-cost-multiplier"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="effectMultiplier">Effect Multiplier</Label>
+                  <Label htmlFor="effectmultiplier">Effect Multiplier</Label>
                   <Input
-                    id="effectMultiplier"
+                    id="effectmultiplier"
                     type="number"
                     step="0.1"
-                    value={formData.effectMultiplier}
-                    onChange={(e) => setFormData({...formData, effectMultiplier: parseFloat(e.target.value)})}
+                    value={formData.effectmultiplier}
+                    onChange={(e) => setFormData({...formData, effectmultiplier: parseFloat(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-effect-multiplier"
                   />
@@ -285,23 +288,23 @@ export default function UpgradeManagement() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label htmlFor="levelRequirement">Level Required</Label>
+                  <Label htmlFor="levelrequirement">Level Required</Label>
                   <Input
-                    id="levelRequirement"
+                    id="levelrequirement"
                     type="number"
-                    value={formData.levelRequirement}
-                    onChange={(e) => setFormData({...formData, levelRequirement: parseInt(e.target.value)})}
+                    value={formData.levelrequirement}
+                    onChange={(e) => setFormData({...formData, levelrequirement: parseInt(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-level-requirement"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="maxLevel">Max Level</Label>
+                  <Label htmlFor="maxlevel">Max Level</Label>
                   <Input
-                    id="maxLevel"
+                    id="maxlevel"
                     type="number"
-                    value={formData.maxLevel || ''}
-                    onChange={(e) => setFormData({...formData, maxLevel: e.target.value ? parseInt(e.target.value) : undefined})}
+                    value={formData.maxlevel || ''}
+                    onChange={(e) => setFormData({...formData, maxlevel: e.target.value ? parseInt(e.target.value) : undefined})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-max-level"
                   />

@@ -64,6 +64,7 @@ export default function ImageManager({
   const [formFields, setFormFields] = useState({
     pose: "",
     levelRequirement: 1,
+    enabledForChat: false,
     randomSendChance: 5,
     isNsfw: false,
     isVip: false,
@@ -116,6 +117,7 @@ export default function ImageManager({
         imageType,
         pose: formFields.pose,
         levelRequirement: formFields.levelRequirement,
+        enabledForChat: formFields.enabledForChat,
         randomSendChance: formFields.randomSendChance,
         isNsfw: formFields.isNsfw,
         isVip: formFields.isVip,
@@ -450,7 +452,7 @@ export default function ImageManager({
                 checked={formFields.isNsfw}
                 onCheckedChange={(checked) => setFormFields(prev => ({ ...prev, isNsfw: checked }))}
               />
-              <Label className="text-white">NSFW</Label>
+              <Label className="text-white">🔞NSFW 18+</Label>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -458,7 +460,7 @@ export default function ImageManager({
                 checked={formFields.isVip}
                 onCheckedChange={(checked) => setFormFields(prev => ({ ...prev, isVip: checked }))}
               />
-              <Label className="text-white">VIP Only</Label>
+              <Label className="text-white">💎VIP Only</Label>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -466,7 +468,7 @@ export default function ImageManager({
                 checked={formFields.isEvent}
                 onCheckedChange={(checked) => setFormFields(prev => ({ ...prev, isEvent: checked }))}
               />
-              <Label className="text-white">⭐ Event</Label>
+              <Label className="text-white">⭐Event Only</Label>
             </div>
 
             <div className="flex items-center space-x-2">
@@ -626,7 +628,7 @@ export default function ImageManager({
                       )}
                       {file.isNsfw && (
                         <Badge variant="destructive" className="text-xs">
-                          NSFW
+                          NSFW 18+
                         </Badge>
                       )}
                       {file.isVip && (
@@ -643,8 +645,8 @@ export default function ImageManager({
 
                     {/* Metadata */}
                     <div className="text-gray-400 text-xs space-y-1">
-                      {file.characterId ? (
-                        <div>📷 {characters.find((c: any) => c.id === file.characterId)?.name || "Unknown"}</div>
+                      {file.characterid ? (
+                        <div>📷 {characters.find((c: any) => c.id === file.characterid)?.name || "Unknown"}</div>
                       ) : (
                         <div>📷 Unassigned</div>
                       )}
@@ -778,8 +780,8 @@ export default function ImageManager({
               <div>
                 <Label className="text-white">Assign to Character</Label>
                 <Select
-                  value={editingFile.characterId || ""}
-                  onValueChange={(value) => setEditingFile({ ...editingFile, characterId: value })}
+                  value={editingFile.characterid || ""}
+                  onValueChange={(value) => setEditingFile({ ...editingFile, characterid: value })}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character" />
@@ -813,7 +815,7 @@ export default function ImageManager({
                     checked={editingFile.isNsfw || false}
                     onCheckedChange={(checked) => setEditingFile({ ...editingFile, isNsfw: checked })}
                   />
-                  <Label className="text-white">NSFW</Label>
+                  <Label className="text-white">NSFW 18+</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
@@ -821,6 +823,13 @@ export default function ImageManager({
                     onCheckedChange={(checked) => setEditingFile({ ...editingFile, isVip: checked })}
                   />
                   <Label className="text-white">VIP Only</Label>
+                </div>
+                         <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={editingFile.isEvent || false}
+                    onCheckedChange={(checked) => setEditingFile({ ...editingFile, isEvent: checked })}
+                  />
+                  <Label className="text-white">Event Only</Label>
                 </div>
               </div>
 

@@ -36,7 +36,7 @@ interface GameSettings {
 }
 
 function toDBColumn(str: string): string {
-  if (str === "characterId") return "characterid";
+  if (str === "characterid") return "characterid";
   return str.toLowerCase();
 }
 
@@ -623,7 +623,7 @@ export class SupabaseStorage implements IStorage {
       .eq('userId', userId);
 
     if (characterid) {
-      query = query.eq('characterId', characterid);
+      query = query.eq('characterid', characterid);
     }
 
     const { error } = await query;
@@ -663,6 +663,7 @@ export class SupabaseStorage implements IStorage {
       id: "default",
       nsfwEnabled: false,
       vipEnabled: false,
+      eventEnabled: false,
       autoSave: true,
       soundEnabled: true,
       notifications: true
@@ -775,8 +776,8 @@ export class SupabaseStorage implements IStorage {
       mood: file.mood,
       pose: file.pose,
       animationSequence: file.animationSequence,
-      isNsfw: file.isNSFW || false,
-      isVip: file.isVIP || false,
+      isNsfw: file.isNsfw || false,
+      isVip: file.isVip || false,
       isEvent: file.isEvent || false,
       randomSendChance: file.randomSendChance,
       requiredLevel: file.requiredLevel,

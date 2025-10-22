@@ -173,8 +173,8 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
       errorLogBufferRef.current.push(newLog);
       
       // Auto-save when buffer reaches 10 errors
-      if (autoSaveEnabled && errorLogBufferRef.current.length >= 10) {
-        saveLogsToFile(errorLogBufferRef.current, 'auto');
+      if (autoSaveEnabled && errorLogBufferRef.current.length >= 15) {
+        saveLogsToFile(errorLogBufferRef.current, 'manual');
         errorLogBufferRef.current = [];
       }
     }

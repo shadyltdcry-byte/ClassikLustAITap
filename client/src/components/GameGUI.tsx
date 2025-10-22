@@ -500,9 +500,9 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
                 queryClient.invalidateQueries({ queryKey: ['/api/characters'] });
               }}
               userId={userId || playerData?.id || ''}
-              currentCharacterId={selectedCharacter?.id !== 'no-character-selected' ? selectedCharacter?.id : undefined}
-              onCharacterSelected={(characterId) => {
-                console.log('Character selected:', characterId, 'for user:', userId);
+              currentCharacterid={selectedCharacter?.id !== 'no-character-selected' ? selectedCharacter?.id : undefined}
+              onCharacterSelected={(characterid) => {
+                console.log('Character selected:', characterid, 'for user:', userId);
                 // Invalidate all related queries to refresh character data
                 queryClient.invalidateQueries({ queryKey: ['/api/character/selected'] });
                 queryClient.invalidateQueries({ queryKey: ['/api/player'] });

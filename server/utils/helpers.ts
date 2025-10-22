@@ -125,15 +125,33 @@ export function isValidMediaType(mimetype: string): boolean {
   return allowedTypes.includes(mimetype);
 }
 
+// Converts snake_case to camelCase
+export function snakeToCamel(str: string) {
+  return str.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+}
+
+// Recursively maps object keys from snake_case to camelCase
+export function keysToCamel<T>(obj: T): T {
+  if (Array.isArray(obj)) {
+    return obj.map(v => keysToCamel(v)) as any;
+  } else if (obj !== null && obj.constructor === Object) {
+    return Object.fromEntries(
+      Object.entries(obj).map(([k, v]) => [snakeToCamel(k), keysToCamel(v)])
+    ) as T;
+  }
+  return obj;
+}
+
 // Character helpers
 export function getDefaultCharacter() {
   return {
     id: "550e8400-e29b-41d4-a716-446655440002",
-    name: "Default Character",
+    name: "Luna",
     personality: "friendly",
     mood: "happy",
     isEnabled: true,
     nsfwEnabled: false,
-    vipRequired: false
+    vipRequired: false,
+    eventEnabled: false,
   };
 }

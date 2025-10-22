@@ -805,6 +805,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                 <div>VIP: {selectedFile.isVip ? 'Yes' : 'No'}</div>
                 <div>NSFW: {selectedFile.isNsfw ? 'Yes' : 'No'}</div>
                 <div>Event: {selectedFile.isEvent ? 'Yes' : 'No'}</div>
+                <div>Chat Enabled: {selectedFile.enabledForChat ? 'Yes' : 'No'}</div>
               </div>
             </CardContent>
           </Card>
@@ -848,22 +849,22 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     checked={editingFile.isVip || false}
                     onCheckedChange={(checked) => setEditingFile({...editingFile, isVip: checked})}
                   />
-                  <Label className="text-white">VIP Content</Label>
+                  <Label className="text-white">💎VIP Content</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Switch
                     checked={editingFile.isNsfw || false}
                     onCheckedChange={(checked) => setEditingFile({...editingFile, isNsfw: checked})}
                   />
-                  <Label className="text-white">NSFW Content</Label>
+                  <Label className="text-white">🔞NSFW Content</Label>
                 </div>
                  <div className="flex items-center space-x-2">
                   <Switch
                     checked={editingFile.isEvent || false}
                     onCheckedChange={(checked) => setEditingFile({...editingFile, isEvent: checked})}
                   />
-                  <Label className="text-white">Event Content</Label>
-                </div>
+                  <Label className="text-white">⭐Event Content</Label>
+                </div>    
               </div>
 
               <div className="space-y-4">
@@ -874,7 +875,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                       onCheckedChange={(checked) => setEditingFile({...editingFile, enabledForChat: checked})}
                       className="data-[state=checked]:bg-purple-600"
                     />
-                    <Label className="text-white">Enable for AI Chat</Label>
+                    <Label className="text-white">💬Chat Sending</Label>
                   </div>
                 </div>
                 <p className="text-xs text-gray-400">Allow AI to send this image during conversations</p>
@@ -894,7 +895,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                     }
                     className="bg-gray-700 border-gray-600 text-white mt-2"
                   />
-                  <p className="text-xs text-gray-400 mt-1">Probability (0-100%) that AI will send this image in chat</p>
+                  <p className="text-xs text-gray-400 mt-1">Chat send chance probability (0-100%)</p>
                 </div>
               </div>
 

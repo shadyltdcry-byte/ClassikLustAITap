@@ -24,7 +24,7 @@ interface WheelPrize {
   min: number;
   max: number;
   probability: number;
-  characterId?: string;
+  characterid?: string;
   upgradeId?: string;
   isSpecial?: boolean;
 }
@@ -213,7 +213,7 @@ export default function WheelPrizeManager({ isOpen, onClose }: WheelPrizeManager
                 {newPrize.type === 'character' && (
                   <div>
                     <Label className="text-slate-300">Character</Label>
-                    <Select value={newPrize.characterId || ""} onValueChange={(value) => setNewPrize(prev => ({ ...prev, characterId: value }))}>
+                    <Select value={newPrize.characterid || ""} onValueChange={(value) => setNewPrize(prev => ({ ...prev, characterid: value }))}>
                       <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
                         <SelectValue placeholder="Select character" />
                       </SelectTrigger>
