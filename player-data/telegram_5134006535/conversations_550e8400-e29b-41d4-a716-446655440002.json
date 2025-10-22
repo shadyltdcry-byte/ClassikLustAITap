@@ -3362,5 +3362,21 @@
     "timestamp": "2025-10-22T16:48:22.447Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761152726806-72cawpvp1",
+    "content": "🌙 🚨 URGENT! BABY! There's a critical issue with System! Uncaught Exception: listen EADDRINUSE: address already in use 0.0.0.0:5000",
+    "sender": "character",
+    "timestamp": "2025-10-22T17:05:26.806Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761152747334-1rglbziix",
+    "content": "🌙 Hey baby, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-22T17:05:47.334Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
