@@ -1,0 +1,218 @@
+import type { Express, Request, Response } from "express";
+import path from 'path';
+import fs from 'fs';
+import multer from 'multer';
+import crypto from 'crypto';
+import { SupabaseStorage } from '../../shared/SupabaseStorage';
+import {
+  createSuccessResponse,
+  createErrorResponse,
+  isValidMediaType,
+  getFileExtension
+} from '../utils/helpers';
+
+// Initialize storage instance
+const storage = SupabaseStorage.getInstance();
+
+// Configure multer for file uploads
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      const __dirname = path.dirname(new URL(import.meta.url).pathname);
+      const uploadsDir = path.join(__dirname, '../../public/uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      const fileName = `uploaded_${Date.now()}_${Math.random().toString(36).substr(2, 9)}${ext}`;
+      cb(null, fileName);
+    }
+  }),
+  limits: { fileSize: 50 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    cb(null, isValidMediaType(file.mimetype));
+  }
+});
+
+export function registerAdminRoutes(app: Express) {
+
+  // Admin Upgrades - FIXED to use SupabaseStorage
+  app.get('/api/admin/upgrades', async (req: Request, res: Response) => {
+    try {
+      const upgrades = await storage.getAllUpgrades();
+      res.json(upgrades);
+    } catch (error) {
+      console.error('Error fetching admin upgrades:', error);
+      res.status(500).json(createErrorResponse('Failed to fetch upgrades'));
+    }
+  });
+
+  app.post('/api/admin/upgrades', async (req: Request, res: Response) => {
+    try {
+      const upgradeData = req.body;
+      const newUpgrade = await storage.createUpgrade(upgradeData);
+      res.json(createSuccessResponse(newUpgrade));
+    } catch (error) {
+      console.error('Error creating upgrade:', error);
+      res.status(500).json(createErrorResponse('Failed to create upgrade'));
+    }
+  });
+
+  app.put('/api/admin/upgrades/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updatedUpgrade = await storage.updateUpgrade(id, updates);
+      res.json(createSuccessResponse(updatedUpgrade));
+    } catch (error) {
+      console.error('Error updating upgrade:', error);
+      res.status(500).json(createErrorResponse('Failed to update upgrade'));
+    }
+  });
+
+  app.delete('/api/admin/upgrades/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteUpgrade(id);
+      res.json(createSuccessResponse({ message: 'Upgrade deleted successfully' }));
+    } catch (error) {
+      console.error('Error deleting upgrade:', error);
+      res.status(500).json(createErrorResponse('Failed to delete upgrade'));
+    }
+  });
+
+  // Admin Characters
+  app.get('/api/admin/characters', async (req: Request, res: Response) => {
+    try {
+      const characters = await storage.getAllCharacters();
+      res.json(characters);
+    } catch (error) {
+      console.error('Error fetching characters:', error);
+      res.status(500).json(createErrorResponse('Failed to fetch characters'));
+    }
+  });
+
+  app.post('/api/admin/characters', async (req: Request, res: Response) => {
+    try {
+      const characterData = req.body;
+      const newCharacter = await storage.createCharacter(characterData);
+      res.json(createSuccessResponse(newCharacter));
+    } catch (error) {
+      console.error('Error creating character:', error);
+      res.status(500).json(createErrorResponse('Failed to create character'));
+    }
+  });
+
+  app.put('/api/admin/characters/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updatedCharacter = await storage.updateCharacter(id, updates);
+      res.json(createSuccessResponse(updatedCharacter));
+    } catch (error) {
+      console.error('Error updating character:', error);
+      res.status(500).json(createErrorResponse('Failed to update character'));
+    }
+  });
+
+  app.delete('/api/admin/characters/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteCharacter(id);
+      res.json(createSuccessResponse({ message: 'Character deleted successfully' }));
+    } catch (error) {
+      console.error('Error deleting character:', error);
+      res.status(500).json(createErrorResponse('Failed to delete character'));
+    }
+  });
+
+  // Admin Media
+  app.get('/api/media', async (req: Request, res: Response) => {
+    try {
+      const mediaFiles = await storage.getAllMedia();
+      res.json(mediaFiles || []);
+    } catch (error) {
+      console.error('Error fetching media:', error);
+      res.json([]);
+    }
+  });
+
+  app.post('/api/media/upload', upload.array('files'), async (req: Request, res: Response) => {
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json(createErrorResponse('No files uploaded'));
+      }
+      const uploadedFiles = [];
+      for (const file of files) {
+        const mediaEntry = {
+          mood: null,
+          isNsfw: req.body.isNsfw === 'true' || false,
+          isVip: req.body.isVip === 'true' || false,
+          isEvent: req.body.isEvent === 'true' || false,
+          characterid: req.body.characterid || null,
+          fileName: file.originalname,
+          filePath: `/uploads/${file.filename}`,
+          fileType: file.mimetype?.startsWith('image/') ? 'image' : file.mimetype?.startsWith('video/') ? 'video' : 'file',
+          pose: null,
+          animationSequence: null,
+          randomSendChance: parseInt(req.body.randomSendChance) || 5,
+          requiredLevel: parseInt(req.body.requiredLevel) || 1,
+          enabledForChat: true,
+          autoOrganized: false,
+          category: req.body.category || 'Character'
+        };
+        const created = await storage.createMedia(mediaEntry);
+        uploadedFiles.push(created);
+      }
+      res.json(createSuccessResponse({
+        message: `Successfully uploaded ${uploadedFiles.length} files`,
+        files: uploadedFiles
+      }));
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      res.status(500).json(createErrorResponse('Failed to upload files'));
+    }
+  });
+
+  app.put('/api/media/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+      const updatedMedia = await storage.updateMedia(id, updates);
+      res.json(createSuccessResponse(updatedMedia));
+    } catch (error) {
+      console.error('Error updating media:', error);
+      res.status(500).json(createErrorResponse('Failed to update media'));
+    }
+  });
+
+  app.delete('/api/media/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteMedia(id);
+      res.json(createSuccessResponse({ message: 'Media deleted successfully' }));
+    } catch (error) {
+      console.error('Error deleting media:', error);
+      res.status(500).json(createErrorResponse('Failed to delete media'));
+    }
+  });
+
+  // Simple endpoints for other admin functionality  
+  app.get('/api/admin/tasks', async (req: Request, res: Response) => {
+    res.json([]);
+  });
+
+  app.get('/api/admin/achievements', async (req: Request, res: Response) => {
+    res.json([]);
+  });
+
+  app.get('/api/admin/level-requirements', async (req: Request, res: Response) => {
+    res.json([]);
+  });
+
+  console.log('✅ Admin routes registered successfully');
+}
