@@ -125,7 +125,7 @@ export function registerAdminRoutes(app: Express) {
       // Return editable upgrade definitions for admin management
       const adminUpgrades = [
         {
-          id: 'lp_tap_1',
+          id: '',
           name: 'Dexterity Lv. 1',
           description: 'Increase LP per tap',
           category: 'lpPerTap',
@@ -137,7 +137,7 @@ export function registerAdminRoutes(app: Express) {
           levelrequirement: 1
         },
         {
-          id: 'lp_hour_1',
+          id: '',
           name: 'Intellect Lv. 1',
           description: 'Increase LP per hour',
           category: 'lpPerHour',
@@ -149,7 +149,7 @@ export function registerAdminRoutes(app: Express) {
           levelrequirement: 1
         },
         {
-          id: 'energy_1',
+          id: '',
           name: 'Book Smarts Lv. 1',
           description: 'Increase maximum energy',
           category: 'energy',
@@ -169,6 +169,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.post('/api/admin/upgrades', async (req: Request, res: Response) => {
+    console.log('RECEIVED UPGRADE BODY:', req.body);
     try {
       const upgradeData = req.body;
       const newUpgrade = await storage.createUpgrade(upgradeData);
@@ -180,6 +181,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.put('/api/admin/upgrades/:id', async (req: Request, res: Response) => {
+    console.log('RECEIVED UPGRADE BODY:', req.body);
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -252,6 +254,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.post('/api/admin/achievements', async (req: Request, res: Response) => {
+    console.log('RECEIVED ACHIEVEMENTS BODY:', req.body);
     try {
       const achievementData = req.body;
       const newAchievement = await storage.createAchievement(achievementData);
@@ -263,6 +266,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.put('/api/admin/achievements/:id', async (req: Request, res: Response) => {
+    console.log('RECEIVED ACHIEVEMENTS BODY:', req.body);
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -329,6 +333,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.post('/api/admin/tasks', async (req: Request, res: Response) => {
+    console.log('RECEIVED TASK BODY:', req.body);
     try {
       const taskData = req.body;
       console.log('Creating task:', taskData);
@@ -339,6 +344,7 @@ export function registerAdminRoutes(app: Express) {
   });
 
   app.put('/api/admin/tasks/:id', async (req: Request, res: Response) => {
+    console.log('RECEIVED TASK BODY:', req.body);
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -359,21 +365,7 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Seed achievements endpoint
-  app.post('/api/admin/seed-achievements', async (req: Request, res: Response) => {
-    try {
-      // Mock seeding achievements
 
-      console.log('Seeded default achievements');
-      res.json(createSuccessResponse({
-        message: 'Default achievements seeded successfully',
-        achievements: seededAchievements
-      }));
-    } catch (error) {
-      console.error('Error seeding achievements:', error);
-      res.status(500).json(createErrorResponse('Failed to seed achievements'));
-    }
-  });
 
   // Media management
   app.get("/api/media", async (req: Request, res: Response) => {

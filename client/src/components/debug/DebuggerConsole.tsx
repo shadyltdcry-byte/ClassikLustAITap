@@ -88,6 +88,7 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     const originalLog = console.log;
     const originalWarn = console.warn;
     const originalError = console.error;
+  
 
     console.log = (...args) => {
       originalLog(...args);
@@ -157,6 +158,8 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     }
   }, [logs]);
 
+    const autoSaveCooldownRef = useRef(false);
+  
   const addLog = (level: DebugLog['level'], module: string, message: string, stack?: string) => {
     const newLog: DebugLog = {
       id: Date.now().toString(),
@@ -168,14 +171,23 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     };
     setLogs(prev => [...prev.slice(-99), newLog]); // Keep last 100 logs
     
-    // Add to error buffer for auto-save
+  // Place the buffer logic for throttled autosave here:
     if (level === 'error' || level === 'critical') {
       errorLogBufferRef.current.push(newLog);
-      
-      // Auto-save when buffer reaches 10 errors
-      if (autoSaveEnabled && errorLogBufferRef.current.length >= 15) {
+const hasAutoSavedThisSession = useRef(false);
+      // The new throttled auto-save:
+      // In addLog, after checking cooldown:
+      if (
+        autoSaveEnabled &&
+        errorLogBufferRef.current.length >= 25 &&
+        !autoSaveCooldownRef.current &&
+        !hasAutoSavedThisSession.current
+      ) {
+        hasAutoSavedThisSession.current = true;
+        autoSaveCooldownRef.current = true;
         saveLogsToFile(errorLogBufferRef.current, 'manual');
         errorLogBufferRef.current = [];
+        setTimeout(() => { autoSaveCooldownRef.current = false; }, 3000);
       }
     }
   };

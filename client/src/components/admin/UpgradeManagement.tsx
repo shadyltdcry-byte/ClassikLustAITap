@@ -53,14 +53,12 @@ export default function UpgradeManagement() {
     queryKey: ['/api/admin/upgrades'],
   });
 
- const upgrades: Upgrade[] = rawUpgrades ? keysToCamel(rawUpgrades) : [];
-  
+  const upgrades: Upgrade[] = rawUpgrades ? keysToCamel(rawUpgrades) : [];
+
   const createMutation = useMutation({
     mutationFn: async (data: Upgrade) => {
       const response = await apiRequest('POST', '/api/admin/upgrades', data);
-      if (!response.ok) {
-        throw new Error('Failed to create upgrade');
-      }
+      if (!response.ok) throw new Error('Failed to create upgrade');
       return response.json();
     },
     onSuccess: () => {
@@ -75,9 +73,7 @@ export default function UpgradeManagement() {
   const updateMutation = useMutation({
     mutationFn: async (data: Upgrade) => {
       const response = await apiRequest('PUT', `/api/admin/upgrades/${data.id}`, data);
-      if (!response.ok) {
-        throw new Error('Failed to update upgrade');
-      }
+      if (!response.ok) throw new Error('Failed to update upgrade');
       return response.json();
     },
     onSuccess: () => {
@@ -92,9 +88,7 @@ export default function UpgradeManagement() {
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await apiRequest('DELETE', `/api/admin/upgrades/${id}`);
-      if (!response.ok) {
-        throw new Error('Failed to delete upgrade');
-      }
+      if (!response.ok) throw new Error('Failed to delete upgrade');
       return response.json();
     },
     onSuccess: () => {
@@ -126,6 +120,7 @@ export default function UpgradeManagement() {
   };
 
   const handleSubmit = () => {
+    console.log("SUBMITTING:", formData); // see values before sending
     if (editingUpgrade) {
       updateMutation.mutate(formData);
     } else {
@@ -262,7 +257,7 @@ export default function UpgradeManagement() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label htmlFor="costumltiplier">Cost Multiplier</Label>
+                  <Label htmlFor="costmultiplier">Cost Multiplier</Label>
                   <Input
                     id="costmultiplier"
                     type="number"
