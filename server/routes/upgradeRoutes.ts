@@ -1,37 +1,35 @@
 import type { Express, Request, Response } from "express";
 import { SupabaseStorage } from "../../shared/SupabaseStorage";
-import { createSuccessResponse, createErrorResponse } from "../utils/helpers";
 
 const storage = SupabaseStorage.getInstance();
 
 export function registerUpgradeRoutes(app: Express) {
-  // Public: list all enabled upgrades
   app.get("/api/upgrades", async (req: Request, res: Response) => {
     try {
-      const items = await storage.getUpgrades();
-      // If you add an "enabled" column later, filter here
-      res.json(items);
-    } catch (error) {
-      console.error("Error fetching upgrades:", error);
+      const items = await storage.getAllUpgrades();
+      const mapped = (items || []).map((u: any) => {
+        const currentLevel = Number(u.currentlevel || 0);
+        const baseCost = Number(u.basecost || 0);
+        const costMult = Number(u.costmultiplier || 1);
+        const baseEffect = Number(u.baseeffect || 0);
+        const effectMult = Number(u.effectmultiplier || 1);
+        const cost = Math.max(0, Math.round(baseCost * Math.pow(costMult, currentLevel)));
+        const effectValue = Math.round(baseEffect * Math.pow(effectMult, currentLevel));
+        const effect = u.category === 'lpPerTap' ? `+${effectValue} LP/tap` : u.category === 'lpPerHour' ? `+${effectValue} LP/hour` : `+${effectValue}`;
+        return {
+          id: u.id,
+          name: u.name,
+          description: u.description,
+          category: u.category,
+          currentLevel: currentLevel,
+          maxLevel: u.maxlevel || 0,
+          cost,
+          effect,
+        };
+      });
+      res.json(mapped);
+    } catch (e) {
       res.json([]);
-    }
-  });
-
-  // Public: purchase an upgrade for the current user
-  app.post("/api/upgrades/:id/purchase", async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { userId } = req.body || {};
-      if (!userId) {
-        return res.status(400).json(createErrorResponse("userId is required"));
-      }
-
-      // For now, just increment the upgrade via RPC placeholder
-      const upgraded = await storage.upgradeUserUpgrade(userId, id);
-      res.json(createSuccessResponse(upgraded));
-    } catch (error: any) {
-      console.error("Purchase failed:", error);
-      res.status(500).json(createErrorResponse(error?.message || "Failed to purchase upgrade"));
     }
   });
 }
