@@ -3,6 +3,7 @@
  */
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import path from "path";
 import { errorTriageMiddleware, requestLoggerMiddleware } from './middleware/errorTriage';
 import { registerTapRoutes } from './routes/tapRoutes.js';
 import { registerChatRoutes } from './routes/chatRoutes.js';
@@ -22,6 +23,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // CRITICAL: Install error capture middleware BEFORE all routes
   app.use(requestLoggerMiddleware);
 
+  // Serve static files from client dist
+  const distPath = path.join(process.cwd(), 'dist');
+  app.use(express.static(distPath));
+
+  // Register all API routes
   registerTapRoutes(app);
   registerChatRoutes(app);
   registerCharacterRoutes(app);
@@ -33,6 +39,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerVipRoutes(app);
   registerUpgradeRoutes(app);
   registerDebugRoutes(app);
+
+  // SPA fallback route - MUST come after all API routes
+  app.get('*', (req, res) => {
+    // Only serve index.html for non-API routes
+    if (!req.path.startsWith('/api')) {
+      res.sendFile(path.join(distPath, 'index.html'));
+    } else {
+      res.status(404).json({ error: 'API endpoint not found' });
+    }
+  });
 
   // CRITICAL: Install error handler AFTER all routes
   app.use(errorTriageMiddleware);
