@@ -52,7 +52,7 @@ export const characters = pgTable("characters", {
 export const userCharacters = pgTable("userCharacters", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  characterid: uuid("characterid").notNull().references(() => characters.id, { onDelete: "cascade" }),
+  characterId: uuid("characterId").notNull().references(() => characters.id, { onDelete: "cascade" }),
   charismaPoints: integer("charismaPoints").notNull().default(0),
   affection: integer("affection").notNull().default(0),
   bondLevel: integer("bondLevel").notNull().default(1),
@@ -61,7 +61,7 @@ export const userCharacters = pgTable("userCharacters", {
 
 export const mediaFiles = pgTable("mediaFiles", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
-  characterid: uuid("characterid").references(() => characters.id, { onDelete: "cascade" }),
+  characterId: uuid("characterId").references(() => characters.id, { onDelete: "cascade" }),
   fileName: text("fileName").notNull(),
   filePath: text("filePath").notNull(),
   fileType: text("fileType").notNull(), // image, video, gif
@@ -131,7 +131,7 @@ export const gameStats = pgTable("game_stats", {
 export const chatMessages = pgTable("chat_messages", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
-  characterid: uuid("characterid").notNull().references(() => characters.id, { onDelete: "cascade" }),
+  characterId: uuid("characterId").notNull().references(() => characters.id, { onDelete: "cascade" }),
   message: text("message").notNull(),
   response: text("response"),
   charismaGained: integer("charismaGained").notNull().default(0),
@@ -205,11 +205,11 @@ export const charactersRelations = relations(characters, ({ many }) => ({
 
 export const userCharactersRelations = relations(userCharacters, ({ one }) => ({
   user: one(users, { fields: [userCharacters.userId], references: [users.id] }),
-  character: one(characters, { fields: [userCharacters.characterid], references: [characters.id] }),
+  character: one(characters, { fields: [userCharacters.characterId], references: [characters.id] }),
 }));
 
 export const mediaFilesRelations = relations(mediaFiles, ({ one }) => ({
-  character: one(characters, { fields: [mediaFiles.characterid], references: [characters.id] }),
+  character: one(characters, { fields: [mediaFiles.characterId], references: [characters.id] }),
 }));
 
 export const upgradesRelations = relations(upgrades, ({ many }) => ({
