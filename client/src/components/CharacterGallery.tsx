@@ -27,11 +27,11 @@ interface CharacterGalleryProps {
   isOpen: boolean;
   onClose: () => void;
   userId: string;
-  onCharacterSelected?: (characterid: string) => void;
-  currentCharacterid?: string; // The currently active character to show photos for
+  onCharacterSelected?: (characterId: string) => void;
+  currentCharacterId?: string; // The currently active character to show photos for
 }
 
-export default function CharacterGallery({ isOpen, onClose, userId, onCharacterSelected, currentCharacterid }: CharacterGalleryProps) {
+export default function CharacterGallery({ isOpen, onClose, userId, onCharacterSelected, currentCharacterId }: CharacterGalleryProps) {
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isSlideshow, setIsSlideshow] = useState(false);
@@ -54,14 +54,14 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
   
   // If a current character is provided, show their photos directly
   useEffect(() => {
-    if (currentCharacterid && isOpen && characters.length > 0) {
+    if (currentCharacterId && isOpen && characters.length > 0) {
       // Find the current character and set it as selected
-      const char = characters.find((c: Character) => c.id === currentCharacterid);
+      const char = characters.find((c: Character) => c.id === currentCharacterId);
       if (char) {
         setSelectedCharacter(char);
       }
     }
-  }, [currentCharacterid, isOpen, characters]);
+  }, [currentCharacterId, isOpen, characters]);
 
   // Fetch character images - using correct endpoint and field names
   const { data: characterImages = [], isLoading: imagesLoading } = useQuery({
@@ -81,24 +81,24 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   // Character selection mutation
   const selectCharacterMutation = useMutation({
-    mutationFn: async (characterid: string) => {
+    mutationFn: async (characterId: string) => {
       const response = await apiRequest("POST", `/api/player/${userId}/select-character`, {
-        characterid
+        characterId
       });
       if (!response.ok) {
         throw new Error("Failed to select character");
       }
       return response.json();
     },
-    onSuccess: (data, characterid) => {
-      const character = characters.find((c: Character) => c.id === characterid);
+    onSuccess: (data, characterId) => {
+      const character = characters.find((c: Character) => c.id === characterId);
       toast({
         title: "Character Selected!",
         description: `You've chosen ${character?.name}`,
       });
       queryClient.invalidateQueries({ queryKey: ["/api/character/selected", userId] });
       if (onCharacterSelected) {
-        onCharacterSelected(characterid);
+        onCharacterSelected(characterId);
       }
     },
     onError: (error) => {
@@ -121,7 +121,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
     }
   });
 
-  const handleSelectCharacter = (characterid: string) => {
+  const handleSelectCharacter = (characterId: string) => {
     if (!userId || userId === 'undefined') {
       toast({
         title: "Authentication Required",
@@ -131,7 +131,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
       return;
     }
     
-    const character = characters.find((c: Character) => c.id === characterid);
+    const character = characters.find((c: Character) => c.id === characterId);
     if (!character?.isEnabled) {
       toast({
         title: "Character Locked",
@@ -140,7 +140,7 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
       });
       return;
     }
-    selectCharacterMutation.mutate(characterid);
+    selectCharacterMutation.mutate(characterId);
   };
 
   // Slideshow functionality
@@ -189,8 +189,8 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
 
   // Fixed image URL handling using correct MediaFile schema fields
   const getImageUrl = (media: MediaFile) => {
-    // Priority: filePath > filepath > fileName
-    const path = media.filePath || (media as any).filepath || (media.fileName ? `/uploads/${media.fileName}` : null);
+    // Priority: filePath > fileName fallback
+    const path = media.filePath || (media.fileName ? `/uploads/${media.fileName}` : null);
     
     if (!path) {
       console.warn('[CharacterGallery] No valid image path found for media:', media.id);
@@ -477,4 +477,3 @@ export default function CharacterGallery({ isOpen, onClose, userId, onCharacterS
     </Dialog>
   );
 }
-
