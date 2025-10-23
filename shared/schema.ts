@@ -296,6 +296,56 @@ export const telegramAuthTokens = pgTable("telegramAuthTokens", {
   createdAt: timestamp("createdAt").defaultNow(),
 });
 
+// 🚀 NEW: FileStorage JSON-First Types (not in database - pure JSON!)
+
+// Task type for JSON-first task management
+export interface Task {
+  id: string;
+  title: string;
+  description: string;
+  category: 'daily' | 'weekly' | 'event';
+  requirements: {
+    type: 'tap_count' | 'lp_earned' | 'energy_spent' | 'character_interaction' | 'login_streak';
+    target: number;
+    characterId?: string; // Optional for character-specific tasks
+  };
+  rewards: {
+    type: 'lp' | 'energy' | 'charisma' | 'booster';
+    amount: number;
+  }[];
+  resetSchedule?: {
+    hour: number; // 0-23 UTC hour
+    dayOfWeek?: number; // 0-6 for weekly tasks (0 = Sunday)
+  };
+  isActive: boolean;
+  levelRequirement: number;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// GameSettings type for JSON-first settings management
+export interface GameSettings {
+  id: string;
+  maxEnergy: number;
+  energyRegenRate: number; // Energy per second
+  tapCooldown: number; // Seconds between taps
+  maxLevel: number;
+  baseExperienceRequired: number;
+  experienceMultiplier: number; // Multiplier for each level
+  autoSaveInterval: number; // Milliseconds
+  wheelSpinCooldown?: number; // Hours between wheel spins
+  dailyBonusHour?: number; // UTC hour for daily reset
+  characterUnlockLevels?: { characterId: string; levelRequired: number }[];
+  boosterEffects?: {
+    [key: string]: {
+      multiplier: number;
+      maxDuration: number; // Minutes
+    };
+  };
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
