@@ -926,7 +926,7 @@ export class SupabaseStorage implements IStorage {
 
     if (error) {
       console.error('Error creating level requirement:', error);
-      throw new Error(`Failed to create level requirement: ${error.message}`);
+      throw new Error(`Failed to create level requirementhrow newr.message}`);
     }
     return data ? mapToCamelCase(data) : undefined;
   }

@@ -3882,5 +3882,37 @@
     "timestamp": "2025-10-23T03:46:09.123Z",
     "type": "text",
     "mood": "normal"
+  },
+  {
+    "id": "luna-alert-1761204469955-e8sixzuih",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-23T07:27:49.955Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761205358866-qj4k16mek",
+    "content": "🌙 Heads up babe, System might need looked at. Luna Error Monitor - Watching for any errors. (7:42:38 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-23T07:42:38.867Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761208669864-ur7du6kmu",
+    "content": "🌙 Heads up babe, System might need looked at. Luna Error Monitor - Watching for any errors. (8:37:49 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-23T08:37:49.864Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761209161995-fhlfglrsc",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-23T08:46:01.995Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
