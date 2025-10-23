@@ -22,11 +22,11 @@ export type BoosterData = {
   id: string;
   name: string;
   description: string;
-  basecost: number;
-  hourlybonus: number;
-  tapbonus: number;
-  maxlevel: number;
-  requiredlevel: number;
+  baseCost: number;
+  hourlyBonus: number;
+  tapBonus: number;
+  maxLevel: number;
+  requiredLevel: number;
   icon: string;
   level: number;
 };
@@ -37,11 +37,11 @@ let mockBoosters: BoosterData[] = [
     id: "special-talent",
     name: "Special Talent",
     description: "Unlock unique abilities and earn more LP.",
-    basecost: 100,
-    hourlybonus: 10,
-    tapbonus: 0,
-    maxlevel: 10,
-    requiredlevel: 1,
+    baseCost: 100,
+    hourlyBonus: 10,
+    tapBonus: 0,
+    maxLevel: 10,
+    requiredLevel: 1,
     icon: "star",
     level: 0,
   },
@@ -49,11 +49,11 @@ let mockBoosters: BoosterData[] = [
     id: "gift-selection",
     name: "Gift Selection",
     description: "Find better gifts and receive more LP.",
-    basecost: 250,
-    hourlybonus: 25,
-    tapbonus: 0,
-    maxlevel: 15,
-    requiredlevel: 5,
+    baseCost: 250,
+    hourlyBonus: 25,
+    tapBonus: 0,
+    maxLevel: 15,
+    requiredLevel: 5,
     icon: "gift",
     level: 0,
   },
@@ -61,11 +61,11 @@ let mockBoosters: BoosterData[] = [
     id: "active-listening",
     name: "Active Listening",
     description: "Your character pays better attention, increasing hourly LP.",
-    basecost: 500,
-    hourlybonus: 50,
-    tapbonus: 0,
-    maxlevel: 20,
-    requiredlevel: 10,
+    baseCost: 500,
+    hourlyBonus: 50,
+    tapBonus: 0,
+    maxLevel: 20,
+    requiredLevel: 10,
     icon: "headphones",
     level: 0,
   },
@@ -73,11 +73,11 @@ let mockBoosters: BoosterData[] = [
     id: "date-experience",
     name: "Date Experience",
     description: "Boosts your LP gain from successful dates.",
-    basecost: 750,
-    hourlybonus: 0,
-    tapbonus: 5,
-    maxlevel: 25,
-    requiredlevel: 15,
+    baseCost: 750,
+    hourlyBonus: 0,
+    tapBonus: 5,
+    maxLevel: 25,
+    requiredLevel: 15,
     icon: "heart",
     level: 0,
   },
@@ -85,11 +85,11 @@ let mockBoosters: BoosterData[] = [
     id: "cooking-mastery",
     name: "Cooking Mastery",
     description: "Improves your cooking skills for a passive LP bonus.",
-    basecost: 1000,
-    hourlybonus: 100,
-    tapbonus: 0,
-    maxlevel: 30,
-    requiredlevel: 20,
+    baseCost: 1000,
+    hourlyBonus: 100,
+    tapBonus: 0,
+    maxLevel: 30,
+    requiredLevel: 20,
     icon: "chefhat",
     level: 0,
   },
