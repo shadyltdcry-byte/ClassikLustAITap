@@ -1,8 +1,8 @@
 /**
- * Upgrades.tsx - Upgrade System Interface with Plugin Debugging
- * Last Edited: 2025-10-22 by Assistant
+ * Upgrades.tsx - Upgrade System Interface with Dynamic Calculations
+ * Last Edited: 2025-10-23 by Assistant
  * 
- * Complete upgrade interface with proper styling and AI debugging
+ * Complete upgrade interface with dynamic cost scaling and level display
  */
 
 import React, { useState } from "react";
@@ -23,8 +23,9 @@ interface Upgrade {
   id: string;
   name: string;
   description: string;
-  cost: number;
-  effect: string;
+  baseCost: number;  // Base cost for level 1
+  hourlyBonus?: number;
+  tapBonus?: number;
   currentLevel: number;
   maxLevel: number;
   category: "lp" | "energy" | "special" | "lpPerTap" | "lpPerHour";
@@ -35,6 +36,39 @@ interface UpgradesProps {
   playerData?: any;
   onUpgradeAction?: (action: string, data?: any) => void;
 }
+
+// DYNAMIC COST CALCULATION FUNCTIONS
+const calculateUpgradeCost = (baseCost: number, currentLevel: number): number => {
+  // Cost scaling: baseCost * (1.5 ^ currentLevel)
+  return Math.floor(baseCost * Math.pow(1.5, currentLevel));
+};
+
+const calculateCurrentBonus = (baseBonus: number, currentLevel: number): number => {
+  // Bonus scaling: baseBonus * currentLevel
+  return baseBonus * currentLevel;
+};
+
+const getUpgradeEffect = (upgrade: Upgrade): string => {
+  const currentBonus = upgrade.hourlyBonus 
+    ? calculateCurrentBonus(upgrade.hourlyBonus, upgrade.currentLevel)
+    : upgrade.tapBonus 
+    ? calculateCurrentBonus(upgrade.tapBonus, upgrade.currentLevel)
+    : 0;
+    
+  const nextBonus = upgrade.hourlyBonus 
+    ? calculateCurrentBonus(upgrade.hourlyBonus, upgrade.currentLevel + 1)
+    : upgrade.tapBonus 
+    ? calculateCurrentBonus(upgrade.tapBonus, upgrade.currentLevel + 1)
+    : 0;
+
+  if (upgrade.category === 'lpPerHour') {
+    return `+${upgrade.hourlyBonus || 10} LP/hour (Currently: +${currentBonus} LP/hour)`;
+  }
+  if (upgrade.category === 'lpPerTap') {
+    return `+${upgrade.tapBonus || 1} LP/tap (Currently: +${currentBonus} LP/tap)`;
+  }
+  return upgrade.description || 'Unknown effect';
+};
 
 export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps) {
   const [activeTab, setActiveTab] = useState("all");
@@ -189,17 +223,22 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
     });
   };
 
-  const canAffordUpgrade = (cost: number) => {
-    return (playerData?.lp || 0) >= cost;
+  const canAffordUpgrade = (upgrade: Upgrade) => {
+    const dynamicCost = calculateUpgradeCost(upgrade.baseCost, upgrade.currentLevel);
+    return (playerData?.lp || 0) >= dynamicCost && upgrade.currentLevel < upgrade.maxLevel;
   };
 
   const handlePurchase = (upgradeId: string) => {
     const upgrade = upgrades.find((u: Upgrade) => u.id === upgradeId);
+    const dynamicCost = upgrade ? calculateUpgradeCost(upgrade.baseCost, upgrade.currentLevel) : 0;
+    
     debug.trace('purchase:trigger', {
       upgradeId,
       upgradeName: upgrade?.name,
-      cost: upgrade?.cost,
-      canAfford: canAffordUpgrade(upgrade?.cost || 0)
+      baseCost: upgrade?.baseCost,
+      dynamicCost,
+      currentLevel: upgrade?.currentLevel,
+      canAfford: canAffordUpgrade(upgrade!)
     });
     
     purchaseUpgradeMutation.mutate(upgradeId);
@@ -252,7 +291,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
           <div className="text-right">
             <div className="flex items-center gap-2">
               <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
-              <span className="text-pink-400 font-bold">{playerData?.lp || 0} LP</span>
+              <span className="text-pink-400 font-bold">{(playerData?.lp || 0).toLocaleString()} LP</span>
             </div>
           </div>
         </div>
@@ -299,66 +338,89 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
         ) : (
           <ScrollArea className="h-full">
             <div className="space-y-4 p-4">
-              {getFilteredUpgrades().map((upgrade: Upgrade) => (
-                <div
-                  key={upgrade.id}
-                  className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:border-purple-500/50 transition-colors"
-                >
-                  <div className="flex items-start gap-4">
-                    {/* Upgrade Icon */}
-                    <div className="w-16 h-16 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                      <span className="text-3xl">{getUpgradeIcon(upgrade.category)}</span>
-                    </div>
+              {getFilteredUpgrades().map((upgrade: Upgrade) => {
+                const dynamicCost = calculateUpgradeCost(upgrade.baseCost, upgrade.currentLevel);
+                const currentBonus = upgrade.hourlyBonus 
+                  ? calculateCurrentBonus(upgrade.hourlyBonus, upgrade.currentLevel)
+                  : upgrade.tapBonus 
+                  ? calculateCurrentBonus(upgrade.tapBonus, upgrade.currentLevel)
+                  : 0;
+                const isMaxLevel = upgrade.currentLevel >= upgrade.maxLevel;
+                const canAfford = canAffordUpgrade(upgrade);
+                
+                return (
+                  <div
+                    key={upgrade.id}
+                    className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:border-purple-500/50 transition-colors"
+                  >
+                    <div className="flex items-start gap-4">
+                      {/* Upgrade Icon */}
+                      <div className="w-16 h-16 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <span className="text-3xl">{getUpgradeIcon(upgrade.category)}</span>
+                      </div>
 
-                    {/* Upgrade Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="text-white font-semibold">{upgrade.name}</h4>
-                        <Badge className={getCategoryColor(upgrade.category)}>
-                          {upgrade.category ? upgrade.category.toUpperCase() : 'MISC'}
-                        </Badge>
-                        {upgrade.currentLevel > 0 && (
-                          <Badge className="bg-green-500/20 text-green-400">
-                            Lv. {upgrade.currentLevel}
+                      {/* Upgrade Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h4 className="text-white font-semibold">{upgrade.name}</h4>
+                          <Badge className={getCategoryColor(upgrade.category)}>
+                            {upgrade.category ? upgrade.category.toUpperCase() : 'MISC'}
                           </Badge>
-                        )}
-                      </div>
-                      
-                      <p className="text-gray-400 text-sm mb-3">{upgrade.description}</p>
-                      
-                      <div className="flex items-center gap-4 mb-3">
-                        <div className="flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-green-400" />
-                          <span className="text-green-400 text-sm font-medium">{upgrade.effect}</span>
-                        </div>
-                      </div>
-
-                      {/* Cost & Purchase */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
-                          <span className={`font-bold ${canAffordUpgrade(upgrade.cost) ? "text-pink-400" : "text-red-400"}`}>
-                            {upgrade.cost} LP
-                          </span>
+                          {/* DYNAMIC LEVEL DISPLAY */}
+                          <Badge className="bg-green-500/20 text-green-400">
+                            Level {upgrade.currentLevel}/{upgrade.maxLevel}
+                          </Badge>
+                          {isMaxLevel && (
+                            <Badge className="bg-gold-500/20 text-yellow-400">
+                              MAX
+                            </Badge>
+                          )}
                         </div>
                         
-                        <Button
-                          onClick={() => handlePurchase(upgrade.id)}
-                          disabled={!canAffordUpgrade(upgrade.cost) || purchaseUpgradeMutation.isPending}
-                          className={`px-6 py-2 rounded-full ${
-                            canAffordUpgrade(upgrade.cost)
-                              ? "bg-blue-600 hover:bg-blue-700 text-white"
-                              : "bg-gray-600 text-gray-400 cursor-not-allowed"
-                          }`}
-                        >
-                          <ShoppingCart className="w-4 h-4 mr-2" />
-                          {purchaseUpgradeMutation.isPending ? "Purchasing..." : "Purchase"}
-                        </Button>
+                        <p className="text-gray-400 text-sm mb-2">{upgrade.description}</p>
+                        
+                        <div className="flex items-center gap-4 mb-3">
+                          <div className="flex items-center gap-2">
+                            <TrendingUp className="w-4 h-4 text-green-400" />
+                            <span className="text-green-400 text-sm font-medium">
+                              {getUpgradeEffect(upgrade)}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* DYNAMIC COST & PURCHASE */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+                            <span className={`font-bold ${
+                              isMaxLevel ? "text-gray-500" : 
+                              canAfford ? "text-pink-400" : "text-red-400"
+                            }`}>
+                              {isMaxLevel ? "MAX LEVEL" : `${dynamicCost.toLocaleString()} LP`}
+                            </span>
+                          </div>
+                          
+                          <Button
+                            onClick={() => handlePurchase(upgrade.id)}
+                            disabled={!canAfford || purchaseUpgradeMutation.isPending || isMaxLevel}
+                            className={`px-6 py-2 rounded-full ${
+                              isMaxLevel
+                                ? "bg-gray-600 text-gray-400 cursor-not-allowed"
+                                : canAfford
+                                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                            }`}
+                          >
+                            <ShoppingCart className="w-4 h-4 mr-2" />
+                            {purchaseUpgradeMutation.isPending ? "Purchasing..." : 
+                             isMaxLevel ? "Maxed" : "Purchase"}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
               
               {!isLoading && getFilteredUpgrades().length === 0 && (
                 <div className="text-center text-gray-400 py-8">
