@@ -1,1 +1,0 @@
-Game migration complete! Run the clear-storage.js script from browser console to reset stats if needed.
