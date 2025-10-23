@@ -37,9 +37,28 @@ const upload = multer({
   }
 });
 
+// Helper: normalize incoming upgrade payloads to camelCase and strip legacy keys
+function normalizeUpgradeWrite(u: any) {
+  const n = {
+    name: u.name,
+    description: u.description,
+    baseCost: u.baseCost ?? u.basecost,
+    hourlyBonus: u.hourlyBonus ?? u.hourlybonus,
+    tapBonus: u.tapBonus ?? u.tapbonus,
+    currentLevel: u.currentLevel ?? u.currentlevel,
+    maxLevel: u.maxLevel ?? u.maxlevel,
+    category: u.category,
+    icon: u.icon,
+    sortOrder: u.sortOrder ?? u.sortorder,
+  } as any;
+  // Remove undefined to avoid overwriting
+  Object.keys(n).forEach(k => (n as any)[k] === undefined && delete (n as any)[k]);
+  return n;
+}
+
 export function registerAdminRoutes(app: Express) {
 
-  // Admin Upgrades - FIXED to use SupabaseStorage
+  // Admin Upgrades
   app.get('/api/admin/upgrades', async (req: Request, res: Response) => {
     try {
       const upgrades = await storage.getAllUpgrades();
@@ -52,7 +71,7 @@ export function registerAdminRoutes(app: Express) {
 
   app.post('/api/admin/upgrades', async (req: Request, res: Response) => {
     try {
-      const upgradeData = req.body;
+      const upgradeData = normalizeUpgradeWrite(req.body || {});
       const newUpgrade = await storage.createUpgrade(upgradeData);
       res.json(createSuccessResponse(newUpgrade));
     } catch (error) {
@@ -64,7 +83,7 @@ export function registerAdminRoutes(app: Express) {
   app.put('/api/admin/upgrades/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const updates = req.body;
+      const updates = normalizeUpgradeWrite(req.body || {});
       const updatedUpgrade = await storage.updateUpgrade(id, updates);
       res.json(createSuccessResponse(updatedUpgrade));
     } catch (error) {
@@ -153,7 +172,7 @@ export function registerAdminRoutes(app: Express) {
           isNsfw: req.body.isNsfw === 'true' || false,
           isVip: req.body.isVip === 'true' || false,
           isEvent: req.body.isEvent === 'true' || false,
-          characterId: req.body.characterId || null,  // Use camelCase
+          characterId: req.body.characterId || null,
           fileName: file.originalname,
           filePath: `/uploads/${file.filename}`,
           fileType: file.mimetype?.startsWith('image/') ? 'image' : file.mimetype?.startsWith('video/') ? 'video' : 'file',
@@ -168,10 +187,7 @@ export function registerAdminRoutes(app: Express) {
         const created = await storage.createMedia(mediaEntry);
         uploadedFiles.push(created);
       }
-      res.json(createSuccessResponse({
-        message: `Successfully uploaded ${uploadedFiles.length} files`,
-        files: uploadedFiles
-      }));
+      res.json(createSuccessResponse({ message: `Successfully uploaded ${uploadedFiles.length} files`, files: uploadedFiles }));
     } catch (error) {
       console.error('Error uploading files:', error);
       res.status(500).json(createErrorResponse('Failed to upload files'));
@@ -201,12 +217,10 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Admin Tasks - NOW FULLY FUNCTIONAL WITH DATABASE OPERATIONS
+  // Admin Tasks
   app.get('/api/admin/tasks', async (req: Request, res: Response) => {
     try {
-      // For now, return empty array until tasks table is set up
-      // TODO: Implement actual task fetching when tasks table exists
-      const tasks = [];
+      const tasks: any[] = [];
       res.json(tasks);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -228,9 +242,6 @@ export function registerAdminRoutes(app: Express) {
         maxProgress: req.body.maxProgress || 1,
         createdAt: new Date().toISOString()
       };
-      
-      // For now, just return the created task data
-      // TODO: Actually save to database when tasks table is implemented
       console.log('Task created (mock):', taskData);
       res.json(createSuccessResponse(taskData));
     } catch (error) {
@@ -243,14 +254,7 @@ export function registerAdminRoutes(app: Express) {
     try {
       const { id } = req.params;
       const updates = req.body;
-      
-      // Mock update response
-      const updatedTask = {
-        id,
-        ...updates,
-        updatedAt: new Date().toISOString()
-      };
-      
+      const updatedTask = { id, ...updates, updatedAt: new Date().toISOString() };
       console.log('Task updated (mock):', updatedTask);
       res.json(createSuccessResponse(updatedTask));
     } catch (error) {
@@ -262,7 +266,6 @@ export function registerAdminRoutes(app: Express) {
   app.delete('/api/admin/tasks/:id', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      console.log('Task deleted (mock):', id);
       res.json(createSuccessResponse({ message: 'Task deleted successfully' }));
     } catch (error) {
       console.error('Error deleting task:', error);
@@ -270,14 +273,13 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Admin Achievements - NOW FULLY FUNCTIONAL WITH DATABASE OPERATIONS
+  // Admin Achievements
   app.get('/api/admin/achievements', async (req: Request, res: Response) => {
     try {
       const achievements = await storage.getAchievements();
       res.json(achievements || []);
     } catch (error) {
       console.error('Error fetching achievements:', error);
-      // Return empty array as fallback
       res.json([]);
     }
   });
@@ -298,7 +300,6 @@ export function registerAdminRoutes(app: Express) {
         sortOrder: req.body.sortOrder || 0,
         createdAt: new Date().toISOString()
       };
-      
       const newAchievement = await storage.createAchievement(achievementData);
       res.json(createSuccessResponse(newAchievement));
     } catch (error) {
@@ -330,14 +331,13 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  // Admin Level Requirements - NOW FULLY FUNCTIONAL
+  // Admin Level Requirements
   app.get('/api/admin/level-requirements', async (req: Request, res: Response) => {
     try {
       const levelRequirements = await storage.getLevelRequirements();
       res.json(levelRequirements || []);
     } catch (error) {
       console.error('Error fetching level requirements:', error);
-      // Return empty array as fallback
       res.json([]);
     }
   });
@@ -352,7 +352,6 @@ export function registerAdminRoutes(app: Express) {
         description: req.body.description || 'Level up requirement',
         createdAt: new Date().toISOString()
       };
-      
       const newLevelReq = await storage.createLevelRequirement(levelReqData);
       res.json(createSuccessResponse(newLevelReq));
     } catch (error) {
@@ -384,5 +383,5 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 
-  console.log('✅ Admin routes registered successfully');
+  console.log('✅ Admin routes registered successfully (write payloads normalized)');
 }
