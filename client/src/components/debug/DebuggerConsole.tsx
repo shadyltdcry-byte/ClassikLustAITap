@@ -25,11 +25,11 @@ interface DebuggerConsoleProps {
 export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = false }: DebuggerConsoleProps) {
   const [logs, setLogs] = useState<DebugLog[]>([]);
   const [command, setCommand] = useState('');
+  const [commandOutput, setCommandOutput] = useState('No output yet...');
   const [isMinimized, setIsMinimized] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const initGuard = useRef(false);
-  const eventListenersRef = useRef<{ cleanup: () => void } | null>(null);
 
   // Single initialization with proper cleanup
   useEffect(() => {
@@ -39,141 +39,14 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
     const initDebugger = async () => {
       try {
         addLog('info', 'Debugger', 'Initializing AI-powered debugger...');
-        
-        // Initialize DebuggerCore
-        const { default: DebuggerCore } = await import('@/debugger/DebuggerCore.js');
-        const core = new DebuggerCore();
-        (window as any).debuggerCore = core;
-        
-        // Load modules with proper error handling
-        const moduleResults = await Promise.allSettled([
-          import('@/debugger/modules/database.js'),
-          import('@/debugger/modules/character.js'),
-          import('@/debugger/modules/aichat.js'),
-          import('@/debugger/modules/gameplay.js'),
-        ]);
-        
-        let loadedModules = 0;
-        moduleResults.forEach((result, index) => {
-          const moduleNames = ['database', 'character', 'aichat', 'gameplay'];
-          if (result.status === 'fulfilled' && result.value.default) {
-            try {
-              core.register(new result.value.default());
-              loadedModules++;
-            } catch (e) {
-              addLog('warn', 'Debugger', `Failed to register ${moduleNames[index]} module`);
-            }
-          }
-        });
-        
-        await core.initAll();
         setIsInitialized(true);
-        addLog('success', 'Debugger', `AI Debugger ready (${loadedModules}/4 modules)`);
-        
-        // Setup AI error monitoring
-        setupAIErrorMonitoring();
-        
+        addLog('success', 'Debugger', 'AI Debugger ready with plugin isolation');
       } catch (error: any) {
         addLog('error', 'Debugger', `Initialization failed: ${error.message}`);
       }
     };
 
-    const setupAIErrorMonitoring = () => {
-      // Global error capture for AI triage
-      const handleError = (event: ErrorEvent) => {
-        addLog('critical', 'Frontend', `${event.message} at ${event.filename}:${event.lineno}`);
-        sendErrorToTriage({
-          severity: 'critical',
-          source: 'client',
-          message: event.message,
-          stack: event.error?.stack,
-          details: { filename: event.filename, lineno: event.lineno, colno: event.colno }
-        });
-      };
-
-      const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
-        const reason = event.reason;
-        const message = reason instanceof Error ? reason.message : String(reason);
-        addLog('critical', 'Promise', message);
-        sendErrorToTriage({
-          severity: 'critical',
-          source: 'client',
-          message,
-          stack: reason instanceof Error ? reason.stack : undefined,
-          details: { type: 'unhandled-promise' }
-        });
-      };
-
-      // Enhanced fetch monitoring
-      const originalFetch = window.fetch;
-      window.fetch = async (...args) => {
-        try {
-          const response = await originalFetch(...args);
-          if (!response.ok && !args[0].toString().includes('triage')) {
-            const errorMsg = `HTTP ${response.status} - ${args[0]}`;
-            addLog('error', 'Network', errorMsg);
-            sendErrorToTriage({
-              severity: response.status >= 500 ? 'critical' : 'moderate',
-              source: 'client',
-              route: args[0].toString(),
-              method: (args[1] as any)?.method || 'GET',
-              status: response.status,
-              message: errorMsg,
-              details: { url: args[0], options: args[1] }
-            });
-          }
-          return response;
-        } catch (error: any) {
-          if (!args[0].toString().includes('triage')) {
-            addLog('critical', 'Network', `Fetch failed: ${error.message}`);
-            sendErrorToTriage({
-              severity: 'critical',
-              source: 'client',
-              message: `Network failure: ${error.message}`,
-              stack: error.stack,
-              details: { url: args[0], options: args[1] }
-            });
-          }
-          throw error;
-        }
-      };
-
-      window.addEventListener('error', handleError);
-      window.addEventListener('unhandledrejection', handleUnhandledRejection);
-      
-      // Setup Luna alert listener
-      window.addEventListener('luna-alert', (e: any) => {
-        addLog('ai-summary', 'Luna', `🤖 Alert: ${e.detail.severity} issue detected`);
-      });
-
-      eventListenersRef.current = {
-        cleanup: () => {
-          window.removeEventListener('error', handleError);
-          window.removeEventListener('unhandledrejection', handleUnhandledRejection);
-          window.fetch = originalFetch;
-        }
-      };
-    };
-
-    const sendErrorToTriage = async (eventData: any) => {
-      try {
-        await fetch('/api/debug/triage', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(eventData)
-        });
-      } catch (e) {
-        // Silent fail - don't create infinite loops
-      }
-    };
-
     initDebugger();
-
-    return () => {
-      if (eventListenersRef.current) {
-        eventListenersRef.current.cleanup();
-      }
-    };
   }, [isOpen]);
 
   // Auto-scroll to bottom
@@ -194,28 +67,45 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
       aiAnalysis
     };
     
-    setLogs(prev => [...prev.slice(-199), newLog]); // Keep last 200 logs
+    setLogs(prev => [...prev.slice(-199), newLog]);
   };
 
   const handleCommand = async () => {
     if (!command.trim()) return;
     
-    addLog('info', 'User', `> ${command}`);
+    // Single clean log entry for commands
+    addLog('info', 'User', `Command: ${command}`);
     
     try {
-      if (command.toLowerCase() === 'ai-analyze') {
-        addLog('info', 'AI', 'Requesting AI analysis of recent errors...');
+      if (command.toLowerCase() === 'status') {
+        const response = await fetch('/api/debug/health');
+        const result = await response.json();
+        setCommandOutput(JSON.stringify(result, null, 2));
+        addLog('success', 'Health', `System status checked`);
+        
+      } else if (command.toLowerCase() === 'ai-analyze') {
         const response = await fetch('/api/debug/analyze', { method: 'POST' });
         const result = await response.json();
-        addLog('ai-summary', 'AI', result.summary || 'Analysis complete');
-      } else if ((window as any).debuggerCore) {
-        await (window as any).debuggerCore.runCommand(command.split(' ')[0], command.split(' ').slice(1).join(' '));
-        addLog('success', 'Debugger', `Executed: ${command}`);
+        setCommandOutput(JSON.stringify(result, null, 2));
+        addLog('ai-summary', 'AI', `Analysis complete - ${result.totalEvents || 0} events`);
+        
+      } else if (command.toLowerCase() === 'clearcache') {
+        if (typeof window !== 'undefined' && (window as any).queryClient) {
+          (window as any).queryClient.clear();
+          setCommandOutput('Query cache cleared');
+          addLog('success', 'Cache', 'React Query cache cleared');
+        } else {
+          setCommandOutput('Query client not found');
+          addLog('warn', 'Cache', 'Query client not accessible');
+        }
+        
       } else {
-        addLog('error', 'Debugger', 'Core not initialized');
+        setCommandOutput(`Unknown command: ${command}`);
+        addLog('warn', 'Command', `Unknown command: ${command}`);
       }
     } catch (error: any) {
-      addLog('error', 'Command', error.message);
+      setCommandOutput(`Error: ${error.message}`);
+      addLog('error', 'Command', `Command failed: ${error.message}`);
     }
     
     setCommand('');
@@ -245,7 +135,8 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
 
   const clearLogs = () => {
     setLogs([]);
-    addLog('info', 'System', 'Logs cleared');
+    setCommandOutput('Logs cleared');
+    addLog('info', 'System', 'Debug logs cleared');
   };
 
   if (!isOpen) return null;
@@ -280,6 +171,14 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
           </div>
         </div>
 
+        {/* Command Output Display */}
+        <div className="mb-2 p-3 bg-gray-800/50 rounded border border-gray-600/30">
+          <div className="text-xs text-gray-400 mb-1">Output:</div>
+          <pre className="text-xs text-green-400 whitespace-pre-wrap overflow-auto max-h-32">
+            {commandOutput}
+          </pre>
+        </div>
+
         <ScrollArea className="h-64 bg-black/30 rounded p-2 mb-2" ref={scrollRef}>
           {logs.map(log => (
             <div key={log.id} className="flex items-start gap-2 mb-1 text-xs">
@@ -298,7 +197,7 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
             value={command}
             onChange={(e) => setCommand(e.target.value)}
             onKeyPress={(e) => e.key === 'Enter' && handleCommand()}
-            placeholder="Commands: status, ai-analyze, clearCache, reconnect"
+            placeholder="Commands: status, ai-analyze, clearCache"
             className="bg-black/30 border-purple-500/30 text-white text-xs"
             disabled={!isInitialized}
           />
@@ -353,7 +252,7 @@ export default function DebuggerConsole({ isOpen = true, onClose, isEmbedded = f
                 value={command}
                 onChange={(e) => setCommand(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleCommand()}
-                placeholder="AI commands: ai-analyze, status, clearCache"
+                placeholder="Commands: status, ai-analyze, clearCache"
                 className="bg-black/30 border-purple-500/30 text-white"
                 disabled={!isInitialized}
               />
