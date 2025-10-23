@@ -14,17 +14,20 @@ import { registerAdminRoutes as registerAdminRoutesCore } from './routes/adminRo
 import { registerWheelRoutes } from './routes/wheelRoutes.js';
 import { registerVipRoutes } from './routes/vipRoutes.js';
 import { registerUpgradeRoutes } from './routes/upgradeRoutes.js';
+import { registerLevelRoutes } from './routes/levelRoutes.js';
 import { registerDebugRoutes } from './routes/debugRoutes.js';
 import { registerAdminRoutes as registerAdminAdditions } from './routes/adminRoutes.additions.js';
 
-// Simple request logging middleware
+// Enhanced request logging middleware
 function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
   
   res.on('finish', () => {
     const duration = Date.now() - start;
     if (req.path.startsWith('/api')) {
-      console.log(`${req.method} ${req.path} ${res.statusCode} in ${duration}ms`);
+      const status = res.statusCode;
+      const emoji = status >= 500 ? '🔴' : status >= 400 ? '🟡' : status >= 300 ? '🟠' : '🟢';
+      console.log(`${emoji} ${req.method} ${req.path} ${status} in ${duration}ms`);
     }
   });
   
@@ -55,12 +58,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(express.static(distPath));
   console.log(`💻 [STATIC] Serving frontend from: ${distPath}`);
 
-  // Register all API routes
+  // Register all API routes in logical order
   registerTapRoutes(app);
   registerChatRoutes(app);
   registerCharacterRoutes(app);
   registerUserRoutes(app);
   registerStatsRoutes(app);
+  registerLevelRoutes(app); // NEW: Level requirements and user level calculation
   registerAdminRoutesCore(app);
   registerAdminAdditions(app);
   registerWheelRoutes(app);
@@ -91,6 +95,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`🎮[SERVER] Game started successfully, running on port ${port}`);
     console.log(`🤖[AI] Triage service active - Mistral primary, Perplexity fallback`);
     console.log(`💻[FRONTEND] Static files served from dist/public directory`);
+    console.log(`🎆[LEVELS] Level system endpoints active`);
+    console.log(`🔧[DEBUG] Comprehensive error monitoring enabled`);
   });
 
   return server;
