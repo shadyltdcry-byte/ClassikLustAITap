@@ -2,6 +2,7 @@
  * routes.ts - Modular Game Routes Orchestrator
  */
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import path from "path";
 import { errorTriageMiddleware, requestLoggerMiddleware } from './middleware/errorTriage';
