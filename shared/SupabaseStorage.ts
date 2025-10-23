@@ -24,6 +24,50 @@ import {
 } from "./schema";
 import { IStorage } from './storage';
 
+// 🎯 Field normalization - fixes PostgREST casing issues
+const toCamel: Record<string, string> = {
+  basecost: 'baseCost',
+  baseeffect: 'baseEffect',
+  costmultiplier: 'costMultiplier',
+  effectmultiplier: 'effectMultiplier',
+  maxlevel: 'maxLevel',
+  levelrequirement: 'levelRequirement',
+  unlocklevel: 'unlockLevel',
+  currentlevel: 'currentLevel',
+  sortorder: 'sortOrder',
+  hourlybonus: 'hourlyBonus',
+  tapbonus: 'tapBonus',
+  requiredlevel: 'requiredLevel',
+  createdat: 'createdAt',
+  updatedat: 'updatedAt',
+};
+
+const toSnake: Record<string, string> = Object.fromEntries(
+  Object.entries(toCamel).map(([k, v]) => [v, k])
+);
+
+function normalizeFromDb<T extends Record<string, any>>(row: T): T {
+  if (!row || typeof row !== 'object') return row;
+  const out: any = Array.isArray(row) ? [] : {};
+  for (const [k, v] of Object.entries(row)) {
+    const key = toCamel[k] ?? k;
+    out[key] = v && typeof v === 'object' && !Array.isArray(v)
+      ? normalizeFromDb(v as any) : v;
+  }
+  return out;
+}
+
+function normalizeToDb<T extends Record<string, any>>(row: T): T {
+  if (!row || typeof row !== 'object') return row;
+  const out: any = Array.isArray(row) ? [] : {};
+  for (const [k, v] of Object.entries(row)) {
+    const key = toSnake[k] ?? k;
+    out[key] = v && typeof v === 'object' && !Array.isArray(v)
+      ? normalizeToDb(v as any) : v;
+  }
+  return out;
+}
+
 // Define GameSettings type since it's referenced but not in schema
 interface GameSettings {
   id: string;
@@ -69,7 +113,7 @@ export class SupabaseStorage implements IStorage {
 
     // Store singleton instance
     SupabaseStorage.instance = this;
-    console.log('[SupabaseStorage] Singleton instance created - NO MORE COLUMN MAPPING!');
+    console.log('[SupabaseStorage] Singleton instance created with field normalization!');
   }
 
   // Singleton getter method
@@ -320,7 +364,7 @@ export class SupabaseStorage implements IStorage {
     console.log(`User ${userId} selected character ${characterId}`);
   }
 
-  // Upgrade management
+  // Upgrade management - 🎯 FIXED WITH NORMALIZERS
   async getUpgrade(id: string): Promise<Upgrade | undefined> {
     const { data, error } = await this.supabase
       .from('upgrades')
@@ -332,7 +376,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching upgrade:', error);
       return undefined;
     }
-    return data || undefined;
+    return data ? normalizeFromDb(data) : undefined;  // 🎯 NORMALIZE RESPONSE!
   }
 
   async getUserUpgrades(userId: string): Promise<Upgrade[]> {
@@ -347,7 +391,8 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching user upgrades:', error);
       return [];
     }
-    return (data?.map((item: any) => item.upgrades) || []).filter(Boolean) as Upgrade[];
+    const upgrades = (data?.map((item: any) => item.upgrades) || []).filter(Boolean) as Upgrade[];
+    return upgrades.map(normalizeFromDb);  // 🎯 NORMALIZE ALL RESPONSES!
   }
 
   async getAllUpgrades(): Promise<Upgrade[]> {
@@ -359,24 +404,26 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching all upgrades:', error);
       return [];
     }
-    return data || [];
+    
+    // 🎯 Apply normalizer to fix casing!
+    return (data || []).map(normalizeFromDb);
   }
 
   async createUpgrade(upgrade: InsertUpgrade): Promise<Upgrade> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .insert(upgrade)  // 🎯 NO CONVERSION!
+      .insert(normalizeToDb(upgrade))  // 🎯 CONVERT TO DB FORMAT!
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return normalizeFromDb(data);  // 🎯 CONVERT RESPONSE BACK!
   }
 
   async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | undefined> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .update(updates)  // 🎯 NO CONVERSION!
+      .update(normalizeToDb(updates))  // 🎯 Convert to DB format
       .eq('id', id)
       .select()
       .maybeSingle();
@@ -385,7 +432,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error updating upgrade:', error);
       return undefined;
     }
-    return data || undefined;
+    return data ? normalizeFromDb(data) : undefined; // 🎯 Convert back to app format
   }
 
   async upgradeUserUpgrade(userId: string, upgradeId: string): Promise<Upgrade> {
@@ -396,7 +443,7 @@ export class SupabaseStorage implements IStorage {
     });
 
     if (error) throw error;
-    return data;
+    return normalizeFromDb(data);  // 🎯 NORMALIZE RESPONSE!
   }
 
   async deleteUpgrade(id: string): Promise<void> {
@@ -867,7 +914,7 @@ export class SupabaseStorage implements IStorage {
     }
   }
 
-  // Missing methods for upgrades management
+  // Missing methods for upgrades management - 🎯 NORMALIZED!
   async getUpgrades(): Promise<any[]> {
     const { data, error } = await this.supabase
       .from('upgrades')
@@ -878,7 +925,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching upgrades:', error);
       return [];
     }
-    return data || [];
+    return (data || []).map(normalizeFromDb);  // 🎯 NORMALIZE RESPONSES!
   }
 
   // Missing methods for achievements management  
