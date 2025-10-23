@@ -1,0 +1,22 @@
+[
+  {
+    "id": "combo-master",
+    "key": "combo-master", 
+    "name": "Combo Master",
+    "description": "Build up combo multipliers for massive LP",
+    "category": "special",
+    "icon": "⭐",
+    "baseCost": 2000,
+    "baseEffect": 1,
+    "costMultiplier": 1.5,
+    "effectMultiplier": 1.25,
+    "maxLevel": 10,
+    "requiredLevel": 1,
+    "sortOrder": 0,
+    "hourlyBonus": 0,
+    "tapBonus": 0,
+    "currentLevel": 0,
+    "createdAt": "2025-10-23T22:05:00.000Z",
+    "updatedAt": "2025-10-23T22:05:00.000Z"
+  }
+]

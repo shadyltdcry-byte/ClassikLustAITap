@@ -1,5 +1,5 @@
 //MOTHER FUCKING BALL SACK OF TITTIES BRUH. :)
-
+// 🎯 NOW WITH JSON-FIRST ARCHITECTURE! NO MORE HARDCODED CHAOS! 🔥
 
 import { createClient } from '@supabase/supabase-js';
 import {
@@ -26,8 +26,9 @@ import {
   bonuses
 } from "./schema";
 import { IStorage } from './storage';
+import { FileStorage } from './FileStorage'; // 🎯 JSON-FIRST POWER!
 
-// 🎯 Field normalization - fixes PostgREST casing issues
+// 🎯 Field normalization - fixes PostgREST casing issues (for DB only now)
 const toCamel: Record<string, string> = {
   basecost: 'baseCost',
   baseeffect: 'baseEffect',
@@ -85,6 +86,7 @@ interface GameSettings {
 export class SupabaseStorage implements IStorage {
   private static instance: SupabaseStorage;
   private supabaseClient;
+  private fileStorage: FileStorage; // 🎯 THE GAME CHANGER!
   public get supabase() { return this.supabaseClient; }
 
   constructor() {
@@ -103,7 +105,12 @@ export class SupabaseStorage implements IStorage {
       auth: { autoRefreshToken: false, persistSession: false }
     });
 
+    // 🎯 Initialize FileStorage for JSON-first architecture!
+    this.fileStorage = FileStorage.getInstance();
+    this.fileStorage.initializeDirectories(); // Ensure directory structure exists
+    
     SupabaseStorage.instance = this;
+    console.log('🎯 SupabaseStorage initialized with JSON-first FileStorage! 🔥');
   }
 
   static getInstance(): SupabaseStorage {
@@ -113,7 +120,7 @@ export class SupabaseStorage implements IStorage {
     return SupabaseStorage.instance;
   }
 
-  // User management
+  // User management (UNCHANGED - uses database)
   async getUser(id: string): Promise<User | undefined> {
     if (id.startsWith('telegram_')) {
       const telegramId = id.replace('telegram_', '');
@@ -179,7 +186,7 @@ export class SupabaseStorage implements IStorage {
     }
   }
 
-  // Character management
+  // Character management (UNCHANGED - uses JSON files)
   async getCharacter(id: string): Promise<Character | undefined> {
     try {
       const fs = await import('fs');
@@ -282,17 +289,14 @@ export class SupabaseStorage implements IStorage {
     console.log(`User ${userId} selected character ${characterId}`);
   }
 
-  // 🎯 UPGRADE MANAGEMENT - ONLY NORMALIZED METHODS!
+  // 🎯🔥💥 UPGRADE MANAGEMENT - NOW USES FILESTORAGE! BASECOST NIGHTMARE DEAD!
   async getUpgrade(id: string): Promise<Upgrade | undefined> {
-    const { data, error } = await this.supabase.from('upgrades').select('*').eq('id', id).maybeSingle();
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching upgrade:', error);
-      return undefined;
-    }
-    return data ? normalizeFromDb(data) : undefined;
+    console.log('🎯 [SupabaseStorage] getUpgrade() -> FileStorage (JSON-first!)');
+    return await this.fileStorage.getUpgrade(id);
   }
 
   async getUserUpgrades(userId: string): Promise<Upgrade[]> {
+    // User progress still comes from database
     const { data, error } = await this.supabase
       .from('userUpgrades').select('upgrades (*)').eq('userId', userId);
     if (error) {
@@ -303,32 +307,61 @@ export class SupabaseStorage implements IStorage {
     return upgrades.map(normalizeFromDb);
   }
 
+  // 🎯 THE BIG WIN - ALL UPGRADES FROM JSON!
   async getAllUpgrades(): Promise<Upgrade[]> {
-    const { data, error } = await this.supabase.from('upgrades').select('*');
-    if (error) {
-      console.error('Error fetching all upgrades:', error);
-      return [];
-    }
-    return (data || []).map(normalizeFromDb);
+    console.log('🎯 [SupabaseStorage] getAllUpgrades() -> FileStorage (JSON-first!)');
+    return await this.fileStorage.getAllUpgrades();
   }
 
   async createUpgrade(upgrade: InsertUpgrade): Promise<Upgrade> {
-    const { data, error } = await this.supabase
-      .from('upgrades').insert(normalizeToDb(upgrade)).select().single();
-    if (error) throw error;
-    return normalizeFromDb(data);
+    console.log('🎯 [SupabaseStorage] createUpgrade() -> FileStorage (JSON-first!)');
+    return await this.fileStorage.createUpgrade(upgrade);
   }
 
   async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | undefined> {
-    const { data, error } = await this.supabase
-      .from('upgrades').update(normalizeToDb(updates)).eq('id', id).select().maybeSingle();
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error updating upgrade:', error);
-      return undefined;
-    }
-    return data ? normalizeFromDb(data) : undefined;
+    console.log('🎯 [SupabaseStorage] updateUpgrade() -> FileStorage (JSON-first!)');
+    return await this.fileStorage.updateUpgrade(id, updates);
   }
 
+  async deleteUpgrade(id: string): Promise<void> {
+    console.log('🎯 [SupabaseStorage] deleteUpgrade() -> FileStorage (JSON-first!)');
+    const success = await this.fileStorage.deleteUpgrade(id);
+    if (!success) {
+      throw new Error(`Failed to delete upgrade ${id}`);
+    }
+  }
+
+  // Admin upgrades method - NOW PURE JSON!
+  async getUpgrades(): Promise<Upgrade[]> {
+    console.log('🎯 [SupabaseStorage] getUpgrades() -> FileStorage (JSON-first!)');
+    return await this.fileStorage.getAllUpgrades();
+  }
+
+  // 🎯🔥💥 ACHIEVEMENTS - NOW USES FILESTORAGE TOO!
+  async getAchievements(): Promise<any[]> {
+    console.log('🎯 [SupabaseStorage] getAchievements() -> FileStorage (JSON-first!)');
+    return await this.fileStorage.getAllAchievements();
+  }
+
+  async createAchievement(achievement: any): Promise<any> {
+    console.log('🎯 [SupabaseStorage] createAchievement() -> FileStorage (JSON-first!)');
+    return await this.fileStorage.createAchievement(achievement);
+  }
+
+  async updateAchievement(id: string, updates: any): Promise<any> {
+    console.log('🎯 [SupabaseStorage] updateAchievement() -> FileStorage (JSON-first!)');
+    return await this.fileStorage.updateAchievement(id, updates);
+  }
+
+  async deleteAchievement(id: string): Promise<void> {
+    console.log('🎯 [SupabaseStorage] deleteAchievement() -> FileStorage (JSON-first!)');
+    const success = await this.fileStorage.deleteAchievement(id);
+    if (!success) {
+      throw new Error(`Failed to delete achievement ${id}`);
+    }
+  }
+
+  // USER PROGRESS UPGRADES (still database for user-specific data)
   async upgradeUserUpgrade(userId: string, upgradeId: string): Promise<Upgrade> {
     const { data, error } = await this.supabase.rpc('increment_userUpgrade', {
       p_userId: userId,
@@ -338,22 +371,7 @@ export class SupabaseStorage implements IStorage {
     return normalizeFromDb(data);
   }
 
-  async deleteUpgrade(id: string): Promise<void> {
-    const { error } = await this.supabase.from('upgrades').delete().eq('id', id);
-    if (error) throw error;
-  }
-
-  // Admin upgrades method - normalized
-  async getUpgrades(): Promise<Upgrade[]> {
-    const { data, error } = await this.supabase.from('upgrades').select('*').order('category, name');
-    if (error) {
-      console.error('Error fetching upgrades:', error);
-      return [];
-    }
-    return (data || []).map(normalizeFromDb);
-  }
-
-  // Game stats
+  // Game stats (UNCHANGED - uses database)
   async getUserStats(userId: string): Promise<GameStats> {
     try {
       let realUserId = userId;
@@ -392,7 +410,7 @@ export class SupabaseStorage implements IStorage {
     console.log('📊 User stats update skipped - table removed during cleanup');
   }
 
-  // Chat system
+  // Chat system (UNCHANGED - uses database)
   async getChatMessages(userId: string, characterId?: string): Promise<ChatMessage[]> {
     let query = this.supabase.from('chatMessages').select('*').eq('userId', userId).order('createdAt', { ascending: true });
     if (characterId) query = query.eq('characterId', characterId);
@@ -417,7 +435,7 @@ export class SupabaseStorage implements IStorage {
     if (error) throw error;
   }
 
-  // Wheel system
+  // Wheel system (UNCHANGED - uses database)
   async getLastWheelSpin(userId: string): Promise<Date | null> {
     const { data, error } = await this.supabase
       .from('wheelRewards').select('spunAt').eq('userId', userId).order('spunAt', { ascending: false }).limit(1).maybeSingle();
@@ -433,7 +451,7 @@ export class SupabaseStorage implements IStorage {
     if (error) throw error;
   }
 
-  // Admin/Settings
+  // Admin/Settings (UNCHANGED)
   async getGameSettings(): Promise<GameSettings> {
     return {
       id: "default", nsfwEnabled: false, vipEnabled: false, eventEnabled: false,
@@ -448,7 +466,15 @@ export class SupabaseStorage implements IStorage {
   async getSystemStats(): Promise<any> {
     const { data: userCount } = await this.supabase.from('users').select('id', { count: 'exact', head: true });
     const { data: characterCount } = await this.supabase.from('characters').select('id', { count: 'exact', head: true });
-    return { totalUsers: userCount?.length || 0, totalCharacters: characterCount?.length || 0, lastUpdated: new Date().toISOString() };
+    const fileStats = this.fileStorage.getCacheStats();
+    
+    return { 
+      totalUsers: userCount?.length || 0, 
+      totalCharacters: characterCount?.length || 0, 
+      gameDataFiles: fileStats.files,
+      gameDataItems: fileStats.totalItems,
+      lastUpdated: new Date().toISOString() 
+    };
   }
 
   async exportAllData(): Promise<any> {
@@ -457,10 +483,20 @@ export class SupabaseStorage implements IStorage {
       this.supabase.from('characters').select('*'),
       this.supabase.from('chatMessages').select('*')
     ]);
-    return { users: users.data || [], characters: characters.data || [], messages: messages.data || [], exportedAt: new Date().toISOString() };
+    
+    // 🎯 Include FileStorage data in exports!
+    const gameData = await this.fileStorage.exportAllData();
+    
+    return { 
+      users: users.data || [], 
+      characters: characters.data || [], 
+      messages: messages.data || [], 
+      gameData, // 🎯 JSON-first game content!
+      exportedAt: new Date().toISOString() 
+    };
   }
 
-  // Media management
+  // Media management (UNCHANGED - uses database)
   async getAllMedia(): Promise<MediaFile[]> {
     const { data, error } = await this.supabase.from('mediaFiles').select('*');
     if (error) {
@@ -583,7 +619,7 @@ export class SupabaseStorage implements IStorage {
     return { total: allFiles.length, orphaned: orphanedFiles.length, duplicates: duplicates.length, withoutCharacter, withoutFileName };
   }
 
-  // Level requirements
+  // Level requirements (TODO: Move to FileStorage in future)
   async getLevelRequirements(): Promise<any[]> {
     const { data, error } = await this.supabase.from('levelRequirements').select('*').order('level');
     if (error) {
@@ -610,34 +646,16 @@ export class SupabaseStorage implements IStorage {
     if (error) throw new Error(`Failed to delete level requirement: ${error.message}`);
   }
 
-  // Achievements
-  async getAchievements(): Promise<any[]> {
-    const { data, error } = await this.supabase.from('achievements').select('*').order('category, sortOrder');
-    if (error) {
-      console.error('Error fetching achievements:', error);
-      return [];
-    }
-    return data || [];
-  }
-
-  async createAchievement(achievement: any): Promise<any> {
-    const { data, error } = await this.supabase.from('achievements').insert(achievement).select().single();
-    if (error) throw new Error(`Failed to create achievement: ${error.message}`);
-    return data;
-  }
-
-  async updateAchievement(id: string, updates: any): Promise<any> {
-    const { data, error } = await this.supabase.from('achievements').update(updates).eq('id', id).select().maybeSingle();
-    if (error && error.code !== 'PGRST116') throw new Error(`Failed to update achievement: ${error.message}`);
-    return data;
-  }
-
-  async deleteAchievement(id: string): Promise<void> {
-    const { error } = await this.supabase.from('achievements').delete().eq('id', id);
-    if (error) throw new Error(`Failed to delete achievement: ${error.message}`);
-  }
-
   async setSelectedCharacter(userId: string, characterId: string): Promise<void> {
     await this.selectCharacter(userId, characterId);
+  }
+
+  // 🎯 DEBUGGING HELPERS
+  getFileStorageStats(): any {
+    return this.fileStorage.getCacheStats();
+  }
+
+  clearFileStorageCache(): void {
+    this.fileStorage.clearCache();
   }
 }
