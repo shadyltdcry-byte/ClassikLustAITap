@@ -35,11 +35,30 @@ interface GameSettings {
   [key: string]: any;
 }
 
+// CRITICAL FIX: Map camelCase to actual database column names
 function toDBColumn(str: string): string {
-  if (str === "characterId") return "characterId";
-  return str.toLowerCase();
+  // Map camelCase API fields to actual database column names
+  const fieldMap: { [key: string]: string } = {
+    'characterId': 'characterid',  // Database has lowercase characterid
+    'filePath': 'filepath',
+    'fileName': 'filename', 
+    'fileType': 'filetype',
+    'isNsfw': 'isnsfw',
+    'isVip': 'isvip',
+    'isEvent': 'isevent',
+    'isWheelReward': 'iswheelreward',
+    'enabledForChat': 'enabledforchat',
+    'randomSendChance': 'randomsendchance',
+    'requiredLevel': 'requiredlevel',
+    'levelRequirement': 'levelrequirement',
+    'createdAt': 'createdat',
+    'updatedAt': 'updatedat'
+  };
+  
+  return fieldMap[str] || str.toLowerCase();
 }
 
+// Map camelCase object to database column names
 function mapToDBColumns<T extends Record<string, any>>(obj: T): Record<string, any> {
   const newObj: Record<string, any> = {};
   for (const key in obj) {
@@ -50,45 +69,39 @@ function mapToDBColumns<T extends Record<string, any>>(obj: T): Record<string, a
   return newObj;
 }
 
-// Helper function to convert snake_case to camelCase
-function toCamelCase(str: string): string {
-  return str.replace(/([_][a-z])/g, (group) => group.toUpperCase().replace('_', ''));
-}
-
-// Helper function to convert camelCase to lowercase (PostgreSQL default)
-function toSnakeCase(str: string): string {
-  // PostgreSQL converts unquoted identifiers to lowercase, no underscores
-  return str.toLowerCase();
-}
-
-// Universal mapper function for database operations (results from DB)
-function mapToCamelCase<T extends Record<string, any>>(obj: T): Record<string, any> {
+// Map database results back to camelCase
+function fromDBColumns(obj: Record<string, any>): Record<string, any> {
+  const fieldMap: { [key: string]: string } = {
+    'characterid': 'characterId',
+    'filepath': 'filePath',
+    'filename': 'fileName',
+    'filetype': 'fileType',
+    'isnsfw': 'isNsfw',
+    'isvip': 'isVip',
+    'isevent': 'isEvent',
+    'iswheelreward': 'isWheelReward',
+    'enabledforchat': 'enabledForChat',
+    'randomsendchance': 'randomSendChance',
+    'requiredlevel': 'requiredLevel',
+    'levelrequirement': 'levelRequirement',
+    'createdat': 'createdAt',
+    'updatedat': 'updatedAt'
+  };
+  
   const newObj: Record<string, any> = {};
   for (const key in obj) {
     if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      newObj[toCamelCase(key)] = obj[key];
+      const camelKey = fieldMap[key] || key;
+      newObj[camelKey] = obj[key];
     }
   }
   return newObj;
 }
 
-// Convert camelCase to snake_case for database inserts/updates
-function mapToSnakeCase<T extends Record<string, any>>(obj: T): Record<string, any> {
-  const newObj: Record<string, any> = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      newObj[toSnakeCase(key)] = obj[key];
-    }
-  }
-  return newObj;
+// Function to map an array of objects from database to camelCase
+function mapArrayFromDB<T extends Record<string, any>>(arr: T[]): Record<string, any>[] {
+  return arr.map(item => fromDBColumns(item));
 }
-
-
-// Function to map an array of objects from snake_case to camelCase
-function mapArrayToCamelCase<T extends Record<string, any>>(arr: T[]): Record<string, any>[] {
-  return arr.map(item => mapToCamelCase(item));
-}
-
 
 export class SupabaseStorage implements IStorage {
   private static instance: SupabaseStorage;
@@ -139,15 +152,14 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .select('*')
-        .eq('telegramId', telegramId)
+        .eq('telegramid', telegramId)  // Use lowercase
         .single();
 
       if (error) {
         console.error('Error fetching user by telegram ID:', error);
         return undefined;
       }
-      // Map to camelCase
-     return data ? mapToCamelCase(data) : undefined;
+      return data ? fromDBColumns(data) : undefined;
     } else {
       // Regular UUID lookup
       const { data, error } = await this.supabase
@@ -160,8 +172,7 @@ export class SupabaseStorage implements IStorage {
         console.error('Error fetching user by UUID:', error);
         return undefined;
       }
-      // Map to camelCase
-      return data ? mapToCamelCase(data) : undefined;
+      return data ? fromDBColumns(data) : undefined;
     }
   }
 
@@ -176,20 +187,18 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching user by username:', error);
       return undefined;
     }
-    // Map to camelCase
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async createUser(user: InsertUser): Promise<User> {
     const { data, error } = await this.supabase
       .from('users')
-      .insert(mapToCamelCase(user))
+      .insert(mapToDBColumns(user))
       .select()
       .single();
 
     if (error) throw error;
-    // Map to camelCase
-    return mapToCamelCase(data);
+    return fromDBColumns(data);
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
@@ -202,8 +211,8 @@ export class SupabaseStorage implements IStorage {
       }
     });
 
-    // Convert to camel case for database
-    const dbUpdates = mapToCamelCase(safeUpdates);
+    // Convert to database column names
+    const dbUpdates = mapToDBColumns(safeUpdates);
 
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
@@ -211,7 +220,7 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .update(dbUpdates)
-        .eq('telegramId', telegramId)
+        .eq('telegramid', telegramId)  // Use lowercase
         .select()
         .single();
 
@@ -222,8 +231,7 @@ export class SupabaseStorage implements IStorage {
         }
         return undefined;
       }
-      // Map to camelCase
-      return data ? mapToCamelCase(data) : undefined;
+      return data ? fromDBColumns(data) : undefined;
     } else {
       // Regular UUID update
       const { data, error } = await this.supabase
@@ -240,8 +248,7 @@ export class SupabaseStorage implements IStorage {
         }
         return undefined;
       }
-      // Map to camelCase
-      return data ? mapToCamelCase(data) : undefined;
+      return data ? fromDBColumns(data) : undefined;
     }
   }
 
@@ -291,14 +298,13 @@ export class SupabaseStorage implements IStorage {
       .select(`
         characters (*)
       `)
-      .eq('userId', userId);
+      .eq('userid', userId);  // Use lowercase
 
     if (error) {
       console.error('Error fetching user characters:', error);
       return [];
     }
-    // Map to camelCase
-    return (data?.map((item: any) => item.characters) || []).map(char => mapToCamelCase(char)).filter(Boolean) as Character[];
+    return (data?.map((item: any) => item.characters) || []).map(char => fromDBColumns(char)).filter(Boolean) as Character[];
   }
 
   async getAllCharacters(): Promise<Character[]> {
@@ -350,19 +356,18 @@ export class SupabaseStorage implements IStorage {
   async createCharacter(character: InsertCharacter): Promise<Character> {
     const { data, error } = await this.supabase
       .from('characters')
-      .insert(mapToCamelCase(character))
+      .insert(mapToDBColumns(character))
       .select()
       .single();
 
     if (error) throw error;
-    // Map to camelCase
-    return mapToCamelCase(data);
+    return fromDBColumns(data);
   }
 
   async updateCharacter(id: string, updates: Partial<Character>): Promise<Character | undefined> {
     const { data, error } = await this.supabase
       .from('characters')
-      .update(mapToCamelCase(updates))
+      .update(mapToDBColumns(updates))
       .eq('id', id)
       .select()
       .single();
@@ -371,8 +376,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error updating character:', error);
       return undefined;
     }
-    // Map to camelCase
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async deleteCharacter(id: string): Promise<void> {
@@ -401,8 +405,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching upgrade:', error);
       return undefined;
     }
-    // Map to camelCase
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async getUserUpgrades(userId: string): Promise<Upgrade[]> {
@@ -411,14 +414,13 @@ export class SupabaseStorage implements IStorage {
       .select(`
         upgrades (*)
       `)
-      .eq('userId', userId);
+      .eq('userid', userId);  // Use lowercase
 
     if (error) {
       console.error('Error fetching user upgrades:', error);
       return [];
     }
-    // Map to camelCase
-    return (data?.map((item: any) => item.upgrades) || []).map(upgrade => mapToCamelCase(upgrade)).filter(Boolean) as Upgrade[];
+    return (data?.map((item: any) => item.upgrades) || []).map(upgrade => fromDBColumns(upgrade)).filter(Boolean) as Upgrade[];
   }
 
   async getAllUpgrades(): Promise<Upgrade[]> {
@@ -430,26 +432,24 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching all upgrades:', error);
       return [];
     }
-    // Map to camelCase
-    return data ? mapArrayToCamelCase(data) : [];
+    return data ? mapArrayFromDB(data) : [];
   }
 
   async createUpgrade(upgrade: InsertUpgrade): Promise<Upgrade> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .insert(mapToCamelCase(upgrade))
+      .insert(mapToDBColumns(upgrade))
       .select()
       .single();
 
     if (error) throw error;
-    // Map to camelCase
-    return mapToCamelCase(data);
+    return fromDBColumns(data);
   }
 
   async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | undefined> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .update(mapToCamelCase(updates))
+      .update(mapToDBColumns(updates))
       .eq('id', id)
       .select()
       .single();
@@ -458,20 +458,18 @@ export class SupabaseStorage implements IStorage {
       console.error('Error updating upgrade:', error);
       return undefined;
     }
-    // Map to camelCase
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async upgradeUserUpgrade(userId: string, upgradeId: string): Promise<Upgrade> {
     // Increment user's upgrade level
     const { data, error } = await this.supabase.rpc('increment_userUpgrade', {
-      p_userId: userId,
-      p_upgradeId: upgradeId
+      p_userid: userId,      // Use lowercase
+      p_upgradeid: upgradeId // Use lowercase
     });
 
     if (error) throw error;
-    // Map to camelCase
-    return mapToCamelCase(data);
+    return fromDBColumns(data);
   }
 
   async deleteUpgrade(id: string): Promise<void> {
@@ -492,7 +490,7 @@ export class SupabaseStorage implements IStorage {
         const { data: user } = await this.supabase
           .from('users')
           .select('id')
-          .eq('telegramId', telegramId)
+          .eq('telegramid', telegramId)  // Use lowercase
           .maybeSingle();
 
         if (user?.id) {
@@ -530,7 +528,7 @@ export class SupabaseStorage implements IStorage {
 
         const { data: newData, error: createError } = await this.supabase
           .from('users')
-          .insert(defaultStats)
+          .insert(mapToDBColumns(defaultStats))
           .select()
           .single();
 
@@ -544,11 +542,9 @@ export class SupabaseStorage implements IStorage {
             sessionsPlayed: 0
           } as GameStats;
         }
-        // Map to camelCase
-        return mapToCamelCase(newData);
+        return fromDBColumns(newData);
       }
-      // Map to camelCase
-      return mapToCamelCase(data);
+      return fromDBColumns(data);
     } catch (error) {
       console.error('getUserStats error:', error);
       return {
@@ -587,11 +583,11 @@ export class SupabaseStorage implements IStorage {
     let query = this.supabase
       .from('chatMessages')
       .select('*')
-      .eq('userId', userId)
-      .order('createdAt', { ascending: true });
+      .eq('userid', userId)  // Use lowercase
+      .order('createdat', { ascending: true });  // Use lowercase
 
     if (characterId) {
-      query = query.eq('characterId', characterId);
+      query = query.eq('characterid', characterId);  // Use lowercase
     }
 
     const { data, error } = await query;
@@ -600,30 +596,28 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching chat messages:', error);
       return [];
     }
-    // Map to camelCase
-    return data ? mapArrayToCamelCase(data) : [];
+    return data ? mapArrayFromDB(data) : [];
   }
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
     const { data, error } = await this.supabase
       .from('chatMessages')
-      .insert(mapToCamelCase(message))
+      .insert(mapToDBColumns(message))
       .select()
       .single();
 
     if (error) throw error;
-    // Map to camelCase
-    return mapToCamelCase(data);
+    return fromDBColumns(data);
   }
 
   async clearChatHistory(userId: string, characterId?: string): Promise<void> {
     let query = this.supabase
       .from('chatMessages')
       .delete()
-      .eq('userId', userId);
+      .eq('userid', userId);  // Use lowercase
 
     if (characterId) {
-      query = query.eq('characterId', characterId);
+      query = query.eq('characterid', characterId);  // Use lowercase
     }
 
     const { error } = await query;
@@ -634,21 +628,21 @@ export class SupabaseStorage implements IStorage {
   async getLastWheelSpin(userId: string): Promise<Date | null> {
     const { data, error } = await this.supabase
       .from('wheelRewards')
-      .select('spunAt')
-      .eq('userId', userId)
-      .order('spunAt', { ascending: false })
+      .select('spunat')  // Use lowercase
+      .eq('userid', userId)  // Use lowercase
+      .order('spunat', { ascending: false })  // Use lowercase
       .limit(1)
       .single();
 
     if (error) return null;
-    return data ? new Date(data.spunAt) : null;
+    return data ? new Date(data.spunat) : null;
   }
 
   async recordWheelSpin(userId: string, reward: string): Promise<void> {
     const { error } = await this.supabase
       .from('wheelRewards')
       .insert({
-        userId: userId,
+        userid: userId,  // Use lowercase
         reward,
         amount: 1
       });
@@ -699,9 +693,9 @@ export class SupabaseStorage implements IStorage {
     ]);
 
     return {
-      users: users.data ? mapArrayToCamelCase(users.data) : [],
-      characters: characters.data ? mapArrayToCamelCase(characters.data) : [],
-      messages: messages.data ? mapArrayToCamelCase(messages.data) : [],
+      users: users.data ? mapArrayFromDB(users.data) : [],
+      characters: characters.data ? mapArrayFromDB(characters.data) : [],
+      messages: messages.data ? mapArrayFromDB(messages.data) : [],
       exportedAt: new Date().toISOString()
     };
   }
@@ -717,21 +711,21 @@ export class SupabaseStorage implements IStorage {
       return [];
     }
 
-    // Map snake_case database columns to camelCase
-    return data ? mapArrayToCamelCase(data) : [];
+    // Map database columns back to camelCase
+    return data ? mapArrayFromDB(data) : [];
   }
 
   async getMediaFiles(characterId?: string): Promise<MediaFile[]> {
     let query = this.supabase.from('mediaFiles').select('*');
     if (characterId) {
-      query = query.eq('characterId', characterId);
+      query = query.eq('characterid', characterId);  // Use lowercase database column
     }
     const { data, error } = await query;
     if (error) {
       console.error('Error fetching media files:', error);
       return [];
     }
-    return data ? mapArrayToCamelCase(data) : [];
+    return data ? mapArrayFromDB(data) : [];
   }
 
   async getMediaByCharacter(characterId: string): Promise<MediaFile[]> {
@@ -740,6 +734,7 @@ export class SupabaseStorage implements IStorage {
 
   async saveMediaFile(file: MediaFile): Promise<MediaFile> {
     const dbFile = mapToDBColumns(file);
+    console.log('[SupabaseStorage] Saving media file:', dbFile);
     const { data, error } = await this.supabase
       .from('mediaFiles')
       .insert(dbFile)
@@ -749,11 +744,12 @@ export class SupabaseStorage implements IStorage {
       console.error('Database insert error:', error);
       throw error;
     }
-    return mapToCamelCase(data);
+    return fromDBColumns(data);
   }
 
   async updateMediaFile(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
     const dbUpdates = mapToDBColumns(updates);
+    console.log('[SupabaseStorage] Updating media file:', id, 'with:', dbUpdates);
     const { data, error } = await this.supabase
       .from('mediaFiles')
       .update(dbUpdates)
@@ -764,7 +760,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error updating media file:', error);
       return undefined;
     }
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async uploadMedia(file: any): Promise<MediaFile> {
@@ -790,8 +786,6 @@ export class SupabaseStorage implements IStorage {
     return this.saveMediaFile(mediaFile);
   }
 
-  
-
   async deleteMediaFile(id: string): Promise<void> {
     const { error } = await this.supabase
       .from('mediaFiles')
@@ -807,7 +801,7 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateMedia(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
-    const dbUpdates = mapToSnakeCase(updates);
+    const dbUpdates = mapToDBColumns(updates);
 
     const { data, error } = await this.supabase
       .from('mediaFiles')
@@ -821,7 +815,7 @@ export class SupabaseStorage implements IStorage {
       return undefined;
     }
 
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async deleteMedia(id: string): Promise<void> {
@@ -848,13 +842,13 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await this.supabase
       .from('mediaFiles')
       .select('*')
-      .or('fileName.is.null,filePath.is.null,characterId.is.null');
+      .or('filename.is.null,filepath.is.null,characterid.is.null');  // Use lowercase
 
     if (error) {
       console.error('Error finding orphaned media files:', error);
       return [];
     }
-    return data ? mapArrayToCamelCase(data) : [];
+    return data ? mapArrayFromDB(data) : [];
   }
 
   async getDuplicateMediaFiles(): Promise<{ duplicates: MediaFile[]; groups: { [key: string]: MediaFile[] } }> {
@@ -914,13 +908,13 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching level requirements:', error);
       return [];
     }
-    return data ? mapArrayToCamelCase(data) : [];
+    return data ? mapArrayFromDB(data) : [];
   }
 
   async createLevelRequirement(levelReq: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('levelRequirements')
-      .insert(mapToCamelCase(levelReq))
+      .insert(mapToDBColumns(levelReq))
       .select()
       .single();
 
@@ -928,13 +922,13 @@ export class SupabaseStorage implements IStorage {
       console.error('Error creating level requirement:', error);
       throw new Error(`Failed to create level requirement: ${error.message}`);
     }
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async updateLevelRequirement(id: string, updates: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('levelRequirements')
-      .update(mapToCamelCase(updates))
+      .update(mapToDBColumns(updates))
       .eq('id', id)
       .select()
       .single();
@@ -943,7 +937,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error updating level requirement:', error);
       throw new Error(`Failed to update level requirement: ${error.message}`);
     }
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async deleteLevelRequirement(id: string): Promise<void> {
@@ -969,28 +963,27 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching upgrades:', error);
       return [];
     }
-    return data ? mapArrayToCamelCase(data) : [];
+    return data ? mapArrayFromDB(data) : [];
   }
-
 
   // Missing methods for achievements management  
   async getAchievements(): Promise<any[]> {
     const { data, error } = await this.supabase
       .from('achievements')
       .select('*')
-      .order('category, sortOrder');
+      .order('category, sortorder');  // Use lowercase
 
     if (error) {
       console.error('Error fetching achievements:', error);
       return [];
     }
-    return data ? mapArrayToCamelCase(data) : [];
+    return data ? mapArrayFromDB(data) : [];
   }
 
   async createAchievement(achievement: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('achievements')
-      .insert(mapToCamelCase(achievement))
+      .insert(mapToDBColumns(achievement))
       .select()
       .single();
 
@@ -998,13 +991,13 @@ export class SupabaseStorage implements IStorage {
       console.error('Error creating achievement:', error);
       throw new Error(`Failed to create achievement: ${error.message}`);
     }
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async updateAchievement(id: string, updates: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('achievements')
-      .update(mapToCamelCase(updates))
+      .update(mapToDBColumns(updates))
       .eq('id', id)
       .select()
       .single();
@@ -1013,7 +1006,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error updating achievement:', error);
       throw new Error(`Failed to update achievement: ${error.message}`);
     }
-    return data ? mapToCamelCase(data) : undefined;
+    return data ? fromDBColumns(data) : undefined;
   }
 
   async deleteAchievement(id: string): Promise<void> {
