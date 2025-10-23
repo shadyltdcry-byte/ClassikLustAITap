@@ -8,33 +8,33 @@ import { SupabaseStorage } from '../../shared/SupabaseStorage';
 // Required columns for each table
 const REQUIRED_SCHEMA = {
   users: [
-    'id', 'telegramid', 'username', 'level', 'lp', 
-    'energy', 'maxenergy', 'lppertap', 'createdat', 'updatedat'
+    'id', 'telegramId', 'username', 'level', 'lp', 
+    'energy', 'maxEnergy', 'lpPerTap', 'createdAt', 'updatedAt'
   ],
   characters: [
-    'id', 'name', 'description', 'createdat', 'updatedat'
+    'id', 'name', 'description', 'createdAt', 'updatedAt'
   ],
   mediafiles: [
-    'id', 'characterid', 'filename', 'filepath', 'filetype',
-    'isnsfw', 'isvip', 'isevent', 'enabledforchat', 'randomsendchance',
-    'createdat', 'updatedat'
+    'id', 'characterId', 'fileName', 'filePath', 'fileType',
+    'isNsfw', 'isVip', 'isEvent', 'enabledForChat', 'randomSendChance',
+    'createdAt', 'updatedAt'
   ],
   upgrades: [
-    'id', 'name', 'description', 'basecost', 'hourlybonus', 
-    'tapbonus', 'category', 'maxlevel', 'createdat'
+    'id', 'name', 'description', 'baseCost', 'hourlyBonus', 
+    'tapBonus', 'category', 'maxLevel', 'createdAt'
   ],
   achievements: [
     'id', 'name', 'description', 'category', 'reward', 
-    'rewardtype', 'icon', 'sortorder', 'createdat'
+    'rewardType', 'icon', 'sortOrder', 'createdAt'
   ],
   levelrequirements: [
-    'id', 'level', 'lprequired', 'name', 'description'
+    'id', 'level', 'lpRequired', 'name', 'description'
   ],
   chatmessages: [
-    'id', 'userid', 'characterid', 'sendertype', 'message', 'createdat'
+    'id', 'userId', 'characterId', 'senderType', 'message', 'createdAt'
   ],
   wheelrewards: [
-    'id', 'userid', 'reward', 'amount', 'spunat'
+    'id', 'userId', 'reward', 'amount', 'spunAt'
   ]
 };
 

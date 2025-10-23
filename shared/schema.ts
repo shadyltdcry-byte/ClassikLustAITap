@@ -84,12 +84,12 @@ export const upgrades = pgTable("upgrades", {
   name: text("name").notNull(),
   description: text("description"),
   category: text("category").notNull(), // lpPerHour, energy, lpPerTap
-  basecost: integer("basecost").notNull(),
-  baseeffect: real("baseeffect").notNull(),
-  costmultiplier: real("costmultiplier").notNull().default(1.3),
-  effectmultiplier: real("effectmultiplier").notNull().default(1.15),
-  maxlevel: integer("maxlevel"),
-  levelrequirement: integer("levelrequirement").notNull().default(1),
+  baseCost: integer("baseCost").notNull(),
+  baseEffect: real("baseEffect").notNull(),
+  costMultiplier: real("costMultiplier").notNull().default(1.3),
+  effectMultiplier: real("effectMultiplier").notNull().default(1.15),
+  maxLevel: integer("maxLevel"),
+  levelRequirement: integer("levelRequirement").notNull().default(1),
 });
 
 export const userUpgrades = pgTable("userUpgrades", {
@@ -118,7 +118,7 @@ export const wheelRewards = pgTable("wheelRewards", {
   spunAt: timestamp("spunAt").notNull().default(sql`now()`),
 });
 
-export const gameStats = pgTable("game_stats", {
+export const gameStats = pgTable("gameStats", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   totalTaps: integer("totalTaps").notNull().default(0),
@@ -128,7 +128,7 @@ export const gameStats = pgTable("game_stats", {
   lastUpdated: timestamp("lastUpdated").notNull().default(sql`now()`),
 });
 
-export const chatMessages = pgTable("chat_messages", {
+export const chatMessages = pgTable("chatMessages", {
   id: uuid("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: uuid("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   characterId: uuid("characterId").notNull().references(() => characters.id, { onDelete: "cascade" }),

@@ -44,14 +44,14 @@ const normalizeUpgrade = (raw: any): Upgrade => ({
   id: raw.id,
   name: raw.name,
   description: raw.description,
-  baseCost: raw.baseCost ?? raw.basecost ?? 0,
-  hourlyBonus: raw.hourlyBonus ?? raw.hourlybonus ?? 0,
-  tapBonus: raw.tapBonus ?? raw.tapbonus ?? 0,
-  currentLevel: raw.currentLevel ?? raw.currentlevel ?? 0,
-  maxLevel: raw.maxLevel ?? raw.maxlevel ?? 1,
+  baseCost: raw.baseCost ?? raw.baseCost ?? 0,
+  hourlyBonus: raw.hourlyBonus ?? raw.hourlyBonus ?? 0,
+  tapBonus: raw.tapBonus ?? raw.tapBonus ?? 0,
+  currentLevel: raw.currentLevel ?? raw.currentLevel ?? 0,
+  maxLevel: raw.maxLevel ?? raw.maxLevel ?? 1,
   category: raw.category,
   icon: raw.icon ?? '🔧',
-  sortOrder: raw.sortOrder ?? raw.sortorder ?? 0,
+  sortOrder: raw.sortOrder ?? raw.sortOrder ?? 0,
 });
 
 // DYNAMIC COST CALCULATION FUNCTIONS

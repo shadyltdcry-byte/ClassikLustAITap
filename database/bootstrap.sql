@@ -23,7 +23,7 @@ DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     telegramId TEXT UNIQUE,  -- Telegram user ID for auth
-    userName TEXT UNIQUE,
+    username TEXT UNIQUE,
     displayName TEXT,
     level INTEGER DEFAULT 1,
     lp NUMERIC(15,2) DEFAULT 1000,
@@ -175,12 +175,12 @@ INSERT INTO characters (id, name, description, personality) VALUES
 ('550e8400-e29b-41d4-a716-446655440002', 'Zara', 'A vibrant and energetic companion', 'Playful, adventurous, loyal');
 
 -- Insert default upgrades
-INSERT INTO upgrades (id, name, description, basecost, tapbonus, category, maxlevel, icon) VALUES 
+INSERT INTO upgrades (id, name, description, baseCost, tapaBonus, category, maxLevel, icon) VALUES 
 ('upgrade-tap-basic', 'Enhanced Tapping', 'Increases LP gained per tap', 100, 1, 'lpPerTap', 25, '👆'),
 ('upgrade-tap-master', 'Tap Master', 'Significantly boost tap rewards', 2000, 5, 'lpPerTap', 15, '💎'),
 ('upgrade-test', 'Test Upgrade', 'Testing upgrade system', 10, 5, 'lpPerTap', 10, '🧪');
 
-INSERT INTO upgrades (id, name, description, basecost, hourlybonus, category, maxlevel, icon) VALUES 
+INSERT INTO upgrades (id, name, description, baseCost, hourlyBonus, category, maxLevel, icon) VALUES 
 ('upgrade-passive-basic', 'Passive Income', 'Generate LP automatically over time', 250, 10, 'lpPerHour', 20, '💰'),
 ('upgrade-combo-master', 'Combo Master', 'Build up combo multipliers for massive LP', 2000, 2, 'special', 10, '✨');
 

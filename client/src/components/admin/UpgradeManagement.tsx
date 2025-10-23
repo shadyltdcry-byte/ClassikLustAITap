@@ -18,12 +18,12 @@ interface Upgrade {
   name: string;
   description?: string;
   category: string;
-  basecost: number;
-  baseeffect: number;
-  costmultiplier: number;
-  effectmultiplier: number;
-  maxlevel?: number;
-  levelrequirement: number;
+  baseCost: number;
+  baseEffect: number;
+  costMultiplier: number;
+  effectMultiplier: number;
+  maxLevel?: number;
+  levelRequirement: number;
 }
 
 const upgradeCategories = [
@@ -39,12 +39,12 @@ export default function UpgradeManagement() {
     name: '',
     description: '',
     category: 'lpPerHour',
-    basecost: 100,
-    baseeffect: 1,
-    costmultiplier: 1.3,
-    effectmultiplier: 1.15,
-    maxlevel: 10,
-    levelrequirement: 1
+    baseCost: 100,
+    baseEffect: 1,
+    costMultiplier: 1.3,
+    effectMultiplier: 1.15,
+    maxLevel: 10,
+    levelRequirement: 1
   });
 
   const queryClient = useQueryClient();
@@ -103,12 +103,12 @@ export default function UpgradeManagement() {
       name: '',
       description: '',
       category: 'lpPerHour',
-      basecost: 100,
-      baseeffect: 1,
-      costmultiplier: 1.3,
-      effectmultiplier: 1.15,
-      maxlevel: 10,
-      levelrequirement: 1
+      baseCost: 100,
+      baseEffect: 1,
+      costMultiplier: 1.3,
+      effectMultiplier: 1.15,
+      maxLevel: 10,
+      levelRequirement: 1
     });
     setEditingUpgrade(null);
   };
@@ -167,8 +167,8 @@ export default function UpgradeManagement() {
                     <div>
                       <h4 className="text-white font-medium">{upgrade.name}</h4>
                       <p className="text-gray-300">Category: {getCategoryLabel(upgrade.category)}</p>
-                      <p className="text-gray-300">Base Cost: {upgrade.basecost} LP | Effect: +{upgrade.baseeffect}</p>
-                      <p className="text-gray-300">Level Required: {upgrade.levelrequirement}</p>
+                      <p className="text-gray-300">Base Cost: {upgrade.baseCost} LP | Effect: +{upgrade.baseEffect}</p>
+                      <p className="text-gray-300">Level Required: {upgrade.levelRequirement}</p>
                       {upgrade.description && (
                         <p className="text-gray-400 text-sm mt-1">{upgrade.description}</p>
                       )}
@@ -232,24 +232,24 @@ export default function UpgradeManagement() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label htmlFor="basecost">Base Cost</Label>
+                  <Label htmlFor="baseCost">Base Cost</Label>
                   <Input
-                    id="basecost"
+                    id="baseCost"
                     type="number"
-                    value={formData.basecost}
-                    onChange={(e) => setFormData({...formData, basecost: parseFloat(e.target.value)})}
+                    value={formData.baseCost}
+                    onChange={(e) => setFormData({...formData, baseCost: parseFloat(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-base-cost"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="baseeffect">Base Effect</Label>
+                  <Label htmlFor="baseEffect">Base Effect</Label>
                   <Input
-                    id="baseeffect"
+                    id="baseEffect"
                     type="number"
                     step="0.1"
-                    value={formData.baseeffect}
-                    onChange={(e) => setFormData({...formData, baseeffect: parseFloat(e.target.value)})}
+                    value={formData.baseEffect}
+                    onChange={(e) => setFormData({...formData, baseEffect: parseFloat(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-base-effect"
                   />
@@ -257,25 +257,25 @@ export default function UpgradeManagement() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label htmlFor="costmultiplier">Cost Multiplier</Label>
+                  <Label htmlFor="costMultiplier">Cost Multiplier</Label>
                   <Input
-                    id="costmultiplier"
+                    id="costMultiplier"
                     type="number"
                     step="0.1"
-                    value={formData.costmultiplier}
-                    onChange={(e) => setFormData({...formData, costmultiplier: parseFloat(e.target.value)})}
+                    value={formData.costMultiplier}
+                    onChange={(e) => setFormData({...formData, costMultiplier: parseFloat(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-cost-multiplier"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="effectmultiplier">Effect Multiplier</Label>
+                  <Label htmlFor="effectMultiplier">Effect Multiplier</Label>
                   <Input
-                    id="effectmultiplier"
+                    id="effectMultiplier"
                     type="number"
                     step="0.1"
-                    value={formData.effectmultiplier}
-                    onChange={(e) => setFormData({...formData, effectmultiplier: parseFloat(e.target.value)})}
+                    value={formData.effectMultiplier}
+                    onChange={(e) => setFormData({...formData, effectMultiplier: parseFloat(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-effect-multiplier"
                   />
@@ -283,23 +283,23 @@ export default function UpgradeManagement() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <Label htmlFor="levelrequirement">Level Required</Label>
+                  <Label htmlFor="levelRequirement">Level Required</Label>
                   <Input
-                    id="levelrequirement"
+                    id="levelRequirement"
                     type="number"
-                    value={formData.levelrequirement}
-                    onChange={(e) => setFormData({...formData, levelrequirement: parseInt(e.target.value)})}
+                    value={formData.levelRequirement}
+                    onChange={(e) => setFormData({...formData, levelRequirement: parseInt(e.target.value)})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-level-requirement"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="maxlevel">Max Level</Label>
+                  <Label htmlFor="maxLevel">Max Level</Label>
                   <Input
-                    id="maxlevel"
+                    id="maxLevel"
                     type="number"
-                    value={formData.maxlevel || ''}
-                    onChange={(e) => setFormData({...formData, maxlevel: e.target.value ? parseInt(e.target.value) : undefined})}
+                    value={formData.maxLevel || ''}
+                    onChange={(e) => setFormData({...formData, maxLevel: e.target.value ? parseInt(e.target.value) : undefined})}
                     className="bg-gray-700 border-gray-600 text-white"
                     data-testid="input-max-level"
                   />

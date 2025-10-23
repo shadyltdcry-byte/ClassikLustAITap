@@ -42,10 +42,10 @@ export function registerUpgradeRoutes(app: Express) {
           }
         }
         
-        const baseCost = Number(u.basecost || 0);
-        const costMult = Number(u.costmultiplier || 1.2);
-        const baseEffect = Number(u.baseeffect || 1);
-        const effectMult = Number(u.effectmultiplier || 1.1);
+        const baseCost = Number(u.baseCost || 0);
+        const costMult = Number(u.costMultiplier || 1.2);
+        const baseEffect = Number(u.baseEffect || 1);
+        const effectMult = Number(u.effectMultiplier || 1.1);
         const cost = Math.max(1, Math.round(baseCost * Math.pow(costMult, currentLevel)));
         const effectValue = Math.round(baseEffect * Math.pow(effectMult, currentLevel));
         const effect = u.category === 'lpPerTap' ? `+${effectValue} LP/tap` : u.category === 'lpPerHour' ? `+${effectValue} LP/hour` : `+${effectValue}`;
@@ -56,7 +56,7 @@ export function registerUpgradeRoutes(app: Express) {
           description: u.description,
           category: u.category,
           currentLevel,
-          maxLevel: u.maxlevel || 10,
+          maxLevel: u.maxLevel || 10,
           cost,
           effect,
         };
@@ -118,8 +118,8 @@ export function registerUpgradeRoutes(app: Express) {
       }
 
       // Compute cost for current level
-      const baseCost = Number(upgrade.basecost || 0);
-      const costMult = Number(upgrade.costmultiplier || 1.2);
+      const baseCost = Number(upgrade.baseCost || 0);
+      const costMult = Number(upgrade.costMultiplier || 1.2);
       const cost = Math.max(1, Math.round(baseCost * Math.pow(costMult, currentLevel)));
 
       // Check LP balance
@@ -257,8 +257,8 @@ async function applyUpgradeEffects(userId: string, upgrade: any, newLevel: numbe
     }
 
     // Calculate total effect for this specific upgrade
-    const baseEffect = Number(upgrade.baseeffect || 1);
-    const effectMult = Number(upgrade.effectmultiplier || 1.1);
+    const baseEffect = Number(upgrade.baseEffect || 1);
+    const effectMult = Number(upgrade.effectMultiplier || 1.1);
     const totalEffect = Math.round(baseEffect * Math.pow(effectMult, newLevel - 1));
     
     let updateData: any = {};
@@ -272,7 +272,7 @@ async function applyUpgradeEffects(userId: string, upgrade: any, newLevel: numbe
         for (const userUpg of lpPerTapUpgrades) {
           const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
           if (upgDetail) {
-            const effect = Math.round(Number(upgDetail.baseeffect) * Math.pow(Number(upgDetail.effectmultiplier), userUpg.currentLevel - 1));
+            const effect = Math.round(Number(upgDetail.baseEffect) * Math.pow(Number(upgDetail.effectMultiplier), userUpg.currentLevel - 1));
             totalLpPerTap += effect;
           }
         }
@@ -287,7 +287,7 @@ async function applyUpgradeEffects(userId: string, upgrade: any, newLevel: numbe
         for (const userUpg of lpPerHourUpgrades) {
           const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
           if (upgDetail) {
-            const effect = Math.round(Number(upgDetail.baseeffect) * Math.pow(Number(upgDetail.effectmultiplier), userUpg.currentLevel - 1));
+            const effect = Math.round(Number(upgDetail.baseEffect) * Math.pow(Number(upgDetail.effectMultiplier), userUpg.currentLevel - 1));
             totalLpPerHour += effect;
           }
         }
@@ -302,7 +302,7 @@ async function applyUpgradeEffects(userId: string, upgrade: any, newLevel: numbe
         for (const userUpg of energyUpgrades) {
           const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
           if (upgDetail) {
-            const effect = Math.round(Number(upgDetail.baseeffect) * Math.pow(Number(upgDetail.effectmultiplier), userUpg.currentLevel - 1));
+            const effect = Math.round(Number(upgDetail.baseEffect) * Math.pow(Number(upgDetail.effectMultiplier), userUpg.currentLevel - 1));
             totalMaxEnergy += effect;
           }
         }
