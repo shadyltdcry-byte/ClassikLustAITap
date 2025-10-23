@@ -18,9 +18,10 @@ import { registerVipRoutes } from './routes/vipRoutes.js';
 import { registerUpgradeRoutes } from './routes/upgradeRoutes.js';
 import { registerLevelRoutes } from './routes/levelRoutes.js';
 import { registerDebugRoutes } from './routes/debugRoutes.js';
+import { registerApiDocRoutes } from './routes/apiDocRoutes.js';
 import { registerAdminRoutes as registerAdminAdditions } from './routes/adminRoutes.additions.js';
 
-// Enhanced request logging middleware with cleaner output
+// Enhanced request logging middleware with intelligent filtering
 function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
   
@@ -35,12 +36,14 @@ function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction
         '/api/auth/telegram/status/',
         '/api/user/',
         '/api/stats/',
-        '/api/character/selected'
+        '/api/character/selected',
+        '/api/health'
       ];
       
       const shouldSuppress = suppressedPaths.some(path => req.path.includes(path)) && status === 200;
       
-      if (!shouldSuppress || duration > 1000) { // Always log slow requests
+      // Always log errors, slow requests, or important operations
+      if (!shouldSuppress || duration > 1000 || status >= 400) {
         console.log(`${emoji} ${req.method} ${req.path} ${status} in ${duration}ms`);
       }
     }
@@ -49,18 +52,22 @@ function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction
   next();
 }
 
-// Enhanced error handler with better telegram ID conflict detection
+// Enhanced error handler with intelligent categorization
 function errorTriageMiddleware(error: any, req: Request, res: Response, next: NextFunction) {
   const status = error.status || error.statusCode || 500;
   const message = error.message || 'Internal Server Error';
   
-  // Special handling for common error patterns
+  // Categorize error types for better debugging
   if (req.path.includes('telegram') && message.includes('0 rows')) {
-    console.warn(`🤖 [TELEGRAM] User not found for auth check: ${req.path}`);
+    console.warn(`🤖 [TELEGRAM] User lookup failed: ${req.path}`);
   } else if (message.includes('PGRST116')) {
     console.warn(`📊 [SUPABASE] Single query returned 0 rows: ${req.method} ${req.path}`);
+  } else if (message.includes('not found')) {
+    console.warn(`🔍 [NOT_FOUND] Resource missing: ${req.method} ${req.path}`);
+  } else if (status >= 500) {
+    console.error(`🔴 [CRITICAL] ${req.method} ${req.path}:`, error);
   } else {
-    console.error(`🔴 [ERROR] ${req.method} ${req.path}:`, error);
+    console.warn(`🟡 [WARNING] ${req.method} ${req.path}: ${message}`);
   }
   
   res.status(status).json({
@@ -81,13 +88,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   console.log(`💻 [STATIC] Serving frontend from: ${distPath}`);
 
   // Register all API routes in logical order
+  registerApiDocRoutes(app); // API documentation - register first
   registerTapRoutes(app);
   registerChatRoutes(app);
   registerCharacterRoutes(app);
   registerUserRoutes(app);
   registerStatsRoutes(app);
   registerTaskRoutes(app); // Task system with progress tracking
-  registerAchievementRoutes(app); // NEW: Achievement system with rewards
+  registerAchievementRoutes(app); // Achievement system with rewards
   registerLevelRoutes(app); // Level requirements and user level calculation
   registerAdminRoutesCore(app);
   registerAdminAdditions(app);
@@ -119,10 +127,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`🎮[SERVER] Game started successfully, running on port ${port}`);
     console.log(`🤖[AI] Triage service active - Mistral primary, Perplexity fallback`);
     console.log(`💻[FRONTEND] Static files served from dist/public directory`);
+    console.log(`📚[DOCS] API documentation available at /api`);
+    console.log(`🟢[HEALTH] Health check available at /api/health`);
     console.log(`🏆[ACHIEVEMENTS] Achievement system with progress tracking active`);
     console.log(`📋[TASKS] Task system with reward claiming active`);
-    console.log(`🌆[LEVELS] Level system endpoints active`);
-    console.log(`🔧[DEBUG] Enhanced error monitoring with intelligent log filtering`);
+    console.log(`🎆[LEVELS] Level system endpoints active`);
+    console.log(`🔧[DEBUG] Intelligent error categorization and logging active`);
   });
 
   return server;
