@@ -27,7 +27,7 @@ import {
 } from "./schema";
 import { IStorage } from './storage';
 
-// 🎯 Field normalization - paste this after imports, before class SupabaseStorage
+// 🎯 Field normalization - fixes PostgREST casing issues
 const toCamel: Record<string, string> = {
   basecost: 'baseCost',
   baseeffect: 'baseEffect',
@@ -82,10 +82,6 @@ interface GameSettings {
   [key: string]: any;
 }
 
-// 🔥 REMOVED ALL CONVERSION FUNCTIONS - NO MORE MAPPING HELL!
-// Database columns and app properties should match exactly
-// If they don't, fix the database schema, not the code
-
 export class SupabaseStorage implements IStorage {
   private static instance: SupabaseStorage;
   private supabaseClient;
@@ -116,7 +112,7 @@ export class SupabaseStorage implements IStorage {
 
     // Store singleton instance
     SupabaseStorage.instance = this;
-    console.log('[SupabaseStorage] Singleton instance created - NO MORE COLUMN MAPPING!');
+    console.log('[SupabaseStorage] Singleton instance created with field normalization!');
   }
 
   // Singleton getter method
@@ -206,8 +202,8 @@ export class SupabaseStorage implements IStorage {
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error updating user by telegram ID:', error);
-      return undefined;
-
+        return undefined;
+      }
       return data || undefined;
     } else {
       // Regular UUID update
@@ -363,11 +359,11 @@ export class SupabaseStorage implements IStorage {
   }
 
   async selectCharacter(userId: string, characterId: string): Promise<void> {
-    // For now, just store in memory - implement proper sethrowon logic later
+    // For now, just store in memory - implement proper selection logic later
     console.log(`User ${userId} selected character ${characterId}`);
   }
 
-  // Upgrade management
+  // 🎯 Upgrade management - NORMALIZED!
   async getUpgrade(id: string): Promise<Upgrade | undefined> {
     const { data, error } = await this.supabase
       .from('upgrades')
@@ -379,7 +375,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching upgrade:', error);
       return undefined;
     }
-    return data || undefined;
+    return data ? normalizeFromDb(data) : undefined;  // 🎯 NORMALIZE!
   }
 
   async getUserUpgrades(userId: string): Promise<Upgrade[]> {
@@ -394,51 +390,49 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching user upgrades:', error);
       return [];
     }
-    return (data?.map((item: any) => item.upgrades) || []).filter(Boolean) as Upgrade[];
+    const upgrades = (data?.map((item: any) => item.upgrades) || []).filter(Boolean) as Upgrade[];
+    return upgrades.map(normalizeFromDb);  // 🎯 NORMALIZE!
   }
 
-    // Replace your getAllUpgrades method with this:
-    async getAllUpgrades(): Promise<Upgrade[]> {
-      const { data, error } = await this.supabase
-        .from('upgrades')
-        .select('*');
+  async getAllUpgrades(): Promise<Upgrade[]> {
+    const { data, error } = await this.supabase
+      .from('upgrades')
+      .select('*');
 
-      if (error) {
-        console.error('Error fetching all upgrades:', error);
-        return [];
-      }
-
-      // 🎯 Apply normalizer to fix casing!
-      return (data || []).map(normalizeFromDb);
+    if (error) {
+      console.error('Error fetching all upgrades:', error);
+      return [];
     }
-  
+
+    // 🎯 Apply normalizer to fix casing!
+    return (data || []).map(normalizeFromDb);
+  }
 
   async createUpgrade(upgrade: InsertUpgrade): Promise<Upgrade> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .insert(upgrade)  // 🎯 NO CONVERSION!
+      .insert(normalizeToDb(upgrade))  // 🎯 CONVERT TO DB FORMAT!
       .select()
       .single();
 
     if (error) throw error;
-    return data;
+    return normalizeFromDb(data);  // 🎯 CONVERT RESPONSE BACK!
   }
 
-// Replace your updateUpgrade method with this:
-async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | undefined> {
-  const { data, error } = await this.supabase
-    .from('upgrades')
-    .update(normalizeToDb(updates))  // 🎯 Convert to DB format
-    .eq('id', id)
-    .select()
-    .maybeSingle();
+  async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | undefined> {
+    const { data, error } = await this.supabase
+      .from('upgrades')
+      .update(normalizeToDb(updates))  // 🎯 Convert to DB format
+      .eq('id', id)
+      .select()
+      .maybeSingle();
 
-  if (error && error.code !== 'PGRST116') {
-    console.error('Error updating upgrade:', error);
-    return undefined;
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error updating upgrade:', error);
+      return undefined;
+    }
+    return data ? normalizeFromDb(data) : undefined; // 🎯 Convert back to app format
   }
-  return data ? normalizeFromDb(data) : undefined; // 🎯 Convert back to app format
-}
 
   async upgradeUserUpgrade(userId: string, upgradeId: string): Promise<Upgrade> {
     // Increment user's upgrade level
@@ -448,7 +442,7 @@ async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | un
     });
 
     if (error) throw error;
-    return data;
+    return normalizeFromDb(data);  // 🎯 NORMALIZE!
   }
 
   async deleteUpgrade(id: string): Promise<void> {
@@ -811,7 +805,8 @@ async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | un
       .select('*')
       .or('fileName.is.null,filePath.is.null,characterId.is.null');  // 🎯 NO CONVERSION!
 
-    if (error)throw newconsole.error('Error finding orphaned media files:', error);
+    if (error) {
+      console.error('Error finding orphaned media files:', error);
       return [];
     }
     return data || [];
@@ -918,7 +913,7 @@ async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | un
     }
   }
 
-  // Missing methods for upgrades management
+  // Missing methods for upgrades management - 🎯 NORMALIZED!
   async getUpgrades(): Promise<any[]> {
     const { data, error } = await this.supabase
       .from('upgrades')
@@ -929,7 +924,7 @@ async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | un
       console.error('Error fetching upgrades:', error);
       return [];
     }
-    return data || [];
+    return (data || []).map(normalizeFromDb);  // 🎯 NORMALIZE!
   }
 
   // Missing methods for achievements management  
