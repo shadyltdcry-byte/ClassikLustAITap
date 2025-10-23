@@ -1,8 +1,8 @@
 /**
- * Upgrades.tsx - Upgrade System Interface with Dynamic Calculations
+ * Upgrades.tsx - Upgrade System Interface with Dynamic Calculations & Better Icons
  * Last Edited: 2025-10-23 by Assistant
  * 
- * Complete upgrade interface with dynamic cost scaling and level display
+ * Complete upgrade interface with dynamic cost scaling, level display, and visual flair
  */
 
 import React, { useState } from "react";
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Star, Zap, Heart, Coins, TrendingUp, ShoppingCart } from "lucide-react";
+import { Star, Zap, Heart, Coins, TrendingUp, ShoppingCart, Timer, Target, Sparkles, Battery } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { debugPlugin } from "@/lib/PluginDebugger";
@@ -68,6 +68,24 @@ const getUpgradeEffect = (upgrade: Upgrade): string => {
     return `+${upgrade.tapBonus || 1} LP/tap (Currently: +${currentBonus} LP/tap)`;
   }
   return upgrade.description || 'Unknown effect';
+};
+
+// BETTER UPGRADE ICONS WITH VISUAL FLAIR
+const getUpgradeIcon = (category: string, upgradeName: string = "") => {
+  // Use Lucide React icons for better visual consistency
+  switch (category) {
+    case "lpPerHour":
+    case "lp":
+      return <Timer className="w-8 h-8 text-yellow-400" />;
+    case "lpPerTap":
+      return <Target className="w-8 h-8 text-orange-400" />;
+    case "energy":
+      return <Battery className="w-8 h-8 text-blue-400" />;
+    case "special":
+      return <Sparkles className="w-8 h-8 text-purple-400" />;
+    default:
+      return <Star className="w-8 h-8 text-gray-400" />;
+  }
 };
 
 export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps) {
@@ -181,33 +199,18 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
     },
   });
 
-  const getUpgradeIcon = (category: string) => {
-    switch (category) {
-      case "lp":
-      case "lpPerTap":
-      case "lpPerHour":
-        return "💰";
-      case "energy":
-        return "⚡";
-      case "special":
-        return "✨";
-      default:
-        return "🔧";
-    }
-  };
-
   const getCategoryColor = (category: string) => {
     switch (category) {
       case "lpPerHour":
-        return "bg-yellow-500/20 text-yellow-400";
+        return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
       case "lpPerTap":
-        return "bg-orange-500/20 text-orange-400";
+        return "bg-orange-500/20 text-orange-400 border-orange-500/30";
       case "energy":
-        return "bg-blue-500/20 text-blue-400";
+        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
       case "special":
-        return "bg-purple-500/20 text-purple-400";
+        return "bg-purple-500/20 text-purple-400 border-purple-500/30";
       default:
-        return "bg-gray-500/20 text-gray-400";
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
     }
   };
 
@@ -281,8 +284,8 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
       {/* Header */}
       <div className="p-4 bg-black/30 border-b border-purple-500/30 flex-shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
-            <Star className="w-6 h-6 text-white" />
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-white">Upgrades</h3>
@@ -290,7 +293,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
           </div>
           <div className="text-right">
             <div className="flex items-center gap-2">
-              <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+              <Heart className="w-4 h-4 text-pink-400" />
               <span className="text-pink-400 font-bold">{(playerData?.lp || 0).toLocaleString()} LP</span>
             </div>
           </div>
@@ -303,27 +306,43 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
           <div className="flex gap-1 min-w-max">
             <Button 
               onClick={() => handleTabChange("all")}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 flex items-center gap-1 ${
+                activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : 
+                "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"
+              }`}
             >
-              ⭐ All
+              <Star className="w-3 h-3" />
+              All
             </Button>
             <Button 
               onClick={() => handleTabChange("lpPerHour")}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 flex items-center gap-1 ${
+                activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : 
+                "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"
+              }`}
             >
-              💰 LP/Hour
+              <Timer className="w-3 h-3" />
+              LP/Hour
             </Button>
             <Button 
               onClick={() => handleTabChange("lpPerTap")}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerTap" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 flex items-center gap-1 ${
+                activeTab === "lpPerTap" ? "bg-purple-600 hover:bg-purple-700 text-white" : 
+                "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"
+              }`}
             >
-              👆 LP/Tap
+              <Target className="w-3 h-3" />
+              LP/Tap
             </Button>
             <Button 
               onClick={() => handleTabChange("special")}
-              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 flex items-center gap-1 ${
+                activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : 
+                "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"
+              }`}
             >
-              ✨ Special
+              <Sparkles className="w-3 h-3" />
+              Special
             </Button>
           </div>
         </div>
@@ -351,28 +370,36 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
                 return (
                   <div
                     key={upgrade.id}
-                    className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:border-purple-500/50 transition-colors"
+                    className={`bg-gray-800/50 rounded-xl p-4 border transition-all duration-200 hover:bg-gray-700/50 ${
+                      canAfford && !isMaxLevel 
+                        ? "border-purple-500/50 hover:border-purple-400/70 hover:shadow-lg hover:shadow-purple-500/20" 
+                        : "border-gray-600/50"
+                    }`}
                   >
                     <div className="flex items-start gap-4">
-                      {/* Upgrade Icon */}
-                      <div className="w-16 h-16 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <span className="text-3xl">{getUpgradeIcon(upgrade.category)}</span>
+                      {/* ENHANCED UPGRADE ICON */}
+                      <div className={`w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        getCategoryColor(upgrade.category).split(' ')[0]
+                      }`}>
+                        {getUpgradeIcon(upgrade.category, upgrade.name)}
                       </div>
 
                       {/* Upgrade Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-2">
                           <h4 className="text-white font-semibold">{upgrade.name}</h4>
-                          <Badge className={getCategoryColor(upgrade.category)}>
-                            {upgrade.category ? upgrade.category.toUpperCase() : 'MISC'}
+                          <Badge className={`${getCategoryColor(upgrade.category)} border`}>
+                            {upgrade.category === 'lpPerHour' ? 'LP/HOUR' :
+                             upgrade.category === 'lpPerTap' ? 'LP/TAP' :
+                             upgrade.category.toUpperCase()}
                           </Badge>
-                          {/* DYNAMIC LEVEL DISPLAY */}
-                          <Badge className="bg-green-500/20 text-green-400">
+                          {/* ENHANCED LEVEL DISPLAY */}
+                          <Badge className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 text-green-400 border border-green-500/30">
                             Level {upgrade.currentLevel}/{upgrade.maxLevel}
                           </Badge>
                           {isMaxLevel && (
-                            <Badge className="bg-gold-500/20 text-yellow-400">
-                              MAX
+                            <Badge className="bg-gradient-to-r from-yellow-500/20 to-amber-500/20 text-yellow-400 border border-yellow-500/30 animate-pulse">
+                              🏆 MAX
                             </Badge>
                           )}
                         </div>
@@ -388,26 +415,31 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
                           </div>
                         </div>
 
-                        {/* DYNAMIC COST & PURCHASE */}
+                        {/* ENHANCED COST & PURCHASE SECTION */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+                            <Heart className="w-4 h-4 text-pink-400" />
                             <span className={`font-bold ${
                               isMaxLevel ? "text-gray-500" : 
                               canAfford ? "text-pink-400" : "text-red-400"
                             }`}>
                               {isMaxLevel ? "MAX LEVEL" : `${dynamicCost.toLocaleString()} LP`}
                             </span>
+                            {!isMaxLevel && upgrade.currentLevel > 0 && (
+                              <span className="text-xs text-gray-500">
+                                (was {calculateUpgradeCost(upgrade.baseCost, upgrade.currentLevel - 1).toLocaleString()})
+                              </span>
+                            )}
                           </div>
                           
                           <Button
                             onClick={() => handlePurchase(upgrade.id)}
                             disabled={!canAfford || purchaseUpgradeMutation.isPending || isMaxLevel}
-                            className={`px-6 py-2 rounded-full ${
+                            className={`px-6 py-2 rounded-full transition-all duration-200 ${
                               isMaxLevel
                                 ? "bg-gray-600 text-gray-400 cursor-not-allowed"
                                 : canAfford
-                                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                                ? "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg hover:shadow-purple-500/25"
                                 : "bg-gray-600 text-gray-400 cursor-not-allowed"
                             }`}
                           >
