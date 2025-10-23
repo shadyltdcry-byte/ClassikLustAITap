@@ -27,7 +27,7 @@ interface Upgrade {
   effect: string;
   currentLevel: number;
   maxLevel: number;
-  category: "lp" | "energy" | "special";
+  category: "lp" | "energy" | "special" | "lpPerTap" | "lpPerHour";
   icon: string;
 }
 
@@ -38,32 +38,49 @@ interface UpgradesProps {
 
 export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps) {
   const [activeTab, setActiveTab] = useState("all");
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   debug.setState({ activeTab, playerLP: playerData?.lp || 0 });
 
-  // Fetch upgrades with debugging
-  const { data: upgrades = [], isLoading } = useQuery({
+  // Fetch upgrades with debugging and error handling
+  const { data: upgrades = [], isLoading, error } = useQuery({
     queryKey: ["/api/upgrades"],
     queryFn: async () => {
       debug.timeStart('fetch-upgrades');
-      debug.trace('fetch:start', { userId: playerData?.userId || playerData?.id });
+      const userId = playerData?.userId || playerData?.id;
+      debug.trace('fetch:start', { userId, hasPlayerData: !!playerData });
       
-      const response = await apiRequest("GET", "/api/upgrades", null, {
-        'x-user-id': playerData?.userId || playerData?.id
-      });
-      
-      const data = await response.json();
-      const duration = debug.timeEnd('fetch-upgrades');
-      
-      debug.success('fetch:complete', { 
-        count: data.length, 
-        duration,
-        categories: [...new Set(data.map((u: any) => u.category))]
-      });
-      
-      return data;
+      try {
+        const response = await apiRequest("GET", "/api/upgrades", null, {
+          'x-user-id': userId || 'anonymous'
+        });
+        
+        if (!response.ok) {
+          debug.error('fetch:failed', { status: response.status, url: '/api/upgrades' });
+          throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const duration = debug.timeEnd('fetch-upgrades');
+        
+        debug.success('fetch:complete', { 
+          count: data.length, 
+          duration,
+          categories: [...new Set(data.map((u: any) => u.category))]
+        });
+        
+        setFetchError(null);
+        return data;
+      } catch (err: any) {
+        const duration = debug.timeEnd('fetch-upgrades');
+        debug.error('fetch:error', { message: err.message, duration });
+        setFetchError(err.message);
+        throw err;
+      }
     },
+    retry: 1,
+    retryDelay: 1000
   });
 
   // Purchase upgrade mutation with debugging
@@ -164,10 +181,10 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
     if (activeTab === "all") return upgrades;
     
     return upgrades.filter((upgrade: Upgrade) => {
-      if (activeTab === "special") {
-        return upgrade.category === "special" || upgrade.category === "energy" || 
-               (upgrade.category !== "lpPerHour" && upgrade.category !== "lpPerTap");
-      }
+      // More flexible category matching
+      if (activeTab === "lpPerHour") return upgrade.category === "lpPerHour";
+      if (activeTab === "lpPerTap") return upgrade.category === "lpPerTap";
+      if (activeTab === "special") return upgrade.category === "special" || upgrade.category === "energy";
       return upgrade.category === activeTab;
     });
   };
@@ -198,12 +215,171 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
     upgradeCount: upgrades.length,
     activeTab,
     playerLP: playerData?.lp || 0,
-    isLoading
+    isLoading,
+    hasError: !!error || !!fetchError
   });
+
+  // Show error state if fetch failed
+  if (error || fetchError) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-8">
+        <div className="w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mb-4">
+          <Star className="w-8 h-8 text-red-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-white mb-2">Failed to Load Upgrades</h3>
+        <p className="text-gray-400 text-center mb-4">
+          {fetchError || (error as Error)?.message || 'Unknown error'}
+        </p>
+        <Button onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/upgrades"] })}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full flex flex-col pt-2 pb-4">
-      {/* UI omitted for brevity - unchanged */}
+      {/* Header */}
+      <div className="p-4 bg-black/30 border-b border-purple-500/30 flex-shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+            <Star className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h3 className="text-lg font-semibold text-white">Upgrades</h3>
+            <p className="text-sm text-gray-400">Enhance your character's abilities</p>
+          </div>
+          <div className="text-right">
+            <div className="flex items-center gap-2">
+              <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+              <span className="text-pink-400 font-bold">{playerData?.lp || 0} LP</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Upgrade Tabs */}
+      <div className="p-3 bg-black/20 flex-shrink-0">
+        <div className="flex gap-1 overflow-x-auto scrollbar-hide pb-1">
+          <div className="flex gap-1 min-w-max">
+            <Button 
+              onClick={() => handleTabChange("all")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "all" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+            >
+              ⭐ All
+            </Button>
+            <Button 
+              onClick={() => handleTabChange("lpPerHour")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerHour" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+            >
+              💰 LP/Hour
+            </Button>
+            <Button 
+              onClick={() => handleTabChange("lpPerTap")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "lpPerTap" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+            >
+              👆 LP/Tap
+            </Button>
+            <Button 
+              onClick={() => handleTabChange("special")}
+              className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 ${activeTab === "special" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"}`}
+            >
+              ✨ Special
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Upgrade List */}
+      <div className="flex-1 overflow-hidden">
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="animate-spin w-8 h-8 border-2 border-purple-400 border-t-transparent rounded-full"></div>
+          </div>
+        ) : (
+          <ScrollArea className="h-full">
+            <div className="space-y-4 p-4">
+              {getFilteredUpgrades().map((upgrade: Upgrade) => (
+                <div
+                  key={upgrade.id}
+                  className="bg-gray-700/50 rounded-lg p-4 border border-gray-600/50 hover:border-purple-500/50 transition-colors"
+                >
+                  <div className="flex items-start gap-4">
+                    {/* Upgrade Icon */}
+                    <div className="w-16 h-16 bg-purple-600/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <span className="text-3xl">{getUpgradeIcon(upgrade.category)}</span>
+                    </div>
+
+                    {/* Upgrade Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="text-white font-semibold">{upgrade.name}</h4>
+                        <Badge className={getCategoryColor(upgrade.category)}>
+                          {upgrade.category ? upgrade.category.toUpperCase() : 'MISC'}
+                        </Badge>
+                        {upgrade.currentLevel > 0 && (
+                          <Badge className="bg-green-500/20 text-green-400">
+                            Lv. {upgrade.currentLevel}
+                          </Badge>
+                        )}
+                      </div>
+                      
+                      <p className="text-gray-400 text-sm mb-3">{upgrade.description}</p>
+                      
+                      <div className="flex items-center gap-4 mb-3">
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="w-4 h-4 text-green-400" />
+                          <span className="text-green-400 text-sm font-medium">{upgrade.effect}</span>
+                        </div>
+                      </div>
+
+                      {/* Cost & Purchase */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <img src="/media/floatinghearts.png" alt="LP" className="w-4 h-4" />
+                          <span className={`font-bold ${canAffordUpgrade(upgrade.cost) ? "text-pink-400" : "text-red-400"}`}>
+                            {upgrade.cost} LP
+                          </span>
+                        </div>
+                        
+                        <Button
+                          onClick={() => handlePurchase(upgrade.id)}
+                          disabled={!canAffordUpgrade(upgrade.cost) || purchaseUpgradeMutation.isPending}
+                          className={`px-6 py-2 rounded-full ${
+                            canAffordUpgrade(upgrade.cost)
+                              ? "bg-blue-600 hover:bg-blue-700 text-white"
+                              : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                          }`}
+                        >
+                          <ShoppingCart className="w-4 h-4 mr-2" />
+                          {purchaseUpgradeMutation.isPending ? "Purchasing..." : "Purchase"}
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {!isLoading && getFilteredUpgrades().length === 0 && (
+                <div className="text-center text-gray-400 py-8">
+                  <Star className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="text-sm">
+                    {upgrades.length === 0 
+                      ? "No upgrades available. Check admin panel to create upgrades."
+                      : "No upgrades available in this category"
+                    }
+                  </p>
+                  {upgrades.length === 0 && (
+                    <p className="text-xs text-gray-500 mt-2">
+                      Debug: {fetchError ? `Error: ${fetchError}` : `Fetched ${upgrades.length} upgrades`}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        )}
+      </div>
     </div>
   );
 }
