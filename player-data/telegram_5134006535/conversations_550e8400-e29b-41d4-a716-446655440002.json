@@ -4010,5 +4010,21 @@
     "timestamp": "2025-10-23T12:00:07.367Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761222504529-hce0h6ec3",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-23T12:28:24.529Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761223747472-xhwsogtac",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-23T12:49:07.472Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]

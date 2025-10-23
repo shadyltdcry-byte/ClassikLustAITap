@@ -8,13 +8,13 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Drop existing tables if they exist (clean slate)
-DROP TABLE IF EXISTS chatmessages CASCADE;
-DROP TABLE IF EXISTS wheelrewards CASCADE;
-DROP TABLE IF EXISTS userupgrades CASCADE;
-DROP TABLE IF EXISTS usercharacters CASCADE;
-DROP TABLE IF EXISTS mediafiles CASCADE;
+DROP TABLE IF EXISTS chatMessages CASCADE;
+DROP TABLE IF EXISTS wheelRewards CASCADE;
+DROP TABLE IF EXISTS userUpgrades CASCADE;
+DROP TABLE IF EXISTS userCharacters CASCADE;
+DROP TABLE IF EXISTS mediaFiles CASCADE;
 DROP TABLE IF EXISTS achievements CASCADE;
-DROP TABLE IF EXISTS levelrequirements CASCADE;
+DROP TABLE IF EXISTS levelRequirements CASCADE;
 DROP TABLE IF EXISTS upgrades CASCADE;
 DROP TABLE IF EXISTS characters CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
@@ -22,20 +22,20 @@ DROP TABLE IF EXISTS users CASCADE;
 -- Users table (core player data)
 CREATE TABLE users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    telegramid TEXT UNIQUE,  -- Telegram user ID for auth
-    username TEXT UNIQUE,
-    displayname TEXT,
+    telegramId TEXT UNIQUE,  -- Telegram user ID for auth
+    userName TEXT UNIQUE,
+    displayName TEXT,
     level INTEGER DEFAULT 1,
     lp NUMERIC(15,2) DEFAULT 1000,
     energy INTEGER DEFAULT 1000,
-    maxenergy INTEGER DEFAULT 1000,
-    lppertap NUMERIC(8,2) DEFAULT 1.5,
+    maxEnergy INTEGER DEFAULT 1000,
+    lpPerTap NUMERIC(8,2) DEFAULT 1.5,
     charisma INTEGER DEFAULT 0,
-    vipstatus BOOLEAN DEFAULT FALSE,
-    nsfwconsent BOOLEAN DEFAULT FALSE,
-    lasttick TIMESTAMPTZ DEFAULT NOW(),
-    createdat TIMESTAMPTZ DEFAULT NOW(),
-    updatedat TIMESTAMPTZ DEFAULT NOW()
+    vipStatus BOOLEAN DEFAULT FALSE,
+    nsfwConsent BOOLEAN DEFAULT FALSE,
+    lastTick TIMESTAMPTZ DEFAULT NOW(),
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Characters table (AI personalities)
@@ -48,40 +48,40 @@ CREATE TABLE characters (
     bond INTEGER DEFAULT 0,
     affection INTEGER DEFAULT 0,
     enabled BOOLEAN DEFAULT TRUE,
-    createdat TIMESTAMPTZ DEFAULT NOW(),
-    updatedat TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- User-Character relationships (selected characters)
-CREATE TABLE usercharacters (
+CREATE TABLE userCharacters (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    userid UUID REFERENCES users(id) ON DELETE CASCADE,
-    characterid UUID REFERENCES characters(id) ON DELETE CASCADE,
-    selectedat TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(userid, characterid)
+    userId UUID REFERENCES users(id) ON DELETE CASCADE,
+    characterId UUID REFERENCES characters(id) ON DELETE CASCADE,
+    selectedAt TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(userId, characterId)
 );
 
 -- Media files (images, videos, etc.)
-CREATE TABLE mediafiles (
+CREATE TABLE mediaFiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    characterid UUID REFERENCES characters(id) ON DELETE CASCADE,
-    filename TEXT NOT NULL,
-    filepath TEXT NOT NULL,
-    filetype TEXT NOT NULL,
+    characterId UUID REFERENCES characters(id) ON DELETE CASCADE,
+    fileName TEXT NOT NULL,
+    filePath TEXT NOT NULL,
+    fileType TEXT NOT NULL,
     mood TEXT,
     pose TEXT,
-    animationsequence JSONB,
-    isnsfw BOOLEAN DEFAULT FALSE,
-    isvip BOOLEAN DEFAULT FALSE,
-    isevent BOOLEAN DEFAULT FALSE,
-    iswheelreward BOOLEAN DEFAULT FALSE,
-    enabledforchat BOOLEAN DEFAULT TRUE,
-    randomsendchance INTEGER DEFAULT 5,
-    requiredlevel INTEGER DEFAULT 1,
+    animationSequence JSONB,
+    isNsfw BOOLEAN DEFAULT FALSE,
+    isVip BOOLEAN DEFAULT FALSE,
+    isEvent BOOLEAN DEFAULT FALSE,
+    isWheelReward BOOLEAN DEFAULT FALSE,
+    enabledForChat BOOLEAN DEFAULT TRUE,
+    randomSendChance INTEGER DEFAULT 5,
+    requiredLevel INTEGER DEFAULT 1,
     category TEXT DEFAULT 'Character',
-    autoorganized BOOLEAN DEFAULT FALSE,
-    createdat TIMESTAMPTZ DEFAULT NOW(),
-    updatedat TIMESTAMPTZ DEFAULT NOW()
+    autoOrganized BOOLEAN DEFAULT FALSE,
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Upgrades (base upgrade definitions)
@@ -89,27 +89,27 @@ CREATE TABLE upgrades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name TEXT NOT NULL,
     description TEXT,
-    basecost NUMERIC(15,2) NOT NULL,
-    hourlybonus NUMERIC(8,2) DEFAULT 0,
-    tapbonus NUMERIC(8,2) DEFAULT 0,
-    energybonus INTEGER DEFAULT 0,
+    baseCost NUMERIC(15,2) NOT NULL,
+    hourlyBonus NUMERIC(8,2) DEFAULT 0,
+    tapBonus NUMERIC(8,2) DEFAULT 0,
+    energyBonus INTEGER DEFAULT 0,
     category TEXT NOT NULL, -- 'lpPerHour', 'lpPerTap', 'energy', 'special'
-    maxlevel INTEGER DEFAULT 10,
-    requiredlevel INTEGER DEFAULT 1,
+    maxLevel INTEGER DEFAULT 10,
+    requiredLevel INTEGER DEFAULT 1,
     icon TEXT DEFAULT '🔧',
     enabled BOOLEAN DEFAULT TRUE,
-    createdat TIMESTAMPTZ DEFAULT NOW(),
-    updatedat TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- User upgrade levels (tracks user progress on each upgrade)
-CREATE TABLE userupgrades (
+CREATE TABLE userUpgrades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    userid UUID REFERENCES users(id) ON DELETE CASCADE,
-    upgradeid UUID REFERENCES upgrades(id) ON DELETE CASCADE,
+    userId UUID REFERENCES users(id) ON DELETE CASCADE,
+    upgradeId UUID REFERENCES upgrades(id) ON DELETE CASCADE,
     level INTEGER DEFAULT 0,
-    purchasedat TIMESTAMPTZ DEFAULT NOW(),
-    UNIQUE(userid, upgradeid)
+    purchasedAt TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(userId, upgradeId)
 );
 
 -- Achievements
@@ -119,55 +119,55 @@ CREATE TABLE achievements (
     description TEXT,
     category TEXT DEFAULT 'general',
     reward NUMERIC(15,2) DEFAULT 100,
-    rewardtype TEXT DEFAULT 'lp', -- 'lp', 'energy', 'item'
+    rewardType TEXT DEFAULT 'lp', -- 'lp', 'energy', 'item'
     icon TEXT DEFAULT '🏆',
-    maxprogress INTEGER DEFAULT 1,
-    sortorder INTEGER DEFAULT 0,
+    maxProgress INTEGER DEFAULT 1,
+    sortOrder INTEGER DEFAULT 0,
     enabled BOOLEAN DEFAULT TRUE,
-    createdat TIMESTAMPTZ DEFAULT NOW(),
-    updatedat TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW(),
+    updatedAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Level requirements
-CREATE TABLE levelrequirements (
+CREATE TABLE levelRequirements (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     level INTEGER UNIQUE NOT NULL,
-    lprequired NUMERIC(15,2) NOT NULL,
+    lpRequired NUMERIC(15,2) NOT NULL,
     name TEXT,
     description TEXT,
     unlocks TEXT, -- JSON array of features unlocked
-    createdat TIMESTAMPTZ DEFAULT NOW()
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Chat messages
-CREATE TABLE chatmessages (
+CREATE TABLE chatMessages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    userid UUID REFERENCES users(id) ON DELETE CASCADE,
-    characterid UUID REFERENCES characters(id) ON DELETE CASCADE,
-    sendertype TEXT NOT NULL, -- 'user' or 'assistant'
+    userId UUID REFERENCES users(id) ON DELETE CASCADE,
+    characterId UUID REFERENCES characters(id) ON DELETE CASCADE,
+    senderType TEXT NOT NULL, -- 'user' or 'assistant'
     message TEXT NOT NULL,
-    imageurl TEXT,
-    metadata JSONB,
-    createdat TIMESTAMPTZ DEFAULT NOW()
+    imageUrl TEXT,
+    metaData JSONB,
+    createdAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Wheel rewards (spin history)
-CREATE TABLE wheelrewards (
+CREATE TABLE wheelRewards (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    userid UUID REFERENCES users(id) ON DELETE CASCADE,
+    userId UUID REFERENCES users(id) ON DELETE CASCADE,
     reward TEXT NOT NULL,
     amount NUMERIC(15,2) DEFAULT 1,
-    rewardtype TEXT DEFAULT 'lp',
-    spunat TIMESTAMPTZ DEFAULT NOW()
+    rewardType TEXT DEFAULT 'lp',
+    spunAt TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- Indexes for performance
-CREATE INDEX idx_users_telegramid ON users(telegramid);
-CREATE INDEX idx_mediafiles_characterid ON mediafiles(characterid);
-CREATE INDEX idx_mediafiles_category ON mediafiles(category);
-CREATE INDEX idx_chatmessages_userid_createdat ON chatmessages(userid, createdat DESC);
-CREATE INDEX idx_userupgrades_userid ON userupgrades(userid);
-CREATE INDEX idx_wheelrewards_userid ON wheelrewards(userid, spunat DESC);
+CREATE INDEX idx_users_telegramId ON users(telegramId);
+CREATE INDEX idx_mediaFiles_characterId ON mediaFiles(characterId);
+CREATE INDEX idx_mediaFiles_category ON mediaFiles(category);
+CREATE INDEX idx_chatMessages_userId_createdAt ON chatMessages(userId, createdAt DESC);
+CREATE INDEX idx_userUpgrades_userId ON userUpgrades(userId);
+CREATE INDEX idx_wheelRewards_userId ON wheelRewards(userId, spunAt DESC);
 
 -- Insert default characters
 INSERT INTO characters (id, name, description, personality) VALUES 
@@ -185,14 +185,14 @@ INSERT INTO upgrades (id, name, description, basecost, hourlybonus, category, ma
 ('upgrade-combo-master', 'Combo Master', 'Build up combo multipliers for massive LP', 2000, 2, 'special', 10, '✨');
 
 -- Insert default achievements
-INSERT INTO achievements (name, description, category, reward, rewardtype, icon, maxprogress, sortorder) VALUES 
+INSERT INTO achievements (name, description, category, reward, rewardType, icon, maxProgress, sortOrder) VALUES 
 ('First Steps', 'Make your first tap', 'gameplay', 50, 'lp', '🎯', 1, 1),
 ('Tap Novice', 'Make 100 taps', 'gameplay', 200, 'lp', '👆', 100, 2),
 ('LP Collector', 'Collect 10,000 LP', 'collection', 1000, 'lp', '💰', 10000, 3),
 ('Character Bond', 'Chat with a character 10 times', 'social', 500, 'lp', '💕', 10, 4);
 
 -- Insert default level requirements
-INSERT INTO levelrequirements (level, lprequired, name, description) VALUES 
+INSERT INTO levelRequirements (level, lpRequired, name, description) VALUES 
 (1, 0, 'Beginner', 'Starting level'),
 (2, 1000, 'Novice', 'First milestone'),
 (3, 2500, 'Apprentice', 'Learning the ropes'),
@@ -206,20 +206,20 @@ INSERT INTO levelrequirements (level, lprequired, name, description) VALUES
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
-    NEW.updatedat = NOW();
+    NEW.updatedAt = NOW();
     RETURN NEW;
 END;
 $$ language 'plpgsql';
 
-CREATE TRIGGER update_users_updatedat BEFORE UPDATE ON users
+CREATE TRIGGER update_users_updatedAt BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_characters_updatedat BEFORE UPDATE ON characters
+CREATE TRIGGER update_characters_updatedAt BEFORE UPDATE ON characters
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_mediafiles_updatedat BEFORE UPDATE ON mediafiles
+CREATE TRIGGER update_mediaFiles_updatedAt BEFORE UPDATE ON mediaFiles
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_upgrades_updatedat BEFORE UPDATE ON upgrades
+CREATE TRIGGER update_upgrades_updatedAt BEFORE UPDATE ON upgrades
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-CREATE TRIGGER update_achievements_updatedat BEFORE UPDATE ON achievements
+CREATE TRIGGER update_achievements_updatedAt BEFORE UPDATE ON achievements
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Success message
