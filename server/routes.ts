@@ -50,8 +50,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Install request logging middleware BEFORE all routes
   app.use(requestLoggerMiddleware);
 
-  // Serve static files from client dist
-  const distPath = path.join(process.cwd(), 'dist');
+  // Serve static files from client build output (Vite emits into dist/public)
+  const distPath = path.join(process.cwd(), 'dist', 'public');
   app.use(express.static(distPath));
   console.log(`💻 [STATIC] Serving frontend from: ${distPath}`);
 
@@ -70,7 +70,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // SPA fallback route - MUST come after all API routes
   app.get('*', (req, res) => {
-    // Only serve index.html for non-API routes
     if (!req.path.startsWith('/api')) {
       const indexPath = path.join(distPath, 'index.html');
       res.sendFile(indexPath, (err) => {
@@ -91,7 +90,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   server.listen(port, "0.0.0.0", () => {
     console.log(`🎮[SERVER] Game started successfully, running on port ${port}`);
     console.log(`🤖[AI] Triage service active - Mistral primary, Perplexity fallback`);
-    console.log(`💻[FRONTEND] Static files served from dist directory`);
+    console.log(`💻[FRONTEND] Static files served from dist/public directory`);
   });
 
   return server;
