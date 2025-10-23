@@ -88,16 +88,16 @@ export function registerCharacterRoutes(app: Express) {
   app.post('/api/player/:playerId/select-character', async (req: Request, res: Response) => {
     try {
       const { playerId } = req.params;
-      const { characterid } = req.body;
+      const { characterId } = req.body;
       
-      if (!characterid) {
+      if (!characterId) {
         return res.status(400).json(createErrorResponse('Character ID is required'));
       }
       
       // Set selected character for player
-      await storage.setSelectedCharacter(playerId, characterid);
+      await storage.setSelectedCharacter(playerId, characterId);
       
-      res.json(createSuccessResponse({ characterid }));
+      res.json(createSuccessResponse({ characterId }));
     } catch (error) {
       console.error('Error selecting character:', error);
       res.status(500).json(createErrorResponse('Failed to select character'));
@@ -105,10 +105,10 @@ export function registerCharacterRoutes(app: Express) {
   });
 
   // Get media for specific character
-  app.get("/api/media/character/:characterid", async (req: Request, res: Response) => {
+  app.get("/api/media/character/:characterId", async (req: Request, res: Response) => {
     try {
-      const { characterid } = req.params;
-      const characterMedia = await storage.getMediaByCharacter(characterid);
+      const { characterId } = req.params;
+      const characterMedia = await storage.getMediaByCharacter(characterId);
       
       res.json(characterMedia || []);
     } catch (error) {
