@@ -97,13 +97,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         console.log(`File type determined: ${fileType} for ${file.mimetype}`);
 
         // Auto-create character folder structure
-        if (config.characterid) {
+        if (config.characterId) {
           const characterFolder = path.join(
             process.cwd(), 
             'public', 
             'uploads', 
             'characters',
-            config.characterid
+            config.characterId
           );
           
           if (!fs.existsSync(characterFolder)) {
@@ -118,8 +118,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         // Create media file record with organized path
-        const filePath = config.characterid 
-          ? `/uploads/characters/${config.characterid}/${file.fileName}`
+        const filePath = config.characterId 
+          ? `/uploads/characters/${config.characterId}/${file.fileName}`
           : `/uploads/${file.fileName}`;
 
         const mediaFileData = {
@@ -127,7 +127,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           fileName: file.fileName,
           filePath,
           fileType,
-          characterid: config.characterid || null,
+          characterId: config.characterId || null,
           mood: config.mood || null,
           pose: config.pose || null,
           requiredLevel: config.requiredLevel || 1,
