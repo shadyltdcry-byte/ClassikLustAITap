@@ -140,7 +140,7 @@ export class LunaErrorMonitor {
       conversations.push(newMessage);
       
       // Save back to file
-      fs.writeFileSync(convtelegram_5134006535stringify(conversations, null, 2));
+      fs.writeFileSync(conversationPath, JSON.stringify(conversations, null, 2));
       
       console.log(`🌙 [LUNA DEBUG] Error alert has been saved to the chat. `);
       
