@@ -35,79 +35,9 @@ interface GameSettings {
   [key: string]: any;
 }
 
-// CRITICAL FIX: Map camelCase to actual database column names
-function toDBColumn(str: string): string {
-  // Map camelCase API fields to actual database column names
-  const fieldMap: { [key: string]: string } = {
-    'characterId': 'characterid',  // Database has lowercase characterid
-    'filePath': 'filepath',
-    'fileName': 'filename', 
-    'fileType': 'filetype',
-    'isNsfw': 'isnsfw',
-    'isVip': 'isvip',
-    'isEvent': 'isevent',
-    'isWheelReward': 'iswheelreward',
-    'enabledForChat': 'enabledforchat',
-    'randomSendChance': 'randomsendchance',
-    'requiredLevel': 'requiredlevel',
-    'levelRequirement': 'levelrequirement',
-    'createdAt': 'createdat',
-    'updatedAt': 'updatedat',
-    'userId': 'userid',
-    'telegramId': 'telegramid',
-    'sortOrder': 'sortorder'
-  };
-  
-  return fieldMap[str] || str.toLowerCase();
-}
-
-// Map camelCase object to database column names
-function mapToDBColumns<T extends Record<string, any>>(obj: T): Record<string, any> {
-  const newObj: Record<string, any> = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      newObj[toDBColumn(key)] = obj[key];
-    }
-  }
-  return newObj;
-}
-
-// Map database results back to camelCase
-function fromDBColumns(obj: Record<string, any>): Record<string, any> {
-  const fieldMap: { [key: string]: string } = {
-    'characterid': 'characterId',
-    'filepath': 'filePath',
-    'filename': 'fileName',
-    'filetype': 'fileType',
-    'isnsfw': 'isNsfw',
-    'isvip': 'isVip',
-    'isevent': 'isEvent',
-    'iswheelreward': 'isWheelReward',
-    'enabledforchat': 'enabledForChat',
-    'randomsendchance': 'randomSendChance',
-    'requiredlevel': 'requiredLevel',
-    'levelrequirement': 'levelRequirement',
-    'createdat': 'createdAt',
-    'updatedat': 'updatedAt',
-    'userid': 'userId',
-    'telegramid': 'telegramId',
-    'sortorder': 'sortOrder'
-  };
-  
-  const newObj: Record<string, any> = {};
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const camelKey = fieldMap[key] || key;
-      newObj[camelKey] = obj[key];
-    }
-  }
-  return newObj;
-}
-
-// Function to map an array of objects from database to camelCase
-function mapArrayFromDB<T extends Record<string, any>>(arr: T[]): Record<string, any>[] {
-  return arr.map(item => fromDBColumns(item));
-}
+// 🔥 REMOVED ALL CONVERSION FUNCTIONS - NO MORE MAPPING HELL!
+// Database columns and app properties should match exactly
+// If they don't, fix the database schema, not the code
 
 export class SupabaseStorage implements IStorage {
   private static instance: SupabaseStorage;
@@ -139,7 +69,7 @@ export class SupabaseStorage implements IStorage {
 
     // Store singleton instance
     SupabaseStorage.instance = this;
-    console.log('[SupabaseStorage] Singleton instance created');
+    console.log('[SupabaseStorage] Singleton instance created - NO MORE COLUMN MAPPING!');
   }
 
   // Singleton getter method
@@ -150,7 +80,7 @@ export class SupabaseStorage implements IStorage {
     return SupabaseStorage.instance;
   }
 
-  // User management
+  // User management - DIRECT DATABASE ACCESS
   async getUser(id: string): Promise<User | undefined> {
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
@@ -158,27 +88,27 @@ export class SupabaseStorage implements IStorage {
       const { data, error } = await this.supabase
         .from('users')
         .select('*')
-        .eq('telegramid', telegramId)  // Use lowercase
-        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+        .eq('telegramId', telegramId)  // 🎯 Using actual column name!
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user by telegram ID:', error);
         return undefined;
       }
-      return data ? fromDBColumns(data) : undefined;
+      return data || undefined;
     } else {
       // Regular UUID lookup
       const { data, error } = await this.supabase
         .from('users')
         .select('*')
         .eq('id', id)
-        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user by UUID:', error);
         return undefined;
       }
-      return data ? fromDBColumns(data) : undefined;
+      return data || undefined;
     }
   }
 
@@ -187,24 +117,24 @@ export class SupabaseStorage implements IStorage {
       .from('users')
       .select('*')
       .eq('username', username)
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching user by username:', error);
       return undefined;
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data || undefined;
   }
 
   async createUser(user: InsertUser): Promise<User> {
     const { data, error } = await this.supabase
       .from('users')
-      .insert(mapToDBColumns(user))
+      .insert(user)  // 🎯 NO CONVERSION - pass as-is!
       .select()
       .single();
 
     if (error) throw error;
-    return fromDBColumns(data);
+    return data;
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
@@ -217,38 +147,35 @@ export class SupabaseStorage implements IStorage {
       }
     });
 
-    // Convert to database column names
-    const dbUpdates = mapToDBColumns(safeUpdates);
-
     // Handle telegram IDs differently from UUID IDs
     if (id.startsWith('telegram_')) {
       const telegramId = id.replace('telegram_', '');
       const { data, error } = await this.supabase
         .from('users')
-        .update(dbUpdates)
-        .eq('telegramid', telegramId)  // Use lowercase
+        .update(safeUpdates)  // 🎯 NO CONVERSION!
+        .eq('telegramId', telegramId)
         .select()
-        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error updating user by telegram ID:', error);
         return undefined;
       }
-      return data ? fromDBColumns(data) : undefined;
+      return data || undefined;
     } else {
       // Regular UUID update
       const { data, error } = await this.supabase
         .from('users')
-        .update(dbUpdates)
+        .update(safeUpdates)  // 🎯 NO CONVERSION!
         .eq('id', id)
         .select()
-        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error updating user by UUID:', error);
         return undefined;
       }
-      return data ? fromDBColumns(data) : undefined;
+      return data || undefined;
     }
   }
 
@@ -298,13 +225,13 @@ export class SupabaseStorage implements IStorage {
       .select(`
         characters (*)
       `)
-      .eq('userid', userId);  // Use lowercase
+      .eq('userId', userId);  // 🎯 NO CONVERSION!
 
     if (error) {
       console.error('Error fetching user characters:', error);
       return [];
     }
-    return (data?.map((item: any) => item.characters) || []).map(char => fromDBColumns(char)).filter(Boolean) as Character[];
+    return (data?.map((item: any) => item.characters) || []).filter(Boolean) as Character[];
   }
 
   async getAllCharacters(): Promise<Character[]> {
@@ -356,27 +283,27 @@ export class SupabaseStorage implements IStorage {
   async createCharacter(character: InsertCharacter): Promise<Character> {
     const { data, error } = await this.supabase
       .from('characters')
-      .insert(mapToDBColumns(character))
+      .insert(character)  // 🎯 NO CONVERSION!
       .select()
       .single();
 
     if (error) throw error;
-    return fromDBColumns(data);
+    return data;
   }
 
   async updateCharacter(id: string, updates: Partial<Character>): Promise<Character | undefined> {
     const { data, error } = await this.supabase
       .from('characters')
-      .update(mapToDBColumns(updates))
+      .update(updates)  // 🎯 NO CONVERSION!
       .eq('id', id)
       .select()
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error updating character:', error);
       return undefined;
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data || undefined;
   }
 
   async deleteCharacter(id: string): Promise<void> {
@@ -399,13 +326,13 @@ export class SupabaseStorage implements IStorage {
       .from('upgrades')
       .select('*')
       .eq('id', id)
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching upgrade:', error);
       return undefined;
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data || undefined;
   }
 
   async getUserUpgrades(userId: string): Promise<Upgrade[]> {
@@ -414,13 +341,13 @@ export class SupabaseStorage implements IStorage {
       .select(`
         upgrades (*)
       `)
-      .eq('userid', userId);  // Use lowercase
+      .eq('userId', userId);  // 🎯 NO CONVERSION!
 
     if (error) {
       console.error('Error fetching user upgrades:', error);
       return [];
     }
-    return (data?.map((item: any) => item.upgrades) || []).map(upgrade => fromDBColumns(upgrade)).filter(Boolean) as Upgrade[];
+    return (data?.map((item: any) => item.upgrades) || []).filter(Boolean) as Upgrade[];
   }
 
   async getAllUpgrades(): Promise<Upgrade[]> {
@@ -432,44 +359,44 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching all upgrades:', error);
       return [];
     }
-    return data ? mapArrayFromDB(data) : [];
+    return data || [];
   }
 
   async createUpgrade(upgrade: InsertUpgrade): Promise<Upgrade> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .insert(mapToDBColumns(upgrade))
+      .insert(upgrade)  // 🎯 NO CONVERSION!
       .select()
       .single();
 
     if (error) throw error;
-    return fromDBColumns(data);
+    return data;
   }
 
   async updateUpgrade(id: string, updates: Partial<Upgrade>): Promise<Upgrade | undefined> {
     const { data, error } = await this.supabase
       .from('upgrades')
-      .update(mapToDBColumns(updates))
+      .update(updates)  // 🎯 NO CONVERSION!
       .eq('id', id)
       .select()
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error updating upgrade:', error);
       return undefined;
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data || undefined;
   }
 
   async upgradeUserUpgrade(userId: string, upgradeId: string): Promise<Upgrade> {
     // Increment user's upgrade level
     const { data, error } = await this.supabase.rpc('increment_userUpgrade', {
-      p_userid: userId,      // Use lowercase
-      p_upgradeid: upgradeId // Use lowercase
+      p_userId: userId,      // 🎯 NO CONVERSION!
+      p_upgradeId: upgradeId // 🎯 NO CONVERSION!
     });
 
     if (error) throw error;
-    return fromDBColumns(data);
+    return data;
   }
 
   async deleteUpgrade(id: string): Promise<void> {
@@ -490,7 +417,7 @@ export class SupabaseStorage implements IStorage {
         const { data: user } = await this.supabase
           .from('users')
           .select('id')
-          .eq('telegramid', telegramId)  // Use lowercase
+          .eq('telegramId', telegramId)  // 🎯 NO CONVERSION!
           .maybeSingle();
 
         if (user?.id) {
@@ -510,7 +437,7 @@ export class SupabaseStorage implements IStorage {
         .from('users')
         .select('*')
         .eq('id', realUserId)
-        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+        .maybeSingle();
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user stats:', error);
@@ -528,7 +455,7 @@ export class SupabaseStorage implements IStorage {
 
         const { data: newData, error: createError } = await this.supabase
           .from('users')
-          .insert(mapToDBColumns(defaultStats))
+          .insert(defaultStats)  // 🎯 NO CONVERSION!
           .select()
           .single();
 
@@ -542,9 +469,9 @@ export class SupabaseStorage implements IStorage {
             sessionsPlayed: 0
           } as GameStats;
         }
-        return fromDBColumns(newData);
+        return newData;
       }
-      return fromDBColumns(data);
+      return data;
     } catch (error) {
       console.error('getUserStats error:', error);
       return {
@@ -562,18 +489,8 @@ export class SupabaseStorage implements IStorage {
 
     const incrementedUpdates: any = {
       ...updates,
-      updated_at: new Date().toISOString()
+      updatedAt: new Date().toISOString()  // 🎯 camelCase property name!
     };
-
-    if (updates.totalTaps !== undefined) {
-      incrementedUpdates.totalTaps = (currentStats.totalTaps || 0) + (updates.totalTaps - (currentStats.totalTaps || 0));
-    }
-    if (updates.totalLpEarned !== undefined) {
-      incrementedUpdates.totalLpEarned = (currentStats.totalLpEarned || 0) + (updates.totalLpEarned - (currentStats.totalLpEarned || 0));
-    }
-    if (updates.totalEnergyUsed !== undefined) {
-      incrementedUpdates.totalEnergyUsed = (currentStats.totalEnergyUsed || 0) + (updates.totalEnergyUsed - (currentStats.totalEnergyUsed || 0));
-    }
 
     console.log('📊 User stats update skipped - table removed during cleanup');
   }
@@ -583,11 +500,11 @@ export class SupabaseStorage implements IStorage {
     let query = this.supabase
       .from('chatMessages')
       .select('*')
-      .eq('userid', userId)  // Use lowercase
-      .order('createdat', { ascending: true });  // Use lowercase
+      .eq('userId', userId)  // 🎯 NO CONVERSION!
+      .order('createdAt', { ascending: true });  // 🎯 NO CONVERSION!
 
     if (characterId) {
-      query = query.eq('characterid', characterId);  // Use lowercase
+      query = query.eq('characterId', characterId);  // 🎯 NO CONVERSION!
     }
 
     const { data, error } = await query;
@@ -596,28 +513,28 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching chat messages:', error);
       return [];
     }
-    return data ? mapArrayFromDB(data) : [];
+    return data || [];
   }
 
   async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
     const { data, error } = await this.supabase
       .from('chatMessages')
-      .insert(mapToDBColumns(message))
+      .insert(message)  // 🎯 NO CONVERSION!
       .select()
       .single();
 
     if (error) throw error;
-    return fromDBColumns(data);
+    return data;
   }
 
   async clearChatHistory(userId: string, characterId?: string): Promise<void> {
     let query = this.supabase
       .from('chatMessages')
       .delete()
-      .eq('userid', userId);  // Use lowercase
+      .eq('userId', userId);  // 🎯 NO CONVERSION!
 
     if (characterId) {
-      query = query.eq('characterid', characterId);  // Use lowercase
+      query = query.eq('characterId', characterId);  // 🎯 NO CONVERSION!
     }
 
     const { error } = await query;
@@ -628,24 +545,24 @@ export class SupabaseStorage implements IStorage {
   async getLastWheelSpin(userId: string): Promise<Date | null> {
     const { data, error } = await this.supabase
       .from('wheelRewards')
-      .select('spunat')  // Use lowercase
-      .eq('userid', userId)  // Use lowercase
-      .order('spunat', { ascending: false })  // Use lowercase
+      .select('spunAt')  // 🎯 NO CONVERSION!
+      .eq('userId', userId)  // 🎯 NO CONVERSION!
+      .order('spunAt', { ascending: false })  // 🎯 NO CONVERSION!
       .limit(1)
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error fetching last wheel spin:', error);
       return null;
     }
-    return data ? new Date(data.spunat) : null;
+    return data ? new Date(data.spunAt) : null;
   }
 
   async recordWheelSpin(userId: string, reward: string): Promise<void> {
     const { error } = await this.supabase
       .from('wheelRewards')
       .insert({
-        userid: userId,  // Use lowercase
+        userId: userId,  // 🎯 NO CONVERSION!
         reward,
         amount: 1
       });
@@ -696,9 +613,9 @@ export class SupabaseStorage implements IStorage {
     ]);
 
     return {
-      users: users.data ? mapArrayFromDB(users.data) : [],
-      characters: characters.data ? mapArrayFromDB(characters.data) : [],
-      messages: messages.data ? mapArrayFromDB(messages.data) : [],
+      users: users.data || [],
+      characters: characters.data || [],
+      messages: messages.data || [],
       exportedAt: new Date().toISOString()
     };
   }
@@ -714,21 +631,20 @@ export class SupabaseStorage implements IStorage {
       return [];
     }
 
-    // Map database columns back to camelCase
-    return data ? mapArrayFromDB(data) : [];
+    return data || [];
   }
 
   async getMediaFiles(characterId?: string): Promise<MediaFile[]> {
     let query = this.supabase.from('mediaFiles').select('*');
     if (characterId) {
-      query = query.eq('characterid', characterId);  // Use lowercase database column
+      query = query.eq('characterId', characterId);  // 🎯 NO CONVERSION!
     }
     const { data, error } = await query;
     if (error) {
       console.error('Error fetching media files:', error);
       return [];
     }
-    return data ? mapArrayFromDB(data) : [];
+    return data || [];
   }
 
   async getMediaByCharacter(characterId: string): Promise<MediaFile[]> {
@@ -736,34 +652,32 @@ export class SupabaseStorage implements IStorage {
   }
 
   async saveMediaFile(file: MediaFile): Promise<MediaFile> {
-    const dbFile = mapToDBColumns(file);
-    console.log('[SupabaseStorage] Saving media file:', dbFile);
+    console.log('[SupabaseStorage] Saving media file WITHOUT conversion:', file);
     const { data, error } = await this.supabase
       .from('mediaFiles')
-      .insert(dbFile)
+      .insert(file)  // 🎯 NO CONVERSION!
       .select()
       .single();
     if (error) {
       console.error('Database insert error:', error);
       throw error;
     }
-    return fromDBColumns(data);
+    return data;
   }
 
   async updateMediaFile(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
-    const dbUpdates = mapToDBColumns(updates);
-    console.log('[SupabaseStorage] Updating media file:', id, 'with:', dbUpdates);
+    console.log('[SupabaseStorage] Updating media file WITHOUT conversion:', id, 'with:', updates);
     const { data, error } = await this.supabase
       .from('mediaFiles')
-      .update(dbUpdates)
+      .update(updates)  // 🎯 NO CONVERSION!
       .eq('id', id)
       .select()
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
     if (error && error.code !== 'PGRST116') {
       console.error('Error updating media file:', error);
       return undefined;
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data || undefined;
   }
 
   async uploadMedia(file: any): Promise<MediaFile> {
@@ -804,21 +718,19 @@ export class SupabaseStorage implements IStorage {
   }
 
   async updateMedia(id: string, updates: Partial<MediaFile>): Promise<MediaFile | undefined> {
-    const dbUpdates = mapToDBColumns(updates);
-
     const { data, error } = await this.supabase
       .from('mediaFiles')
-      .update(dbUpdates)
+      .update(updates)  // 🎯 NO CONVERSION!
       .eq('id', id)
       .select()
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error updating media:', error);
       return undefined;
     }
 
-    return data ? fromDBColumns(data) : undefined;
+    return data || undefined;
   }
 
   async deleteMedia(id: string): Promise<void> {
@@ -845,13 +757,13 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await this.supabase
       .from('mediaFiles')
       .select('*')
-      .or('filename.is.null,filepath.is.null,characterid.is.null');  // Use lowercase
+      .or('fileName.is.null,filePath.is.null,characterId.is.null');  // 🎯 NO CONVERSION!
 
     if (error) {
       console.error('Error finding orphaned media files:', error);
       return [];
     }
-    return data ? mapArrayFromDB(data) : [];
+    return data || [];
   }
 
   async getDuplicateMediaFiles(): Promise<{ duplicates: MediaFile[]; groups: { [key: string]: MediaFile[] } }> {
@@ -911,13 +823,13 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching level requirements:', error);
       return [];
     }
-    return data ? mapArrayFromDB(data) : [];
+    return data || [];
   }
 
   async createLevelRequirement(levelReq: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('levelRequirements')
-      .insert(mapToDBColumns(levelReq))
+      .insert(levelReq)  // 🎯 NO CONVERSION!
       .select()
       .single();
 
@@ -925,22 +837,22 @@ export class SupabaseStorage implements IStorage {
       console.error('Error creating level requirement:', error);
       throw new Error(`Failed to create level requirement: ${error.message}`);
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data;
   }
 
   async updateLevelRequirement(id: string, updates: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('levelRequirements')
-      .update(mapToDBColumns(updates))
+      .update(updates)  // 🎯 NO CONVERSION!
       .eq('id', id)
       .select()
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error updating level requirement:', error);
       throw new Error(`Failed to update level requirement: ${error.message}`);
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data;
   }
 
   async deleteLevelRequirement(id: string): Promise<void> {
@@ -966,7 +878,7 @@ export class SupabaseStorage implements IStorage {
       console.error('Error fetching upgrades:', error);
       return [];
     }
-    return data ? mapArrayFromDB(data) : [];
+    return data || [];
   }
 
   // Missing methods for achievements management  
@@ -974,19 +886,19 @@ export class SupabaseStorage implements IStorage {
     const { data, error } = await this.supabase
       .from('achievements')
       .select('*')
-      .order('category, sortorder');  // Use lowercase
+      .order('category, sortOrder');  // 🎯 NO CONVERSION!
 
     if (error) {
       console.error('Error fetching achievements:', error);
       return [];
     }
-    return data ? mapArrayFromDB(data) : [];
+    return data || [];
   }
 
   async createAchievement(achievement: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('achievements')
-      .insert(mapToDBColumns(achievement))
+      .insert(achievement)  // 🎯 NO CONVERSION!
       .select()
       .single();
 
@@ -994,22 +906,22 @@ export class SupabaseStorage implements IStorage {
       console.error('Error creating achievement:', error);
       throw new Error(`Failed to create achievement: ${error.message}`);
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data;
   }
 
   async updateAchievement(id: string, updates: any): Promise<any> {
     const { data, error } = await this.supabase
       .from('achievements')
-      .update(mapToDBColumns(updates))
+      .update(updates)  // 🎯 NO CONVERSION!
       .eq('id', id)
       .select()
-      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+      .maybeSingle();
 
     if (error && error.code !== 'PGRST116') {
       console.error('Error updating achievement:', error);
       throw new Error(`Failed to update achievement: ${error.message}`);
     }
-    return data ? fromDBColumns(data) : undefined;
+    return data;
   }
 
   async deleteAchievement(id: string): Promise<void> {
