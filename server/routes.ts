@@ -10,6 +10,7 @@ import { registerChatRoutes } from './routes/chatRoutes.js';
 import { registerCharacterRoutes } from './routes/characterRoutes.js';
 import { registerUserRoutes } from './routes/userRoutes.js';
 import { registerStatsRoutes } from './routes/statsRoutes.js';
+import { registerTaskRoutes } from './routes/taskRoutes.js';
 import { registerAdminRoutes as registerAdminRoutesCore } from './routes/adminRoutes.js';
 import { registerWheelRoutes } from './routes/wheelRoutes.js';
 import { registerVipRoutes } from './routes/vipRoutes.js';
@@ -18,7 +19,7 @@ import { registerLevelRoutes } from './routes/levelRoutes.js';
 import { registerDebugRoutes } from './routes/debugRoutes.js';
 import { registerAdminRoutes as registerAdminAdditions } from './routes/adminRoutes.additions.js';
 
-// Enhanced request logging middleware
+// Enhanced request logging middleware with cleaner output
 function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
   
@@ -27,6 +28,12 @@ function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction
     if (req.path.startsWith('/api')) {
       const status = res.statusCode;
       const emoji = status >= 500 ? '🔴' : status >= 400 ? '🟡' : status >= 300 ? '🟠' : '🟢';
+      
+      // Suppress duplicate telegram auth status checks to reduce log noise
+      if (req.path.includes('/api/auth/telegram/status/') && status === 200) {
+        return; // Skip successful auth status checks
+      }
+      
       console.log(`${emoji} ${req.method} ${req.path} ${status} in ${duration}ms`);
     }
   });
@@ -34,12 +41,17 @@ function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction
   next();
 }
 
-// Simple error handler middleware
+// Enhanced error handler with telegram ID conflict detection
 function errorTriageMiddleware(error: any, req: Request, res: Response, next: NextFunction) {
   const status = error.status || error.statusCode || 500;
   const message = error.message || 'Internal Server Error';
   
-  console.error(`🔴 [ERROR] ${req.method} ${req.path}:`, error);
+  // Special handling for telegram ID conflicts
+  if (req.path.includes('telegram') && message.includes('0 rows')) {
+    console.warn(`🤖 [TELEGRAM] User not found for auth check: ${req.path}`);
+  } else {
+    console.error(`🔴 [ERROR] ${req.method} ${req.path}:`, error);
+  }
   
   res.status(status).json({
     error: message,
@@ -64,7 +76,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerCharacterRoutes(app);
   registerUserRoutes(app);
   registerStatsRoutes(app);
-  registerLevelRoutes(app); // NEW: Level requirements and user level calculation
+  registerTaskRoutes(app); // NEW: Task system with progress tracking
+  registerLevelRoutes(app); // Level requirements and user level calculation
   registerAdminRoutesCore(app);
   registerAdminAdditions(app);
   registerWheelRoutes(app);
@@ -96,7 +109,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`🤖[AI] Triage service active - Mistral primary, Perplexity fallback`);
     console.log(`💻[FRONTEND] Static files served from dist/public directory`);
     console.log(`🎆[LEVELS] Level system endpoints active`);
-    console.log(`🔧[DEBUG] Comprehensive error monitoring enabled`);
+    console.log(`📋[TASKS] Task system with reward claiming active`);
+    console.log(`🔧[DEBUG] Enhanced error monitoring with telegram ID conflict detection`);
   });
 
   return server;
