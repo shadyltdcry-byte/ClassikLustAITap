@@ -11,6 +11,7 @@ import { registerCharacterRoutes } from './routes/characterRoutes.js';
 import { registerUserRoutes } from './routes/userRoutes.js';
 import { registerStatsRoutes } from './routes/statsRoutes.js';
 import { registerTaskRoutes } from './routes/taskRoutes.js';
+import { registerAchievementRoutes } from './routes/achievementRoutes.js';
 import { registerAdminRoutes as registerAdminRoutesCore } from './routes/adminRoutes.js';
 import { registerWheelRoutes } from './routes/wheelRoutes.js';
 import { registerVipRoutes } from './routes/vipRoutes.js';
@@ -29,26 +30,35 @@ function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction
       const status = res.statusCode;
       const emoji = status >= 500 ? '🔴' : status >= 400 ? '🟡' : status >= 300 ? '🟠' : '🟢';
       
-      // Suppress duplicate telegram auth status checks to reduce log noise
-      if (req.path.includes('/api/auth/telegram/status/') && status === 200) {
-        return; // Skip successful auth status checks
-      }
+      // Suppress noisy logs for successful common endpoints
+      const suppressedPaths = [
+        '/api/auth/telegram/status/',
+        '/api/user/',
+        '/api/stats/',
+        '/api/character/selected'
+      ];
       
-      console.log(`${emoji} ${req.method} ${req.path} ${status} in ${duration}ms`);
+      const shouldSuppress = suppressedPaths.some(path => req.path.includes(path)) && status === 200;
+      
+      if (!shouldSuppress || duration > 1000) { // Always log slow requests
+        console.log(`${emoji} ${req.method} ${req.path} ${status} in ${duration}ms`);
+      }
     }
   });
   
   next();
 }
 
-// Enhanced error handler with telegram ID conflict detection
+// Enhanced error handler with better telegram ID conflict detection
 function errorTriageMiddleware(error: any, req: Request, res: Response, next: NextFunction) {
   const status = error.status || error.statusCode || 500;
   const message = error.message || 'Internal Server Error';
   
-  // Special handling for telegram ID conflicts
+  // Special handling for common error patterns
   if (req.path.includes('telegram') && message.includes('0 rows')) {
     console.warn(`🤖 [TELEGRAM] User not found for auth check: ${req.path}`);
+  } else if (message.includes('PGRST116')) {
+    console.warn(`📊 [SUPABASE] Single query returned 0 rows: ${req.method} ${req.path}`);
   } else {
     console.error(`🔴 [ERROR] ${req.method} ${req.path}:`, error);
   }
@@ -76,7 +86,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerCharacterRoutes(app);
   registerUserRoutes(app);
   registerStatsRoutes(app);
-  registerTaskRoutes(app); // NEW: Task system with progress tracking
+  registerTaskRoutes(app); // Task system with progress tracking
+  registerAchievementRoutes(app); // NEW: Achievement system with rewards
   registerLevelRoutes(app); // Level requirements and user level calculation
   registerAdminRoutesCore(app);
   registerAdminAdditions(app);
@@ -108,9 +119,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     console.log(`🎮[SERVER] Game started successfully, running on port ${port}`);
     console.log(`🤖[AI] Triage service active - Mistral primary, Perplexity fallback`);
     console.log(`💻[FRONTEND] Static files served from dist/public directory`);
-    console.log(`🎆[LEVELS] Level system endpoints active`);
+    console.log(`🏆[ACHIEVEMENTS] Achievement system with progress tracking active`);
     console.log(`📋[TASKS] Task system with reward claiming active`);
-    console.log(`🔧[DEBUG] Enhanced error monitoring with telegram ID conflict detection`);
+    console.log(`🌆[LEVELS] Level system endpoints active`);
+    console.log(`🔧[DEBUG] Enhanced error monitoring with intelligent log filtering`);
   });
 
   return server;
