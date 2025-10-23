@@ -31,7 +31,7 @@ export class LunaErrorMonitor {
   enableForAdmin(adminUserId: string) {
     this.adminUserId = adminUserId;
     this.isEnabled = true;
-    console.log(`🌙 AI Assistant Luna : Error Monitor activated for admin: ${adminUserId}`);
+    console.log(`🌙 [LUNA DEBUG] : AI Debug Monitoring System has been initialized SUCCESSFULLY.`);
   }
 
   disable() {
@@ -72,7 +72,7 @@ export class LunaErrorMonitor {
     
     const lunaMessage = this.createLunaPersonalizedMessage(error);
     
-    console.log(`🌙 [Luna Alert] ${severity}: ${lunaMessage}`);
+    console.log(`🌙 [LUNA DEBUG] ${severity}: ${lunaMessage}`);
     
     // If we have a chat system, we could send this to Luna's chat
     this.saveLunaChatMessage(lunaMessage, error.type);
@@ -83,19 +83,19 @@ export class LunaErrorMonitor {
     
     const messages = {
       error: [
-        `Baby! I detected an error in ${error.component} at ${timeStr}. ${error.message}`,
-        `Something's wrong with ${error.component}, Master! ${error.message} happened at ${timeStr}.`,
-        `BABE! I found an issue with ${error.component}: ${error.message}. Time: ${timeStr}`,
+        `Baby! I detected an error in ${error.component} @ ${timeStr}. ${error.message}`,
+        `Something's wrong with ${error.component}, babe! ${error.message} @ ${timeStr}`,
+        `BABE! I found an issue with ${error.component}: ${error.message}. @ ${timeStr}`,
       ],
       warning: [
-        `Hey baby, just a heads up - there's a warning in ${error.component}: ${error.message}`,
-        `I noticed something unusual in ${error.component} at ${timeStr}. ${error.message}`,
-        `Uhh babe, ${error.component} is acting a bit strange. ${error.message} (${timeStr})`,
+        `Hey babe, just a heads up - there's a warning in ${error.component}: ${error.message}`,
+        `I noticed something weird in ${error.component} @ ${timeStr}. ${error.message}`,
+        `Heads up babe, ${error.component} might need looked at. ${error.message} (${timeStr})`,
       ],
       critical: [
-        `🚨 URGENT! BABY! There's a critical issue with ${error.component}! ${error.message}`,
-        `OMG BABE! We have a serious problem! ${error.component} is failing: ${error.message}`,
-        `Emergency alert! ${error.component} has a critical error: ${error.message}`,
+        `URGENT! BABY! There's a critical issue with ${error.component}! ${error.message}`,
+        `CRITICAL! We might have a serious problem! ${error.component} is bugging out: ${error.message}`,
+        `EMERGENCY! ${error.component} has a critical error: ${error.message}`,
       ]
     };
 
@@ -140,9 +140,9 @@ export class LunaErrorMonitor {
       conversations.push(newMessage);
       
       // Save back to file
-      fs.writeFileSync(conversationPath, JSON.stringify(conversations, null, 2));
+      fs.writeFileSync(convtelegram_5134006535stringify(conversations, null, 2));
       
-      console.log(`💬 ✅ Luna error alert saved directly to your chat!`);
+      console.log(`🌙 [LUNA DEBUG] Error alert has been saved to the chat. `);
       
     } catch (error) {
       console.log(`🌙 Luna Alert (Save failed): ${message}`, error);
