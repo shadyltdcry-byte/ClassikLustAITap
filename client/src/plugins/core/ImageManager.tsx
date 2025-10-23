@@ -112,7 +112,7 @@ export default function ImageManager({
       });
       
       formData.append('config', JSON.stringify({
-        characterid: selectedCharacter,
+        characterId: selectedCharacter,
         folderPath,
         imageType,
         pose: formFields.pose,
@@ -164,16 +164,16 @@ export default function ImageManager({
     mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
       console.log('[ImageManager] Updating media', id, 'with:', updates);
       
-      // Map camelCase to snake_case for database
+      // Use consistent camelCase field names to match the schema
       const dbUpdates = {
-        characterid: updates.characterid,
+        characterId: updates.characterId,
         mood: updates.mood,
         pose: updates.pose,
         category: updates.category,
         isNsfw: updates.isNsfw,
         isVip: updates.isVip,
         isEvent: updates.isEvent,
-        iswheelreward: updates.isWheelReward,
+        isWheelReward: updates.isWheelReward,
         enabledForChat: updates.enabledForChat,
         randomSendChance: updates.randomSendChance,
         levelRequirement: updates.levelRequirement,
@@ -348,7 +348,7 @@ export default function ImageManager({
   // Filter media files
   const filteredFiles = mediaFiles.filter((file: any) => {
     if (filterCategory !== "all" && file.category !== filterCategory) return false;
-    if (filterCharacter !== "all" && file.characterid !== filterCharacter) return false;
+    if (filterCharacter !== "all" && file.characterId !== filterCharacter) return false;
     return true;
   });
 
@@ -645,8 +645,8 @@ export default function ImageManager({
 
                     {/* Metadata */}
                     <div className="text-gray-400 text-xs space-y-1">
-                      {file.characterid ? (
-                        <div>📷 {characters.find((c: any) => c.id === file.characterid)?.name || "Unknown"}</div>
+                      {file.characterId ? (
+                        <div>📷 {characters.find((c: any) => c.id === file.characterId)?.name || "Unknown"}</div>
                       ) : (
                         <div>📷 Unassigned</div>
                       )}
@@ -780,8 +780,8 @@ export default function ImageManager({
               <div>
                 <Label className="text-white">Assign to Character</Label>
                 <Select
-                  value={editingFile.characterid || ""}
-                  onValueChange={(value) => setEditingFile({ ...editingFile, characterid: value })}
+                  value={editingFile.characterId || ""}
+                  onValueChange={(value) => setEditingFile({ ...editingFile, characterId: value })}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character" />
