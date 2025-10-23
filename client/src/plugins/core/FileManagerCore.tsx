@@ -56,7 +56,7 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
 
   // Upload configuration state
   const [uploadConfig, setUploadConfig] = useState({
-    characterid: '',
+    characterId: '',
     mood: '',
     requiredLevel: 1,
     isVip: false,
@@ -176,9 +176,9 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
    */
   const getFolderName = (file: MediaFile): string => {
     const parts = [];
-    if (file.characterid) {
-      const character = characters.find((c: Character) => c.id === file.characterid);
-      parts.push(`Character_${character?.name || file.characterid}`);
+    if (file.characterId) {
+      const character = characters.find((c: Character) => c.id === file.characterId);
+      parts.push(`Character_${character?.name || file.characterId}`);
     }
     if (file.mood) parts.push(`Mood_${file.mood}`);
     if (file.isVip) parts.push('VIP');
@@ -332,11 +332,11 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
       borderRadius: '8px',
     };
 
-    // Handle both old and new file data formats
-    const fileName = file.fileName || (file as any).filename || '';
+    // Handle consistent fileName field
+    const fileName = file.fileName || '';
 
-    // Handle both old and new file path formats
-    const filePath = file.filePath || (file as any).filepath || (file as any).url;
+    // Handle consistent filePath field
+    const filePath = file.filePath;
     const fileUrl = filePath?.startsWith('http')
       ? filePath // External URL (e.g., Supabase storage)
       : filePath?.startsWith('/api/')
@@ -407,9 +407,9 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
     try {
       console.log('[FileManagerCore] Saving metadata for:', editingFile.id);
 
-      // Map camelCase to snake_case for database
+      // Use consistent camelCase field names
       const updates = {
-        characterid: editingFile.characterid,
+        characterId: editingFile.characterId,
         mood: editingFile.mood,
         pose: editingFile.pose,
         category: editingFile.category,
@@ -481,8 +481,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
               <div>
                 <Label className="text-white">Assign to Character</Label>
                 <Select
-                  value={uploadConfig.characterid}
-                  onValueChange={(value) => setUploadConfig(prev => ({ ...prev, characterid: value }))}
+                  value={uploadConfig.characterId}
+                  onValueChange={(value) => setUploadConfig(prev => ({ ...prev, characterId: value }))}
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character (optional)" />
@@ -693,8 +693,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
                   <CardContent className="p-2">
                     {renderMediaPreview(file)}
                     <div className="mt-2 space-y-1">
-                      <p className="text-xs text-white truncate" title={`ID: ${file.id}, Type: ${file.fileType || 'missing'}, Path: ${file.filePath || (file as any).filepath || (file as any).url || 'missing'}`}>
-                        {file.fileName || (file as any).filename || `File ${file.id.slice(0, 8)}`}
+                      <p className="text-xs text-white truncate" title={`ID: ${file.id}, Type: ${file.fileType || 'missing'}, Path: ${file.filePath || 'missing'}`}>
+                        {file.fileName || `File ${file.id.slice(0, 8)}`}
                       </p>
                       <div className="flex flex-wrap gap-1">
                         {file.isVip && (
@@ -798,8 +798,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
               <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
                 <div>Type: {selectedFile.fileType || 'N/A'}</div>
                 <div>Character: {
-                  selectedFile.characterid
-                    ? characters.find((c: Character) => c.id === selectedFile.characterid)?.name || 'Unknown'
+                  selectedFile.characterId
+                    ? characters.find((c: Character) => c.id === selectedFile.characterId)?.name || 'Unknown'
                     : 'Unassigned'
                 }</div>
                 <div>VIP: {selectedFile.isVip ? 'Yes' : 'No'}</div>
@@ -823,8 +823,8 @@ const FileManagerCore: React.FC<FileManagerCoreProps> = ({ onClose }) => {
               <div>
                 <Label className="text-white">Assign to Character</Label>
                 <Select
-                  value={editingFile.characterid || ''}
-                  onValueChange={(value) => setEditingFile({...editingFile, characterid: value || null})} // Ensure it's null if empty for backend
+                  value={editingFile.characterId || ''}
+                  onValueChange={(value) => setEditingFile({...editingFile, characterId: value || null})} // Ensure it's null if empty for backend
                 >
                   <SelectTrigger className="bg-gray-700 border-gray-600 text-white">
                     <SelectValue placeholder="Select character" />
