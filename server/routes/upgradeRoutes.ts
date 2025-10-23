@@ -32,11 +32,11 @@ export function registerUpgradeRoutes(app: Express) {
           try {
             const { data } = await storage.supabase
               .from('userUpgrades')
-              .select('level')
+              .select('currentLevel')
               .eq('userId', userId)
               .eq('upgradeId', u.id)
               .maybeSingle(); // Use maybeSingle to avoid PGRST116
-            currentLevel = data?.level || 0;
+            currentLevel = data?.currentLevel || 0;
           } catch (e) {
             console.warn(`📦 [UPGRADES] Failed to get level for ${u.id}:`, e);
           }
@@ -80,7 +80,7 @@ export function registerUpgradeRoutes(app: Express) {
     }
   });
 
-  // Player: purchase upgrade with GUARANTEED persistence
+  // Player: purchase upgrade with GUARANTEED persistence + REAL-TIME UPDATES
   app.post("/api/upgrades/:id/purchase", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -103,12 +103,13 @@ export function registerUpgradeRoutes(app: Express) {
       // Get current upgrade level from userUpgrades table - SAFE VERSION
       const { data: userUpgrade } = await storage.supabase
         .from('userUpgrades')
-        .select('level')
+        .select('currentLevel, totalSpent')
         .eq('userId', userId)
         .eq('upgradeId', id)
         .maybeSingle(); // Prevents PGRST116 "0 rows" error
       
-      const currentLevel = userUpgrade?.level || 0;
+      const currentLevel = userUpgrade?.currentLevel || 0;
+      const totalSpent = userUpgrade?.totalSpent || 0;
       const nextLevel = currentLevel + 1;
       
       // Check max level
@@ -129,58 +130,51 @@ export function registerUpgradeRoutes(app: Express) {
 
       console.log(`🛒 [PURCHASE] Processing: Level ${currentLevel} → ${nextLevel}, Cost: ${cost} LP`);
 
-      // TRY RPC FIRST (if exists)
-      let success = false;
-      try {
-        const { data, error } = await storage.supabase.rpc('purchase_upgrade_transaction', {
-          p_user_id: userId,
-          p_upgrade_id: id,
-          p_cost: cost,
-          p_new_level: nextLevel
+      // MANUAL TRANSACTION with proper constraint handling
+      const { error: updateError } = await storage.supabase
+        .from('users')
+        .update({ lp: userLP - cost })
+        .eq('id', userId);
+      
+      if (updateError) throw updateError;
+
+      // UPSERT with proper constraint handling for userUpgrades
+      const { error: upsertError } = await storage.supabase
+        .from('userUpgrades')
+        .upsert({
+          userId,
+          upgradeId: id,
+          currentLevel: nextLevel,
+          totalSpent: totalSpent + cost,
+          lastPurchased: new Date().toISOString()
+        }, { 
+          onConflict: 'userId,upgradeId',
+          ignoreDuplicates: false
         });
-        
-        if (!error && data) {
-          success = true;
-          console.log('🛒 [PURCHASE] RPC transaction successful');
-        }
-      } catch (rpcError) {
-        console.log('🛒 [PURCHASE] RPC not available, using manual transaction');
+      
+      if (upsertError) {
+        console.error('🛒 [PURCHASE] Upsert error:', upsertError);
+        throw upsertError;
       }
 
-      // FALLBACK: Manual transaction if RPC failed
-      if (!success) {
-        const { error: updateError } = await storage.supabase
-          .from('users')
-          .update({ lp: userLP - cost })
-          .eq('id', userId);
-        
-        if (updateError) throw updateError;
-
-        const { error: upsertError } = await storage.supabase
-          .from('userUpgrades')
-          .upsert({
-            userId,
-            upgradeId: id,
-            level: nextLevel
-          }, { onConflict: 'userId,upgradeId' });
-        
-        if (upsertError) throw upsertError;
-        console.log('🛒 [PURCHASE] Manual transaction successful');
-      }
+      // APPLY UPGRADE EFFECTS TO USER STATS
+      await applyUpgradeEffects(userId, upgrade, nextLevel);
+      
+      console.log('🛒 [PURCHASE] Transaction successful with effects applied');
 
       // VERIFY PERSISTENCE - Critical verification step
       const [verifyUser, verifyUpgrade] = await Promise.all([
         storage.getUser(userId),
         storage.supabase
           .from('userUpgrades')
-          .select('level')
+          .select('currentLevel')
           .eq('userId', userId)
           .eq('upgradeId', id)
           .maybeSingle()
       ]);
 
       const finalLP = Number(verifyUser?.lp || 0);
-      const finalLevel = verifyUpgrade.data?.level || 0;
+      const finalLevel = verifyUpgrade.data?.currentLevel || 0;
 
       // DETECT NO-OP PURCHASES
       if (finalLP >= userLP || finalLevel <= currentLevel) {
@@ -208,6 +202,9 @@ export function registerUpgradeRoutes(app: Express) {
         return res.status(500).json(createErrorResponse('Purchase completed but changes not persisted'));
       }
 
+      // Get updated user stats for frontend refresh
+      const updatedUserStats = await getUserStatsWithUpgrades(userId);
+
       res.json(createSuccessResponse({
         transaction: {
           costPaid: cost,
@@ -218,7 +215,8 @@ export function registerUpgradeRoutes(app: Express) {
           name: upgrade.name,
           newLevel: finalLevel,
           oldLevel: currentLevel
-        }
+        },
+        updatedStats: updatedUserStats // For frontend real-time updates
       }));
       
     } catch (error: any) {
@@ -238,5 +236,159 @@ export function registerUpgradeRoutes(app: Express) {
     }
   });
 
-  console.log('📦 [ROUTES] Upgrade routes registered with verification');
+  console.log('📦 [ROUTES] Enhanced upgrade routes registered with real-time updates');
+}
+
+// Apply upgrade effects to user's base stats
+async function applyUpgradeEffects(userId: string, upgrade: any, newLevel: number) {
+  try {
+    console.log(`⚡ [EFFECTS] Applying ${upgrade.category} effect for ${upgrade.id} at level ${newLevel}`);
+    
+    // Get current user stats
+    const { data: user, error: userError } = await storage.supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) {
+      console.error('⚡ [EFFECTS] User fetch failed:', userError);
+      return;
+    }
+
+    // Calculate total effect for this specific upgrade
+    const baseEffect = Number(upgrade.baseeffect || 1);
+    const effectMult = Number(upgrade.effectmultiplier || 1.1);
+    const totalEffect = Math.round(baseEffect * Math.pow(effectMult, newLevel - 1));
+    
+    let updateData: any = {};
+
+    // Apply different effects based on upgrade category
+    switch (upgrade.category) {
+      case 'lpPerTap':
+        // Recalculate total LP per tap from all upgrades
+        const lpPerTapUpgrades = await getAllUserUpgradesByCategory(userId, 'lpPerTap');
+        let totalLpPerTap = 1; // Base LP per tap
+        for (const userUpg of lpPerTapUpgrades) {
+          const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
+          if (upgDetail) {
+            const effect = Math.round(Number(upgDetail.baseeffect) * Math.pow(Number(upgDetail.effectmultiplier), userUpg.currentLevel - 1));
+            totalLpPerTap += effect;
+          }
+        }
+        updateData.lpPerTap = totalLpPerTap;
+        console.log(`👆 [EFFECTS] Total LP per tap: ${totalLpPerTap}`);
+        break;
+        
+      case 'lpPerHour':
+        // Recalculate total LP per hour from all upgrades
+        const lpPerHourUpgrades = await getAllUserUpgradesByCategory(userId, 'lpPerHour');
+        let totalLpPerHour = 0; // Base LP per hour
+        for (const userUpg of lpPerHourUpgrades) {
+          const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
+          if (upgDetail) {
+            const effect = Math.round(Number(upgDetail.baseeffect) * Math.pow(Number(upgDetail.effectmultiplier), userUpg.currentLevel - 1));
+            totalLpPerHour += effect;
+          }
+        }
+        updateData.lpPerHour = totalLpPerHour;
+        console.log(`⏰ [EFFECTS] Total LP per hour: ${totalLpPerHour}`);
+        break;
+        
+      case 'energy':
+        // Recalculate total max energy from all upgrades
+        const energyUpgrades = await getAllUserUpgradesByCategory(userId, 'energy');
+        let totalMaxEnergy = 1000; // Base max energy
+        for (const userUpg of energyUpgrades) {
+          const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
+          if (upgDetail) {
+            const effect = Math.round(Number(upgDetail.baseeffect) * Math.pow(Number(upgDetail.effectmultiplier), userUpg.currentLevel - 1));
+            totalMaxEnergy += effect;
+          }
+        }
+        updateData.maxEnergy = totalMaxEnergy;
+        // Don't exceed max energy when increasing capacity
+        if (user.energy > totalMaxEnergy) {
+          updateData.energy = totalMaxEnergy;
+        }
+        console.log(`⚡ [EFFECTS] Total max energy: ${totalMaxEnergy}`);
+        break;
+        
+      case 'special':
+        // Store special upgrade data for gameplay logic
+        const specialUpgrades = user.specialUpgrades ? JSON.parse(user.specialUpgrades) : {};
+        specialUpgrades[upgrade.id] = newLevel;
+        updateData.specialUpgrades = JSON.stringify(specialUpgrades);
+        console.log(`🌟 [EFFECTS] Special upgrade ${upgrade.id} level: ${newLevel}`);
+        break;
+    }
+
+    // Update user with new calculated effects
+    if (Object.keys(updateData).length > 0) {
+      const { error: updateError } = await storage.supabase
+        .from('users')
+        .update(updateData)
+        .eq('id', userId);
+
+      if (updateError) {
+        console.error('⚡ [EFFECTS] Effect update failed:', updateError);
+      } else {
+        console.log('✅ [EFFECTS] Effects applied successfully:', updateData);
+      }
+    }
+  } catch (error) {
+    console.error('💥 [EFFECTS] Error applying effects:', error);
+  }
+}
+
+// Get all user upgrades by category for effect calculation
+async function getAllUserUpgradesByCategory(userId: string, category: string) {
+  try {
+    const { data: userUpgrades, error } = await storage.supabase
+      .from('userUpgrades')
+      .select('upgradeId, currentLevel')
+      .eq('userId', userId)
+      .gt('currentLevel', 0);
+
+    if (error || !userUpgrades) return [];
+
+    // Filter by category
+    const filteredUpgrades = [];
+    for (const userUpg of userUpgrades) {
+      const upgrade = await storage.getUpgrade(userUpg.upgradeId);
+      if (upgrade && upgrade.category === category) {
+        filteredUpgrades.push(userUpg);
+      }
+    }
+
+    return filteredUpgrades;
+  } catch (error) {
+    console.error('💥 [EFFECTS] Error fetching user upgrades by category:', error);
+    return [];
+  }
+}
+
+// Get user stats with all upgrades calculated for frontend updates
+async function getUserStatsWithUpgrades(userId: string) {
+  try {
+    const { data: user, error: userError } = await storage.supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+
+    if (userError || !user) return null;
+
+    return {
+      lp: user.lp,
+      energy: user.energy,
+      maxEnergy: user.maxEnergy || 1000,
+      lpPerTap: user.lpPerTap || 1,
+      lpPerHour: user.lpPerHour || 0,
+      level: user.level || 1
+    };
+  } catch (error) {
+    console.error('💥 [STATS] Error fetching user stats:', error);
+    return null;
+  }
 }
