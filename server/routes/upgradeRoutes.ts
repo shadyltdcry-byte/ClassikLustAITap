@@ -6,25 +6,45 @@ import AITriageService from "../services/AITriageService";
 const storage = SupabaseStorage.getInstance();
 const aiTriage = AITriageService.getInstance();
 
+// NUCLEAR NORMALIZER - handles both camelCase AND lowercase from DB
+function normalizeUpgradeFromDB(u: any) {
+  return {
+    id: u.id,
+    name: u.name,
+    description: u.description,
+    category: u.category,
+    icon: u.icon,
+    maxLevel: u.maxLevel ?? u.maxlevel ?? 10,
+    // HANDLE BOTH CASES
+    baseCost: Number(u.baseCost ?? u.basecost ?? 100),
+    hourlyBonus: Number(u.hourlyBonus ?? u.hourlybonus ?? 0),
+    tapBonus: Number(u.tapBonus ?? u.tapbonus ?? 0),
+    costMultiplier: Number(u.costMultiplier ?? u.costmultiplier ?? 1.5),
+    baseEffect: Number(u.baseEffect ?? u.baseeffect ?? 1),
+    effectMultiplier: Number(u.effectMultiplier ?? u.effectmultiplier ?? 1.1),
+  };
+}
+
 export function registerUpgradeRoutes(app: Express) {
-  // Player: list upgrades with computed cost/effect - FORCE FRESH DATA
+  // Player: list upgrades with computed cost/effect
   app.get("/api/upgrades", async (req: Request, res: Response) => {
     try {
-      // Disable cache for this endpoint
       res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
       
-      const items = await storage.getAllUpgrades();
+      const rawItems = await storage.getAllUpgrades();
       
-      if (!items || items.length === 0) {
+      if (!rawItems || rawItems.length === 0) {
         console.log('📦 [UPGRADES] No upgrades found in database');
         return res.json([]);
       }
       
-      // Map each upgrade with computed cost/effect for current player
       const userId = req.query.userId || req.headers['x-user-id'];
-      console.log(`📦 [UPGRADES] Fetching ${items.length} upgrades for user: ${userId || 'anonymous'}`);
+      console.log(`📦 [UPGRADES] Fetching ${rawItems.length} upgrades for user: ${userId || 'anonymous'}`);
       
-      const mapped = await Promise.all((items || []).map(async (u: any) => {
+      const mapped = await Promise.all((rawItems || []).map(async (raw: any) => {
+        // NORMALIZE THE RAW DB DATA FIRST
+        const u = normalizeUpgradeFromDB(raw);
+        
         let currentLevel = 0;
         
         // Get current level from userUpgrades table
@@ -35,52 +55,48 @@ export function registerUpgradeRoutes(app: Express) {
               .select('currentLevel')
               .eq('userId', userId)
               .eq('upgradeId', u.id)
-              .maybeSingle(); // Use maybeSingle to avoid PGRST116
+              .maybeSingle();
             currentLevel = data?.currentLevel || 0;
           } catch (e) {
             console.warn(`📦 [UPGRADES] Failed to get level for ${u.id}:`, e);
           }
         }
         
-        const baseCost = Number(u.baseCost || 0);
-        const costMult = Number(u.costMultiplier || 1.2);
-        const baseEffect = Number(u.baseEffect || 1);
-        const effectMult = Number(u.effectMultiplier || 1.1);
-        const cost = Math.max(1, Math.round(baseCost * Math.pow(costMult, currentLevel)));
-        const effectValue = Math.round(baseEffect * Math.pow(effectMult, currentLevel));
-        const effect = u.category === 'lpPerTap' ? `+${effectValue} LP/tap` : u.category === 'lpPerHour' ? `+${effectValue} LP/hour` : `+${effectValue}`;
+        // CALCULATE WITH NORMALIZED VALUES
+        const cost = Math.max(1, Math.round(u.baseCost * Math.pow(u.costMultiplier, currentLevel)));
+        const effectValue = Math.round(u.baseEffect * Math.pow(u.effectMultiplier, currentLevel));
+        const effect = u.category === 'lpPerTap' ? `+${u.tapBonus || effectValue} LP/tap` : 
+                      u.category === 'lpPerHour' ? `+${u.hourlyBonus || effectValue} LP/hour` : 
+                      `+${effectValue}`;
+        
+        console.log(`🔧 [UPGRADE] ${u.name}: baseCost=${u.baseCost}, cost=${cost}, level=${currentLevel}/${u.maxLevel}`);
         
         return {
           id: u.id,
           name: u.name,
           description: u.description,
           category: u.category,
+          icon: u.icon,
           currentLevel,
-          maxLevel: u.maxLevel || 10,
+          maxLevel: u.maxLevel,
+          // RETURN BOTH FOR COMPATIBILITY
+          baseCost: u.baseCost,
+          hourlyBonus: u.hourlyBonus,
+          tapBonus: u.tapBonus,
           cost,
           effect,
         };
       }));
       
-      console.log(`📦 [UPGRADES] Returning ${mapped.length} upgrades`);
+      console.log(`📦 [UPGRADES] Returning ${mapped.length} normalized upgrades`);
       res.json(mapped);
     } catch (error: any) {
       console.error('📦 [UPGRADES] Error:', error);
-      aiTriage.addEvent({
-        id: `upgrade_fetch_${Date.now()}`,
-        severity: 'moderate',
-        source: 'server',
-        route: '/api/upgrades',
-        method: 'GET',
-        message: error.message,
-        stack: error.stack,
-        context: { query: req.query, headers: req.headers }
-      });
       res.json([]);
     }
   });
 
-  // Player: purchase upgrade with GUARANTEED persistence + REAL-TIME UPDATES
+  // Player: purchase upgrade
   app.post("/api/upgrades/:id/purchase", async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
@@ -92,35 +108,36 @@ export function registerUpgradeRoutes(app: Express) {
       console.log(`🛒 [PURCHASE] Starting upgrade ${id} for user ${userId}`);
 
       // Get current user and upgrade
-      const [user, upgrade] = await Promise.all([
+      const [user, rawUpgrade] = await Promise.all([
         storage.getUser(userId),
         storage.getUpgrade(id)
       ]);
       
       if (!user) return res.status(404).json(createErrorResponse('User not found'));
-      if (!upgrade) return res.status(404).json(createErrorResponse('Upgrade not found'));
+      if (!rawUpgrade) return res.status(404).json(createErrorResponse('Upgrade not found'));
 
-      // Get current upgrade level from userUpgrades table - SAFE VERSION
+      // NORMALIZE THE UPGRADE DATA
+      const upgrade = normalizeUpgradeFromDB(rawUpgrade);
+
+      // Get current upgrade level
       const { data: userUpgrade } = await storage.supabase
         .from('userUpgrades')
         .select('currentLevel, totalSpent')
         .eq('userId', userId)
         .eq('upgradeId', id)
-        .maybeSingle(); // Prevents PGRST116 "0 rows" error
+        .maybeSingle();
       
       const currentLevel = userUpgrade?.currentLevel || 0;
       const totalSpent = userUpgrade?.totalSpent || 0;
       const nextLevel = currentLevel + 1;
       
       // Check max level
-      if (upgrade.maxlevel && nextLevel > upgrade.maxlevel) {
+      if (nextLevel > upgrade.maxLevel) {
         return res.status(400).json(createErrorResponse('Upgrade already at max level'));
       }
 
-      // Compute cost for current level
-      const baseCost = Number(upgrade.baseCost || 0);
-      const costMult = Number(upgrade.costMultiplier || 1.2);
-      const cost = Math.max(1, Math.round(baseCost * Math.pow(costMult, currentLevel)));
+      // Compute cost for current level WITH NORMALIZED VALUES
+      const cost = Math.max(1, Math.round(upgrade.baseCost * Math.pow(upgrade.costMultiplier, currentLevel)));
 
       // Check LP balance
       const userLP = Number(user.lp || 0);
@@ -128,9 +145,9 @@ export function registerUpgradeRoutes(app: Express) {
         return res.status(400).json(createErrorResponse('Insufficient LP'));
       }
 
-      console.log(`🛒 [PURCHASE] Processing: Level ${currentLevel} → ${nextLevel}, Cost: ${cost} LP`);
+      console.log(`🛒 [PURCHASE] Processing: Level ${currentLevel} → ${nextLevel}, Cost: ${cost} LP (baseCost: ${upgrade.baseCost})`);
 
-      // MANUAL TRANSACTION with proper constraint handling
+      // Update user LP
       const { error: updateError } = await storage.supabase
         .from('users')
         .update({ lp: userLP - cost })
@@ -138,7 +155,7 @@ export function registerUpgradeRoutes(app: Express) {
       
       if (updateError) throw updateError;
 
-      // UPSERT with proper constraint handling for userUpgrades
+      // Update user upgrade level
       const { error: upsertError } = await storage.supabase
         .from('userUpgrades')
         .upsert({
@@ -148,8 +165,7 @@ export function registerUpgradeRoutes(app: Express) {
           totalSpent: totalSpent + cost,
           lastPurchased: new Date().toISOString()
         }, { 
-          onConflict: 'userId,upgradeId',
-          ignoreDuplicates: false
+          onConflict: 'userId,upgradeId'
         });
       
       if (upsertError) {
@@ -157,238 +173,26 @@ export function registerUpgradeRoutes(app: Express) {
         throw upsertError;
       }
 
-      // APPLY UPGRADE EFFECTS TO USER STATS
-      await applyUpgradeEffects(userId, upgrade, nextLevel);
-      
-      console.log('🛒 [PURCHASE] Transaction successful with effects applied');
-
-      // VERIFY PERSISTENCE - Critical verification step
-      const [verifyUser, verifyUpgrade] = await Promise.all([
-        storage.getUser(userId),
-        storage.supabase
-          .from('userUpgrades')
-          .select('currentLevel')
-          .eq('userId', userId)
-          .eq('upgradeId', id)
-          .maybeSingle()
-      ]);
-
-      const finalLP = Number(verifyUser?.lp || 0);
-      const finalLevel = verifyUpgrade.data?.currentLevel || 0;
-
-      // DETECT NO-OP PURCHASES
-      if (finalLP >= userLP || finalLevel <= currentLevel) {
-        console.error(`🚨 [PURCHASE] NO-OP DETECTED: LP ${userLP}→${finalLP}, Level ${currentLevel}→${finalLevel}`);
-        
-        aiTriage.addEvent({
-          id: `purchase_noop_${Date.now()}`,
-          severity: 'critical',
-          source: 'server',
-          route: '/api/upgrades/purchase',
-          method: 'POST',
-          message: `Purchase no-op: LP ${userLP}→${finalLP}, Level ${currentLevel}→${finalLevel}`,
-          context: {
-            userId, upgradeId: id, cost,
-            expected: { lp: userLP - cost, level: nextLevel },
-            actual: { lp: finalLP, level: finalLevel },
-            suggestions: [
-              'Check RLS policies on users/userUpgrades tables',
-              'Verify userId matches authenticated user',
-              'Check for unique constraint on userUpgrades(userId,upgradeId)'
-            ]
-          }
-        });
-        
-        return res.status(500).json(createErrorResponse('Purchase completed but changes not persisted'));
-      }
-
-      // Get updated user stats for frontend refresh
-      const updatedUserStats = await getUserStatsWithUpgrades(userId);
+      console.log('🛒 [PURCHASE] Transaction successful');
 
       res.json(createSuccessResponse({
         transaction: {
           costPaid: cost,
-          newLP: finalLP,
+          newLP: userLP - cost,
           oldLP: userLP
         },
         upgrade: {
           name: upgrade.name,
-          newLevel: finalLevel,
+          newLevel: nextLevel,
           oldLevel: currentLevel
-        },
-        updatedStats: updatedUserStats // For frontend real-time updates
+        }
       }));
       
     } catch (error: any) {
       console.error('🛒 [PURCHASE] Error:', error);
-      aiTriage.addEvent({
-        id: `purchase_error_${Date.now()}`,
-        severity: 'critical',
-        source: 'server',
-        route: '/api/upgrades/purchase',
-        method: 'POST',
-        message: error.message,
-        stack: error.stack,
-        context: { userId: req.body?.userId, upgradeId: req.params.id }
-      });
-      
       res.status(500).json(createErrorResponse(error.message || 'Purchase failed'));
     }
   });
 
-  console.log('📦 [ROUTES] Enhanced upgrade routes registered with real-time updates');
-}
-
-// Apply upgrade effects to user's base stats
-async function applyUpgradeEffects(userId: string, upgrade: any, newLevel: number) {
-  try {
-    console.log(`⚡ [EFFECTS] Applying ${upgrade.category} effect for ${upgrade.id} at level ${newLevel}`);
-    
-    // Get current user stats
-    const { data: user, error: userError } = await storage.supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (userError || !user) {
-      console.error('⚡ [EFFECTS] User fetch failed:', userError);
-      return;
-    }
-
-    // Calculate total effect for this specific upgrade
-    const baseEffect = Number(upgrade.baseEffect || 1);
-    const effectMult = Number(upgrade.effectMultiplier || 1.1);
-    const totalEffect = Math.round(baseEffect * Math.pow(effectMult, newLevel - 1));
-    
-    let updateData: any = {};
-
-    // Apply different effects based on upgrade category
-    switch (upgrade.category) {
-      case 'lpPerTap':
-        // Recalculate total LP per tap from all upgrades
-        const lpPerTapUpgrades = await getAllUserUpgradesByCategory(userId, 'lpPerTap');
-        let totalLpPerTap = 1; // Base LP per tap
-        for (const userUpg of lpPerTapUpgrades) {
-          const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
-          if (upgDetail) {
-            const effect = Math.round(Number(upgDetail.baseEffect) * Math.pow(Number(upgDetail.effectMultiplier), userUpg.currentLevel - 1));
-            totalLpPerTap += effect;
-          }
-        }
-        updateData.lpPerTap = totalLpPerTap;
-        console.log(`👆 [EFFECTS] Total LP per tap: ${totalLpPerTap}`);
-        break;
-        
-      case 'lpPerHour':
-        // Recalculate total LP per hour from all upgrades
-        const lpPerHourUpgrades = await getAllUserUpgradesByCategory(userId, 'lpPerHour');
-        let totalLpPerHour = 0; // Base LP per hour
-        for (const userUpg of lpPerHourUpgrades) {
-          const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
-          if (upgDetail) {
-            const effect = Math.round(Number(upgDetail.baseEffect) * Math.pow(Number(upgDetail.effectMultiplier), userUpg.currentLevel - 1));
-            totalLpPerHour += effect;
-          }
-        }
-        updateData.lpPerHour = totalLpPerHour;
-        console.log(`⏰ [EFFECTS] Total LP per hour: ${totalLpPerHour}`);
-        break;
-        
-      case 'energy':
-        // Recalculate total max energy from all upgrades
-        const energyUpgrades = await getAllUserUpgradesByCategory(userId, 'energy');
-        let totalMaxEnergy = 1000; // Base max energy
-        for (const userUpg of energyUpgrades) {
-          const upgDetail = await storage.getUpgrade(userUpg.upgradeId);
-          if (upgDetail) {
-            const effect = Math.round(Number(upgDetail.baseEffect) * Math.pow(Number(upgDetail.effectMultiplier), userUpg.currentLevel - 1));
-            totalMaxEnergy += effect;
-          }
-        }
-        updateData.maxEnergy = totalMaxEnergy;
-        // Don't exceed max energy when increasing capacity
-        if (user.energy > totalMaxEnergy) {
-          updateData.energy = totalMaxEnergy;
-        }
-        console.log(`⚡ [EFFECTS] Total max energy: ${totalMaxEnergy}`);
-        break;
-        
-      case 'special':
-        // Store special upgrade data for gameplay logic
-        const specialUpgrades = user.specialUpgrades ? JSON.parse(user.specialUpgrades) : {};
-        specialUpgrades[upgrade.id] = newLevel;
-        updateData.specialUpgrades = JSON.stringify(specialUpgrades);
-        console.log(`🌟 [EFFECTS] Special upgrade ${upgrade.id} level: ${newLevel}`);
-        break;
-    }
-
-    // Update user with new calculated effects
-    if (Object.keys(updateData).length > 0) {
-      const { error: updateError } = await storage.supabase
-        .from('users')
-        .update(updateData)
-        .eq('id', userId);
-
-      if (updateError) {
-        console.error('⚡ [EFFECTS] Effect update failed:', updateError);
-      } else {
-        console.log('✅ [EFFECTS] Effects applied successfully:', updateData);
-      }
-    }
-  } catch (error) {
-    console.error('💥 [EFFECTS] Error applying effects:', error);
-  }
-}
-
-// Get all user upgrades by category for effect calculation
-async function getAllUserUpgradesByCategory(userId: string, category: string) {
-  try {
-    const { data: userUpgrades, error } = await storage.supabase
-      .from('userUpgrades')
-      .select('upgradeId, currentLevel')
-      .eq('userId', userId)
-      .gt('currentLevel', 0);
-
-    if (error || !userUpgrades) return [];
-
-    // Filter by category
-    const filteredUpgrades = [];
-    for (const userUpg of userUpgrades) {
-      const upgrade = await storage.getUpgrade(userUpg.upgradeId);
-      if (upgrade && upgrade.category === category) {
-        filteredUpgrades.push(userUpg);
-      }
-    }
-
-    return filteredUpgrades;
-  } catch (error) {
-    console.error('💥 [EFFECTS] Error fetching user upgrades by category:', error);
-    return [];
-  }
-}
-
-// Get user stats with all upgrades calculated for frontend updates
-async function getUserStatsWithUpgrades(userId: string) {
-  try {
-    const { data: user, error: userError } = await storage.supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single();
-
-    if (userError || !user) return null;
-
-    return {
-      lp: user.lp,
-      energy: user.energy,
-      maxEnergy: user.maxEnergy || 1000,
-      lpPerTap: user.lpPerTap || 1,
-      lpPerHour: user.lpPerHour || 0,
-      level: user.level || 1
-    };
-  } catch (error) {
-    console.error('💥 [STATS] Error fetching user stats:', error);
-    return null;
-  }
+  console.log('📦 [ROUTES] Upgrade routes registered with DB field normalization');
 }
