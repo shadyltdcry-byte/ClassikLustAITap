@@ -52,7 +52,10 @@ function toDBColumn(str: string): string {
     'requiredLevel': 'requiredlevel',
     'levelRequirement': 'levelrequirement',
     'createdAt': 'createdat',
-    'updatedAt': 'updatedat'
+    'updatedAt': 'updatedat',
+    'userId': 'userid',
+    'telegramId': 'telegramid',
+    'sortOrder': 'sortorder'
   };
   
   return fieldMap[str] || str.toLowerCase();
@@ -85,7 +88,10 @@ function fromDBColumns(obj: Record<string, any>): Record<string, any> {
     'requiredlevel': 'requiredLevel',
     'levelrequirement': 'levelRequirement',
     'createdat': 'createdAt',
-    'updatedat': 'updatedAt'
+    'updatedat': 'updatedAt',
+    'userid': 'userId',
+    'telegramid': 'telegramId',
+    'sortorder': 'sortOrder'
   };
   
   const newObj: Record<string, any> = {};
@@ -153,9 +159,9 @@ export class SupabaseStorage implements IStorage {
         .from('users')
         .select('*')
         .eq('telegramid', telegramId)  // Use lowercase
-        .single();
+        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user by telegram ID:', error);
         return undefined;
       }
@@ -166,9 +172,9 @@ export class SupabaseStorage implements IStorage {
         .from('users')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user by UUID:', error);
         return undefined;
       }
@@ -181,9 +187,9 @@ export class SupabaseStorage implements IStorage {
       .from('users')
       .select('*')
       .eq('username', username)
-      .single();
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') {
       console.error('Error fetching user by username:', error);
       return undefined;
     }
@@ -222,13 +228,10 @@ export class SupabaseStorage implements IStorage {
         .update(dbUpdates)
         .eq('telegramid', telegramId)  // Use lowercase
         .select()
-        .single();
+        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error updating user by telegram ID:', error);
-        if (error.code === 'PGRST116') {
-          console.log(`User ${telegramId} not found, may need to be created`);
-        }
         return undefined;
       }
       return data ? fromDBColumns(data) : undefined;
@@ -239,13 +242,10 @@ export class SupabaseStorage implements IStorage {
         .update(dbUpdates)
         .eq('id', id)
         .select()
-        .single();
+        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('Error updating user by UUID:', error);
-        if (error.code === 'PGRST116') {
-          console.log(`User ${id} not found via UUID, this might be a telegram ID mismatch`);
-        }
         return undefined;
       }
       return data ? fromDBColumns(data) : undefined;
@@ -370,9 +370,9 @@ export class SupabaseStorage implements IStorage {
       .update(mapToDBColumns(updates))
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') {
       console.error('Error updating character:', error);
       return undefined;
     }
@@ -399,9 +399,9 @@ export class SupabaseStorage implements IStorage {
       .from('upgrades')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') {
       console.error('Error fetching upgrade:', error);
       return undefined;
     }
@@ -452,9 +452,9 @@ export class SupabaseStorage implements IStorage {
       .update(mapToDBColumns(updates))
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') {
       console.error('Error updating upgrade:', error);
       return undefined;
     }
@@ -510,7 +510,7 @@ export class SupabaseStorage implements IStorage {
         .from('users')
         .select('*')
         .eq('id', realUserId)
-        .single();
+        .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user stats:', error);
@@ -632,9 +632,12 @@ export class SupabaseStorage implements IStorage {
       .eq('userid', userId)  // Use lowercase
       .order('spunat', { ascending: false })  // Use lowercase
       .limit(1)
-      .single();
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-    if (error) return null;
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error fetching last wheel spin:', error);
+      return null;
+    }
     return data ? new Date(data.spunat) : null;
   }
 
@@ -755,8 +758,8 @@ export class SupabaseStorage implements IStorage {
       .update(dbUpdates)
       .eq('id', id)
       .select()
-      .single();
-    if (error) {
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
+    if (error && error.code !== 'PGRST116') {
       console.error('Error updating media file:', error);
       return undefined;
     }
@@ -808,9 +811,9 @@ export class SupabaseStorage implements IStorage {
       .update(dbUpdates)
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') {
       console.error('Error updating media:', error);
       return undefined;
     }
@@ -931,9 +934,9 @@ export class SupabaseStorage implements IStorage {
       .update(mapToDBColumns(updates))
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') {
       console.error('Error updating level requirement:', error);
       throw new Error(`Failed to update level requirement: ${error.message}`);
     }
@@ -1000,9 +1003,9 @@ export class SupabaseStorage implements IStorage {
       .update(mapToDBColumns(updates))
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();  // Use maybeSingle to prevent multiple row errors
 
-    if (error) {
+    if (error && error.code !== 'PGRST116') {
       console.error('Error updating achievement:', error);
       throw new Error(`Failed to update achievement: ${error.message}`);
     }
