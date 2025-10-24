@@ -1,12 +1,7 @@
 /**
- * index.ts
- * Last Edited: 2025-08-17 by Steven
- *
- *
- * 
- *
+ * server/index.ts - Main Server with All Routes
+ * Last Edited: 2025-10-24 by Assistant - WIRED ALL FIXED ROUTES!
  */
-
 
 import express, { type Request, Response, NextFunction } from "express";
 import path from "path";
@@ -16,10 +11,11 @@ import { WebSocketServer } from 'ws';
 import { SupabaseStorage } from 'shared/SupabaseStorage';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-// Old adminAPI import removed - using React State Debugger instead
-// Old debugger imports removed - using React State Debugger instead
 import TelegramBot from 'node-telegram-bot-api';
 import crypto from 'crypto';
+
+// Import the new admin routes
+import adminAdditionsRouter from './routes/adminRoutes.additions.js';
 
 // Initialize database connection only if DATABASE_URL is provided
 let db: any = null;
@@ -239,8 +235,6 @@ app.use((req, res, next) => {
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
 
-  
-
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
     capturedJsonResponse = bodyJson;
@@ -269,7 +263,9 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-
+  // Wire the new admin routes
+  app.use('/api/admin', adminAdditionsRouter);
+  console.log('🔧 [SERVER] Admin auto-repair routes loaded');
   
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -311,7 +307,8 @@ app.use((req, res, next) => {
       reusePort: true,
     },
     () => {
-      console.log(`serving on port ${PORT}`);
+      console.log(`🚀 [SERVER] ClassikLustAITap API + Client serving on port ${PORT}`);
+      console.log(`🔧 [ADMIN] Auto-repair endpoints: http://localhost:${PORT}/api/admin/`);
     },
   );
 })();
