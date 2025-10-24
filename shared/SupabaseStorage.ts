@@ -83,6 +83,43 @@ interface GameSettings {
   [key: string]: any;
 }
 
+/**
+ * 🛡️ DEFENSIVE USER ID VALIDATION
+ * Prevents UUID casting errors for telegram IDs and demo users
+ */
+function isValidUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+function sanitizeUserId(id: string): { isTelegram: boolean; cleanId: string; originalId: string } {
+  if (!id || typeof id !== 'string') {
+    return { isTelegram: false, cleanId: 'demo', originalId: id || 'demo' };
+  }
+
+  const originalId = id;
+  let cleanId = id;
+  let isTelegram = false;
+
+  // Handle telegram_ prefixed IDs
+  if (id.startsWith('telegram_')) {
+    cleanId = id.replace('telegram_', '');
+    isTelegram = true;
+  }
+  // Handle pure numeric IDs (telegram IDs without prefix)
+  else if (/^\d+$/.test(id)) {
+    cleanId = id;
+    isTelegram = true;
+  }
+  // Handle demo or other text IDs
+  else if (!isValidUUID(id)) {
+    cleanId = id;
+    isTelegram = true; // Treat as text-based ID, not UUID
+  }
+
+  return { isTelegram, cleanId, originalId };
+}
+
 export class SupabaseStorage implements IStorage {
   private static instance: SupabaseStorage;
   private supabaseClient;
@@ -120,69 +157,142 @@ export class SupabaseStorage implements IStorage {
     return SupabaseStorage.instance;
   }
 
-  // User management (UNCHANGED - uses database)
+  /**
+   * 🛡️ DEFENSIVE USER LOOKUP - NO MORE UUID ERRORS
+   * Handles telegram IDs, demo users, and UUIDs correctly
+   */
   async getUser(id: string): Promise<User | undefined> {
-    if (id.startsWith('telegram_')) {
-      const telegramId = id.replace('telegram_', '');
-      const { data, error } = await this.supabase
-        .from('users').select('*').eq('telegramId', telegramId).maybeSingle();
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user by telegram ID:', error);
-        return undefined;
+    try {
+      const { isTelegram, cleanId, originalId } = sanitizeUserId(id);
+      
+      console.log(`🔍 [USER] Looking up: ${originalId} -> cleanId: ${cleanId}, isTelegram: ${isTelegram}`);
+      
+      if (isTelegram) {
+        // Use telegramId column (TEXT field) for telegram IDs, demo users, etc.
+        const { data, error } = await this.supabase
+          .from('users')
+          .select('*')
+          .eq('telegramId', cleanId) // TEXT comparison, no UUID casting
+          .maybeSingle();
+          
+        if (error && error.code !== 'PGRST116') {
+          console.error(`❌ [USER] Error fetching user by telegramId ${cleanId}:`, error);
+          return undefined;
+        }
+        
+        console.log(`✅ [USER] Found by telegramId: ${!!data}`);
+        return data || undefined;
+      } else {
+        // Use id column (UUID field) for actual UUIDs
+        const { data, error } = await this.supabase
+          .from('users')
+          .select('*')
+          .eq('id', cleanId) // UUID comparison
+          .maybeSingle();
+          
+        if (error && error.code !== 'PGRST116') {
+          console.error(`❌ [USER] Error fetching user by UUID ${cleanId}:`, error);
+          return undefined;
+        }
+        
+        console.log(`✅ [USER] Found by UUID: ${!!data}`);
+        return data || undefined;
       }
-      return data || undefined;
-    } else {
-      const { data, error } = await this.supabase
-        .from('users').select('*').eq('id', id).maybeSingle();
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user by UUID:', error);
-        return undefined;
-      }
-      return data || undefined;
+    } catch (error: any) {
+      console.error(`💥 [USER] Exception in getUser(${id}):`, error);
+      return undefined;
     }
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    const { data, error } = await this.supabase
-      .from('users').select('*').eq('username', username).maybeSingle();
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching user by username:', error);
+    try {
+      if (!username || typeof username !== 'string') {
+        return undefined;
+      }
+      
+      const { data, error } = await this.supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .maybeSingle();
+        
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ [USER] Error fetching user by username:', error);
+        return undefined;
+      }
+      
+      return data || undefined;
+    } catch (error: any) {
+      console.error('💥 [USER] Exception in getUserByUsername:', error);
       return undefined;
     }
-    return data || undefined;
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const { data, error } = await this.supabase.from('users').insert(user).select().single();
-    if (error) throw error;
-    return data;
+    try {
+      const { data, error } = await this.supabase.from('users').insert(user).select().single();
+      if (error) {
+        console.error('❌ [USER] Error creating user:', error);
+        throw error;
+      }
+      return data;
+    } catch (error: any) {
+      console.error('💥 [USER] Exception creating user:', error);
+      throw error;
+    }
   }
 
+  /**
+   * 🛡️ DEFENSIVE USER UPDATE - NO MORE UUID ERRORS
+   */
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
-    const safeUpdates = { ...updates };
-    Object.keys(safeUpdates).forEach(key => {
-      if (safeUpdates[key] === undefined || safeUpdates[key] === null) {
-        delete safeUpdates[key];
-      }
-    });
+    try {
+      const { isTelegram, cleanId, originalId } = sanitizeUserId(id);
+      
+      // Clean up undefined/null values
+      const safeUpdates = { ...updates };
+      Object.keys(safeUpdates).forEach(key => {
+        if (safeUpdates[key] === undefined || safeUpdates[key] === null) {
+          delete safeUpdates[key];
+        }
+      });
 
-    if (id.startsWith('telegram_')) {
-      const telegramId = id.replace('telegram_', '');
-      const { data, error } = await this.supabase
-        .from('users').update(safeUpdates).eq('telegramId', telegramId).select().maybeSingle();
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error updating user by telegram ID:', error);
-        return undefined;
+      console.log(`🔄 [USER] Updating: ${originalId} -> cleanId: ${cleanId}, isTelegram: ${isTelegram}`);
+
+      if (isTelegram) {
+        // Update by telegramId (TEXT field)
+        const { data, error } = await this.supabase
+          .from('users')
+          .update(safeUpdates)
+          .eq('telegramId', cleanId) // TEXT comparison
+          .select()
+          .maybeSingle();
+          
+        if (error && error.code !== 'PGRST116') {
+          console.error(`❌ [USER] Error updating user by telegramId ${cleanId}:`, error);
+          return undefined;
+        }
+        
+        return data || undefined;
+      } else {
+        // Update by UUID
+        const { data, error } = await this.supabase
+          .from('users')
+          .update(safeUpdates)
+          .eq('id', cleanId) // UUID comparison
+          .select()
+          .maybeSingle();
+          
+        if (error && error.code !== 'PGRST116') {
+          console.error(`❌ [USER] Error updating user by UUID ${cleanId}:`, error);
+          return undefined;
+        }
+        
+        return data || undefined;
       }
-      return data || undefined;
-    } else {
-      const { data, error } = await this.supabase
-        .from('users').update(safeUpdates).eq('id', id).select().maybeSingle();
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error updating user by UUID:', error);
-        return undefined;
-      }
-      return data || undefined;
+    } catch (error: any) {
+      console.error(`💥 [USER] Exception updating user ${id}:`, error);
+      return undefined;
     }
   }
 
@@ -371,38 +481,87 @@ export class SupabaseStorage implements IStorage {
     return normalizeFromDb(data);
   }
 
-  // Game stats (UNCHANGED - uses database)
+  /**
+   * 🛡️ DEFENSIVE USER STATS - NO MORE UUID ERRORS
+   */
   async getUserStats(userId: string): Promise<GameStats> {
     try {
-      let realUserId = userId;
-      if (userId.startsWith('telegram_')) {
-        const telegramId = userId.replace('telegram_', '');
+      const { isTelegram, cleanId, originalId } = sanitizeUserId(userId);
+      
+      let realUserId = cleanId;
+      
+      if (isTelegram) {
+        // Look up by telegramId first to get the actual UUID
         const { data: user } = await this.supabase
-          .from('users').select('id').eq('telegramId', telegramId).maybeSingle();
+          .from('users')
+          .select('id')
+          .eq('telegramId', cleanId)
+          .maybeSingle();
+          
         if (user?.id) {
-          realUserId = user.id;
+          realUserId = user.id; // Use the UUID for stats lookup
         } else {
-          return { userId, totalTaps: 0, totalLpEarned: 0, totalEnergyUsed: 0, sessionsPlayed: 1 } as GameStats;
+          // Create default stats for missing users
+          return { 
+            userId: originalId, 
+            totalTaps: 0, 
+            totalLpEarned: 0, 
+            totalEnergyUsed: 0, 
+            sessionsPlayed: 1 
+          } as GameStats;
         }
       }
-      const { data, error } = await this.supabase.from('users').select('*').eq('id', realUserId).maybeSingle();
+      
+      const { data, error } = await this.supabase
+        .from('users')
+        .select('*')
+        .eq('id', realUserId)
+        .maybeSingle();
+        
       if (error && error.code !== 'PGRST116') {
         console.error('Error fetching user stats:', error);
         throw error;
       }
+      
       if (!data) {
-        const defaultStats = { userId: realUserId, totalTaps: 0, totalLpEarned: 0, totalEnergyUsed: 0, sessionsPlayed: 0 };
-        const { data: newData, error: createError } = await this.supabase.from('users').insert(defaultStats).select().single();
+        const defaultStats = { 
+          userId: realUserId, 
+          totalTaps: 0, 
+          totalLpEarned: 0, 
+          totalEnergyUsed: 0, 
+          sessionsPlayed: 0 
+        };
+        
+        const { data: newData, error: createError } = await this.supabase
+          .from('users')
+          .insert(defaultStats)
+          .select()
+          .single();
+          
         if (createError) {
           console.error('Error creating user stats:', createError);
-          return { userId, totalTaps: 0, totalLpEarned: 0, totalEnergyUsed: 0, sessionsPlayed: 0 } as GameStats;
+          return { 
+            userId: originalId, 
+            totalTaps: 0, 
+            totalLpEarned: 0, 
+            totalEnergyUsed: 0, 
+            sessionsPlayed: 0 
+          } as GameStats;
         }
+        
         return newData;
       }
+      
       return data;
     } catch (error) {
       console.error('getUserStats error:', error);
-      return { userId, totalTaps: 0, totalLpEarned: 0, totalEnergyUsed: 0, sessionsPlayed: 0 } as GameStats;
+      return { 
+        userId, 
+        totalTaps: 0, 
+        totalLpEarned: 0, 
+        totalEnergyUsed: 0, 
+        sessionsPlayed: 0 
+      } as GameStats;
     }
   }
 
