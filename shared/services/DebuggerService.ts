@@ -57,7 +57,7 @@ export class DebuggerService {
           const result = await Promise.race([
             checkFn(),
             new Promise<CheckResult>((_, reject) => 
-              setTimeout(() => reject(new Error('Check timeout')), 10000)
+              setTimeout(() => reject(new Error('Check timeout')), 30000)
             )
           ]);
           result.lastCheck = new Date();
