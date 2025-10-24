@@ -4,11 +4,11 @@
  */
 
 import { Router } from 'express';
-import HealthService from '../../shared/services/HealthService';
+import healthService from '../../shared/services/HealthService';
 import CircuitBreakerService from '../../shared/services/CircuitBreakerService';
 
 const router = Router();
-const healthService = HealthService.getInstance();
+//const healthService = HealthService.getInstance();
 const circuitService = CircuitBreakerService.getInstance();
 
 /**
