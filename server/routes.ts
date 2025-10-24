@@ -15,7 +15,7 @@ import { registerAchievementRoutes } from './routes/achievementRoutes.js';
 import { registerAdminRoutes as registerAdminRoutesCore } from './routes/adminRoutes.js';
 import { registerWheelRoutes } from './routes/wheelRoutes.js';
 import { registerVipRoutes } from './routes/vipRoutes.js';
-import { registerUpgradeRoutes } from './routes/upgradeRoutes.js';
+import upgradeRoutes from './routes/upgradeRoutes.js';
 import { registerLevelRoutes } from './routes/levelRoutes.js';
 import { registerDebugRoutes } from './routes/debugRoutes.js';
 import { registerApiDocRoutes } from './routes/apiDocRoutes.js';
@@ -101,7 +101,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   registerAdminAdditions(app);
   registerWheelRoutes(app);
   registerVipRoutes(app);
-  registerUpgradeRoutes(app);
+  app.use('/api/upgrades', upgradeRoutes);
   registerDebugRoutes(app);
 
   // SPA fallback route - MUST come after all API routes
