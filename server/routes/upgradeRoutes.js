@@ -4,8 +4,8 @@
  */
 
 import express from 'express';
-import { supabase } from '../utils/supabase.js';
-import { CircuitBreakerService } from '../shared/services/CircuitBreakerService.js';
+import { supabase } from '../utils/supabase';
+import { CircuitBreakerService } from '../shared/services/CircuitBreakerService';
 
 const router = express.Router();
 const circuitService = CircuitBreakerService.getInstance();
