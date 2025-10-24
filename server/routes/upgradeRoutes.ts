@@ -9,7 +9,7 @@ const supabaseStorage = SupabaseStorage.getInstance();
 // GET /api/upgrades - List available upgrades with user-specific data
 router.get('/', async (req, res) => {
   try {
-    const userId = req.query.userId as string || req.headers['x-user-id'] as string;
+    const userId = (req.query.userId as string) || (req.headers['x-user-id'] as string) || 'demo';
     if (!userId) {
       return res.status(400).json({ success: false, error: 'userId required' });
     }
