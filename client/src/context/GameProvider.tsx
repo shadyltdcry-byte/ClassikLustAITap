@@ -1,19 +1,6 @@
 /**
  * GameProvider.tsx - Central Game State Management
- * Last Edited: 2025-08-18 by Assistant
- *
- * This is the central state management system for the Character Tap Game.
- * It handles all game logic, data persistence, and provides a clean interface
- * for components to interact with game state.
- *
- * Features:
- * - Player data management (LP, energy, level, etc.)
- * - Character management and selection
- * - Offline/online LP calculation with tick system
- * - Local storage persistence + API sync
- * - Upgrade system integration
- * - Booster and achievement tracking
- * - VIP/NSFW content gating
+ * Last Edited: 2025-10-24 by Assistant - Purged upgrade defaults for JSON-first architecture
  */
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react';
@@ -40,13 +27,6 @@ interface PlayerData {
   isVip: boolean;
   nsfwEnabled: boolean;
   charismaPoints: number;
-
-  // Upgrades tracking
-  upgrades: {
-    lpPerHour: Record<string, number>;
-    energy: Record<string, number>;
-    lpPerTap: Record<string, number>;
-  };
 
   // Active effects
   activeBoosters: Array<{
@@ -80,21 +60,26 @@ interface GameState {
   isLoading: boolean;
   lastSaveTime: number;
   gameVersion: string;
+  
+  // API-loaded data (no defaults)
+  upgrades: any[];
+  tasks: any[];
+  achievements: any[];
 }
 
 type GameAction =
   | { type: 'SET_PLAYER_DATA'; payload: Partial<PlayerData> }
   | { type: 'TAP'; payload?: { multiplier?: number } }
   | { type: 'UPDATE_TICK' }
-  | { type: 'PURCHASE_UPGRADE'; payload: { type: string; name: string; cost: number; effect: any } }
-  | { type: 'ACTIVATE_BOOSTER'; payload: any }
-  | { type: 'COMPLETE_TASK'; payload: any }
   | { type: 'LEVEL_UP' }
   | { type: 'SELECT_CHARACTER'; payload: any }
   | { type: 'ADD_CHARACTER'; payload: any }
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SYNC_WITH_SERVER'; payload: Partial<PlayerData> }
   | { type: 'CLAIM_OFFLINE_LP' }
+  | { type: 'SET_UPGRADES'; payload: any[] }
+  | { type: 'SET_TASKS'; payload: any[] }
+  | { type: 'SET_ACHIEVEMENTS'; payload: any[] }
   | { type: 'RESET_GAME' };
 
 // Generate a proper UUID for the player
@@ -104,11 +89,6 @@ const generateUUID = () => {
     const v = c == 'x' ? r : (r & 0x3 | 0x8);
     return v.toString(16);
   });
-};
-
-// Check for existing Telegram auth token
-const getStoredAuthToken = () => {
-  return localStorage.getItem('telegramAuthToken');
 };
 
 const getStoredUserId = () => {
@@ -132,11 +112,6 @@ const initialPlayerData: PlayerData = {
   isVip: false,
   nsfwEnabled: false,
   charismaPoints: 0,
-  upgrades: {
-    lpPerHour: {},
-    energy: {},
-    lpPerTap: {},
-  },
   activeBoosters: [],
   selectedCharacter: null,
   characters: [],
@@ -156,12 +131,12 @@ const initialState: GameState = {
   isLoading: true,
   lastSaveTime: Date.now(),
   gameVersion: '1.0.0',
+  // API-loaded data starts empty
+  upgrades: [],
+  tasks: [],
+  achievements: [],
 };
 
-/**
- * Game reducer - handles all game state transitions
- * Pure function that applies game rules and calculations
- */
 function gameReducer(state: GameState, action: GameAction): GameState {
   switch (action.type) {
     case 'SET_PLAYER_DATA':
@@ -175,9 +150,8 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const tapReward = Math.floor(state.playerData.lpPerTap * tapMultiplier);
       const energyCost = 1;
 
-      // Check if player has enough energy
       if (state.playerData.energy < energyCost) {
-        return state; // Not enough energy
+        return state;
       }
 
       return {
@@ -186,7 +160,7 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.playerData,
           lp: state.playerData.lp + tapReward,
           energy: Math.max(0, state.playerData.energy - energyCost),
-          xp: state.playerData.xp + Math.floor(tapReward / 10), // XP gain from tapping
+          xp: state.playerData.xp + Math.floor(tapReward / 10),
         },
       };
 
@@ -195,17 +169,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
       const timeDiff = now - state.playerData.lastTickTimestamp;
       const hoursPassed = timeDiff / (1000 * 60 * 60);
 
-      // Calculate energy regeneration (example: 1 energy per 3 seconds)
-      const energyRegenRate = 1 / 3; // per second
+      const energyRegenRate = 1 / 3;
       const energyToAdd = Math.floor((timeDiff / 1000) * energyRegenRate);
       const newEnergy = Math.min(state.playerData.maxEnergy, state.playerData.energy + energyToAdd);
 
-      // Only calculate offline LP if more than 5 minutes passed
       const minOfflineMinutes = 5;
       const minutesPassed = timeDiff / (1000 * 60);
       
       if (minutesPassed < minOfflineMinutes) {
-        // Not enough time for offline income
         return {
           ...state,
           playerData: {
@@ -216,7 +187,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         };
       }
 
-      // Calculate offline LP (capped at 3 hours)
       const maxOfflineHours = 3;
       const effectiveHours = Math.min(hoursPassed, maxOfflineHours);
       const offlineLP = Math.floor(state.playerData.lpPerHour * effectiveHours * state.playerData.offlineMultiplier);
@@ -225,7 +195,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         playerData: {
           ...state.playerData,
-          // Don't auto-add offline LP - store for claiming
           pendingOfflineLP: offlineLP,
           offlineDuration: timeDiff,
           energy: newEnergy,
@@ -233,66 +202,14 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
       };
 
-    case 'PURCHASE_UPGRADE':
-      const { type: upgradeType, name: upgradeName, cost, effect } = action.payload;
-
-      // Check if player can afford upgrade
-      if (state.playerData.lp < cost) {
-        return state;
-      }
-
-      // Apply upgrade effect
-      const newUpgrades = {
-        ...state.playerData.upgrades,
-        [upgradeType]: {
-          ...state.playerData.upgrades[upgradeType as keyof typeof state.playerData.upgrades],
-          [upgradeName]: ((state.playerData.upgrades[upgradeType as keyof typeof state.playerData.upgrades] as Record<string, number>)[upgradeName] || 0) + 1,
-        },
-      };
-
-      // Calculate new stats based on upgrade
-      let updatedStats: Partial<PlayerData> = {
-        lp: state.playerData.lp - cost,
-        upgrades: newUpgrades,
-      };
-
-      // Apply specific upgrade effects
-      if (upgradeType === 'lpPerHour') {
-        updatedStats.lpPerHour = state.playerData.lpPerHour + effect.increase;
-      } else if (upgradeType === 'energy') {
-        updatedStats.maxEnergy = state.playerData.maxEnergy + effect.increase;
-      } else if (upgradeType === 'lpPerTap') {
-        updatedStats.lpPerTap = state.playerData.lpPerTap + effect.increase;
-      }
-
-      return {
-        ...state,
-        playerData: { ...state.playerData, ...updatedStats },
-      };
-
-    case 'ACTIVATE_BOOSTER':
-      const newBooster = {
-        ...action.payload,
-        startTime: Date.now(),
-      };
-
-      return {
-        ...state,
-        playerData: {
-          ...state.playerData,
-          activeBoosters: [...state.playerData.activeBoosters, newBooster],
-        },
-      };
-
     case 'LEVEL_UP':
-      // Check if player has enough XP
       if (state.playerData.xp < state.playerData.xpToNext) {
         return state;
       }
 
       const newLevel = state.playerData.level + 1;
       const remainingXP = state.playerData.xp - state.playerData.xpToNext;
-      const newXPRequired = Math.floor(state.playerData.xpToNext * 1.5); // 50% increase per level
+      const newXPRequired = Math.floor(state.playerData.xpToNext * 1.5);
 
       return {
         ...state,
@@ -301,7 +218,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
           level: newLevel,
           xp: remainingXP,
           xpToNext: newXPRequired,
-          // Level up bonuses
           maxEnergy: state.playerData.maxEnergy + 10,
           lpPerHour: state.playerData.lpPerHour + 5,
         },
@@ -322,19 +238,6 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         playerData: {
           ...state.playerData,
           characters: [...state.playerData.characters, action.payload],
-        },
-      };
-
-    case 'COMPLETE_TASK':
-      const task = action.payload;
-      return {
-        ...state,
-        playerData: {
-          ...state.playerData,
-          completedTasks: [...state.playerData.completedTasks, task.id],
-          lp: state.playerData.lp + (task.reward?.lp || 0),
-          xp: state.playerData.xp + (task.reward?.xp || 0),
-          coins: state.playerData.coins + (task.reward?.coins || 0),
         },
       };
 
@@ -363,6 +266,24 @@ function gameReducer(state: GameState, action: GameAction): GameState {
         },
       };
 
+    case 'SET_UPGRADES':
+      return {
+        ...state,
+        upgrades: action.payload,
+      };
+
+    case 'SET_TASKS':
+      return {
+        ...state,
+        tasks: action.payload,
+      };
+
+    case 'SET_ACHIEVEMENTS':
+      return {
+        ...state,
+        achievements: action.payload,
+      };
+
     case 'RESET_GAME':
       return {
         ...initialState,
@@ -379,17 +300,20 @@ interface GameContextType {
   playerData: PlayerData;
   isLoading: boolean;
   gameVersion: string;
+  upgrades: any[];
+  tasks: any[];
+  achievements: any[];
 
   // Actions
   setPlayerData: (data: Partial<PlayerData>) => void;
   tap: (multiplier?: number) => void;
-  purchaseUpgrade: (type: string, name: string, cost: number, effect: any) => void;
-  activateBooster: (booster: any) => void;
   levelUp: () => void;
   selectCharacter: (character: any) => void;
   addCharacter: (character: any) => void;
-  completeTask: (task: any) => void;
   claimOfflineIncome: () => void;
+  loadUpgrades: () => Promise<void>;
+  loadTasks: () => Promise<void>;
+  loadAchievements: () => Promise<void>;
   saveGame: () => Promise<void>;
   loadGame: () => Promise<void>;
   resetGame: () => void;
@@ -397,10 +321,6 @@ interface GameContextType {
 
 const GameContext = createContext<GameContextType | null>(null);
 
-/**
- * Custom hook to use the game context
- * Provides easy access to game state and actions
- */
 export const useGame = () => {
   const context = useContext(GameContext);
   if (!context) {
@@ -413,14 +333,9 @@ interface GameProviderProps {
   children: React.ReactNode;
 }
 
-/**
- * GameProvider - Main context provider for the game
- * Handles state management, persistence, and server sync
- */
 export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(gameReducer, initialState);
 
-  // Initialize storage - we'll use local storage instead of SupabaseStorage on client
   const saveToLocalStorage = (data: PlayerData) => {
     try {
       localStorage.setItem('gameData', JSON.stringify(data));
@@ -446,47 +361,16 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     }
   }, [state.playerData, state.isLoading]);
 
-  // Periodic tick system for offline calculations - DISABLED to prevent spam
-  // useEffect(() => {
-  //   const tickInterval = setInterval(() => {
-  //     dispatch({ type: 'UPDATE_TICK' });
-  //   }, 5000); // Update every 5 seconds
-
-  //   return () => clearInterval(tickInterval);
-  // }, []);
-
-  // Clean up expired boosters
-  useEffect(() => {
-    const cleanupInterval = setInterval(() => {
-      const now = Date.now();
-      const activeBoosters = state.playerData.activeBoosters.filter(
-        booster => (now - booster.startTime) < booster.duration
-      );
-
-      if (activeBoosters.length !== state.playerData.activeBoosters.length) {
-        dispatch({
-          type: 'SET_PLAYER_DATA',
-          payload: { activeBoosters }
-        });
-      }
-    }, 10000); // Check every 10 seconds
-
-    return () => clearInterval(cleanupInterval);
-  }, [state.playerData.activeBoosters]);
-
   // Load game data on mount
   const loadGame = useCallback(async () => {
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      // Try to load from localStorage first
       const savedData = loadFromLocalStorage();
       if (savedData) {
-        // Clear localStorage and force default stats if data is invalid
         if (!savedData || (savedData.lp && savedData.lp <= 0) && (savedData.energy && savedData.energy <= 0) && (savedData.lpPerHour && savedData.lpPerHour <= 0)) {
-          console.warn('Found invalid saved data with zero values, clearing localStorage and using defaults');
+          console.warn('Found invalid saved data, clearing localStorage');
           localStorage.removeItem('gameData');
-          // Force default values
           dispatch({ type: 'SET_PLAYER_DATA', payload: {
             lp: 5000,
             energy: 1000,
@@ -500,20 +384,16 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
         }
       }
 
-      // Then try to sync with server
+      // Sync with server
       try {
         const response = await apiRequest('GET', `/api/player/${state.playerData.id}`);
         if (response.ok) {
           const serverData = await response.json();
           dispatch({ type: 'SYNC_WITH_SERVER', payload: serverData });
-          
-          // Calculate offline income after syncing server data
           dispatch({ type: 'UPDATE_TICK' });
         }
       } catch (serverError) {
-        console.warn('Failed to sync with server, using local data:', serverError);
-        
-        // Still calculate offline income even if server sync failed
+        console.warn('Failed to sync with server:', serverError);
         dispatch({ type: 'UPDATE_TICK' });
       }
     } catch (error) {
@@ -523,13 +403,52 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     }
   }, [state.playerData.id]);
 
+  // Load upgrades from API
+  const loadUpgrades = useCallback(async () => {
+    try {
+      const response = await apiRequest('GET', `/api/upgrades?userId=${state.playerData.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        dispatch({ type: 'SET_UPGRADES', payload: data.data || [] });
+      }
+    } catch (error) {
+      console.error('Failed to load upgrades:', error);
+      dispatch({ type: 'SET_UPGRADES', payload: [] });
+    }
+  }, [state.playerData.id]);
+
+  // Load tasks from API
+  const loadTasks = useCallback(async () => {
+    try {
+      const response = await apiRequest('GET', `/api/tasks?userId=${state.playerData.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        dispatch({ type: 'SET_TASKS', payload: data.data || [] });
+      }
+    } catch (error) {
+      console.error('Failed to load tasks:', error);
+      dispatch({ type: 'SET_TASKS', payload: [] });
+    }
+  }, [state.playerData.id]);
+
+  // Load achievements from API
+  const loadAchievements = useCallback(async () => {
+    try {
+      const response = await apiRequest('GET', `/api/achievements?userId=${state.playerData.id}`);
+      if (response.ok) {
+        const data = await response.json();
+        dispatch({ type: 'SET_ACHIEVEMENTS', payload: data.data || [] });
+      }
+    } catch (error) {
+      console.error('Failed to load achievements:', error);
+      dispatch({ type: 'SET_ACHIEVEMENTS', payload: [] });
+    }
+  }, [state.playerData.id]);
+
   // Save game data
   const saveGame = useCallback(async () => {
     try {
-      // Save to localStorage
       saveToLocalStorage(state.playerData);
-
-      // Sync with server
       await apiRequest('PUT', `/api/player/${state.playerData.id}`, state.playerData);
     } catch (error) {
       console.error('Failed to save game:', error);
@@ -541,6 +460,15 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     loadGame();
   }, []);
 
+  // Load API data after player is loaded
+  useEffect(() => {
+    if (!state.isLoading && state.playerData.id) {
+      loadUpgrades();
+      loadTasks();
+      loadAchievements();
+    }
+  }, [state.isLoading, state.playerData.id, loadUpgrades, loadTasks, loadAchievements]);
+
   // Action creators
   const actions = {
     setPlayerData: (data: Partial<PlayerData>) =>
@@ -548,12 +476,6 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
 
     tap: (multiplier?: number) =>
       dispatch({ type: 'TAP', payload: { multiplier } }),
-
-    purchaseUpgrade: (type: string, name: string, cost: number, effect: any) =>
-      dispatch({ type: 'PURCHASE_UPGRADE', payload: { type, name, cost, effect } }),
-
-    activateBooster: (booster: any) =>
-      dispatch({ type: 'ACTIVATE_BOOSTER', payload: booster }),
 
     levelUp: () =>
       dispatch({ type: 'LEVEL_UP' }),
@@ -564,25 +486,24 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     addCharacter: (character: any) =>
       dispatch({ type: 'ADD_CHARACTER', payload: character }),
 
-    completeTask: (task: any) =>
-      dispatch({ type: 'COMPLETE_TASK', payload: task }),
-
     claimOfflineIncome: async () => {
       dispatch({ type: 'CLAIM_OFFLINE_LP' });
       
-      // Sync with server to update lastTick timestamp (but not LP to avoid overwriting)
       try {
         await apiRequest('PUT', `/api/player/${state.playerData.id}`, {
-          lastTick: new Date()  // Use camelCase to match schema
+          lastTick: new Date()
         });
       } catch (error) {
-        console.warn('Failed to sync offline claim with server:', error);
+        console.warn('Failed to sync offline claim:', error);
       }
     },
 
     resetGame: () =>
       dispatch({ type: 'RESET_GAME' }),
 
+    loadUpgrades,
+    loadTasks,
+    loadAchievements,
     saveGame,
     loadGame,
   };
@@ -591,6 +512,9 @@ export const GameProvider: React.FC<GameProviderProps> = ({ children }) => {
     playerData: state.playerData,
     isLoading: state.isLoading,
     gameVersion: state.gameVersion,
+    upgrades: state.upgrades,
+    tasks: state.tasks,
+    achievements: state.achievements,
     ...actions,
   };
 
