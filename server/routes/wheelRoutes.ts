@@ -1,266 +1,104 @@
-/**
- * wheelRoutes.ts - Daily Wheel Spin and Prize Logic Routes
- * Last Edited: 2025-08-28 by Assistant
- * 
- * Handles daily wheel spinning, prize distribution, and cooldown management
- */
-
-import type { Express, Request, Response } from "express";
-import { SupabaseStorage } from '../../shared/SupabaseStorage';
+import type { Express, Request, Response } from 'express';
 import { createSuccessResponse, createErrorResponse } from '../utils/helpers';
-import { requireAuthenticatedUser, requireTelegramAuth, validateUserId } from '../middleware/authGuards';
+import { SupabaseStorage } from '../../shared/SupabaseStorage';
+import { WheelStorage, WheelPrize } from '../../shared/WheelStorage';
+import { FileStorage } from '../../shared/FileStorage';
 
+const wheel = WheelStorage.getInstance();
 const storage = SupabaseStorage.getInstance();
+const files = FileStorage.getInstance();
 
-// Prize pool configuration
-const wheelPrizes = [
-  { id: 1, name: '100 LP', type: 'lp', amount: 100, weight: 30 },
-  { id: 2, name: '250 LP', type: 'lp', amount: 250, weight: 25 },
-  { id: 3, name: '500 LP', type: 'lp', amount: 500, weight: 20 },
-  { id: 4, name: '50 Energy', type: 'energy', amount: 50, weight: 15 },
-  { id: 5, name: '100 Energy', type: 'energy', amount: 100, weight: 8 },
-  { id: 6, name: '5 Gems', type: 'gems', amount: 5, weight: 1.5 },
-  { id: 7, name: '10 Gems', type: 'gems', amount: 10, weight: 0.4 },
-  { id: 8, name: 'Jackpot!', type: 'jackpot', amount: 5000, weight: 0.1 }
-];
+function isEligible(prize: WheelPrize, user: any): boolean {
+  if (prize.vipOnly && !user.vipStatus) return false;
+  if (prize.nsfw && !user.nsfwConsent) return false;
+  if (prize.minLevel && (user.level || 1) < prize.minLevel) return false;
+  // event gating could check files.getSettings() or active tags; for now pass-through
+  return true;
+}
 
-// Helper function to select weighted random prize
-function selectRandomPrize() {
-  const totalWeight = wheelPrizes.reduce((sum, prize) => sum + prize.weight, 0);
-  let random = Math.random() * totalWeight;
-  
-  for (const prize of wheelPrizes) {
-    random -= prize.weight;
-    if (random <= 0) {
-      return prize;
-    }
+function weightedPick(items: { prize: WheelPrize; weight: number }[]): WheelPrize | null {
+  const total = items.reduce((s, i) => s += i.weight, 0);
+  if (total <= 0) return null;
+  let r = Math.random() * total;
+  for (const i of items) { r -= i.weight; if (r <= 0) return i.prize; }
+  return items[items.length - 1].prize;
+}
+
+async function applyReward(user: any, prize: WheelPrize) {
+  const updates: any = {};
+  switch (prize.type) {
+    case 'lp':
+      updates.lp = (user.lp || 0) + (prize.amount || 0);
+      break;
+    case 'energy':
+      updates.energy = Math.min(user.maxEnergy || 1000, (user.energy || 0) + (prize.amount || 0));
+      break;
+    case 'charisma':
+      updates.charisma = (user.charisma || 0) + (prize.amount || 0);
+      break;
+    case 'mediaTagUnlock':
+      // no DB write required for JSON unlock; boost via triggers elsewhere
+      break;
+    case 'booster':
+      // placeholder: could insert into boosters with duration = amount minutes
+      break;
+    case 'upgradeId':
+      // optional: grant a free level or discount marker in userUpgrades
+      break;
   }
-  
-  // Fallback to first prize
-  return wheelPrizes[0];
+  if (Object.keys(updates).length) {
+    await storage.supabase.from('users').update(updates).eq('id', user.id);
+  }
 }
 
 export function registerWheelRoutes(app: Express) {
-
-  // Main wheel spin endpoint
-  app.post('/api/wheel/spin', validateUserId(), requireAuthenticatedUser(), async (req: Request, res: Response) => {
+  // List prizes (JSON-first)
+  app.get('/api/wheel/prizes', async (_req: Request, res: Response) => {
     try {
-      const { userId } = req.body;
-      
-      if (!userId) {
-        return res.status(400).json(createErrorResponse('User ID is required'));
-      }
-
-      // Check if user exists
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json(createErrorResponse('User not found'));
-      }
-
-      // Check daily spin cooldown (mock for now)
-      const lastSpinTime = user.lastWheelSpin ? new Date(user.lastWheelSpin).getTime() : 0;
-      const now = Date.now();
-      const timeSinceLastSpin = now - lastSpinTime;
-      const dailyCooldown = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-
-      if (timeSinceLastSpin < dailyCooldown) {
-        const timeUntilNextSpin = dailyCooldown - timeSinceLastSpin;
-        const hoursLeft = Math.floor(timeUntilNextSpin / (60 * 60 * 1000));
-        const minutesLeft = Math.floor((timeUntilNextSpin % (60 * 60 * 1000)) / (60 * 1000));
-        
-        return res.status(400).json(createErrorResponse(
-          `Wheel already spun today. Next spin available in ${hoursLeft}h ${minutesLeft}m`
-        ));
-      }
-
-      // Select random prize
-      const wonPrize = selectRandomPrize();
-
-      // Apply prize to user
-      const userUpdates: any = {
-        lastWheelSpin: new Date().toISOString()
-      };
-
-      switch (wonPrize.type) {
-        case 'lp':
-          userUpdates.lp = (user.lp || 0) + wonPrize.amount;
-          break;
-        case 'energy':
-          const newEnergy = Math.min((user.energy || 0) + wonPrize.amount, user.maxEnergy || 1000);
-          userUpdates.energy = newEnergy;
-          break;
-        case 'gems':
-          // TODO: Add gems column to user schema
-          console.log(`Would award ${wonPrize.amount} gems to user ${userId}`);
-          break;
-        case 'jackpot':
-          userUpdates.lp = (user.lp || 0) + wonPrize.amount;
-          // TODO: Add jackpotsWon column to user schema
-          console.log(`User ${userId} won jackpot! LP awarded: ${wonPrize.amount}`);
-          break;
-      }
-
-      // Update user in database
-      const updatedUser = await storage.updateUser(userId, userUpdates);
-
-      // Log the spin - TODO: implement proper wheel spin logging
-      try {
-        console.log(`Wheel spin logged: ${userId} won ${wonPrize.name} (${wonPrize.id})`);
-        // await storage.logWheelSpin(userId, wonPrize.id, wonPrize.name); // TODO: implement this method
-      } catch (logError) {
-        console.warn('Failed to log wheel spin:', logError);
-        // Don't fail the request if logging fails
-      }
-
-      console.log(`🎰 ${userId} spun wheel and won: ${wonPrize.name}`);
-
-      res.json(createSuccessResponse({
-        prize: wonPrize,
-        user: updatedUser,
-        message: `Congratulations! You won ${wonPrize.name}!`,
-        nextSpinAvailable: new Date(now + dailyCooldown).toISOString()
-      }));
-
-    } catch (error) {
-      console.error('Wheel spin error:', error);
-      res.status(500).json(createErrorResponse('Failed to spin wheel'));
-    }
-  });
-
-  // Get wheel status for user (cooldown, available prizes)
-  app.get('/api/wheel/status/:userId', async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.params;
-
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json(createErrorResponse('User not found'));
-      }
-
-      const lastSpinTime = user.lastWheelSpin ? new Date(user.lastWheelSpin).getTime() : 0;
-      const now = Date.now();
-      const timeSinceLastSpin = now - lastSpinTime;
-      const dailyCooldown = 24 * 60 * 60 * 1000;
-
-      const canSpin = timeSinceLastSpin >= dailyCooldown;
-      const timeUntilNextSpin = canSpin ? 0 : dailyCooldown - timeSinceLastSpin;
-
-      res.json({
-        canSpin,
-        lastSpinTime: user.lastWheelSpin,
-        timeUntilNextSpin,
-        nextSpinAvailable: canSpin ? 'now' : new Date(now + timeUntilNextSpin).toISOString(),
-        availablePrizes: wheelPrizes.map(prize => ({
-          id: prize.id,
-          name: prize.name,
-          type: prize.type,
-          rarity: prize.weight < 1 ? 'legendary' : 
-                  prize.weight < 5 ? 'rare' : 
-                  prize.weight < 15 ? 'uncommon' : 'common'
-        }))
-      });
-
-    } catch (error) {
-      console.error('Wheel status error:', error);
-      res.status(500).json(createErrorResponse('Failed to get wheel status'));
-    }
-  });
-
-  // Admin endpoints for wheel management
-  app.get('/api/admin/wheel-prizes', async (req: Request, res: Response) => {
-    try {
-      // TODO: Implement getWheelPrizes in SupabaseStorage
-      const prizes = wheelPrizes; // Use default prizes for now
-      
-      // If no prizes in database, return default prizes
-      if (!prizes || prizes.length === 0) {
-        return res.json(wheelPrizes);
-      }
-      
+      const prizes = await wheel.getPrizes();
       res.json(prizes);
-    } catch (error) {
-      console.error('Error fetching wheel prizes:', error);
-      // Return default prizes on error
-      res.json(wheelPrizes);
+    } catch (e: any) {
+      res.status(500).json(createErrorResponse(e.message || 'Failed to load prizes'));
     }
   });
 
-  app.post('/api/admin/wheel-prizes', requireTelegramAuth(), async (req: Request, res: Response) => {
+  // Spin
+  app.post('/api/wheel/spin', async (req: Request, res: Response) => {
     try {
-      const prizeData = req.body;
-      
-      // Validate required fields
-      if (!prizeData.name || !prizeData.type || !prizeData.amount || !prizeData.weight) {
-        return res.status(400).json(createErrorResponse('Missing required prize fields'));
+      const { userId } = req.body || {};
+      if (!userId) return res.status(400).json(createErrorResponse('userId is required'));
+
+      const user = await storage.getUser(userId);
+      if (!user) return res.status(404).json(createErrorResponse('User not found'));
+
+      // Enforce cooldown from settings
+      const settings = await files.getGameSettings();
+      const hours = settings.wheelSpinCooldown ?? 24;
+      const last = user.lastWheelSpin ? new Date(user.lastWheelSpin).getTime() : 0;
+      const now = Date.now();
+      if (last && now - last < hours * 3600 * 1000) {
+        const remainMs = hours * 3600 * 1000 - (now - last);
+        return res.status(429).json(createErrorResponse(`Cooldown: ${Math.ceil(remainMs/60000)} min left`));
       }
-      
-      // TODO: Implement createWheelPrize in SupabaseStorage
-      console.log('Would create wheel prize:', prizeData);
-      const newPrize = { id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`, ...prizeData };
-      res.json(createSuccessResponse(newPrize));
-    } catch (error) {
-      console.error('Error creating wheel prize:', error);
-      res.status(500).json(createErrorResponse('Failed to create wheel prize'));
-    }
-  });
 
-  app.delete('/api/admin/wheel-prizes/:id', async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      // TODO: Implement deleteWheelPrize in SupabaseStorage
-      console.log('Would delete wheel prize:', id);
-      
-      res.json(createSuccessResponse({ 
-        message: 'Wheel prize deleted successfully' 
-      }));
-    } catch (error) {
-      console.error('Error deleting wheel prize:', error);
-      res.status(500).json(createErrorResponse('Failed to delete wheel prize'));
-    }
-  });
+      const prizes = (await wheel.getPrizes()).filter(p => isEligible(p, user));
+      if (prizes.length === 0) return res.status(404).json(createErrorResponse('No eligible prizes'));
+      const picked = weightedPick(prizes.map(p => ({ prize: p, weight: p.weight })));
+      if (!picked) return res.status(500).json(createErrorResponse('Spin failed'));
 
-  // Get wheel spin history for user
-  app.get('/api/wheel/history/:userId', async (req: Request, res: Response) => {
-    try {
-      const { userId } = req.params;
-      const { limit = 10 } = req.query;
-      
-      // TODO: Implement getWheelSpinHistory in SupabaseStorage
-      const history: any[] = []; // Empty history for now
-      res.json(history);
-    } catch (error) {
-      console.error('Error fetching wheel history:', error);
-      res.json([]);
-    }
-  });
+      await applyReward(user, picked);
 
-  // Get global wheel statistics
-  app.get('/api/wheel/stats', async (req: Request, res: Response) => {
-    try {
-      // Mock wheel statistics
-      const wheelStats = {
-        totalSpins: 1247,
-        todaySpins: 89,
-        jackpotsWon: 3,
-        mostWonPrize: '100 LP',
-        leastWonPrize: 'Jackpot!',
-        averagePrizeValue: 185,
-        prizeDistribution: {
-          '100 LP': 374,
-          '250 LP': 312,
-          '500 LP': 249,
-          '50 Energy': 187,
-          '100 Energy': 100,
-          '5 Gems': 19,
-          '10 Gems': 3,
-          'Jackpot!': 3
-        }
-      };
-      
-      res.json(wheelStats);
-    } catch (error) {
-      console.error('Error fetching wheel stats:', error);
-      res.status(500).json(createErrorResponse('Failed to fetch wheel statistics'));
+      // Log reward and update cooldown
+      await storage.supabase.from('wheelRewards').insert({
+        userId,
+        reward: picked.id,
+        amount: picked.amount || 0,
+      });
+      await storage.supabase.from('users').update({ lastWheelSpin: new Date().toISOString() }).eq('id', userId);
+
+      res.json(createSuccessResponse({ result: picked }));
+    } catch (e: any) {
+      res.status(500).json(createErrorResponse(e.message || 'Spin failed'));
     }
   });
 }
