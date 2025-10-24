@@ -5,11 +5,10 @@
 
 import { Router } from 'express';
 import healthService from '../../shared/services/HealthService';
-import CircuitBreakerService from '../../shared/services/CircuitBreakerService';
+import circuitService from '../../shared/services/CircuitBreakerService';
 
 const router = Router();
 //const healthService = HealthService.getInstance();
-const circuitService = CircuitBreakerService.getInstance();
 
 /**
  * GET /health - Quick health check for load balancers
