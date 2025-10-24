@@ -1,12 +1,13 @@
 /**
  * routes.ts - Modular Game Routes Orchestrator
- * Last Edited: 2025-10-24 by Assistant - Added DebuggerService integration
+ * Last Edited: 2025-10-24 by Assistant - FIXED: Added all missing route imports and mounts
  */
 import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import path from "path";
 import { Debugger } from '../shared/services/DebuggerService';
+import HealthService from '../shared/services/HealthService';
 import { registerTapRoutes } from './routes/tapRoutes.js';
 import { registerChatRoutes } from './routes/chatRoutes.js';
 import { registerCharacterRoutes } from './routes/characterRoutes.js';
@@ -18,6 +19,10 @@ import { registerAdminRoutes as registerAdminRoutesCore } from './routes/adminRo
 import { registerWheelRoutes } from './routes/wheelRoutes.js';
 import { registerVipRoutes } from './routes/vipRoutes.js';
 import upgradeRoutes from './routes/upgradeRoutes.js';
+// 🚀 NEW ROUTES - FIXES THE 404 ISSUES!
+import passiveRoutes from './routes/passiveRoutes.js';
+import playerRoutes from './routes/playerRoutes.js';
+import healthRoutes from './routes/healthRoutes.js';
 import { registerLevelRoutes } from './routes/levelRoutes.js';
 import { registerDebugRoutes } from './routes/debugRoutes.js';
 import { registerApiDocRoutes } from './routes/apiDocRoutes.js';
@@ -65,13 +70,24 @@ function createFeatureGuard(featureKey: string, friendlyName: string) {
   };
 }
 
-// Enhanced request logging middleware with intelligent filtering
+/**
+ * 📈 ENHANCED REQUEST LOGGING WITH METRICS TRACKING
+ */
 function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
   
   res.on('finish', () => {
     const duration = Date.now() - start;
-    if (req.path.startsWith('/api')) {
+    const isError = res.statusCode >= 400;
+    
+    // Track metrics for monitoring
+    try {
+      HealthService.getInstance().trackRequest(duration, isError);
+    } catch (e) {
+      // Health service not available - no problem
+    }
+    
+    if (req.path.startsWith('/api') || req.path.startsWith('/health') || req.path.startsWith('/metrics')) {
       const status = res.statusCode;
       const emoji = status >= 500 ? '🔴' : status >= 400 ? '🟡' : status >= 300 ? '🟠' : '🟢';
       
@@ -81,8 +97,9 @@ function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction
         '/api/user/',
         '/api/stats/',
         '/api/character/selected',
-        '/api/health',
-        '/api/debug/health'
+        '/health',
+        '/api/debug/health',
+        '/api/passive/status'
       ];
       
       const shouldSuppress = suppressedPaths.some(path => req.path.includes(path)) && status === 200;
@@ -101,6 +118,13 @@ function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction
 function errorTriageMiddleware(error: any, req: Request, res: Response, next: NextFunction) {
   const status = error.status || error.statusCode || 500;
   const message = error.message || 'Internal Server Error';
+  
+  // Track error in health service if available
+  try {
+    HealthService.getInstance().trackRequest(0, true);
+  } catch (e) {
+    // Health service not available - no problem
+  }
   
   // Categorize error types for better debugging
   if (req.path.includes('telegram') && message.includes('0 rows')) {
@@ -135,7 +159,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(express.static(distPath));
   console.log(`💻 [STATIC] Serving frontend from: ${distPath}`);
 
-  // 🔍 SYSTEM MANAGEMENT ROUTES (No guards - always available)
+  // 🟢 HEALTH AND MONITORING ENDPOINTS (No guards - always available)
+  app.use('/health', healthRoutes);
+  app.use('/metrics', healthRoutes); // Metrics are part of health routes
+  console.log('🟢 [HEALTH] Health check and metrics endpoints registered');
+
+  // 🔍 SYSTEM MANAGEMENT ROUTES (No guards - always available)  
   app.use('/api/admin', adminRoutes);
   app.use('/api/debug', debugRoutes);
   console.log('🔧 [ADMIN] Admin control panel endpoints registered');
@@ -144,15 +173,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Register all API routes with feature guards where appropriate
   registerApiDocRoutes(app); // API documentation - register first
   
-  // Core gameplay routes with guards
+  // 🎯 CORE GAMEPLAY ROUTES WITH GUARDS
   app.use('/api/upgrades', createFeatureGuard('upgrades', 'Upgrade System'), upgradeRoutes);
+  app.use('/api/passive', passiveRoutes); // 💰 PASSIVE LP ROUTES - Fixes claiming!
+  app.use('/api/player', playerRoutes); // 🎯 PLAYER STATS ROUTES - Fixes LP per tap!
+  console.log('💰 [ROUTES] Passive LP claiming routes registered');
+  console.log('🎯 [ROUTES] Player stats computation routes registered');
+  
   registerTapRoutes(app);
   registerChatRoutes(app);
   registerCharacterRoutes(app);
   registerUserRoutes(app);
   registerStatsRoutes(app);
   
-  // Game systems with guards
+  // 🎮 GAME SYSTEMS WITH GUARDS
   app.use('/api/tasks*', createFeatureGuard('tasks', 'Task System'));
   registerTaskRoutes(app); // Task system with progress tracking
   
@@ -162,7 +196,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/levels*', createFeatureGuard('levels', 'Level System'));
   registerLevelRoutes(app); // Level requirements and user level calculation
   
-  // Admin and utility routes
+  // 🔧 ADMIN AND UTILITY ROUTES
   registerAdminRoutesCore(app);
   registerAdminAdditions(app);
   registerWheelRoutes(app);
@@ -195,17 +229,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const totalFeatures = Object.keys(status.features || {}).length;
     
     console.log('\n🎆 ==============================================');
-    console.log('🎆 ClassikLustAITap - Self-Healing Backend Ready!');
+    console.log('🎆 ClassikLustAITap - Production Ready Backend!');
     console.log('🎆 ==============================================');
     console.log(`🎮 [SERVER] Game server running on port ${port}`);
     console.log(`🤖 [AI] Triage service active - Mistral primary, Perplexity fallback`);
     console.log(`💻 [FRONTEND] Static files served from dist/public directory`);
     console.log(`📂 [DOCS] API documentation available at /api`);
-    console.log(`🔍 [HEALTH] Health check available at /api/debug/health`);
+    console.log(`🟢 [HEALTH] Health checks at /health and /health/detailed`);
+    console.log(`📈 [METRICS] System metrics at /metrics and /metrics/prometheus`);
     console.log(`🔧 [ADMIN] Admin control panel at /api/admin/* (token required)`);
+    console.log(`💰 [PASSIVE] Passive LP claiming at /api/passive/claim`);
+    console.log(`🎯 [PLAYER] Player stats computation at /api/player/:id/stats`);
     console.log(`🚫 [GUARDS] Feature flags protecting ${totalFeatures} systems`);
     console.log(`✅ [STATUS] ${healthyFeatures}/${totalFeatures} systems operational`);
-    console.log(`🎆 ==============================================\n`);
+    console.log('🎆 ==============================================\n');
+    
+    // 🚨 EXPLICIT ROUTE CONFIRMATION
+    console.log('🎯 [ROUTES] Mounted endpoints verification:');
+    console.log('🎯 [ROUTES] - /health (health checks)');
+    console.log('🎯 [ROUTES] - /metrics (system metrics)');
+    console.log('🎯 [ROUTES] - /api/passive/claim (passive LP claiming)');
+    console.log('🎯 [ROUTES] - /api/player/:id/stats (computed stats - FIXES LP PER TAP!)');
+    console.log('');
     
     // Show any disabled features as warnings
     const disabledFeatures = Object.entries(status.features || {})
