@@ -1,8 +1,6 @@
 /**
  * Upgrades.tsx - Upgrade System Interface with Dynamic Calculations & Better Icons
- * Last Edited: 2025-10-23 by Assistant
- * 
- * Complete upgrade interface with dynamic cost scaling, level display, and visual flair
+ * Last Edited: 2025-10-24 by Assistant - Fixed userId parameter for JSON-first API
  */
 
 import React, { useState } from "react";
@@ -15,6 +13,7 @@ import { Star, Zap, Heart, Coins, TrendingUp, ShoppingCart, Timer, Target, Spark
 import { toast } from "react-hot-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { debugPlugin } from "@/lib/PluginDebugger";
+import { useAuth } from "@/context/AuthContext";
 
 // One-line plugin debugging setup
 const debug = debugPlugin('UpgradeManager');
@@ -24,14 +23,14 @@ interface Upgrade {
   id: string;
   name: string;
   description: string;
-  baseCost: number;        // ← camelCase
-  hourlyBonus?: number;    // ← camelCase
-  tapBonus?: number;       // ← camelCase
-  currentLevel: number;    // ← camelCase
-  maxLevel: number;        // ← camelCase
+  baseCost: number;
+  hourlyBonus?: number;
+  tapBonus?: number;
+  currentLevel: number;
+  maxLevel: number;
   category: "lp" | "energy" | "special" | "lpPerTap" | "lpPerHour";
   icon: string;
-  sortOrder?: number;      // ← camelCase
+  sortOrder?: number;
 }
 
 interface UpgradesProps {
@@ -102,26 +101,33 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
   const [activeTab, setActiveTab] = useState("all");
   const [fetchError, setFetchError] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { userId: authUserId } = useAuth();
+  
+  // Get userId from multiple sources
+  const userId = authUserId || playerData?.userId || playerData?.id;
 
-  debug.setState({ activeTab, playerLP: playerData?.lp || 0 });
+  debug.setState({ activeTab, playerLP: playerData?.lp || 0, userId });
 
-  // Fetch upgrades with debugging and error handling
+  // Fetch upgrades with proper userId parameter
   const { data: upgrades = [], isLoading, error } = useQuery<Upgrade[]>({
-    queryKey: ["/api/upgrades"],
+    queryKey: ["/api/upgrades", userId],
     queryFn: async () => {
+      if (!userId) {
+        throw new Error('No user ID available');
+      }
+      
       debug.timeStart('fetch-upgrades');
-      const userId = playerData?.userId || playerData?.id;
       debug.trace('fetch:start', { userId, hasPlayerData: !!playerData });
 
-      const response = await apiRequest("GET", "/api/upgrades", null, {
-        'x-user-id': userId || 'anonymous'
-      });
+      const response = await apiRequest("GET", `/api/upgrades?userId=${userId}`);
       if (!response.ok) {
         debug.error('fetch:failed', { status: response.status, url: '/api/upgrades' });
-        throw new Error(`HTTP ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP ${response.status}`);
       }
+      
       const raw = await response.json();
-      const data = (raw || []).map(normalizeUpgrade);
+      const data = (raw.data || raw || []).map(normalizeUpgrade);
       const duration = debug.timeEnd('fetch-upgrades');
 
       debug.success('fetch:complete', { 
@@ -132,6 +138,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
       setFetchError(null);
       return data;
     },
+    enabled: !!userId,
     retry: 1,
     retryDelay: 1000
   });
@@ -139,15 +146,19 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
   // Purchase upgrade mutation with debugging
   const purchaseUpgradeMutation = useMutation({
     mutationFn: async (upgradeId: string) => {
+      if (!userId) {
+        throw new Error('No user ID available');
+      }
+      
       debug.timeStart('purchase');
       debug.trace('purchase:start', { 
         upgradeId, 
-        userId: playerData?.userId || playerData?.id,
+        userId,
         currentLP: playerData?.lp || 0
       });
 
       const response = await apiRequest("POST", `/api/upgrades/${upgradeId}/purchase`, {
-        userId: playerData?.userId || playerData?.id
+        userId: userId
       });
       if (!response.ok) {
         const error = await response.json();
@@ -160,15 +171,13 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
       debug.success('purchase:complete', {
         upgradeId,
         duration,
-        transaction: result.data?.transaction,
-        newLevel: result.data?.upgrade?.newLevel
+        newLevel: result.data?.newLevel
       });
       return result;
     },
     onSuccess: (result) => {
-      const transaction = result.data?.transaction;
-      const upgrade = result.data?.upgrade;
-      toast.success(`${upgrade?.name || 'Upgrade'} purchased! Level ${upgrade?.newLevel || '?'}`);
+      const upgradeData = result.data;
+      toast.success(`Upgrade purchased! New level: ${upgradeData?.newLevel || '?'}`);
       queryClient.invalidateQueries({ queryKey: ["/api/upgrades"] });
       queryClient.invalidateQueries({ queryKey: ["/api/user"] });
       queryClient.invalidateQueries({ queryKey: ["/api/player"] });
@@ -220,6 +229,19 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
     debug.setState({ activeTab: tab });
   };
 
+  // Show loading if no userId
+  if (!userId) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center p-8">
+        <div className="w-16 h-16 bg-yellow-600/20 rounded-full flex items-center justify-center mb-4">
+          <Star className="w-8 h-8 text-yellow-400" />
+        </div>
+        <h3 className="text-lg font-semibold text-white mb-2">Authentication Required</h3>
+        <p className="text-gray-400 text-center">Please log in to view upgrades</p>
+      </div>
+    );
+  }
+
   if (error || fetchError) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-8">
@@ -242,7 +264,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
             <Sparkles className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text:white">Upgrades</h3>
+            <h3 className="text-lg font-semibold text-white">Upgrades</h3>
             <p className="text-sm text-gray-400">Enhance your character's abilities</p>
           </div>
           <div className="text-right">
@@ -267,7 +289,7 @@ export default function Upgrades({ playerData, onUpgradeAction }: UpgradesProps)
               <Button key={tab.key}
                 onClick={() => handleTabChange(tab.key)}
                 className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap min-w-0 flex items-center gap-1 ${
-                  activeTab === tab.key ? "bg-purple-600 hover:bg-purple-700 text:white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"
+                  activeTab === tab.key ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-600/20"
                 }`}
               >
                 {tab.icon}
