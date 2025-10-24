@@ -1,4 +1,4 @@
-modules = ["bash", "nodejs-20", "postgresql-16", "web"]
+modules = ["bash", "nodejs-20", "postgresql-16", "web", "nodejs-24"]
 [agent]
 expertMode = true
 integrations = ["javascript_database:1.0.0"]

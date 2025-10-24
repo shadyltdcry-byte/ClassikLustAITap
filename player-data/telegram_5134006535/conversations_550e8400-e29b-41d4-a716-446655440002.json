@@ -4330,5 +4330,53 @@
     "timestamp": "2025-10-24T20:28:04.536Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761338261604-dh5szqu3i",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-24T20:37:41.604Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761338904501-bf9cc23zx",
+    "content": "🌙 Heads up babe, System might need looked at. Luna Error Monitor - Watching for any errors. (8:48:24 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-24T20:48:24.501Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761339934064-5serv1a6q",
+    "content": "🌙 Heads up babe, System might need looked at. Luna Error Monitor - Watching for any errors. (9:05:34 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-24T21:05:34.064Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761340153203-41dx29zcd",
+    "content": "🌙 Heads up babe, System might need looked at. Luna Error Monitor - Watching for any errors. (9:09:13 PM)",
+    "sender": "character",
+    "timestamp": "2025-10-24T21:09:13.203Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761340635627-vyoyhwkh6",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-24T21:17:15.627Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761343011497-cj1xfl2qe",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-24T21:56:51.497Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]
