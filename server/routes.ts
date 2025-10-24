@@ -1,10 +1,12 @@
 /**
  * routes.ts - Modular Game Routes Orchestrator
+ * Last Edited: 2025-10-24 by Assistant - Added DebuggerService integration
  */
 import type { Express, Request, Response, NextFunction } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import path from "path";
+import { Debugger } from '../shared/services/DebuggerService';
 import { registerTapRoutes } from './routes/tapRoutes.js';
 import { registerChatRoutes } from './routes/chatRoutes.js';
 import { registerCharacterRoutes } from './routes/characterRoutes.js';
@@ -20,6 +22,48 @@ import { registerLevelRoutes } from './routes/levelRoutes.js';
 import { registerDebugRoutes } from './routes/debugRoutes.js';
 import { registerApiDocRoutes } from './routes/apiDocRoutes.js';
 import { registerAdminRoutes as registerAdminAdditions } from './routes/adminRoutes.additions.js';
+import adminRoutes from './routes/admin';
+import debugRoutes from './routes/debug';
+
+/**
+ * 🚀 SYSTEM PREFLIGHT CHECK
+ * Runs comprehensive health checks before starting server
+ */
+async function runSystemPreflight(): Promise<void> {
+  console.log('\n🚀 [STARTUP] Running comprehensive system preflight checks...');
+  const startTime = Date.now();
+  
+  try {
+    await Debugger.preflight();
+    const duration = Date.now() - startTime;
+    console.log(`✅ [STARTUP] System preflight completed successfully in ${duration}ms`);
+    console.log('🎆 [READY] All systems operational - server ready to start\n');
+  } catch (error) {
+    console.error('❌ [STARTUP] System preflight failed:', error);
+    console.log('⚠️  [DEGRADED] Starting in degraded mode - some features may be disabled\n');
+  }
+}
+
+/**
+ * 🔐 FEATURE FLAG MIDDLEWARE
+ * Protects routes with feature flags and graceful degradation
+ */
+function createFeatureGuard(featureKey: string, friendlyName: string) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!Debugger.isEnabled(featureKey as any)) {
+      const reason = Debugger.getReason(featureKey as any);
+      console.warn(`🚫 [GUARD] ${friendlyName} blocked - ${reason}`);
+      
+      return res.status(503).json({
+        success: false,
+        error: `${friendlyName} temporarily unavailable`,
+        reason: reason || 'System maintenance',
+        featureKey
+      });
+    }
+    next();
+  };
+}
 
 // Enhanced request logging middleware with intelligent filtering
 function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction) {
@@ -37,7 +81,8 @@ function requestLoggerMiddleware(req: Request, res: Response, next: NextFunction
         '/api/user/',
         '/api/stats/',
         '/api/character/selected',
-        '/api/health'
+        '/api/health',
+        '/api/debug/health'
       ];
       
       const shouldSuppress = suppressedPaths.some(path => req.path.includes(path)) && status === 200;
@@ -79,6 +124,9 @@ function errorTriageMiddleware(error: any, req: Request, res: Response, next: Ne
 export async function registerRoutes(app: Express): Promise<Server> {
   const server = createServer(app);
 
+  // 🚀 RUN SYSTEM PREFLIGHT BEFORE STARTING
+  await runSystemPreflight();
+
   // Install request logging middleware BEFORE all routes
   app.use(requestLoggerMiddleware);
 
@@ -87,21 +135,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(express.static(distPath));
   console.log(`💻 [STATIC] Serving frontend from: ${distPath}`);
 
-  // Register all API routes in logical order
+  // 🔍 SYSTEM MANAGEMENT ROUTES (No guards - always available)
+  app.use('/api/admin', adminRoutes);
+  app.use('/api/debug', debugRoutes);
+  console.log('🔧 [ADMIN] Admin control panel endpoints registered');
+  console.log('🔍 [DEBUG] Public debug endpoints registered');
+
+  // Register all API routes with feature guards where appropriate
   registerApiDocRoutes(app); // API documentation - register first
+  
+  // Core gameplay routes with guards
+  app.use('/api/upgrades', createFeatureGuard('upgrades', 'Upgrade System'), upgradeRoutes);
   registerTapRoutes(app);
   registerChatRoutes(app);
   registerCharacterRoutes(app);
   registerUserRoutes(app);
   registerStatsRoutes(app);
+  
+  // Game systems with guards
+  app.use('/api/tasks*', createFeatureGuard('tasks', 'Task System'));
   registerTaskRoutes(app); // Task system with progress tracking
+  
+  app.use('/api/achievements*', createFeatureGuard('achievements', 'Achievement System'));
   registerAchievementRoutes(app); // Achievement system with rewards
+  
+  app.use('/api/levels*', createFeatureGuard('levels', 'Level System'));
   registerLevelRoutes(app); // Level requirements and user level calculation
+  
+  // Admin and utility routes
   registerAdminRoutesCore(app);
   registerAdminAdditions(app);
   registerWheelRoutes(app);
   registerVipRoutes(app);
-  app.use('/api/upgrades', upgradeRoutes);
   registerDebugRoutes(app);
 
   // SPA fallback route - MUST come after all API routes
@@ -124,15 +189,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const port = Number(process.env.PORT) || 5000;
   server.listen(port, "0.0.0.0", () => {
-    console.log(`🎮[SERVER] Game started successfully, running on port ${port}`);
-    console.log(`🤖[AI] Triage service active - Mistral primary, Perplexity fallback`);
-    console.log(`💻[FRONTEND] Static files served from dist/public directory`);
-    console.log(`📚[DOCS] API documentation available at /api`);
-    console.log(`🟢[HEALTH] Health check available at /api/health`);
-    console.log(`🏆[ACHIEVEMENTS] Achievement system with progress tracking active`);
-    console.log(`📋[TASKS] Task system with reward claiming active`);
-    console.log(`🎆[LEVELS] Level system endpoints active`);
-    console.log(`🔧[DEBUG] Intelligent error categorization and logging active`);
+    const status = Debugger.getStatus();
+    const healthyFeatures = Object.values(status.features || {})
+      .filter((feature: any) => feature.enabled).length;
+    const totalFeatures = Object.keys(status.features || {}).length;
+    
+    console.log('\n🎆 ==============================================');
+    console.log('🎆 ClassikLustAITap - Self-Healing Backend Ready!');
+    console.log('🎆 ==============================================');
+    console.log(`🎮 [SERVER] Game server running on port ${port}`);
+    console.log(`🤖 [AI] Triage service active - Mistral primary, Perplexity fallback`);
+    console.log(`💻 [FRONTEND] Static files served from dist/public directory`);
+    console.log(`📂 [DOCS] API documentation available at /api`);
+    console.log(`🔍 [HEALTH] Health check available at /api/debug/health`);
+    console.log(`🔧 [ADMIN] Admin control panel at /api/admin/* (token required)`);
+    console.log(`🚫 [GUARDS] Feature flags protecting ${totalFeatures} systems`);
+    console.log(`✅ [STATUS] ${healthyFeatures}/${totalFeatures} systems operational`);
+    console.log(`🎆 ==============================================\n`);
+    
+    // Show any disabled features as warnings
+    const disabledFeatures = Object.entries(status.features || {})
+      .filter(([_, feature]: [string, any]) => !feature.enabled)
+      .map(([name, _]) => name);
+    
+    if (disabledFeatures.length > 0) {
+      console.log(`⚠️  [DEGRADED] Some features disabled: ${disabledFeatures.join(', ')}`);
+      console.log('⚠️  [DEGRADED] Use admin endpoints to diagnose and repair');
+      console.log('');
+    }
   });
 
   return server;
