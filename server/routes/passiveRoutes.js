@@ -4,8 +4,8 @@
  */
 
 import express from 'express';
-import { supabase } from '../utils/supabase.js';
-import { CircuitBreakerService } from '../shared/services/CircuitBreakerService.js';
+import { supabase } from '../utils/supabase';
+import { CircuitBreakerService } from '../shared/services/CircuitBreakerService';
 
 const router = express.Router();
 const circuitService = CircuitBreakerService.getInstance();
@@ -70,43 +70,50 @@ router.get('/status', async (req, res) => {
     }
     
     console.log(`💰 [PASSIVE] Getting status for user: ${telegramId}`);
+
+    let userData;
     
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('telegramId', telegramId)
-      .single();
-      
-    if (userError) {
-      // Try auto-healing if schema error
-      if (await autoHealSchema(userError, 'users')) {
-        console.log('🔄 [PASSIVE] Retrying after schema repair...');
+    // Get user with auto-healing capability
+    {
+      const { data, error: userError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('telegramId', telegramId)
+        .single();
         
-        const { data: retryUser, error: retryError } = await supabase
-          .from('users')
-          .select('*')
-          .eq('telegramId', telegramId)
-          .single();
+      if (userError) {
+        // Try auto-healing if schema error
+        if (await autoHealSchema(userError, 'users')) {
+          console.log('🔄 [PASSIVE] Retrying after schema repair...');
           
-        if (retryError) {
-          throw new Error(`User lookup failed after repair: ${retryError.message}`);
+          const { data: retryUser, error: retryError } = await supabase
+            .from('users')
+            .select('*')
+            .eq('telegramId', telegramId)
+            .single();
+            
+          if (retryError) {
+            throw new Error(`User lookup failed after repair: ${retryError.message}`);
+          }
+          
+          userData = retryUser;
+        } else {
+          throw new Error(`User lookup failed: ${userError.message}`);
         }
-        
-        user = retryUser;
       } else {
-        throw new Error(`User lookup failed: ${userError.message}`);
+        userData = data;
       }
     }
     
     // Calculate passive LP
-    const lastClaim = user.lastPassiveClaimTime ? new Date(user.lastPassiveClaimTime) : new Date(Date.now() - 8 * 60 * 60 * 1000);
+    const lastClaim = userData.lastPassiveClaimTime ? new Date(userData.lastPassiveClaimTime) : new Date(Date.now() - 8 * 60 * 60 * 1000);
     const now = new Date();
     const minutesOffline = Math.floor((now - lastClaim) / (1000 * 60));
     const maxClaimHours = 8;
     const maxClaimMinutes = maxClaimHours * 60;
     
     const clampedMinutes = Math.min(minutesOffline, maxClaimMinutes);
-    const lpPerHour = user.lpPerHour || 250;
+    const lpPerHour = userData.lpPerHour || 250;
     const availableLP = Math.floor((clampedMinutes / 60) * lpPerHour);
     
     const status = {
@@ -114,7 +121,7 @@ router.get('/status', async (req, res) => {
       availableLP,
       lpPerHour,
       canClaim: availableLP > 0,
-      currentLP: user.lp || 0,
+      currentLP: userData.lp || 0,
       maxClaimHours,
       lastClaimTime: lastClaim.toISOString()
     };
@@ -165,9 +172,10 @@ router.post('/claim', async (req, res) => {
     
     const result = await executeWithCircuitBreaker(async () => {
       // Get user with auto-healing
-      let user;
+      let userData;
+      
       try {
-        const { data: userData, error: userError } = await supabase
+        const { data, error: userError } = await supabase
           .from('users')
           .select('*')
           .eq('telegramId', telegramId)
@@ -188,46 +196,46 @@ router.post('/claim', async (req, res) => {
               throw new Error(`User lookup failed after repair: ${retryError.message}`);
             }
             
-            user = retryUser;
+            userData = retryUser;
           } else {
             throw new Error(`User not found: ${userError.message}`);
           }
         } else {
-          user = userData;
+          userData = data;
         }
       } catch (lookupError) {
         throw new Error(`User lookup error: ${lookupError.message}`);
       }
       
       // Calculate claimable LP
-      const lastClaim = user.lastPassiveClaimTime ? new Date(user.lastPassiveClaimTime) : new Date(Date.now() - 8 * 60 * 60 * 1000);
+      const lastClaim = userData.lastPassiveClaimTime ? new Date(userData.lastPassiveClaimTime) : new Date(Date.now() - 8 * 60 * 60 * 1000);
       const now = new Date();
       const minutesOffline = Math.floor((now - lastClaim) / (1000 * 60));
       const maxClaimMinutes = 8 * 60; // 8 hours max
       
       const clampedMinutes = Math.min(minutesOffline, maxClaimMinutes);
-      const lpPerHour = user.lpPerHour || 250;
+      const lpPerHour = userData.lpPerHour || 250;
       const claimableLP = Math.floor((clampedMinutes / 60) * lpPerHour);
       
       console.log(`💰 [PASSIVE LP] User ${telegramId}:`);
       console.log(`💰 [PASSIVE LP] - Time offline: ${minutesOffline} minutes (${(minutesOffline/60).toFixed(1)} hours)`);
       console.log(`💰 [PASSIVE LP] - LP per hour: ${lpPerHour}`);
       console.log(`💰 [PASSIVE LP] - Claiming: ${claimableLP} LP for ${clampedMinutes} minutes`);
-      console.log(`💰 [PASSIVE LP] - Before claim: ${user.lp} LP`);
+      console.log(`💰 [PASSIVE LP] - Before claim: ${userData.lp} LP`);
       
       if (claimableLP <= 0) {
         return {
           success: true,
           message: 'No LP to claim',
           claimed: 0,
-          newBalance: user.lp,
+          newBalance: userData.lp,
           minutesOffline,
           nextClaimIn: Math.max(0, 60 - (minutesOffline % 60)) // Minutes until next LP
         };
       }
       
       // Update user with new balance and claim time
-      const newBalance = user.lp + claimableLP;
+      const newBalance = userData.lp + claimableLP;
       
       const { error: updateError } = await supabase
         .from('users')
@@ -264,7 +272,7 @@ router.post('/claim', async (req, res) => {
         success: true,
         claimed: claimableLP,
         newBalance: newBalance,
-        oldBalance: user.lp,
+        oldBalance: userData.lp,
         minutesOffline,
         lpPerHour,
         nextClaimAvailable: now.toISOString()
