@@ -1,11 +1,12 @@
 /**
  * passiveRoutes.ts - Passive LP and Income Management
- * Last Edited: 2025-10-24 by Assistant - Fixed passive LP claiming with proper logging
+ * Last Edited: 2025-10-24 by Assistant - Added circuit breaker protection and improved claiming
  */
 
 import { Router } from 'express';
 import { SupabaseStorage } from '../../shared/SupabaseStorage';
 import { logPurchase } from '../../shared/utils/LogDeduplicator';
+import { withCircuitBreaker } from '../../shared/services/CircuitBreakerService';
 
 const router = Router();
 const storage = SupabaseStorage.getInstance();
@@ -13,6 +14,7 @@ const storage = SupabaseStorage.getInstance();
 /**
  * POST /api/passive/claim - Claim accumulated passive LP
  * Fixes the issue where claiming passive LP doesn't update balance
+ * Now with circuit breaker protection
  */
 router.post('/claim', async (req, res) => {
   try {
@@ -28,8 +30,11 @@ router.post('/claim', async (req, res) => {
 
     console.log(`💰 [PASSIVE LP] Claim request for user: ${actualUserId}`);
     
-    // Get user data
-    const user = await storage.getUser(actualUserId);
+    // Get user data with circuit breaker protection
+    const user = await withCircuitBreaker('PASSIVE_CLAIM', async () => {
+      return await storage.getUser(actualUserId);
+    });
+    
     if (!user) {
       return res.status(404).json({
         success: false,
@@ -38,14 +43,45 @@ router.post('/claim', async (req, res) => {
     }
 
     const currentTime = Date.now();
-    const lastClaimTime = user.lastPassiveClaimTime ? new Date(user.lastPassiveClaimTime).getTime() : 0;
+    const lastClaimTime = user.lastPassiveClaimTime ? new Date(user.lastPassiveClaimTime).getTime() : (currentTime - (8 * 60 * 60 * 1000)); // Default to 8 hours ago if never claimed
     const timeDiff = currentTime - lastClaimTime;
     
-    // Calculate passive LP (assuming 1 LP per minute offline as base rate)
+    // Calculate passive LP
     const minutesOffline = Math.floor(timeDiff / (1000 * 60));
     
-    // Get user's passive income rate (from upgrades)
-    const lpPerHour = user.lpPerHour || 250; // Default from your logs
+    // Get user's passive income rate (computed from upgrades or default)
+    let lpPerHour = user.lpPerHour || 250; // Base rate
+    
+    // If user has upgrades, check for passive income boosts
+    try {
+      const { data: userUpgrades } = await storage.supabase
+        .from('userUpgrades')
+        .select('upgradeId, level')
+        .eq('userId', actualUserId);
+        
+      if (userUpgrades && userUpgrades.length > 0) {
+        // Get upgrade definitions to calculate passive bonuses
+        const upgradeStorage = (await import('../../shared/UpgradeStorage')).UpgradeStorage.getInstance();
+        const allUpgrades = await upgradeStorage.getAllUpgrades();
+        
+        // Calculate passive income bonuses
+        let passiveBonus = 0;
+        userUpgrades.forEach(userUpgrade => {
+          const upgrade = allUpgrades.find(u => u.id === userUpgrade.upgradeId);
+          if (upgrade && (upgrade.category === 'passive' || upgrade.id.includes('passive') || upgrade.id.includes('hour'))) {
+            const level = userUpgrade.level || 0;
+            const effect = (upgrade.baseEffect || 0) * level * (upgrade.effectMultiplier || 1);
+            passiveBonus += effect;
+          }
+        });
+        
+        lpPerHour += passiveBonus;
+        console.log(`💰 [PASSIVE LP] User has ${passiveBonus} bonus LP per hour from upgrades (total: ${lpPerHour})`);
+      }
+    } catch (upgradeError) {
+      console.warn(`⚠️ [PASSIVE LP] Could not calculate upgrade bonuses:`, upgradeError);
+    }
+    
     const lpPerMinute = lpPerHour / 60;
     const maxClaimMinutes = 8 * 60; // 8 hours max claim
     
@@ -65,15 +101,24 @@ router.post('/claim', async (req, res) => {
         claimed: 0,
         newBalance: user.lp || 0,
         timeOffline: minutesOffline,
-        lpPerHour
+        lpPerHour,
+        details: {
+          minutesOffline,
+          maxClaimMinutes,
+          lpPerMinute,
+          lastClaimTime: new Date(lastClaimTime).toISOString()
+        }
       });
     }
     
     // Update user with claimed LP and new claim time
     const newLP = (user.lp || 0) + passiveLP;
-    const updatedUser = await storage.updateUser(actualUserId, {
-      lp: newLP,
-      lastPassiveClaimTime: new Date().toISOString()
+    const updatedUser = await withCircuitBreaker('PASSIVE_CLAIM', async () => {
+      return await storage.updateUser(actualUserId, {
+        lp: newLP,
+        lpPerHour: lpPerHour, // Save computed LP per hour
+        lastPassiveClaimTime: new Date().toISOString()
+      });
     });
     
     console.log(`💰 [PASSIVE LP] - After claim: ${newLP} LP (gained ${passiveLP} LP)`);
@@ -82,7 +127,7 @@ router.post('/claim', async (req, res) => {
       console.error(`💰 [PASSIVE LP] Failed to update user ${actualUserId}`);
       return res.status(500).json({
         success: false,
-        error: 'Failed to update user balance'
+        error: 'Failed to update user balance - please try again'
       });
     }
     
@@ -99,6 +144,13 @@ router.post('/claim', async (req, res) => {
       timeOffline: minutesOffline,
       actualMinutes,
       lpPerHour,
+      details: {
+        beforeClaim: user.lp || 0,
+        afterClaim: newLP,
+        lpPerMinute,
+        maxClaimHours: 8,
+        claimTime: new Date().toISOString()
+      },
       timestamp: new Date().toISOString()
     });
     
@@ -136,7 +188,7 @@ router.get('/status', async (req, res) => {
     }
     
     const currentTime = Date.now();
-    const lastClaimTime = user.lastPassiveClaimTime ? new Date(user.lastPassiveClaimTime).getTime() : 0;
+    const lastClaimTime = user.lastPassiveClaimTime ? new Date(user.lastPassiveClaimTime).getTime() : (currentTime - (8 * 60 * 60 * 1000));
     const timeDiff = currentTime - lastClaimTime;
     const minutesOffline = Math.floor(timeDiff / (1000 * 60));
     
@@ -153,9 +205,11 @@ router.get('/status', async (req, res) => {
         minutesOffline,
         availableLP,
         lpPerHour,
+        lpPerMinute,
         maxClaimHours: 8,
-        lastClaimTime: user.lastPassiveClaimTime,
-        canClaim: availableLP > 0
+        lastClaimTime: user.lastPassiveClaimTime || null,
+        canClaim: availableLP > 0,
+        currentLP: user.lp || 0
       },
       timestamp: new Date().toISOString()
     });
@@ -195,13 +249,15 @@ router.get('/calculate', async (req, res) => {
     }
     
     const lpPerHour = user.lpPerHour || 250;
-    const calculatedLP = Math.floor(lpPerHour * hours);
+    const cappedHours = Math.min(hours, 8); // Max 8 hours
+    const calculatedLP = Math.floor(lpPerHour * cappedHours);
     
     res.json({
       success: true,
       data: {
         lpPerHour,
-        hours,
+        requestedHours: hours,
+        cappedHours,
         calculatedLP,
         maxHours: 8
       }
