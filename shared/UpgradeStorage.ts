@@ -1,6 +1,6 @@
 /**
- * UpgradeStorage.ts - Self-Healing JSON-First Upgrade System
- * Last Edited: 2025-10-24 by Assistant - Added auto-schema creation & JSON sync
+ * UpgradeStorage.ts - Self-Healing JSON-First Upgrade System (Anti-Spam)
+ * Last Edited: 2025-10-24 by Assistant - Throttled schema init to prevent log spam
  */
 
 import { promises as fs } from 'fs';
@@ -38,6 +38,9 @@ export interface UserUpgrade {
 export class UpgradeStorage {
   private static instance: UpgradeStorage;
   private static schemaInitialized = false;
+  private static schemaInFlight: Promise<void> | null = null;
+  private static lastSchemaCheck = 0;
+  private static readonly SCHEMA_TTL_MS = 15 * 60 * 1000; // 15 minutes
   private cache: Map<string, Upgrade[]> = new Map();
   private storage = SupabaseStorage.getInstance();
 
@@ -49,14 +52,40 @@ export class UpgradeStorage {
   }
 
   /**
-   * 🛡️ SELF-HEALING SCHEMA INITIALIZATION
-   * Automatically creates tables with proper casing and syncs JSON → DB
-   * Runs once per server startup, ensures zero DB setup needed
+   * 🚫 THROTTLED SCHEMA INITIALIZATION (ANTI-SPAM)
+   * Runs once per server startup or after TTL expires
+   * Prevents the log spam from repeated ensureSchema() calls
    */
-  private async ensureSchema(): Promise<void> {
-    if (UpgradeStorage.schemaInitialized) return;
+  async ensureSchema(): Promise<void> {
+    const now = Date.now();
+    
+    // Check if already initialized and within TTL
+    if (UpgradeStorage.schemaInitialized && 
+        (now - UpgradeStorage.lastSchemaCheck < UpgradeStorage.SCHEMA_TTL_MS)) {
+      return; // Silent return - no spam
+    }
 
-    console.log('🔧 [UPGRADES] Auto-initializing schema...');
+    // If already in flight, wait for it
+    if (UpgradeStorage.schemaInFlight) {
+      return UpgradeStorage.schemaInFlight;
+    }
+
+    // Start schema initialization
+    UpgradeStorage.schemaInFlight = this.doSchemaInit();
+    
+    try {
+      await UpgradeStorage.schemaInFlight;
+    } finally {
+      UpgradeStorage.schemaInFlight = null;
+    }
+  }
+
+  /**
+   * 🔧 ACTUAL SCHEMA WORK (PRIVATE)
+   * Only logs on first run or after TTL - prevents spam
+   */
+  private async doSchemaInit(): Promise<void> {
+    console.log('🔍 [UPGRADES] Initializing schema (throttled)...');
     
     try {
       // 1. Create tables with quoted identifiers for case preservation
@@ -114,13 +143,16 @@ export class UpgradeStorage {
         // Comment might fail, ignore
       }
 
-      console.log('✅ [UPGRADES] Schema auto-initialized successfully');
+      // Mark as successful
       UpgradeStorage.schemaInitialized = true;
+      UpgradeStorage.lastSchemaCheck = Date.now();
+      console.log('✅ [UPGRADES] Schema initialized successfully (throttled)');
 
     } catch (error) {
       console.error('❌ [UPGRADES] Schema initialization failed:', error);
       // Set as initialized anyway to prevent infinite retries
       UpgradeStorage.schemaInitialized = true;
+      UpgradeStorage.lastSchemaCheck = Date.now();
     }
   }
 
@@ -130,7 +162,7 @@ export class UpgradeStorage {
    */
   private async syncJsonToDatabase(): Promise<void> {
     try {
-      const allUpgrades = await this.getAllUpgrades();
+      const allUpgrades = await this.loadAllUpgradesFromFiles();
       console.log(`🔄 [UPGRADES] Syncing ${allUpgrades.length} upgrades from JSON to DB...`);
 
       // Insert/update each upgrade in the master table
@@ -163,35 +195,11 @@ export class UpgradeStorage {
     }
   }
 
-  private async loadUpgradeFile(filename: string): Promise<Upgrade[]> {
-    const filePath = join(process.cwd(), 'game-data', 'upgrades', filename);
-    try {
-      const raw = await fs.readFile(filePath, 'utf8');
-      const data = JSON.parse(raw);
-      
-      // Handle both array and single object formats
-      const upgrades = Array.isArray(data) ? data : [data];
-      
-      // Validate and normalize upgrades
-      return upgrades.filter(upgrade => {
-        return upgrade && 
-               typeof upgrade.id === 'string' &&
-               typeof upgrade.name === 'string' &&
-               typeof upgrade.baseCost === 'number';
-      });
-    } catch (error) {
-      console.warn(`Failed to load ${filename}:`, error);
-      return [];
-    }
-  }
-
-  async getAllUpgrades(): Promise<Upgrade[]> {
-    // Auto-heal schema on any access
-    await this.ensureSchema();
-    
-    const cacheKey = 'all';
-    if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
-
+  /**
+   * 📂 LOAD FILES WITHOUT SCHEMA CALLS
+   * Prevents recursive schema initialization
+   */
+  private async loadAllUpgradesFromFiles(): Promise<Upgrade[]> {
     const files = [
       'tap-upgrades.json', 
       'energy-upgrades.json', 
@@ -218,6 +226,45 @@ export class UpgradeStorage {
       }
       return a.sortOrder - b.sortOrder;
     });
+
+    return allUpgrades;
+  }
+
+  private async loadUpgradeFile(filename: string): Promise<Upgrade[]> {
+    const filePath = join(process.cwd(), 'game-data', 'upgrades', filename);
+    try {
+      const raw = await fs.readFile(filePath, 'utf8');
+      const data = JSON.parse(raw);
+      
+      // Handle both array and single object formats
+      const upgrades = Array.isArray(data) ? data : [data];
+      
+      // Validate and normalize upgrades
+      return upgrades.filter(upgrade => {
+        return upgrade && 
+               typeof upgrade.id === 'string' &&
+               typeof upgrade.name === 'string' &&
+               typeof upgrade.baseCost === 'number';
+      });
+    } catch (error) {
+      console.warn(`Failed to load ${filename}:`, error);
+      return [];
+    }
+  }
+
+  /**
+   * 📂 GET ALL UPGRADES (PUBLIC API)
+   * Only calls schema init once, then uses cache
+   */
+  async getAllUpgrades(): Promise<Upgrade[]> {
+    // Run schema check only once (throttled)
+    await this.ensureSchema();
+    
+    const cacheKey = 'all';
+    if (this.cache.has(cacheKey)) return this.cache.get(cacheKey)!;
+
+    // Load from files (no recursive schema calls)
+    const allUpgrades = await this.loadAllUpgradesFromFiles();
 
     this.cache.set(cacheKey, allUpgrades);
     return allUpgrades;
@@ -253,8 +300,12 @@ export class UpgradeStorage {
     return upgrade.baseEffect + (upgrade.effectMultiplier * level);
   }
 
+  /**
+   * 📋 DATABASE OPERATIONS (THROTTLED)
+   * Only run schema once, then use for all DB calls
+   */
   async getUserUpgrades(userId: string): Promise<UserUpgrade[]> {
-    await this.ensureSchema(); // Auto-heal
+    await this.ensureSchema(); // Throttled call
     
     const { data, error } = await this.storage.supabase
       .from('userUpgrades')
@@ -270,7 +321,7 @@ export class UpgradeStorage {
   }
 
   async getUserUpgradeLevel(userId: string, upgradeId: string): Promise<number> {
-    await this.ensureSchema(); // Auto-heal
+    await this.ensureSchema(); // Throttled call
     
     const userUpgrades = await this.getUserUpgrades(userId);
     const upgrade = userUpgrades.find(u => u.upgradeId === upgradeId);
@@ -301,7 +352,8 @@ export class UpgradeStorage {
   }
 
   async getAvailableUpgrades(userId: string): Promise<(Upgrade & { currentLevel: number; nextCost: number; canAfford: boolean })[]> {
-    await this.ensureSchema(); // Auto-heal on every access
+    // Single schema check at start
+    await this.ensureSchema();
     
     const allUpgrades = await this.getAllUpgrades();
     const user = await this.storage.getUser(userId);
@@ -330,7 +382,7 @@ export class UpgradeStorage {
   }
 
   async validatePurchase(userId: string, upgradeId: string): Promise<{ valid: boolean; reason?: string; cost?: number }> {
-    await this.ensureSchema(); // Auto-heal
+    await this.ensureSchema(); // Throttled call
     
     const upgrade = await this.getUpgrade(upgradeId);
     if (!upgrade) return { valid: false, reason: 'Upgrade not found' };
@@ -350,7 +402,18 @@ export class UpgradeStorage {
     return { valid: true, cost };
   }
 
+  /**
+   * 🧹 ADMIN CONTROLS
+   */
   clearCache() {
+    this.cache.clear();
+  }
+
+  // Force schema re-initialization (for admin endpoints)
+  forceSchemaRefresh() {
+    UpgradeStorage.schemaInitialized = false;
+    UpgradeStorage.lastSchemaCheck = 0;
+    UpgradeStorage.schemaInFlight = null;
     this.cache.clear();
   }
 }
