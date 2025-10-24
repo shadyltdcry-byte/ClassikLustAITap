@@ -4,10 +4,10 @@
  */
 
 import express from 'express';
-import { Debugger } from '../../shared/services/DebuggerService.js';
-import HealthService from '../../shared/services/HealthService.js';
-import { CircuitBreakerService } from '../../shared/services/CircuitBreakerService.js';
-import { supabase } from '../utils/supabase.js';
+import { Debugger } from '../../shared/services/DebuggerService';
+import HealthService from '../../shared/services/HealthService';
+import { CircuitBreakerService } from '../../shared/services/CircuitBreakerService';
+import { supabase } from '../utils/supabase';
 
 const router = express.Router();
 
