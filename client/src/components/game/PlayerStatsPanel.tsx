@@ -1,16 +1,16 @@
 /**
  * PlayerStatsPanel.tsx - Game Stats with NEW MENU SYSTEM INTEGRATION!
- * Last Edited: 2025-10-24 by Assistant - FIXED IMPORT PATHS!
+ * Last Edited: 2025-10-24 by Assistant - FIXED: Menu imports now use @ alias!
  */
 
 import React, { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Zap, Heart, Gem, TrendingUp, Sparkles, ArrowUp, DollarSign } from "lucide-react";
 
-// Import the new menu system components from ROOT src (not client/src)
-import { MenuProvider, useMenu, MENU_IDS } from "../../../../src/components/menu/MenuProvider";
-import { MenuHost } from "../../../../src/components/menu/MenuHost";
-import { initializeMenuRegistry } from "../../../../src/components/menu/MenuRegistry";
+// Import the new menu system components - FIXED: Now uses @ alias!
+import { MenuProvider, useMenu, MENU_IDS } from "@/components/menu/MenuProvider";
+import { MenuHost } from "@/components/menu/MenuHost";
+import { initializeMenuRegistry } from "@/components/menu/MenuRegistry";
 import { toast } from "react-hot-toast";
 
 interface PlayerStatsPanelProps {
