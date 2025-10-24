@@ -1,0 +1,4 @@
+// Import and call emergency registration inside registerRoutes
+// This is a patch note: open server/routes.ts and add:
+// import { registerEmergency } from './registerEmergency';
+// then inside registerRoutes(app): registerEmergency(app);
