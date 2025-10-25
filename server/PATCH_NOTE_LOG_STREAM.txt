@@ -1,0 +1,2 @@
+/** patch server/index.ts to mount /logs/stream */
+export {};
