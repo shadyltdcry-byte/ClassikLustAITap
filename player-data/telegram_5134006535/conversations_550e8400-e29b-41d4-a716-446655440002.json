@@ -4474,5 +4474,125 @@
     "timestamp": "2025-10-25T05:48:11.948Z",
     "type": "text",
     "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761376868418-offja3ndb",
+    "content": "🌙 I noticed something weird in System @ 7:21:08 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T07:21:08.418Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761378824392-tfawlvkf8",
+    "content": "🌙 I noticed something weird in System @ 7:53:44 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T07:53:44.392Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761378931518-gapyhzriq",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T07:55:31.518Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761379823600-7i1jk4ne2",
+    "content": "🌙 Heads up babe, System might need looked at. Luna Error Monitor - Watching for any errors. (8:10:23 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-25T08:10:23.600Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761379913421-ls4bm7umy",
+    "content": "🌙 I noticed something weird in System @ 8:11:53 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T08:11:53.421Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761380107215-xx52rfbwg",
+    "content": "🌙 I noticed something weird in System @ 8:15:07 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T08:15:07.215Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761382480432-dw8wih0wq",
+    "content": "🌙 I noticed something weird in System @ 8:54:40 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T08:54:40.432Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761384140832-ykidlkjbc",
+    "content": "🌙 I noticed something weird in System @ 9:22:20 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T09:22:20.832Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761386101871-d6we6ui1g",
+    "content": "🌙 I noticed something weird in System @ 9:55:01 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T09:55:01.871Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761386248442-1zgfb5be8",
+    "content": "🌙 I noticed something weird in System @ 9:57:28 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T09:57:28.442Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761387121241-vzoaadd33",
+    "content": "🌙 I noticed something weird in System @ 10:12:01 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T10:12:01.241Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761387601055-9ba74hneh",
+    "content": "🌙 I noticed something weird in System @ 10:20:01 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T10:20:01.055Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761388365938-q80bl93w3",
+    "content": "🌙 I noticed something weird in System @ 10:32:45 AM. Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T10:32:45.938Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761388821413-4dsurnwk2",
+    "content": "🌙 Heads up babe, System might need looked at. Luna Error Monitor - Watching for any errors. (10:40:21 AM)",
+    "sender": "character",
+    "timestamp": "2025-10-25T10:40:21.413Z",
+    "type": "text",
+    "mood": "alert"
+  },
+  {
+    "id": "luna-alert-1761389001281-w9v33dw6y",
+    "content": "🌙 Hey babe, just a heads up - there's a warning in System: Luna Error Monitor - Watching for any errors.",
+    "sender": "character",
+    "timestamp": "2025-10-25T10:43:21.281Z",
+    "type": "text",
+    "mood": "alert"
   }
 ]

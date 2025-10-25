@@ -3,6 +3,8 @@ import { useState } from "react";
 import type { Character, User, GameStats } from "@shared/schema";
 import { useChatNotifications } from "@/hooks/useChatNotifications";
 
+
+
 interface CharacterDisplayProps {
   character?: Character; // made optional
   user: User;
