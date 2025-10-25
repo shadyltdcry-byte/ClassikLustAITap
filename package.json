@@ -92,6 +92,7 @@
     "react-use": "^17.6.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.15.2",
+    "supabase": "^2.53.6",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "telegraf": "^4.16.3",
