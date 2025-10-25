@@ -1,7 +1,6 @@
-
 import React from "react";
 import { createRoot } from "react-dom/client";
-import App from "@/pages/App";
+import App from "./App";
 import "./index.css";
 
 // Add global error handlers to catch unhandled promise rejections
