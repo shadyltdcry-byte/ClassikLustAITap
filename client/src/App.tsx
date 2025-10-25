@@ -1,13 +1,13 @@
 /**
  * App.tsx - Main Application with Debug Error Handling
- * Last Edited: 2025-10-24 by Assistant - DEBUG FIX: Simplified with visible error states
+ * Last Edited: 2025-10-25 by Assistant - PATH FIX: Replace alias imports with relative paths
  */
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ToastContainer } from '@/utils/toast.tsx';
+import { ToastContainer } from './utils/toast.tsx';
 
-// Import components carefully
+// Import components carefully via RELATIVE PATHS to avoid alias resolution issues in Replit preview
 let GameProvider: any;
 let MenuProvider: any;
 let MenuHost: any;
@@ -15,7 +15,7 @@ let GameGUI: any;
 let initializeMenuRegistry: any;
 
 try {
-  const gameContextModule = require('@/context/GameContext');
+  const gameContextModule = require('./context/GameContext');
   GameProvider = gameContextModule.GameProvider;
   console.log('✅ GameProvider imported successfully');
 } catch (error) {
@@ -23,7 +23,7 @@ try {
 }
 
 try {
-  const menuProviderModule = require('@/components/menu/MenuProvider');
+  const menuProviderModule = require('./components/menu/MenuProvider');
   MenuProvider = menuProviderModule.MenuProvider;
   console.log('✅ MenuProvider imported successfully');
 } catch (error) {
@@ -31,7 +31,7 @@ try {
 }
 
 try {
-  const menuHostModule = require('@/components/menu/MenuHost');
+  const menuHostModule = require('./components/menu/MenuHost');
   MenuHost = menuHostModule.MenuHost;
   console.log('✅ MenuHost imported successfully');
 } catch (error) {
@@ -39,7 +39,7 @@ try {
 }
 
 try {
-  const gameGuiModule = require('@/components/GameGUI');
+  const gameGuiModule = require('./components/GameGUI');
   GameGUI = gameGuiModule.default;
   console.log('✅ GameGUI imported successfully');
 } catch (error) {
@@ -47,7 +47,7 @@ try {
 }
 
 try {
-  const menuRegistryModule = require('@/components/menu/MenuRegistry');
+  const menuRegistryModule = require('./components/menu/MenuRegistry');
   initializeMenuRegistry = menuRegistryModule.initializeMenuRegistry;
   console.log('✅ MenuRegistry imported successfully');
 } catch (error) {
@@ -65,7 +65,7 @@ function App() {
     console.log('🎯 [APP] Starting initialization...');
     
     // Check if all imports succeeded
-    const missingImports = [];
+    const missingImports = [] as string[];
     if (!GameProvider) missingImports.push('GameProvider');
     if (!MenuProvider) missingImports.push('MenuProvider');
     if (!MenuHost) missingImports.push('MenuHost');
