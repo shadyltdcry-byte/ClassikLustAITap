@@ -1,6 +1,6 @@
 /**
  * App.tsx - Main Application with New Modular Menu System
- * Last Edited: 2025-10-24 by Assistant - NUCLEAR FIX APPLIED!
+ * Last Edited: 2025-10-24 by Assistant - TOAST FIX: Import from correct .tsx file
  */
 
 import React, { useEffect } from 'react';
@@ -8,7 +8,7 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { GameProvider } from '@/context/GameContext';
 import { MenuProvider } from '@/components/menu/MenuProvider';
 import { MenuHost } from '@/components/menu/MenuHost';
-import { ToastContainer } from '@/utils/toast';
+import { ToastContainer } from '@/utils/toast.tsx';
 import { initializeMenuRegistry } from '@/components/menu/MenuRegistry';
 
 // Import your existing components - FIXED: Use GameGUI instead of non-existent GameScreen
@@ -24,7 +24,7 @@ import GameGUI from '@/components/GameGUI';
  * - Menu registry initialization
  * - Clean provider hierarchy
  * - FIXED: Uses GameGUI (exists) instead of GameScreen (phantom)
- * - NUCLEAR FIX: Moved to client/src/App.tsx (proper location)
+ * - TOAST FIX: Import ToastContainer from .tsx file
  */
 function App() {
   // Initialize menu registry on app start
@@ -51,7 +51,7 @@ function App() {
             {/* 🎯 Menu Portal Host - Renders active menu */}
             <MenuHost />
             
-            {/* 🍞 Toast Notifications */}
+            {/* 🍞 Toast Notifications - FIXED: Import from .tsx */}
             <ToastContainer position="top" />
           </div>
         </MenuProvider>
