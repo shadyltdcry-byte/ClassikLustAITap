@@ -5,89 +5,72 @@ import path from 'path';
 export function createAutoRepairRouter() {
   const router = Router();
 
-  // Auto-repair endpoint that can patch files server-side
+  // Auto-repair endpoint that patches GameGUI.tsx with correct imports
   router.post('/auto-repair/apply-fixes', async (req: Request, res: Response) => {
     try {
       const { fixes } = req.body;
+      console.log('🔧 [AUTO-REPAIR] Received fixes:', fixes?.length || 0);
       
       if (!fixes || !Array.isArray(fixes)) {
         return res.status(400).json({ error: 'Invalid fixes payload' });
       }
 
       const results = [];
+      const gameGUIPath = path.join(process.cwd(), 'client/src/components/GameGUI.tsx');
       
+      // Create backup
+      const backupPath = `${gameGUIPath}.backup.${Date.now()}`;
+      await fs.copyFile(gameGUIPath, backupPath);
+      console.log('💾 [AUTO-REPAIR] Backup created:', backupPath);
+      
+      // Read current content
+      let content = await fs.readFile(gameGUIPath, 'utf8');
+      
+      // Apply each fix
       for (const fix of fixes) {
         try {
-          await applyImportFix(fix);
-          results.push({ component: fix.name, status: 'fixed' });
+          const oldImportPattern = fix.currentImport.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const regex = new RegExp(oldImportPattern, 'g');
+          
+          if (content.match(regex)) {
+            content = content.replace(regex, fix.correctImport);
+            results.push({ component: fix.name, status: 'fixed' });
+            console.log(`✅ [AUTO-REPAIR] Fixed import for ${fix.name}`);
+          } else {
+            results.push({ component: fix.name, status: 'not_found', error: 'Import pattern not found in GameGUI' });
+            console.log(`⚠️ [AUTO-REPAIR] Pattern not found for ${fix.name}`);
+          }
         } catch (error) {
           results.push({ component: fix.name, status: 'failed', error: String(error) });
+          console.log(`❌ [AUTO-REPAIR] Failed to fix ${fix.name}: ${error}`);
         }
       }
-
-      res.json({ success: true, results });
+      
+      // Write patched file
+      await fs.writeFile(gameGUIPath, content);
+      console.log('🚀 [AUTO-REPAIR] GameGUI.tsx patched successfully');
+      
+      res.json({ 
+        success: true, 
+        results,
+        backup: backupPath,
+        message: `Applied ${results.filter(r => r.status === 'fixed').length} fixes`
+      });
+      
     } catch (error) {
-      console.error('Auto-repair error:', error);
+      console.error('🚨 [AUTO-REPAIR] Critical error:', error);
       res.status(500).json({ error: 'Auto-repair failed', details: String(error) });
     }
   });
 
-  // Get current import status
+  // Health check
   router.get('/auto-repair/status', async (req: Request, res: Response) => {
-    try {
-      const gameGUIPath = path.join(process.cwd(), 'client/src/components/GameGUI.tsx');
-      const content = await fs.readFile(gameGUIPath, 'utf8');
-      
-      // Extract current imports
-      const imports = extractImports(content);
-      
-      res.json({ success: true, currentImports: imports });
-    } catch (error) {
-      res.status(500).json({ error: 'Failed to read GameGUI', details: String(error) });
-    }
+    res.json({ 
+      status: 'ready', 
+      timestamp: new Date().toISOString(),
+      message: 'Auto-repair system online' 
+    });
   });
 
   return router;
-}
-
-// Apply import fix to GameGUI.tsx
-async function applyImportFix(fix: { name: string; currentImport: string; correctImport: string }) {
-  const gameGUIPath = path.join(process.cwd(), 'client/src/components/GameGUI.tsx');
-  let content = await fs.readFile(gameGUIPath, 'utf8');
-  
-  // Replace the incorrect import with the correct one
-  const oldImportRegex = new RegExp(
-    fix.currentImport.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 
-    'g'
-  );
-  
-  if (content.match(oldImportRegex)) {
-    content = content.replace(oldImportRegex, fix.correctImport);
-    
-    // Backup original first
-    await fs.writeFile(`${gameGUIPath}.backup.${Date.now()}`, await fs.readFile(gameGUIPath, 'utf8'));
-    
-    // Write fixed version
-    await fs.writeFile(gameGUIPath, content);
-    
-    console.log(`🔧 AUTO-REPAIR: Fixed import for ${fix.name}`);
-  } else {
-    throw new Error(`Import pattern not found: ${fix.currentImport}`);
-  }
-}
-
-// Extract imports from GameGUI content
-function extractImports(content: string) {
-  const importRegex = /import\s+(?:{[^}]*}|\w+)\s+from\s+["']([^"']+)["'];?/g;
-  const imports = [];
-  let match;
-  
-  while ((match = importRegex.exec(content)) !== null) {
-    imports.push({
-      statement: match[0],
-      path: match[1]
-    });
-  }
-  
-  return imports;
 }
