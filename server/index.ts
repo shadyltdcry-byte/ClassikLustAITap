@@ -15,7 +15,7 @@ import TelegramBot from 'node-telegram-bot-api';
 import crypto from 'crypto';
 
 // Import the new admin routes
-import adminAdditionsRouter from './routes/adminRoutes.additions.js';
+//import adminAdditionsRouter from './routes/adminRoutes.additions.js';
 
 // Initialize database connection only if DATABASE_URL is provided
 let db: any = null;
