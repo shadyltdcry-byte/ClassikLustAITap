@@ -27,7 +27,7 @@ import FloatingActionIcons from "./ui/FloatingActionIcons";
 import GameProgressPanel from "./game/GameProgressPanel";
 import TasksPanel from "./game/TasksPanel";
 import AchievementsPanel from "./game/AchievementsPanel";
-import DebuggerConsole from "./debug/DebuggerConsole";
+import { EnhancedDebugger } from "./debug";
 
 interface PlayerData {
   id: string;
@@ -412,8 +412,60 @@ export default function GameGUI({ playerData, onPluginAction }: GameGUIProps) {
     }
   };
 
+  // Prepare debug state for EnhancedDebugger
+  const debugState = {
+    playerId: userId || '',
+    playerLevel: user?.level || playerData?.level || 1,
+    playerLP: user?.lp || playerData?.lp || 0,
+    playerEnergy: user?.energy || playerData?.energy || 0,
+    playerMaxEnergy: user?.maxEnergy || playerData?.maxEnergy || 1000,
+    activeTab: guiState.activePlugin,
+    isTapping: actuallyTapping,
+    selectedCharacter,
+    showOfflineDialog,
+    showAdminMenu: guiState.showAdminMenu,
+    showWheelGame: guiState.showWheelGame,
+    showVIP: guiState.showVIP,
+    renderCount: 1, // Could be tracked with useRef
+    lastUpdate: Date.now(),
+    apiCalls: 0 // Could be tracked globally
+  };
+
   return (
     <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-900 via-pink-900/20 to-red-900/20 text-white overflow-hidden">
+      
+      {/* Enhanced Debugger - Boot Error Detection */}
+      <EnhancedDebugger 
+        gameState={debugState}
+        realGameState={{
+          selectedCharacter,
+          user,
+          activePlugin: guiState.activePlugin,
+          isTapping: actuallyTapping,
+          guiState: {
+            showOfflineDialog,
+            showAdminMenu: guiState.showAdminMenu,
+            showWheelGame: guiState.showWheelGame,
+            showVIP: guiState.showVIP
+          },
+          onToggleModal: (modal: string) => {
+            switch (modal) {
+              case 'offline':
+                setShowOfflineDialog(!showOfflineDialog);
+                break;
+              case 'admin':
+                updateGUIState({ showAdminMenu: !guiState.showAdminMenu });
+                break;
+              case 'wheel':
+                updateGUIState({ showWheelGame: !guiState.showWheelGame });
+                break;
+              case 'vip':
+                updateGUIState({ showVIP: !guiState.showVIP });
+                break;
+            }
+          }
+        }}
+      />
       
       {/* Offline Income Dialog */}
       <OfflineIncomeDialog
