@@ -1,6 +1,6 @@
 /**
  * server/index.ts - Main Server with All Routes
- * Last Edited: 2025-10-24 by Assistant - WIRED ALL FIXED ROUTES!
+ * Last Edited: 2025-10-24 by Assistant - FINAL RUNTIME FIX: Eliminated adminAdditionsRouter usage
  */
 
 import express, { type Request, Response, NextFunction } from "express";
@@ -263,9 +263,9 @@ app.use((req, res, next) => {
 (async () => {
   const server = await registerRoutes(app);
 
-  // Wire the new admin routes
-  app.use('/api/admin', adminAdditionsRouter);
-  console.log('🔧 [SERVER] Admin auto-repair routes loaded');
+  // Wire the new admin routes - COMMENTED OUT UNTIL FIXED
+  // app.use('/api/admin', adminAdditionsRouter);
+  // console.log('🔧 [SERVER] Admin auto-repair routes loaded');
   
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
