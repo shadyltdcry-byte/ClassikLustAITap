@@ -1,7 +1,8 @@
 /**
- * main.tsx - Application Entry Point with Debug Error Boundary
- * Last Edited: 2025-10-24 by Assistant - DEBUG FIX: Added error boundary to reveal client crashes
+ * main.tsx - Application Entry Point with Preflight Probe + Error Boundary
  */
+
+import './preflight/component-sanity'; // run preflight before React mounts
 
 import React from 'react';
 import { createRoot } from 'react-dom/client';
@@ -11,110 +12,61 @@ import './index.css';
 // Enhanced global error listeners
 window.addEventListener('error', (e) => {
   console.error('🚨 Global window error:', e.error || e.message || e);
-  console.error('🚨 Filename:', e.filename);
-  console.error('🚨 Line:', e.lineno, 'Col:', e.colno);
-  console.error('🚨 Stack:', e.error?.stack);
 });
 
 window.addEventListener('unhandledrejection', (e) => {
   console.error('🚨 Global unhandled rejection:', e.reason || e);
-  if (e.reason?.stack) {
-    console.error('🚨 Stack:', e.reason.stack);
-  }
-  e.preventDefault(); // Prevent default browser behavior
+  e.preventDefault();
 });
 
-/**
- * 🛡️ ROOT ERROR BOUNDARY
- * Catches React errors and displays them instead of blank screen
- */
-class RootErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { error: any; hasError: boolean }
-> {
+class RootErrorBoundary extends React.Component<{ children: React.ReactNode }, { error: any; hasError: boolean }> {
   constructor(props: any) {
     super(props);
     this.state = { error: null, hasError: false };
   }
-  
-  static getDerivedStateFromError(error: any) {
-    return { error, hasError: true };
-  }
-  
+  static getDerivedStateFromError(error: any) { return { error, hasError: true }; }
   componentDidCatch(error: any, errorInfo: any) {
-    console.error('🚨 React Error Boundary caught error:', error);
-    console.error('🚨 Error Info:', errorInfo);
-    console.error('🚨 Component Stack:', errorInfo?.componentStack);
-    console.error('🚨 Stack:', error?.stack);
+    console.error('🚨 React Error Boundary caught error:', error, errorInfo);
+    // If boot probe had failures, surface them inline for convenience
+    const probe = (window as any).__BOOT_PROBE__;
+    if (probe?.failures?.length) {
+      console.error('[BOOT_PROBE] Failures:', probe.failures);
+    }
   }
-  
   render() {
     if (this.state.hasError) {
+      const probe = (window as any).__BOOT_PROBE__;
       return (
-        <div style={{
-          padding: '20px',
-          color: '#fff',
-          background: '#111',
-          fontFamily: 'monospace',
-          minHeight: '100vh',
-          overflow: 'auto'
-        }}>
-          <h2 style={{ color: '#ff6b6b', marginBottom: '16px' }}>🚨 CLIENT CRASHED</h2>
-          <div style={{ background: '#222', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-            <strong>Error:</strong> {this.state.error?.message || 'Unknown error'}
-          </div>
-          <div style={{ background: '#222', padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
-            <strong>Error Name:</strong> {this.state.error?.name || 'Unknown'}
-          </div>
-          <div style={{ background: '#222', padding: '16px', borderRadius: '8px' }}>
-            <strong>Full Stack Trace:</strong>
-            <pre style={{ 
-              whiteSpace: 'pre-wrap', 
-              wordBreak: 'break-word',
-              fontSize: '12px',
-              marginTop: '8px',
-              maxHeight: '400px',
-              overflow: 'auto'
-            }}>
-              {String(this.state.error?.stack || this.state.error || 'No stack trace available')}
-            </pre>
-          </div>
-          <button 
-            onClick={() => {
-              this.setState({ error: null, hasError: false });
-              window.location.reload();
-            }}
-            style={{
-              marginTop: '16px',
-              padding: '12px 24px',
-              background: '#4f46e5',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            🔄 Reload App
-          </button>
+        <div style={{ padding: 16, color: '#fff', background: '#1b1030', minHeight: '100vh', fontFamily: 'monospace' }}>
+          <h2 style={{ color: '#ff6b6b' }}>🚨 CLIENT CRASHED</h2>
+          <div>Element type invalid usually means an import/export mismatch.</div>
+          {probe?.failures?.length ? (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ color: '#ffd166', marginBottom: 8 }}>Boot Probe Findings:</div>
+              {probe.failures.map((f:any, i:number) => (
+                <div key={i} style={{ border: '1px dashed #ff6b6b', padding: 8, marginBottom: 8 }}>
+                  <div>❌ <b>{f.name}</b></div>
+                  <div>Path: {f.path}</div>
+                  <div>Expected: {f.expected} | Actual: {f.actual}</div>
+                  <div style={{ color: '#ffe08a' }}>💡 {f.suggestion}</div>
+                </div>
+              ))}
+            </div>
+          ) : null}
+          <pre style={{ whiteSpace: 'pre-wrap', marginTop: 12 }}>{String(this.state.error?.stack || this.state.error)}</pre>
+          <button onClick={() => window.location.reload()} style={{ marginTop: 12 }}>Reload</button>
         </div>
       );
     }
-    
     return this.props.children as any;
   }
 }
 
 const container = document.getElementById('root');
-if (!container) {
-  throw new Error('Root element not found');
-}
+if (!container) throw new Error('Root element not found');
 
 const root = createRoot(container);
-
-// Log mount attempt
-console.log('🎮 [MAIN] Mounting ClassikLustAITap client...');
-
+console.log('🎮 [MAIN] Mounting client...');
 root.render(
   <React.StrictMode>
     <RootErrorBoundary>
@@ -122,5 +74,3 @@ root.render(
     </RootErrorBoundary>
   </React.StrictMode>
 );
-
-console.log('🎮 [MAIN] App render initiated - if blank screen persists, check error boundary above');
