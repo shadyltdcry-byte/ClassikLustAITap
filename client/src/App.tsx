@@ -5,7 +5,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ToastContainer } from './utils/toast';
+import ToastContainer from './utils/toast';
+
 
 // Import components using ES6 imports with error boundaries
 let GameProvider: any = null;
