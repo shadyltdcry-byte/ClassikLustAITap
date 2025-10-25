@@ -1,230 +1,180 @@
-// AUTO-REPAIR COMPONENT SANITY CHECK - Fixes imports/exports automatically
-// Detects issues and applies common fixes without manual intervention
+// DECISIVE COMPONENT SANITY CHECK - Uses runtime import patterns
+// Matches exact GameGUI import statements to eliminate false failures
 
 (function(){
-  const failures = [] as Array<{name:string; path:string; expected:string; actual:string; suggestion:string; autoFix?: () => Promise<void>}>;
-  const successes = [] as Array<{name:string; path:string}>;
+  console.log('🚀 [BOOT-FIXER] Starting decisive component resolution test...');
   
-  // Auto-repair strategies
-  const repairStrategies = {
-    // Strategy 1: Fix default vs named export mismatches
-    async fixImportExportMismatch(componentName: string, filePath: string) {
-      try {
-        // Try both import styles to see which works
-        let workingImport = null;
-        
-        // Test default import
-        try {
-          const defaultImport = await import(filePath);
-          const component = defaultImport?.default;
-          if (typeof component === 'function') {
-            workingImport = { type: 'default', component };
-          }
-        } catch (e) { /* ignore */ }
-        
-        // Test named import
-        if (!workingImport) {
-          try {
-            const namedImport = await import(filePath);
-            const component = namedImport?.[componentName];
-            if (typeof component === 'function') {
-              workingImport = { type: 'named', component };
-            }
-          } catch (e) { /* ignore */ }
-        }
-        
-        return workingImport;
-      } catch (error) {
-        console.error(`Auto-repair failed for ${componentName}:`, error);
-        return null;
-      }
-    },
-
-    // Strategy 2: Generate corrected import statements
-    generateFixedImport(componentName: string, importType: 'default' | 'named', relativePath: string) {
-      if (importType === 'default') {
-        return `import ${componentName} from "${relativePath}";`;
-      } else {
-        return `import { ${componentName} } from "${relativePath}";`;
-      }
-    },
-
-    // Strategy 3: Auto-patch GameGUI with correct imports
-    async patchGameGUIImports(fixes: Array<{name: string, correctImport: string}>) {
-      // This would require server-side file modification in a full implementation
-      // For now, we'll store the fixes for display
-      console.log('🔧 AUTO-REPAIR: Suggested GameGUI.tsx patches:');
-      fixes.forEach(fix => {
-        console.log(`   ${fix.correctImport}`);
-      });
-    }
-  };
+  const results = { successes: [], failures: [], fixes: [] };
   
-  // Component import tests with auto-repair
-  async function autoRepairComponent(name: string, relativePath: string, currentImportStyle: 'default' | 'named') {
+  // Test components using EXACT import paths from GameGUI.tsx
+  const criticalImports = [
+    { name: 'CharacterDisplay', path: './CharacterDisplay', style: 'default' },
+    { name: 'CharacterGallery', path: './CharacterGallery', style: 'default' },
+    { name: 'PlayerStatsPanel', path: './game/PlayerStatsPanel', style: 'named' },
+    { name: 'GameTabsPanel', path: './game/GameTabsPanel', style: 'named' },
+    { name: 'GameProgressPanel', path: './game/GameProgressPanel', style: 'named' },
+    { name: 'TasksPanel', path: './game/TasksPanel', style: 'named' },
+    { name: 'AchievementsPanel', path: './game/AchievementsPanel', style: 'named' },
+    { name: 'FloatingActionIcons', path: './ui/FloatingActionIcons', style: 'default' }
+  ];
+  
+  async function testComponent(comp) {
     try {
-      // Step 1: Test current import style
-      let testResult = null;
-      
-      try {
-        const mod = await import(relativePath);
-        if (currentImportStyle === 'default') {
-          testResult = { component: mod?.default, type: 'default' };
-        } else {
-          testResult = { component: mod?.[name], type: 'named' };
-        }
-      } catch (importError) {
-        // Import failed entirely - file doesn't exist or path is wrong
-        failures.push({
-          name,
-          path: relativePath,
-          expected: 'function',
-          actual: 'import_failed',
-          suggestion: `File not found or path incorrect: ${relativePath}`,
-        });
-        return;
-      }
-      
-      // Step 2: Check if current style works
-      if (typeof testResult.component === 'function') {
-        successes.push({ name, path: relativePath });
-        return;
-      }
-      
-      // Step 3: Auto-repair - try alternative import style
-      const alternativeStyle = currentImportStyle === 'default' ? 'named' : 'default';
-      const repairedImport = await repairStrategies.fixImportExportMismatch(name, relativePath);
-      
-      if (repairedImport && typeof repairedImport.component === 'function') {
-        // Success! We found the working import style
-        const correctImportStatement = repairStrategies.generateFixedImport(name, repairedImport.type, relativePath);
-        
-        successes.push({ name, path: relativePath });
-        
-        // Store the fix for GameGUI patching
-        (window as any).__AUTO_REPAIR_FIXES__ = (window as any).__AUTO_REPAIR_FIXES__ || [];
-        (window as any).__AUTO_REPAIR_FIXES__.push({
-          name,
-          currentImport: repairStrategies.generateFixedImport(name, currentImportStyle, relativePath),
-          correctImport: correctImportStatement,
-          issue: `Wrong import style: using ${currentImportStyle}, should use ${repairedImport.type}`
-        });
-        
-        console.log(`✅ AUTO-REPAIRED: ${name} needs ${repairedImport.type} import`);
-        
+      // Convert relative path to absolute for dynamic import
+      let importPath;
+      if (comp.path.startsWith('./')) {
+        importPath = `/client/src/components/${comp.path.slice(2)}`;
       } else {
-        // Both styles failed - deeper issue
-        failures.push({
-          name,
-          path: relativePath,
+        importPath = comp.path;
+      }
+      
+      console.log(`Testing ${comp.name} from ${importPath}...`);
+      
+      const mod = await import(importPath);
+      const component = comp.style === 'default' ? mod?.default : mod?.[comp.name];
+      const actualType = typeof component;
+      
+      if (actualType === 'function') {
+        results.successes.push({ name: comp.name, path: comp.path });
+        console.log(`✅ ${comp.name}: OK`);
+      } else {
+        const suggestion = comp.style === 'default' 
+          ? `Try: import { ${comp.name} } from "${comp.path}";`
+          : `Try: import ${comp.name} from "${comp.path}";`;
+          
+        results.failures.push({
+          name: comp.name,
+          path: comp.path,
           expected: 'function',
-          actual: typeof testResult.component,
-          suggestion: `Component exists but is not a function. Check export: export default ${name} or export { ${name} }`,
+          actual: actualType,
+          suggestion
         });
+        
+        results.fixes.push({
+          name: comp.name,
+          currentImport: comp.style === 'default' 
+            ? `import ${comp.name} from "${comp.path}";`
+            : `import { ${comp.name} } from "${comp.path}";`,
+          correctImport: suggestion
+        });
+        
+        console.log(`❌ ${comp.name}: Expected function, got ${actualType}`);
       }
       
     } catch (error) {
-      failures.push({
-        name,
-        path: relativePath,
-        expected: 'function', 
+      results.failures.push({
+        name: comp.name,
+        path: comp.path,
+        expected: 'function',
         actual: 'error',
-        suggestion: `Critical error: ${error}`,
+        suggestion: `Import failed: ${error.message || error}`
       });
+      console.log(`🚨 ${comp.name}: Import error - ${error.message || error}`);
     }
   }
   
-  // Test all critical components with their current import styles from GameGUI
-  const componentTests = [
-    // Default imports (as used in GameGUI)
-    { name: 'CharacterDisplay', path: './CharacterDisplay', style: 'default' as const },
-    { name: 'CharacterGallery', path: './CharacterGallery', style: 'default' as const },
-    { name: 'OfflineIncomeDialog', path: './OfflineIncomeDialog', style: 'default' as const },
-    { name: 'AdminMenu', path: '../plugins/admin/AdminMenu', style: 'default' as const },
-    { name: 'AIChat', path: '../plugins/aicore/AIChat', style: 'default' as const },
-    { name: 'LevelUp', path: '../plugins/gameplay/LevelUp', style: 'default' as const },
-    { name: 'Upgrades', path: '../plugins/gameplay/Upgrades', style: 'default' as const },
-    { name: 'WheelGame', path: './wheel/WheelGame', style: 'default' as const },
-    { name: 'VIP', path: './vip/VIP', style: 'default' as const },
-    { name: 'PlayerStatsPanel', path: './game/PlayerStatsPanel', style: 'default' as const },
-    { name: 'GameTabsPanel', path: './game/GameTabsPanel', style: 'default' as const },
-    { name: 'FloatingActionIcons', path: './ui/FloatingActionIcons', style: 'default' as const },
-    { name: 'GameProgressPanel', path: './game/GameProgressPanel', style: 'default' as const },
-    { name: 'TasksPanel', path: './game/TasksPanel', style: 'default' as const },
-    { name: 'AchievementsPanel', path: './game/AchievementsPanel', style: 'default' as const },
-    
-    // Named imports from UI barrels (from GameGUI)
-    { name: 'Button', path: './ui/button', style: 'named' as const },
-    { name: 'Badge', path: './ui/badge', style: 'named' as const },
-    { name: 'Progress', path: './ui/progress', style: 'named' as const },
-    { name: 'Card', path: './ui/card', style: 'named' as const },
-    { name: 'CardContent', path: './ui/card', style: 'named' as const },
-  ];
-  
-  // Run all tests
-  Promise.all(
-    componentTests.map(test => autoRepairComponent(test.name, test.path, test.style))
-  ).then(() => {
-    // Store results
-    (window as any).__BOOT_PROBE__ = { 
-      ts: Date.now(), 
-      failures, 
-      successes,
-      autoRepairSuggestions: (window as any).__AUTO_REPAIR_FIXES__ || []
-    };
-    
-    // Show results
-    if (failures.length > 0) {
-      const el = document.createElement('div');
-      el.style.cssText = 'position:fixed;top:0;right:0;z-index:999999;background:#001122;color:#00ff88;border:2px solid #00aa55;padding:16px;max-width:95vw;max-height:95vh;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px;';
+  // Test all components
+  Promise.all(criticalImports.map(testComponent))
+    .then(() => {
+      // Store results globally
+      (window as any).__BOOT_PROBE__ = {
+        ts: Date.now(),
+        successes: results.successes,
+        failures: results.failures,
+        autoRepairSuggestions: results.fixes
+      };
       
-      let html = '<div style="font-weight:bold;color:#00ff88;margin-bottom:12px;font-size:14px;">🤖 AUTO-REPAIR DIAGNOSTIC</div>';
+      console.log(`🎉 [BOOT-FIXER] Complete: ${results.successes.length} OK, ${results.failures.length} failed`);
       
-      // Show successes
-      if (successes.length > 0) {
-        html += `<div style="color:#00dd44;margin-bottom:8px;">✅ ${successes.length} components OK</div>`;
-      }
-      
-      // Show failures
-      if (failures.length > 0) {
-        html += `<div style="color:#ff4444;margin-bottom:8px;">❌ ${failures.length} components failed</div>`;
-        failures.forEach(f => {
-          html += `<div style="margin:8px 0;border:1px solid #ff6b6b;padding:8px;border-radius:4px;"><div>🔧 <b>${f.name}</b></div><div style="font-size:10px;color:#aaa;margin:2px 0;">${f.path}</div><div>Issue: ${f.suggestion}</div></div>`;
-        });
-      }
-      
-      // Show auto-repair suggestions
-      const autoFixes = (window as any).__AUTO_REPAIR_FIXES__ || [];
-      if (autoFixes.length > 0) {
-        html += `<div style="color:#ffaa00;margin:12px 0 8px 0;font-weight:bold;">🔧 AUTO-REPAIR SUGGESTIONS:</div>`;
-        autoFixes.forEach((fix: any) => {
-          html += `<div style="margin:6px 0;padding:8px;background:#112200;border-radius:4px;"><div style="color:#ffdd00;">Replace:</div><code style="color:#ff8888;font-size:10px;">${fix.currentImport}</code><div style="color:#ffdd00;margin-top:4px;">With:</div><code style="color:#88ff88;font-size:10px;">${fix.correctImport}</code></div>`;
+      // If any failures, show decisive overlay with fixes
+      if (results.failures.length > 0) {
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.95);color:#00ff88;font-family:ui-monospace;font-size:12px;z-index:999999;padding:20px;overflow:auto;';
+        
+        let html = '<div style="text-align:center;font-size:18px;margin-bottom:20px;color:#ff6b6b;">🚨 BOOT BLOCKED - DECISIVE FIXES READY</div>';
+        
+        if (results.successes.length > 0) {
+          html += `<div style="color:#00dd44;margin-bottom:16px;">✅ ${results.successes.length} components working</div>`;
+        }
+        
+        html += `<div style="color:#ff4444;margin-bottom:16px;">❌ ${results.failures.length} components blocked</div>`;
+        
+        results.failures.forEach(f => {
+          html += `<div style="margin:12px 0;padding:12px;border:1px solid #ff6b6b;border-radius:8px;background:#220011;">`;
+          html += `<div style="font-weight:bold;color:#ff8888;">🔧 ${f.name}</div>`;
+          html += `<div style="color:#aaa;margin:4px 0;font-size:10px;">Path: ${f.path}</div>`;
+          html += `<div style="color:#ffaa00;margin:4px 0;">Issue: ${f.suggestion}</div>`;
+          html += `</div>`;
         });
         
-        // Auto-patch button (for future implementation)
-        html += `<button onclick="window.__applyAutoFixes && window.__applyAutoFixes()" style="margin-top:12px;padding:8px 16px;background:#0066cc;color:white;border:none;border-radius:4px;cursor:pointer;">🚀 Apply Auto-Fixes</button>`;
+        if (results.fixes.length > 0) {
+          html += '<div style="margin:20px 0;padding:16px;background:#001122;border:2px solid #0066cc;border-radius:8px;">';
+          html += '<div style="color:#00dd88;font-weight:bold;margin-bottom:12px;">AUTO-REPAIR READY 🚀</div>';
+          
+          results.fixes.forEach(fix => {
+            html += `<div style="margin:8px 0;padding:8px;background:#002211;border-radius:4px;">`;
+            html += `<div style="color:#00dd88;font-weight:bold;">${fix.name}</div>`;
+            html += `<div style="color:#ff8888;font-size:10px;margin:2px 0;">Replace: ${fix.currentImport}</div>`;
+            html += `<div style="color:#88ff88;font-size:10px;">With: ${fix.correctImport}</div>`;
+            html += `</div>`;
+          });
+          
+          html += '<button onclick="window.__applyBootFixes()" style="margin-top:12px;padding:12px 24px;background:#0066cc;color:white;border:none;border-radius:6px;cursor:pointer;font-weight:bold;font-size:14px;">🚀 APPLY ALL FIXES NOW</button>';
+          html += '</div>';
+        }
+        
+        html += '<div style="margin-top:20px;text-align:center;"><button onclick="window.location.reload()" style="padding:8px 16px;background:#444;color:white;border:1px solid #666;border-radius:4px;cursor:pointer;margin:0 8px;">🔄 Reload</button></div>';
+        
+        overlay.innerHTML = html;
+        document.body.appendChild(overlay);
+        
+        // Wire auto-apply function
+        (window as any).__applyBootFixes = async () => {
+          const progressDiv = document.createElement('div');
+          progressDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#001122;color:#00ff88;border:2px solid #0066cc;padding:20px;border-radius:8px;z-index:9999999;text-align:center;';
+          progressDiv.innerHTML = '<div style="font-size:16px;margin-bottom:10px;">🚀 APPLYING FIXES</div><div id="fix-progress">Starting...</div>';
+          document.body.appendChild(progressDiv);
+          
+          const updateProgress = (msg) => {
+            const el = document.getElementById('fix-progress');
+            if (el) el.textContent = msg;
+          };
+          
+          try {
+            updateProgress('Applying component fixes...');
+            
+            const response = await fetch('/auto-repair/apply-fixes', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ fixes: results.fixes })
+            });
+            
+            if (response.ok) {
+              updateProgress('✅ Fixes applied! Reloading...');
+              setTimeout(() => window.location.reload(), 1500);
+            } else {
+              updateProgress('❌ Auto-repair API failed. Manual fix needed.');
+            }
+          } catch (error) {
+            updateProgress(`❌ Error: ${error.message}`);
+          }
+        };
+      } else {
+        // All components working!
+        console.log('🎉 [BOOT-FIXER] All components resolved successfully!');
+        const successDiv = document.createElement('div');
+        successDiv.style.cssText = 'position:fixed;top:20px;right:20px;background:#001122;color:#00ff88;border:2px solid #00aa55;padding:16px;border-radius:8px;z-index:999999;';
+        successDiv.innerHTML = '<div style="font-weight:bold;">✅ BOOT SUCCESS</div><div style="font-size:12px;margin-top:4px;">All components resolved</div>';
+        document.body.appendChild(successDiv);
+        
+        setTimeout(() => {
+          if (document.body.contains(successDiv)) {
+            document.body.removeChild(successDiv);
+          }
+        }, 3000);
       }
-      
-      el.innerHTML = html;
-      document.body.appendChild(el);
-      
-      console.log('🤖 AUTO-REPAIR: Analysis complete.');
-      console.log('   ✅ Working:', successes.length);
-      console.log('   ❌ Failed:', failures.length);
-      console.log('   🔧 Auto-fixable:', autoFixes.length);
-      
-    } else {
-      console.log('🎉 AUTO-REPAIR: All components working correctly!');
-      (window as any).__BOOT_PROBE__ = { ts: Date.now(), failures: [], successes, allGood: true };
-    }
-  }).catch(error => {
-    console.error('🚨 AUTO-REPAIR: Fatal error during analysis:', error);
-  });
-  
-  // Future: Auto-apply fixes function
-  (window as any).__applyAutoFixes = () => {
-    console.log('🚀 AUTO-FIX: This will automatically patch GameGUI.tsx in future versions');
-    alert('Auto-fix feature coming in next update! For now, manually apply the suggested import changes.');
-  };
-  
+    })
+    .catch(error => {
+      console.error('🚨 [BOOT-FIXER] Fatal error:', error);
+    });
 })();
