@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import GameDebugger from './GameDebugger';
-import { ComponentProbe } from '@/plugins/core';
+import ComponentProbe from '@/plugins/core/ComponentProbe';
 import { 
   Bug, 
   Search, 
