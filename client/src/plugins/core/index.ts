@@ -4,3 +4,4 @@ export { default as FileManagerDB } from './FileManagerDB';
 export { default as GameManagerCore } from './GameManagerCore';
 export { GameManagerDB } from './GameManagerDB';
 export { default as ImageManager } from './ImageManager';
+export { default as ComponentProbe } from './ComponentProbe';
