@@ -1,101 +1,128 @@
 /**
- * App.tsx - Main Application with Debug Error Handling
- * Last Edited: 2025-10-25 by Assistant - PATH FIX: Replace alias imports with relative paths
+ * App.tsx - Main Application with Proper ES6 Imports
+ * Last Edited: 2025-10-25 by Assistant - IMPORT FIX: Use ES6 imports instead of require()
  */
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { ToastContainer } from './utils/toast.tsx';
+import { ToastContainer } from './utils/toast';
 
-// Import components carefully via RELATIVE PATHS to avoid alias resolution issues in Replit preview
-let GameProvider: any;
-let MenuProvider: any;
-let MenuHost: any;
-let GameGUI: any;
-let initializeMenuRegistry: any;
+// Import components using ES6 imports with error boundaries
+let GameProvider: any = null;
+let MenuProvider: any = null;
+let MenuHost: any = null;
+let GameGUI: any = null;
+let initializeMenuRegistry: any = null;
 
-try {
-  const gameContextModule = require('./context/GameContext');
-  GameProvider = gameContextModule.GameProvider;
-  console.log('✅ GameProvider imported successfully');
-} catch (error) {
-  console.error('❌ Failed to import GameProvider:', error);
-}
-
-try {
-  const menuProviderModule = require('./components/menu/MenuProvider');
-  MenuProvider = menuProviderModule.MenuProvider;
-  console.log('✅ MenuProvider imported successfully');
-} catch (error) {
-  console.error('❌ Failed to import MenuProvider:', error);
-}
-
-try {
-  const menuHostModule = require('./components/menu/MenuHost');
-  MenuHost = menuHostModule.MenuHost;
-  console.log('✅ MenuHost imported successfully');
-} catch (error) {
-  console.error('❌ Failed to import MenuHost:', error);
-}
-
-try {
-  const gameGuiModule = require('./components/GameGUI');
-  GameGUI = gameGuiModule.default;
-  console.log('✅ GameGUI imported successfully');
-} catch (error) {
-  console.error('❌ Failed to import GameGUI:', error);
-}
-
-try {
-  const menuRegistryModule = require('./components/menu/MenuRegistry');
-  initializeMenuRegistry = menuRegistryModule.initializeMenuRegistry;
-  console.log('✅ MenuRegistry imported successfully');
-} catch (error) {
-  console.error('❌ Failed to import MenuRegistry:', error);
+// Safe import with error handling
+async function loadComponents() {
+  const results = {
+    GameProvider: false,
+    MenuProvider: false,
+    MenuHost: false,
+    GameGUI: false,
+    initializeMenuRegistry: false
+  };
+  
+  try {
+    const { GameProvider: GP } = await import('./context/GameContext');
+    GameProvider = GP;
+    results.GameProvider = true;
+    console.log('✅ GameProvider imported successfully');
+  } catch (error) {
+    console.error('❌ Failed to import GameProvider:', error);
+  }
+  
+  try {
+    const { MenuProvider: MP } = await import('./components/menu/MenuProvider');
+    MenuProvider = MP;
+    results.MenuProvider = true;
+    console.log('✅ MenuProvider imported successfully');
+  } catch (error) {
+    console.error('❌ Failed to import MenuProvider:', error);
+  }
+  
+  try {
+    const { MenuHost: MH } = await import('./components/menu/MenuHost');
+    MenuHost = MH;
+    results.MenuHost = true;
+    console.log('✅ MenuHost imported successfully');
+  } catch (error) {
+    console.error('❌ Failed to import MenuHost:', error);
+  }
+  
+  try {
+    const GameGUIModule = await import('./components/GameGUI');
+    GameGUI = GameGUIModule.default;
+    results.GameGUI = true;
+    console.log('✅ GameGUI imported successfully');
+  } catch (error) {
+    console.error('❌ Failed to import GameGUI:', error);
+  }
+  
+  try {
+    const { initializeMenuRegistry: IMR } = await import('./components/menu/MenuRegistry');
+    initializeMenuRegistry = IMR;
+    results.initializeMenuRegistry = true;
+    console.log('✅ MenuRegistry imported successfully');
+  } catch (error) {
+    console.error('❌ Failed to import MenuRegistry:', error);
+  }
+  
+  return results;
 }
 
 /**
- * 🎯 MAIN APP - WITH COMPREHENSIVE ERROR HANDLING
+ * 🎯 MAIN APP - WITH ASYNC COMPONENT LOADING
  */
 function App() {
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const [error, setError] = useState<string>('');
+  const [loadProgress, setLoadProgress] = useState<string>('Starting...');
   
   useEffect(() => {
-    console.log('🎯 [APP] Starting initialization...');
+    console.log('🎯 [APP] Starting async component loading...');
+    setLoadProgress('Loading components...');
     
-    // Check if all imports succeeded
-    const missingImports = [] as string[];
-    if (!GameProvider) missingImports.push('GameProvider');
-    if (!MenuProvider) missingImports.push('MenuProvider');
-    if (!MenuHost) missingImports.push('MenuHost');
-    if (!GameGUI) missingImports.push('GameGUI');
-    if (!initializeMenuRegistry) missingImports.push('initializeMenuRegistry');
-    
-    if (missingImports.length > 0) {
-      const errorMsg = `Failed to import: ${missingImports.join(', ')}`;
-      console.error('❌ [APP] Import errors:', errorMsg);
-      setError(errorMsg);
-      setStatus('error');
-      return;
-    }
-    
-    // Initialize menu registry
-    try {
-      if (initializeMenuRegistry) {
-        initializeMenuRegistry();
-        console.log('✅ [APP] Menu registry initialized');
+    loadComponents().then((results) => {
+      console.log('🎯 [APP] Component loading results:', results);
+      
+      // Check which imports failed
+      const missingImports = Object.entries(results)
+        .filter(([, success]) => !success)
+        .map(([name]) => name);
+      
+      if (missingImports.length > 0) {
+        const errorMsg = `Failed to import: ${missingImports.join(', ')}`;
+        console.error('❌ [APP] Import errors:', errorMsg);
+        setError(errorMsg);
+        setStatus('error');
+        return;
       }
-    } catch (menuError) {
-      console.error('❌ [APP] Menu registry failed:', menuError);
-      setError(`Menu system failed: ${menuError}`);
+      
+      // Initialize menu registry
+      setLoadProgress('Initializing menu system...');
+      try {
+        if (initializeMenuRegistry) {
+          initializeMenuRegistry();
+          console.log('✅ [APP] Menu registry initialized');
+        }
+      } catch (menuError) {
+        console.error('❌ [APP] Menu registry failed:', menuError);
+        setError(`Menu system failed: ${menuError}`);
+        setStatus('error');
+        return;
+      }
+      
+      // All good!
+      setLoadProgress('Ready!');
+      setStatus('ready');
+      console.log('✅ [APP] App initialization complete');
+    }).catch((loadError) => {
+      console.error('❌ [APP] Component loading failed:', loadError);
+      setError(`Component loading failed: ${loadError}`);
       setStatus('error');
-      return;
-    }
-    
-    // All good!
-    setStatus('ready');
-    console.log('✅ [APP] App initialization complete');
+    });
   }, []);
   
   // Loading state
@@ -121,7 +148,7 @@ function App() {
             margin: '0 auto 16px'
           }}></div>
           <p style={{ fontSize: '18px', marginBottom: '8px' }}>Loading ClassikLust AI Tap...</p>
-          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Initializing game systems</p>
+          <p style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>{loadProgress}</p>
         </div>
         <style>{`
           @keyframes spin {
@@ -196,6 +223,9 @@ function App() {
         <div style={{ textAlign: 'center' }}>
           <h2>🚨 Missing Components</h2>
           <p>Required components failed to load</p>
+          <p style={{ fontSize: '14px', marginTop: '8px' }}>GameProvider: {GameProvider ? '✅' : '❌'}</p>
+          <p style={{ fontSize: '14px' }}>MenuProvider: {MenuProvider ? '✅' : '❌'}</p>
+          <p style={{ fontSize: '14px' }}>GameGUI: {GameGUI ? '✅' : '❌'}</p>
           <button onClick={() => window.location.reload()} style={{
             marginTop: '16px', padding: '12px 24px', background: '#dc2626',
             color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer'
