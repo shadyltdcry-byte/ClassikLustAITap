@@ -5,10 +5,10 @@
 
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router } from 'react-router-dom';
-import { GameProvider } from './context/GameContext';
+import { GameProvider } from '@/context/GameContext';
 import { MenuProvider } from '@/components/menu/MenuProvider';
 import { MenuHost } from '@/components/menu/MenuHost';
-import { ToastContainer } from './utils/toast';
+import { ToastContainer } from '@/utils/toast';
 import { initializeMenuRegistry } from '@/components/menu/MenuRegistry';
 
 // Import your existing components - FIXED: Use GameGUI instead of non-existent GameScreen
