@@ -3,6 +3,8 @@ import { SupabaseStorage } from "../../shared/SupabaseStorage";
 
 const storage = SupabaseStorage.getInstance();
 
+//const adminAdditionsRouter = router; // if needed
+
 export function registerAdminRoutes(app: Express) {
   // Achievements
   app.get('/api/admin/achievements', async (req: Request, res: Response) => {
@@ -78,3 +80,4 @@ export function registerAdminRoutes(app: Express) {
     }
   });
 }
+export default adminAdditionsRouter;
